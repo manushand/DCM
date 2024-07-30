@@ -1,0 +1,162 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <OutputType>WinExe</OutputType>
+        <Nullable>enable</Nullable>
+        <PublishUrl>publish\</PublishUrl>
+        <Install>true</Install>
+        <InstallFrom>Disk</InstallFrom>
+        <UpdateEnabled>false</UpdateEnabled>
+        <UpdateMode>Foreground</UpdateMode>
+        <UpdateInterval>7</UpdateInterval>
+        <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+        <UpdatePeriodically>false</UpdatePeriodically>
+        <UpdateRequired>false</UpdateRequired>
+        <MapFileExtensions>true</MapFileExtensions>
+        <ApplicationRevision>0</ApplicationRevision>
+        <AssemblyVersion>24.7.29</AssemblyVersion>
+        <ApplicationVersion>24.7.29.%2a</ApplicationVersion>
+        <IsWebBootstrapper>false</IsWebBootstrapper>
+        <UseApplicationTrust>false</UseApplicationTrust>
+        <BootstrapperEnabled>true</BootstrapperEnabled>
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <UseWindowsForms>true</UseWindowsForms>
+        <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+        <StartupObject>DCM.Program</StartupObject>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <PublishReadyToRun>true</PublishReadyToRun>
+        <ApplicationIcon>DCM.ico</ApplicationIcon>
+        <PackageIcon>DCM.ico</PackageIcon>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <SelfContained>true</SelfContained>
+        <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <RunCodeAnalysis>false</RunCodeAnalysis>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="DGV Printer">
+            <HintPath>ref\DGV Printer.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Program.cs" />
+        <Compile Update="Cache.cs" />
+        <Compile Update="Database.cs" />
+        <Compile Update="DB\GamePlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\GroupPlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\LinkRecord.cs">
+            <DependentUpon>IRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\Group.RatingInfo.cs">
+            <DependentUpon>Group.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\PlayerConflict.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\RoundPlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\TeamPlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\TournamentPlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Properties\Settings.Designer.cs">
+          <DesignTimeSharedInput>True</DesignTimeSharedInput>
+          <AutoGen>True</AutoGen>
+          <DependentUpon>Settings.settings</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\ScoreByPlayerControl.cs">
+            <SubType>UserControl</SubType>
+            <DependentUpon>IScoreControl.cs</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\ScoreByPowerControl.cs">
+            <SubType>UserControl</SubType>
+            <DependentUpon>IScoreControl.cs</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\ScoreByRoundControl.cs">
+            <SubType>UserControl</SubType>
+            <DependentUpon>IScoreControl.cs</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\GroupMembershipControl.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="DB\Game.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\GameControl.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="DB\Group.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\IdentityRecord.cs">
+            <DependentUpon>IInfoRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\Player.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\RegistrationControl.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="DB\Round.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\IInfoRecord.cs">
+            <DependentUpon>IRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\RoundControl.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="Scoring.PowerData.cs">
+            <DependentUpon>Scoring.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\ScoringSystem.Calculator.cs">
+            <DependentUpon>ScoringSystem.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\ScoringSystem.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="DB\Team.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\TeamsControl.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="DB\Tournament.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="UI\Controls\TournamentControl.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="DCM.ico" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.24318.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.11.0-2.final" />
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+        <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
+        <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.0-preview.6.24327.6" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Update="Properties\Settings.settings">
+        <Generator>SettingsSingleFileGenerator</Generator>
+        <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+      </None>
+    </ItemGroup>
+</Project>

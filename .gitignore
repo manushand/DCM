@@ -1,0 +1,5 @@
+/bin/**
+/obj/**
+*/PublishProfiles/**
+
+DCM.csproj.user
