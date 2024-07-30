@@ -532,7 +532,7 @@ internal sealed partial class ScoringSystem
 						else
 							active += ch;
 					}
-					if (active.Any())
+					if (active.Length is not 0)
 						throw new InvalidOperationException($"Unclosed quotation mark: {quote}.");
 					var routineText = _formula[1..(index - 1)].Trim();
 					DropCount(index);
