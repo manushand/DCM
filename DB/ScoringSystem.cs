@@ -6,6 +6,7 @@ namespace DCM.DB;
 
 internal sealed partial class ScoringSystem : IdentityRecord
 {
+    private const char Bar = '|';
 	private static readonly TimeSpan ScriptTimeout = TimeSpan.FromSeconds(7);
 
 	private string _finalScoreFormula = Empty;
@@ -40,8 +41,8 @@ internal sealed partial class ScoringSystem : IdentityRecord
 	{
 		get => TestGamePlayers is null
 				   ? Empty
-				   : Join('|',
-						  TestGamePlayers.Select(static player => Join(',',
+				   : Join(Bar,
+						  TestGamePlayers.Select(static player => Join(Comma,
 																	   player.Power,
 																	   player.Result,
 																	   player.Centers,
@@ -59,25 +60,24 @@ internal sealed partial class ScoringSystem : IdentityRecord
 			//	For example: Austria,Win,18,10,2.3|England,Loss,0,4,0.1|...
 			//	Use absolute emptiness for null (when game result, centers,
 			//	years, or other score does not matter in the system).
-			var powers = value.Split('|')
+			var powers = value.Split(Bar)
 							  .Select(static testData => testData.Split(Comma)
 																 .Select(static s => s.Trim())
 																 .ToArray())
 							  .ToArray();
 			if (powers.Any(static data => data.Length is not 5))
 				throw new InvalidOperationException(); //	TODO
-			TestGamePlayers = powers.Select(static data => new GamePlayer
-														   {
-															   Power = data[0].As<PowerNames>(),
-															   Result = data[1].Length is 0
-																			? Unknown
-																			: data[1].As<Results>(),
-															   Centers = data[2].AsNullableInteger(),
-															   Years = data[3].AsNullableInteger(),
-															   Other = data[4].AsDecimal()
-														   })
-									.Order()
-									.ToList();
+			TestGamePlayers = [..powers.Select(static data => new GamePlayer
+														      {
+															       Power = data[0].As<PowerNames>(),
+															       Result = data[1].Length is 0
+																			    ? Unknown
+																			    : data[1].As<Results>(),
+															       Centers = data[2].AsNullableInteger(),
+															       Years = data[3].AsNullableInteger(),
+															       Other = data[4].AsDecimal()
+														      })
+									   .Order()];
 			//	TODO: Could add a lot more checks, like that winners all play to the final
 			//	TODO: game-year, or that no Centers are given if the scoring system doesn't
 			//	TODO: call for them, etc., or that if it does call for Centers, all seven
@@ -92,10 +92,9 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		}
 	}
 
-	internal List<Tournament> Tournaments => ReadMany<Tournament>(tournament => tournament.ScoringSystemId == Id
-																			 || tournament.Rounds.Any(round => round.ScoringSystemId == Id)
-																			 || tournament.Games.Any(game => game.ScoringSystemId == Id))
-	   .ToList();
+	internal List<Tournament> Tournaments => [..ReadMany<Tournament>(tournament => tournament.ScoringSystemId == Id
+																			    || tournament.Rounds.Any(round => round.ScoringSystemId == Id)
+																			    || tournament.Games.Any(game => game.ScoringSystemId == Id))];
 
 	internal string ScoreFormat => $"F{SignificantDigits}";
 
@@ -210,7 +209,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		if (watch is not null)
 		{
 			results.Add(bar);
-			results.Add($"Time to score: {watch.ElapsedMilliseconds / 1000m} sec.");
+			results.Add($"Time to score: {watch.ElapsedMilliseconds / 1_000m} sec.");
 		}
 		if (PointsPerGame is null)
 			return true;
@@ -373,7 +372,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 	///     Finished state and told to retain their current scoring systems.
 	/// </returns>
 	internal DialogResult CheckChange(ScoringSystem proposedScoringSystem,
-									  List<Game> finishedGames,
+									  Game[] finishedGames,
 									  bool allowKeepingCurrentSystem = false)
 	{
 		//	This if isn't really necessary, since filtering the finishedGames (below) will answer
@@ -383,16 +382,15 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		 && (UsesYearsPlayed || !proposedScoringSystem.UsesYearsPlayed)
 		 && (UsesOtherScore || !proposedScoringSystem.UsesOtherScore))
 			return DialogResult.Yes;
-		finishedGames = finishedGames.Where(game =>
-											{
-												var system = game.ScoringSystem;
-												return !system.UsesGameResult && proposedScoringSystem.UsesGameResult
-													|| !system.UsesCenterCount && proposedScoringSystem.UsesCenterCount
-													|| !system.UsesYearsPlayed && proposedScoringSystem.UsesYearsPlayed
-													|| !system.UsesOtherScore && proposedScoringSystem.UsesOtherScore;
-											})
-									 .ToList();
-		var count = finishedGames.Count;
+		finishedGames = [..finishedGames.Where(game =>
+                                               {
+											        var system = game.ScoringSystem;
+											        return !system.UsesGameResult && proposedScoringSystem.UsesGameResult
+												        || !system.UsesCenterCount && proposedScoringSystem.UsesCenterCount
+												        || !system.UsesYearsPlayed && proposedScoringSystem.UsesYearsPlayed
+												        || !system.UsesOtherScore && proposedScoringSystem.UsesOtherScore;
+											   })];
+		var count = finishedGames.Length;
 		if (count is 0)
 			return DialogResult.Yes;
 		var singular = count is 1;

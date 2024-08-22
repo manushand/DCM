@@ -31,7 +31,7 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <SelfContained>true</SelfContained>
         <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
-        <LangVersion>latest</LangVersion>
+        <LangVersion>preview</LangVersion>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <RunCodeAnalysis>false</RunCodeAnalysis>
@@ -147,7 +147,7 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.11.0-2.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.11.0-3.final" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
         <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.0-preview.6.24327.6" />

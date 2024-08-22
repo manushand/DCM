@@ -81,8 +81,7 @@ internal sealed class Tournament : IdentityRecord
 
 	internal Game[] Games => [..Rounds.SelectMany(static round => round.Games)];
 
-	internal List<Game> FinishedGames => Games.Where(static game => game.Status is Finished)
-											  .ToList();
+	internal Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 
 	internal TournamentPlayer[] TournamentPlayers => [..ReadMany<TournamentPlayer>(tournamentPlayer => tournamentPlayer.TournamentId == Id)];
 
@@ -181,11 +180,11 @@ internal sealed class Tournament : IdentityRecord
 												 AssignPowers.ForSql(),
 												 GroupPowers.ForSql(),
 												 UnplayedScore,
-												 DropBeforeFinalRound ? -RoundsToDrop : RoundsToDrop,
+												 RoundsToDrop.NegatedIf(DropBeforeFinalRound),
 												 RoundsToScale, ScalePercentage,
-												 PlayerCanJoinManyTeams ? -TeamSize : TeamSize,
-												 TeamsPlayMultipleRounds ? -TeamRound : TeamRound,
-												 ProgressiveScoreConflict ? -ScoreConflict : ScoreConflict,
+												 TeamSize.NegatedIf(PlayerCanJoinManyTeams),
+												 TeamRound.NegatedIf(TeamsPlayMultipleRounds),
+												 ScoreConflict.NegatedIf(ProgressiveScoreConflict),
 												 GroupId.ForSql());
 
 	#endregion

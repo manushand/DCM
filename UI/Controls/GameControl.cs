@@ -203,12 +203,11 @@ internal sealed partial class GameControl : UserControl
 	internal List<GamePlayer>? GetPlayerData()
 		=> AllComboBoxes.All(static comboBox => comboBox.SelectedItem is null)
 			   ? null
-			   : Range(0, 7).Select(power => PlayerData(power.As<PowerNames>(),
-														ResultComboBoxes[power],
-														CentersComboBoxes[power],
-														YearsComboBoxes[power],
-														OtherTextBoxes[power]))
-							.ToList();
+			   : [..Range(0, 7).Select(power => PlayerData(power.As<PowerNames>(),
+                                                           ResultComboBoxes[power],
+														   CentersComboBoxes[power],
+														   YearsComboBoxes[power],
+														   OtherTextBoxes[power]))];
 
 	private static GamePlayer PlayerData(PowerNames powerNames,
 										 ListControl winLossComboBox,

@@ -104,7 +104,9 @@ internal sealed partial class PlayerListForm : Form
 				return;
 			}
 			if ((from email in addresses
-				 let playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses.Any(email.Matches)).ToArray()
+				 let playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses
+                                                                             .Any(email.Matches))
+                                                                             .ToArray()
 				 where playersWithThisEmail.Length is not 0
                    && MessageBox.Show($"The email address {email} is already being used by:{playersWithThisEmail.BulletList()}" +
 									   "Add another player with this same address?",

@@ -32,8 +32,7 @@ public sealed partial class Scoring
 		ScoringSystem = scoringSystem;
 		GamePlayers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, static gamePlayer => gamePlayer);
 		Powers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, gamePlayer => new PowerData(this, gamePlayer));
-		AllPowerYears = gamePlayers.Select(static gamePlayer => gamePlayer.Years ?? 0)
-								   .ToList();
+		AllPowerYears = [..gamePlayers.Select(static gamePlayer => gamePlayer.Years ?? 0)];
 	}
 
 	internal void UpdateProvisionalScores()

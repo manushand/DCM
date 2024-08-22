@@ -127,13 +127,9 @@ internal static partial class DCM
 		return true;
 	}
 
-	internal static string? GetDatabaseFile(string[] args)
+	internal static string? GetDatabaseFile()
 	{
-		//	If a db file is on the command line, use that.
-		if (args.Length > 0)
-			return args[0];
-
-		//	Otherwise, if one has been saved in Settings, use that.
+		//	If a db file has been saved in Settings, use that.
 		if (File.Exists(Settings.DatabaseFile))
 			return Settings.DatabaseFile;
 
@@ -249,6 +245,22 @@ internal static partial class DCM
 		where T : IRecord
 		=> CreateMany([..records]);
 
+    //	It is up to the caller to Add any returned record(s) to the Cache
+    internal static List<T> Read<T>(T? record = null)
+        where T : class, IRecord, new()
+    {
+        Database.OpenConnection();
+        var records = new List<T>();
+        using (var command = Database.Command($"SELECT * FROM {TableName<T>()}{(record is null ? null : WhereClause(record))}"))
+        {
+            using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
+            while (reader.Read())
+                records.Add((T)new T().Load(reader));
+        }
+        Database.CloseConnection();
+        return records;
+    }
+
 	internal static T? ReadOne<T>(Func<T, bool> func)
 		where T : IRecord
 		=> Cache.FetchOne(func);
@@ -329,33 +341,13 @@ internal static partial class DCM
 		where T : IRecord
 		=> Delete(Cache.FetchMany(func));
 
-	private static void DeleteAll<T>()
-		where T : IRecord
-		=> Database.Execute(DeleteStatement<T>());
-
-	#region Private database properties and methods
+    #region Private database properties and methods
 
 	private static readonly string FieldValuesLineSplitter = $"{Comma}{NewLine}";
 
 	private static string TableName<T>()
 		where T : IRecord
 		=> $"[{typeof (T).Name}]";
-
-	//	It is up to the caller to Add any returned record(s) to the Cache
-	internal static List<T> Read<T>(T? record = null)
-		where T : class, IRecord, new()
-	{
-		Database.OpenConnection();
-		var records = new List<T>();
-		using (var command = Database.Command($"SELECT * FROM {TableName<T>()}{(record is null ? null : WhereClause(record))}"))
-		{
-			using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
-			while (reader.Read())
-				records.Add((T)new T().Load(reader));
-		}
-		Database.CloseConnection();
-		return records;
-	}
 
 	private static string UpdateStatement<T>(T record)
 		where T : IInfoRecord
@@ -375,6 +367,10 @@ internal static partial class DCM
 
 	private static string WhereClause(string primaryKey)
 		=> $" WHERE {primaryKey}";
+
+    private static void DeleteAll<T>()
+        where T : IRecord
+        => Database.Execute(DeleteStatement<T>());
 
 	#endregion
 
@@ -518,6 +514,9 @@ internal static partial class DCM
 	internal static string Dotted(this int value)
 		=> $"{value}.";
 
+    internal static int NegatedIf(this int value, bool negator)
+        => negator ? -value : value;
+
 	internal static string[] SplitEmailAddresses(this string addresses)
 		=> [..addresses.Split(EmailSplitter)
 					   .Select(static email => email.Trim())
@@ -633,9 +632,8 @@ internal static partial class DCM
 
 	internal static List<T> GetMultiSelected<T>(this ListBox listBox)
 		where T : class
-		=> listBox.SelectedItems
-				  .Cast<T>()
-				  .ToList();
+		=> [..listBox.SelectedItems
+				     .Cast<T>()];
 
 	internal static IEnumerable<T> GetAll<T>(this ListBox listBox)
 		where T : IRecord
@@ -652,10 +650,9 @@ internal static partial class DCM
 
 	internal static List<T> PowerControls<T>(this Panel panel)
 		where T : Control
-		=> panel.Controls
-				.OfType<T>()
-				.OrderBy(static control => control.Name)
-				.ToList();
+		=> [..panel.Controls
+				   .OfType<T>()
+				   .OrderBy(static control => control.Name)];
 
 	private static IEnumerable<T> GetFromRow<T>(IEnumerable rows)
 		where T : IRecord

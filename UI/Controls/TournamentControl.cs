@@ -236,7 +236,7 @@ internal sealed partial class TournamentControl : UserControl
 		if (Tournament.Id > 0)
 			UpdateOne(Tournament);
 		SetScoreConflictDetails();
-		if (finishedGames.Count is 0)
+		if (finishedGames.Length is 0)
 			return;
 		finishedGames.ForEach(static game => game.Status = Underway);
 		UpdateMany(finishedGames);

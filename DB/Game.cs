@@ -104,7 +104,7 @@ internal sealed class Game : IdentityRecord
 	/// </returns>
 	internal bool CalculateScores(out List<string?> errors,
 								  ScoringSystem? scoringSystem = null)
-		=> Scored = (scoringSystem ?? ScoringSystem).ScoreWithResults(GamePlayers.ToList(), out errors);
+		=> Scored = (scoringSystem ?? ScoringSystem).ScoreWithResults([..GamePlayers], out errors);
 
 	internal void FillFinalScores(List<Label> scoreLabels,
 								  Label totalScoreLabel,

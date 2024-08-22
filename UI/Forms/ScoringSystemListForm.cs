@@ -76,8 +76,7 @@ internal sealed partial class ScoringSystemListForm : Form
 									.ToList();
 			var groupCount = groups.Count;
 			var usedInGroups = groupCount > 0;
-			tournaments = tournaments.Where(static tournament => tournament.Group is null)
-									 .ToList();
+			tournaments = [..tournaments.Where(static tournament => tournament.Group is null)];
 			var tournamentCount = tournaments.Count;
 			var message = $"The {scoringSystem} scoring system is used ";
 			if (tournamentCount > 0)

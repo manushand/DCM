@@ -136,9 +136,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 										  .Where(tp => tp.RegisteredForRound(Round.Number))
 										  .Select(static tp => tp.PlayerId));
 		//	This next assignment SHOULD be unnecessary overkill, but can't hurt.
-		roundPlayerIds = roundPlayerIds.Where(id => !gamePlayerIds.Contains(id))
-									   .Distinct() //	Just in case!
-									   .ToList();
+		roundPlayerIds = [..roundPlayerIds.Where(id => !gamePlayerIds.Contains(id))
+									      .Distinct()]; //	Just in case!
 		SkipHandlers = true;
 		if (listsToFill.HasFlag(ListsToFill.Unregistered))
 		{
@@ -146,9 +145,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			if (WhichPlayersTabControl.SelectedIndex is 0)
 			{
 				//	Everyone pre-registered for any round in the tournament
-				tournamentPlayerIds = Tournament.TournamentPlayers
-												.Select(static tp => tp.PlayerId)
-												.ToList();
+				tournamentPlayerIds = [..Tournament.TournamentPlayers
+												   .Select(static tp => tp.PlayerId)];
 				//	And everyone who has been a RoundPlayer in any round of the tournament
 				tournamentPlayerIds.AddRange(Tournament.Rounds
 													   .SelectMany(static round => round.RoundPlayers)
@@ -237,7 +235,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		UpdateOne(Round);
 		ScoringSystemComboBox.UpdateShadowLabel();
 		ScoringSystemDefaultLabel.Visible = Round.ScoringSystemIsDefault;
-		if (finishedGames.Count is 0)
+		if (finishedGames.Length is 0)
 			return;
 		//	Now it is safe to do what must be done to any games affected by the change.
 		//	Either put them back to Underway status, or return their ScoringSystems to them.
@@ -250,10 +248,10 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void SeededDataGridView_DataBindingComplete(object sender,
 														DataGridViewBindingCompleteEventArgs e)
 	{
-		SeededDataGridView.FillColumn(0); //	Why this is 0 not 1, I don't know, but making it 1 will cut off names with ellipses
+		SeededDataGridView.FillColumn(0);   //	Why this is 0 not 1, I don't know, but making it 1 will cut off names with ellipses
 		SeededDataGridView.AlignColumn(MiddleCenter, 0, 3); //	Game Number, Status
-		SeededDataGridView.AlignColumn(MiddleLeft, 1); //	Player Name
-		SeededDataGridView.PowerCells(2); //	Power Name
+		SeededDataGridView.AlignColumn(MiddleLeft, 1);      //	Player Name
+		SeededDataGridView.PowerCells(2);                   //	Power Name
 		foreach (DataGridViewRow row in SeededDataGridView.Rows)
 			row.DefaultCellStyle.BackColor = (row.Index / 7 & 1) is 0
 												 ? SystemColors.Window
@@ -440,9 +438,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		}
 		FillPlayerLists(ListsToFill.Seeded);
 		//	NOTE: I know I said that didn't work in the method above, but it works here.  Weird!
-		SeededDataGridView.Rows[selected[0]].Selected =
-			SeededDataGridView.Rows[selected[1]].Selected =
-				true;
+        selected.ForEach(rowNumber => SeededDataGridView.Rows[rowNumber].Selected = true);
 	}
 
 	private void ReplaceButton_Click(object sender,

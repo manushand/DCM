@@ -23,8 +23,7 @@ internal sealed partial class GamesForm : Form
 
 	private List<Label> ScoreLabels { get; }
 
-	private List<GamePlayer> GamePlayers => Game.GamePlayers
-												.ToList();
+	private List<GamePlayer> GamePlayers => [..Game.GamePlayers];
 
 	private bool AnyPowerUnassigned => GamePlayers.Any(static player => player.Power is TBD);
 

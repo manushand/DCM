@@ -26,9 +26,10 @@ internal sealed partial class MainForm : Form
 	}
 
 	internal MainForm()
-	{
+    {
 		InitializeComponent();
 		ConfigurationMenuItem.DropDown.Closing += static (_, e) => e.Cancel = e.CloseReason is ItemClicked;
+        StartPosition = FormStartPosition.CenterScreen;
 	}
 
 	private void MainForm_Load(object? sender = null,
@@ -152,7 +153,7 @@ internal sealed partial class MainForm : Form
 		case Group { FinishedGames.Length: > 0 } group:
 			Show<GroupRatingsForm>(() => new (group));
 			break;
-		case Tournament { FinishedGames.Count: > 0 } tournament:
+		case Tournament { FinishedGames.Length: > 0 } tournament:
 			Show<ScoresForm>(() => new (tournament));
 			break;
 		default:

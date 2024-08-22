@@ -23,7 +23,7 @@ internal sealed class Round : IdentityRecord
 
 	internal Game[] StartedGames => [..Games.Where(static game => game.Status is not Seeded)];
 
-	internal List<Game> FinishedGames => [..Games.Where(static game => game.Status is Finished)];
+	internal Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 
 	internal bool GamesSeeded => SeededGames.Length > 0;
 	internal bool GamesStarted => StartedGames.Length > 0;
@@ -65,171 +65,174 @@ internal sealed class Round : IdentityRecord
 	internal void AddPlayer(Player player)
 		=> CreateOne(new RoundPlayer { Round = this, Player = player });
 
-	internal int Seed(List<RoundPlayer> roundPlayers,
-					  bool assignPowers)
-	{
-		if (roundPlayers.Count % 7 > 0)
-			throw new ArgumentOutOfRangeException(nameof (roundPlayers), "Invalid number of roundPlayers (must be multiple of 7)");
+    internal int Seed(List<RoundPlayer> roundPlayers,
+        bool assignPowers)
+    {
+        if (roundPlayers.Count % 7 > 0)
+            throw new ArgumentOutOfRangeException(nameof(roundPlayers), "Invalid number of roundPlayers (must be multiple of 7)");
 
-		BeginTransaction();
+        BeginTransaction();
 
-		//	Create the Game objects and store them in the database.
-		var lastSeededGameNumber = Games.Length;
-		var games = CreateMany(Range(0, roundPlayers.Count / 7).Select(number => new Game
-																				 {
-																					 Number = lastSeededGameNumber + number + 1,
-																					 Round = this,
-																					 Status = Seeded
-																				 }));
-		//	Adding another .ToArray() here (before that last semicolon) is a 5-15% performance hit.  I know, right?
+        //	Create the Game objects and store them in the database.
+        var lastSeededGameNumber = Games.Length;
+        var games = CreateMany(Range(0, roundPlayers.Count / 7).Select(number => new Game
+        {
+            Number = lastSeededGameNumber + number + 1,
+            Round = this,
+            Status = Seeded
+        }));
+        //	Adding another .ToArray() here (before that last semicolon) is a 5-15% performance hit.  I know, right?
 
-		//	Create all the GamePlayer objects, seeding players into them from best
-		//	score to worst (if the Tournament uses a ScoreConflict) or randomly
-		//	(if it doesn't). Do not store them in the database yet, though.  Yes,
-		//	doing it by score really does improve performance, by about a third.
-		//	Note that doing it this way should, I think, mean that the "best" games
-		//	(having players with best score) should be the lower-numbered games.
-		var gamePlayers = new List<GamePlayer>();
-		using (var seedingPlayers = roundPlayers.OrderByDescending(roundPlayer => Tournament.ScoreConflict is 0
-																					  ? RandomNumber()
-																					  : PreRoundScore(roundPlayer.Player))
-                                                                      .ThenBy(static _ => RandomNumber())
-												                      .GetEnumerator())
-			foreach (var game in games)
-				for (var power = Austria; power <= Turkey; ++power)
-				{
-					seedingPlayers.MoveNext();
-					var roundPlayer = seedingPlayers.Current
-													.OrThrow();
-					roundPlayers.Remove(roundPlayer);
-					var gamePlayer = new GamePlayer
-									 {
-										 Game = game,
-										 Power = assignPowers
-													 ? power
-													 : TBD,
-										 Player = roundPlayer.Player,
-										 Result = Unknown
-									 };
-					gamePlayers.Add(gamePlayer);
-				}
-		var seedList = gamePlayers.ToList();
+        //	Create all the GamePlayer objects, seeding players into them from best
+        //	score to worst (if the Tournament uses a ScoreConflict) or randomly
+        //	(if it doesn't). Do not store them in the database yet, though.  Yes,
+        //	doing it by score really does improve performance, by about a third.
+        //	Note that doing it this way should, I think, mean that the "best" games
+        //	(having players with best score) should be the lower-numbered games.
+        var gamePlayers = new List<GamePlayer>();
+        using (var seedingPlayers = roundPlayers.OrderByDescending(roundPlayer => Tournament.ScoreConflict is 0
+                       ? RandomNumber()
+                       : PreRoundScore(roundPlayer.Player))
+                   .ThenBy(static _ => RandomNumber())
+                   .GetEnumerator())
+            foreach (var game in games)
+                for (var power = Austria; power <= Turkey; ++power)
+                {
+                    seedingPlayers.MoveNext();
+                    var roundPlayer = seedingPlayers.Current
+                        .OrThrow();
+                    roundPlayers.Remove(roundPlayer);
+                    var gamePlayer = new GamePlayer
+                    {
+                        Game = game,
+                        Power = assignPowers
+                            ? power
+                            : TBD,
+                        Player = roundPlayer.Player,
+                        Result = Unknown
+                    };
+                    gamePlayers.Add(gamePlayer);
+                }
 
-		//	Now add in for optimization all the existing players in seeded but not started games
+        /*  TODO: I see no reason why I was making a copy of the gamePlayers List and using it instead below.
+        var seedList = gamePlayers.ToList();
+        */
 
-		var preSeeded = SeededGames.SelectMany(static game => game.GamePlayers)
-								   .ToArray();
-		seedList.AddRange(preSeeded);
-		Delete(preSeeded);
+        //	Now add in for optimization all the existing players in seeded but not started games
 
+        var preSeeded = SeededGames.SelectMany(static game => game.GamePlayers)
+                                   .ToArray();
+        gamePlayers.AddRange(preSeeded);
+        Delete(preSeeded);
 
-		//	Create the list of seeding GamePlayers, and prepare them all for seeding
-		var seeding = seedList.Select(static gamePlayer => gamePlayer.PrepareForSeeding())
-							  .ToArray();
+        //	Create the list of seeding GamePlayers, and prepare them all for seeding
+        var seeding = gamePlayers.Select(static gamePlayer => gamePlayer.PrepareForSeeding())
+                                 .ToArray();
 
-		//	TODO: here is where we could maybe CalculateConflict(seeding) in order to
-		//	TODO: let the user decline optimization or know how much it improves things
+        //	TODO: here is where we could maybe CalculateConflict(seeding) in order to
+        //	TODO: let the user decline optimization or know how much it improves things
 
-		var finalConflict = Optimize(seeding);
+        var finalConflict = Optimize(seeding);
 
-		//	Store the GamePlayer objects in the database.
-		CreateMany(seeding);
+        //	Store the GamePlayer objects in the database.
+        CreateMany(seeding);
 
-		CommitTransaction();
+        CommitTransaction();
 
-		//	Return the total conflict for all newly seeded GamePlayers
-		return finalConflict;
-	}
+        //	Return the total conflict for all newly seeded GamePlayers
+        return finalConflict;
 
-	//	This could be a method function in Seed(), but for the fact that it is static.
-	private static int Optimize(GamePlayer[] seeding)
-	{
-		//	All we REALLY know (without basically going through seeding)
-		//	is that IF there are no possible negative conflicts, then IF
-		//	the total conflict for a seeding attempt reaches zero, it is
-		//	the best possible -- we can stop trying to improve it.  Zero
-		//	may, even in this case, be impossible (if the positives just
-		//	cannot all be eliminated), so in that case, and in the cases
-		//	when there ARE possible negative conflicts, we cannot easily
-		//	predetermine the lowest possible total conflict score we can
-		//	get, so full seeding needs to take place. (Full-seeding more
-		//	than a dozen games seems to take only about eight seconds.)
-		var canBeatZero = seeding.SelectMany(static gp => gp.Player.PlayerConflicts)
-								 .Distinct()
-								 .Any(pc => pc.Value < 0 && pc.PlayerIds.All(SeedingIds))
-					   || seeding.SelectMany(static gp => gp.Player.Groups)
-								 .Distinct()
-								 .Any(g => g.Conflict < 0 && g.Players.Ids().Count(SeedingIds) > 1);
+        static int Optimize(GamePlayer[] seeding)
+        {
+            //	All we REALLY know (without basically going through seeding)
+            //	is that IF there are no possible negative conflicts, then IF
+            //	the total conflict for a seeding attempt reaches zero, it is
+            //	the best possible -- we can stop trying to improve it.  Zero
+            //	may, even in this case, be impossible (if the positives just
+            //	cannot all be eliminated), so in that case, and in the cases
+            //	when there ARE possible negative conflicts, we cannot easily
+            //	predetermine the lowest possible total conflict score we can
+            //	get, so full seeding needs to take place. (Full-seeding more
+            //	than a dozen games seems to take only about eight seconds.)
+            var canBeatZero = seeding.SelectMany(static gp => gp.Player.PlayerConflicts)
+                                     .Distinct()
+                                     .Any(pc => pc.Value < 0 && pc.PlayerIds.All(SeedingIds))
+                           || seeding.SelectMany(static gp => gp.Player.Groups)
+                                     .Distinct()
+                                     .Any(g => g.Conflict < 0 && g.Players.Ids().Count(SeedingIds) > 1);
 
-		//	Get the total to beat.
-		var totalConflict = CalculateConflict();
+            //	Get the total to beat.
+            var totalConflict = CalculateConflict();
 
-		//	Order the GamePlayers from worst Conflicts to best and loop through
-		//	them, swapping each worse one with progressively better ones, starting
-		//	over every time a swap improves the total conflicts to beat.
-		var playerCount = seeding.Length;
-		var swapperCount = playerCount - 1;
-		for (var lastSeeded = 0; lastSeeded < swapperCount; ++lastSeeded)
-		{
-			//	If we're sure that it's as good as it can get, we're done here.
-			if (totalConflict is 0 && !canBeatZero)
-				break;
-			//	When beginning (or re-beginning) at the top of the list,
-			//	Ensure that it is ordered from most conflict to least.
-			if (lastSeeded is 0)
-				seeding = [..seeding.OrderByDescending(static gamePlayer => gamePlayer.Conflict)];
-			for (var swapWith = lastSeeded + 1; swapWith < playerCount; ++swapWith)
-			{
-				//	Swap the game/power assignments of the [lastSeeded] and [swapWith]
-				//	players and see if this improves the total conflict or not. Ties go
-				//	to the runner (i.e., if the swap is no better, keep what we have).
-				var updatedConflict = SwapSeeders(lastSeeded, swapWith);
-				if (updatedConflict < totalConflict)
-				{
-					//	The swap improved things.  Keep it.
-					//	Reorder the GamePlayers and start again
-					//	hoping to only make things even better.
-					totalConflict = updatedConflict;
-					//	TODO: Do we really need to start completely over?
-					lastSeeded = -1;
-					break;
-				}
-				//	The swap didn't help; undo it, and we'll try swapping with the next
-				//	one down the list. (This is necessary even if the swap didn't hurt.)
-				SwapSeeders(lastSeeded, swapWith);
-			}
-		}
-		return totalConflict;
+            //	Order the GamePlayers from worst Conflicts to best and loop through
+            //	them, swapping each worse one with progressively better ones, starting
+            //	over every time a swap improves the total conflicts to beat.
+            var playerCount = seeding.Length;
+            var swapperCount = playerCount - 1;
+            for (var lastSeeded = 0; lastSeeded < swapperCount; ++lastSeeded)
+            {
+                //	If we're sure that it's as good as it can get, we're done here.
+                if (totalConflict is 0 && !canBeatZero)
+                    break;
+                //	When beginning (or re-beginning) at the top of the list,
+                //	Ensure that it is ordered from most conflict to least.
+                if (lastSeeded is 0)
+                    seeding = [..seeding.OrderByDescending(static gamePlayer => gamePlayer.Conflict)];
+                for (var swapWith = lastSeeded + 1; swapWith < playerCount; ++swapWith)
+                {
+                    //	Swap the game/power assignments of the [lastSeeded] and [swapWith]
+                    //	players and see if this improves the total conflict or not. Ties go
+                    //	to the runner (i.e., if the swap is no better, keep what we have).
+                    var updatedConflict = SwapSeeders(lastSeeded, swapWith);
+                    if (updatedConflict < totalConflict)
+                    {
+                        //	The swap improved things.  Keep it.
+                        //	Reorder the GamePlayers and start again
+                        //	hoping to only make things even better.
+                        totalConflict = updatedConflict;
+                        //	TODO: Do we really need to start completely over?
+                        lastSeeded = -1;
+                        break;
+                    }
 
-		bool SeedingIds(int i)
-			=> seeding.Select(static gp => gp.PlayerId)
-					  .Contains(i);
+                    //	The swap didn't help; undo it, and we'll try swapping with the next
+                    //	one down the list. (This is necessary even if the swap didn't hurt.)
+                    SwapSeeders(lastSeeded, swapWith);
+                }
+            }
 
-		int SwapSeeders(int lastSeeded,
-						int swapWith)
-		{
-			//	It's tempting to change the PlayerIds instead of both the Power and GameId.
-			//	Don't fall for that (again), though; pre-calculated conflict-helping data
-			//	in the GamePlayer object is specific to its .Player so the .Player needs
-			//	to stay the same inside that object while the other things change.
-			var (current, swapper) = (seeding[lastSeeded], seeding[swapWith]);
-			(current.Power, swapper.Power) = (swapper.Power, current.Power);
-			(current.Game, swapper.Game) = (swapper.Game, current.Game);
+            return totalConflict;
 
-			//	This swap will affect one or two games worth of players;
-			//	recalculate their Conflicts and get the updated total.
-			return CalculateConflict(swapper.GameId, current.GameId);
-		}
+            bool SeedingIds(int i)
+                => seeding.Select(static gp => gp.PlayerId)
+                          .Contains(i);
 
-		//	This doesn't get the optimal seeding if the GamePlayer objects,
-		//	instead of their .GameId values, are passed in.  I tested it.
-		int CalculateConflict(params int[] gameIds)
-			=> seeding.Sum(gamePlayer => gameIds.Length is 0 || gameIds.Contains(gamePlayer.GameId)
-											 ? gamePlayer.CalculateConflict(seeding)
-											 : gamePlayer.Conflict);
-	}
+            int SwapSeeders(int lastSeeded,
+                int swapWith)
+            {
+                //	It's tempting to change the PlayerIds instead of both the Power and GameId.
+                //	Don't fall for that (again), though; pre-calculated conflict-helping data
+                //	in the GamePlayer object is specific to its .Player so the .Player needs
+                //	to stay the same inside that object while the other things change.
+                var (current, swapper) = (seeding[lastSeeded], seeding[swapWith]);
+                (current.Power, swapper.Power) = (swapper.Power, current.Power);
+                (current.Game, swapper.Game) = (swapper.Game, current.Game);
 
-	private List<decimal> PriorGameScores(GamePlayer gamePlayer)
+                //	This swap will affect one or two games worth of players;
+                //	recalculate their Conflicts and get the updated total.
+                return CalculateConflict(swapper.GameId, current.GameId);
+            }
+
+            //	This doesn't get the optimal seeding if the GamePlayer objects,
+            //	instead of their .GameId values, are passed in.  I tested it.
+            int CalculateConflict(params int[] gameIds)
+                => seeding.Sum(gamePlayer => gameIds.Length is 0 || gameIds.Contains(gamePlayer.GameId)
+                    ? gamePlayer.CalculateConflict(seeding)
+                    : gamePlayer.Conflict);
+        }
+    }
+
+    private List<decimal> PriorGameScores(GamePlayer gamePlayer)
 		=> _preRoundGames.GetOrSet(gamePlayer.PlayerId,
 								   playerId =>
 								   {

@@ -11,8 +11,7 @@ internal sealed partial class GroupGamesForm : Form
 
 	private Game Game => _game.OrThrow();
 
-	private List<GamePlayer> GamePlayers => Game.GamePlayers
-												.ToList();
+	private List<GamePlayer> GamePlayers => [..Game.GamePlayers];
 
 	private List<ComboBox> PlayerComboBoxes { get; }
 
