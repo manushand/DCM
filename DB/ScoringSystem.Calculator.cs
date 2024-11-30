@@ -1,6 +1,6 @@
 ﻿//	#define Routines
 
-using static System.Decimal;
+using static System.Double;
 using static System.StringComparer;
 
 namespace DCM.DB;
@@ -9,21 +9,18 @@ internal sealed partial class ScoringSystem
 {
 	private sealed partial class Calculator
 	{
-		private static Scoring? _scoring;
-
 		internal static Scoring Scoring
 		{
-			private get => _scoring.OrThrow();
-			set => _scoring = value;
-		}
-
-		private readonly decimal _result;
+			private get => field == Scoring.Empty
+							   ? throw new NullReferenceException(nameof (Scoring))
+							   : field;
+			set;
+		} = Scoring.Empty;
 
 		private readonly PowerData _inContextPowerData;
-
+		private readonly double _result;
 		private string _formula;
-
-		private decimal _term;
+		private double _term;
 
 		private enum Operators : byte
 		{
@@ -54,75 +51,73 @@ internal sealed partial class ScoringSystem
 			Max
 		}
 
-		private static readonly SortedDictionary<string, Operators> ShorthandLookups =
-			new ()
-			{
-				//	Note that there are also these unary operators (parsed in GetTerm):
-				//	- (mathematical negative of)	!  (logical negative of)
-				//	+ (absolute value of)			\| (square root of)
-				//	# (center rank could be)		~  (elimination order could be)
-				//	$ (survivor rank could be)
-				//	@ (won and numWinners is) with @# producing 0 if the player did not win, or Winners if he did
-				[$"{Semicolon}"] = Operators.Reset,
-				["{"] = Operators.If,
-				["->"] = Operators.Becomes,
-				["?"] = Operators.IsError,
-				["+"] = Operators.Plus,
-				["-"] = Operators.Minus,
-				["*"] = Operators.Times,
-				["/"] = Operators.Over,
-				[@"\"] = Operators.TruncateOver,
-				[@"\\"] = Operators.RoundOver,
-				[@"/\"] = Operators.CeilingOver,
-				[@"\/"] = Operators.FloorOver,
-				["%"] = Operators.Mod,
-				["^"] = Operators.ToPower,
-				["<"] = Operators.LessThan,
-				["<="] = Operators.LessOrEqual,
-				[">="] = Operators.ExceedsOrIs,
-				[">"] = Operators.Exceeds,
-				["="] = Operators.Equals,
-				["<>"] = Operators.IsNot,
-				["&"] = Operators.And, //	But not shortcut
-				["|"] = Operators.Or //	But not shortcut
-			};
+		private static readonly SortedDictionary<string, Operators> ShorthandLookups = new ()
+																					   {
+																						   //	Note that there are also these unary operators (parsed in GetTerm):
+																						   //	- (mathematical negative of)	!  (logical negative of)
+																						   //	+ (absolute value of)			\| (square root of)
+																						   //	# (center rank could be)		~  (elimination order could be)
+																						   //	$ (survivor rank could be)
+																						   //	@ (won and numWinners is) with @# producing 0 if the player did not win, or Winners if he did
+																						   [$"{Semicolon}"] = Operators.Reset,
+																						   ["{"] = Operators.If,
+																						   ["->"] = Operators.Becomes,
+																						   ["?"] = Operators.IsError,
+																						   ["+"] = Operators.Plus,
+																						   ["-"] = Operators.Minus,
+																						   ["*"] = Operators.Times,
+																						   ["/"] = Operators.Over,
+																						   [@"\"] = Operators.TruncateOver,
+																						   [@"\\"] = Operators.RoundOver,
+																						   [@"/\"] = Operators.CeilingOver,
+																						   [@"\/"] = Operators.FloorOver,
+																						   ["%"] = Operators.Mod,
+																						   ["^"] = Operators.ToPower,
+																						   ["<"] = Operators.LessThan,
+																						   ["<="] = Operators.LessOrEqual,
+																						   [">="] = Operators.ExceedsOrIs,
+																						   [">"] = Operators.Exceeds,
+																						   ["="] = Operators.Equals,
+																						   ["<>"] = Operators.IsNot,
+																						   ["&"] = Operators.And, //	But not shortcut
+																						   ["|"] = Operators.Or   //	But not shortcut
+																					   };
 
-		private static readonly SortedDictionary<Operators, Func<decimal, decimal, decimal>> Operate =
+		private static readonly SortedDictionary<Operators, Func<double, double, double>> Operate =
 			new ()
 			{
 				[Operators.Reset] = static (result, _) => result, //	Not 0 but terminal ; will always give 0
-				[Operators.If] = static (_, term) => term, //	Pre-calculated (result of one of the clauses)
-				[Operators.Becomes] = static (_, term) => term, //	Same lambda as Operators.If
-				[Operators.IsError] = static (_, _) => 0, //	Error check failed, proceeding to Reset
-				[Operators.Plus] = Add,
-				[Operators.Minus] = Subtract,
-				[Operators.Times] = Multiply,
+				[Operators.If] = static (_, term) => term,        //	Pre-calculated (result of one of the clauses)
+				[Operators.Becomes] = static (_, term) => term,   //	Same lambda as Operators.If
+				[Operators.IsError] = static (_, _) => default,   //	Error check failed, proceeding to Reset
+				[Operators.Plus] = static (number, addend) => number + addend,
+				[Operators.Minus] = static (number, subtraction) => number - subtraction,
+				[Operators.Times] = static (number, multiplicand) => number * multiplicand,
 				[Operators.Over] = static (result, term) => term is 0 ? 0 : result / term,
 				[Operators.RoundOver] = static (result, term) => term is 0 ? 0 : Round(result / term),
 				[Operators.TruncateOver] = static (result, term) => term is 0 ? 0 : Truncate(result / term),
 				[Operators.CeilingOver] = static (result, term) => term is 0 ? 0 : Ceiling(result / term),
 				[Operators.FloorOver] = static (result, term) => term is 0 ? 0 : Floor(result / term),
 				[Operators.Mod] = static (result, term) => term is 0 ? 0 : result % term,
-				[Operators.ToPower] = static (result, term) => result < 0 && term != Truncate(term) || result is 0 && term < 0
+				[Operators.ToPower] = static (result, term) => result < 0 && term.NotEquals(Truncate(term)) || result is 0 && term < 0
 																   ? 0
-																   : (decimal)Math.Pow((double)result,
-																					   (double)term),
+																   : Math.Pow(result, term),
 				[Operators.LessThan] = static (result, term) => (result < term).AsInteger(),
 				[Operators.Exceeds] = static (result, term) => (result > term).AsInteger(),
-				[Operators.Is] = static (result, term) => (result == term).AsInteger(),
-				[Operators.IsNot] = static (result, term) => (result != term).AsInteger(),
+				[Operators.Is] = static (result, term) => result.Equals(term).AsInteger(),
+				[Operators.IsNot] = static (result, term) => result.NotEquals(term).AsInteger(),
 				[Operators.ExceedsOrIs] = static (result, term) => (result >= term).AsInteger(),
 				[Operators.LessOrEqual] = static (result, term) => (result <= term).AsInteger(),
 				[Operators.And] = static (result, term) => Math.Abs(Math.Sign(result * term)),
 				[Operators.Or] = static (result, term) => Math.Sign(Math.Abs(result) + Math.Abs(term)),
-				[Operators.Min] = Math.Max, //	Yes, min means get max of the two
-				[Operators.Max] = Math.Min //	and vice-versa. I.e., 60 max 40 = 40
+				[Operators.Min] = Math.Max, //	Yes, min means get max of the two,
+				[Operators.Max] = Math.Min  //	and vice-versa. I.e., 60 max 40 = 40
 			};
 
-        [GeneratedRegex(@"^[a-z][a-z\d]*", RegexOptions.IgnoreCase)]
+		[GeneratedRegex(@"^[a-z][a-z\d]*", RegexOptions.IgnoreCase)]
 		private static partial Regex Alias();
 
-        [GeneratedRegex(@"^(?=-?\.?\d)-?\d*\.?\d*")]
+		[GeneratedRegex(@"^(?=-?\.?\d)-?\d*\.?\d*")]
 		private static partial Regex Number();
 
 		//	The Operator*hands collections must be ordered arrays, due to things like = vs. == and Is vs. IsNot.
@@ -142,12 +137,12 @@ internal sealed partial class ScoringSystem
 																 .Where(static power => power != $"{TBD}")
 																 .ToHashSet(OrdinalIgnoreCase);
 
-		private static readonly HashSet<string> ReservedAliases;
+		private static readonly HashSet<string> ReservedAliases = new (OrdinalIgnoreCase);
 
-		private static readonly SortedDictionary<string, decimal> Aliases = new (OrdinalIgnoreCase);
+		private static readonly SortedDictionary<string, double> Aliases = new (OrdinalIgnoreCase);
 
 #if Routines
-		private static readonly SortedDictionary<string, string> Routines = new SortedDictionary<string, string>(OrdinalIgnoreCase);
+		private static readonly SortedDictionary<string, string> Routines = new (OrdinalIgnoreCase);
 
 		private const string RoutineQuotes = "\"'`";
 #else
@@ -157,7 +152,7 @@ internal sealed partial class ScoringSystem
 
 		private static readonly string AllQuotes = $"{RoutineQuotes}{RepeatQuote}";
 
-		private static readonly Dictionary<string, Func<decimal>> GameDataAliases =
+		private static readonly Dictionary<string, Func<double>> GameDataAliases =
 			new (OrdinalIgnoreCase)
 			{
 				//	Integers
@@ -193,7 +188,7 @@ internal sealed partial class ScoringSystem
 				[nameof (Scoring.HighestOtherScore)] = static () => Scoring.HighestOtherScore
 			};
 
-		private static readonly Dictionary<string, Func<PowerData, decimal>> PowerDataAliases =
+		private static readonly Dictionary<string, Func<PowerData, double>> PowerDataAliases =
 			new (OrdinalIgnoreCase)
 			{
 				//	Booleans (integer 1 or 0)
@@ -237,17 +232,17 @@ internal sealed partial class ScoringSystem
 			};
 
 		static Calculator()
-		{
-			var list = new List<string> { nameof (Scoring) };
-			list.AddRange(typeof (Scoring).GetProperties(BindingFlags.Instance | BindingFlags.Public)
-										  .Where(static property => property.PropertyType.IsValueType)
-										  .Select(static property => property.Name));
-			list.AddRange(PowerNames);
-			list.AddRange(OperatorLonghands);
-			ReservedAliases = list.ToHashSet(OrdinalIgnoreCase);
-		}
+			=> ReservedAliases.UnionWith(
+										 [
+											 nameof (Scoring),
+											 ..typeof (Scoring).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+															   .Where(static property => property.PropertyType.IsValueType)
+															   .Select(static property => property.Name),
+											 ..PowerNames,
+											 ..OperatorLonghands
+										 ]);
 
-		internal static decimal Calculate(string formula)
+		internal static double Calculate(string formula)
 		{
 			Aliases.Clear();
 			return new Calculator(formula, Scoring.Player)._result;
@@ -262,7 +257,7 @@ internal sealed partial class ScoringSystem
 			while (_formula.Length > 0)
 			{
 				if (@operator is Operators.Reset)
-					_result = 0m;
+					_result = 0;
 				GetOperator();
 				if (_formula.Length is 0 && @operator is not Operators.Reset)
 					throw new InvalidOperationException($"Missing term for '{@operator}' operation.");
@@ -314,7 +309,7 @@ internal sealed partial class ScoringSystem
 				//	Special handling for four operators:  Reset, If, Becomes, and IsError.
 				//	The first of these does not need a Term at all, and the other three all
 				//	must handle the right-hand side specially (that is, in a way a that an
-				//	operation implemented using a Func<decimal, decimal, decimal> cannot).
+				//	operation implemented using a Func<double, double, double> cannot).
 				switch (@operator)
 				{
 				//	Don't parse for a Term if we're doing a Reset. Just return.
@@ -332,8 +327,8 @@ internal sealed partial class ScoringSystem
 					{
 						var ch = _formula[position];
 						if (braceLevel is 1
-						 && (ch is Colon || _formula[position..].Starts("else") //	.Starts checks Formula[4] for us
-						  && (position is 0 || !char.IsLetterOrDigit(_formula[position - 1]))))
+							&& (ch is Colon || _formula[position..].Starts("else") //	.Starts checks Formula[4] for us
+								&& (position is 0 || !char.IsLetterOrDigit(_formula[position - 1]))))
 						{
 							formulaToRun = _formula[..(position - 1)];
 							start =
@@ -442,26 +437,26 @@ internal sealed partial class ScoringSystem
 					return;
 				case '@':
 					//	Don't reverse the order of the && or the GetUnaryTerm may not get parsed past!
-					_term = (Scoring.Winners == GetUnaryTerm()
-						  && _inContextPowerData.Won).AsInteger();
+					_term = (Scoring.Winners == (int)GetUnaryTerm()
+							 && _inContextPowerData.Won).AsInteger();
 					return;
 				case '#':
 					_term = (_inContextPowerData.BestCenterRank <= GetUnaryTerm()
-						  && _inContextPowerData.WorstCenterRank >= _term).AsInteger();
+							 && _inContextPowerData.WorstCenterRank >= _term).AsInteger();
 					return;
 				case '$':
 					_term = (_inContextPowerData.BestSurvivorRank <= GetUnaryTerm()
-						  && _inContextPowerData.WorstSurvivorRank >= _term).AsInteger();
+							 && _inContextPowerData.WorstSurvivorRank >= _term).AsInteger();
 					return;
 				case '~':
 					_term = (_inContextPowerData.WorstEliminationOrder <= GetUnaryTerm()
-						  && _inContextPowerData.BestEliminationOrder >= _term).AsInteger();
+							 && _inContextPowerData.BestEliminationOrder >= _term).AsInteger();
 					return;
 				case '\\' when _formula.Starts(@"\|"):
 					DropCount(); //	Since this is a two-character unary operator, we need to drop one of the two ourselves.
 					_term = GetUnaryTerm() < 0
 								? 0
-								: (decimal)Math.Sqrt((double)_term);
+								: Math.Sqrt(_term);
 					return;
 				//	END OF UNARY OPERATOR CASES
 				//	Aliases
@@ -503,7 +498,7 @@ internal sealed partial class ScoringSystem
 						_term = powerDataFunc(powerContext);
 #if Routines
 					else if (Routines.TryGetValue(alias, out var routine))
-						_term = new Calculator(routine, powerContext)._result;
+						_term = new Calculator(routine, powerContext).Result;
 #endif
 					//	In constructions like Austria.X and Italy.X the X
 					//	must have been one of the above, or it's an error
@@ -519,7 +514,7 @@ internal sealed partial class ScoringSystem
 				case var quote when AllQuotes.Contains(quote):
 					//	Parse to the matching end-quote (with embedded open/closes of the other types allowed, which
 					//	could, within them, embed this type) and then demand a Becomes operator and a name (and then
-					//	a semicolon maybe??).  Store the quoted text in the Routines Dictionary, so it has the provided
+					//	a semicolon maybe?).  Store the quoted text in the Routines Dictionary, so it has the provided
 					//	alias name.  One problem is what we would then return for Term (hence requiring a Semicolon?).
 					var (active, index, length) = ($"{quote}", 0, _formula.Length);
 					while (++index < length && active.Length is not 0)
@@ -582,7 +577,7 @@ internal sealed partial class ScoringSystem
 											char close)
 					=> ch == open ? +1 : ch == close ? -1 : 0;
 
-				decimal GetUnaryTerm()
+				double GetUnaryTerm()
 				{
 					DropCount();
 					if (_formula.Length is 0)
@@ -604,10 +599,10 @@ internal sealed partial class ScoringSystem
 				bool GetNumericTerm()
 				{
 					var stringTerm = Number().Match(_formula)
-                                             .Value;
+											 .Value;
 					if (stringTerm.Length is 0)
 						return false;
-					_term = stringTerm.AsDecimal();
+					_term = stringTerm.AsDouble();
 					DropText(stringTerm);
 					return true;
 				}

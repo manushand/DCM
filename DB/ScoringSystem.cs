@@ -1,22 +1,25 @@
-﻿using Microsoft.CodeAnalysis.Scripting;
-using static System.Diagnostics.Stopwatch;
+﻿using static System.Diagnostics.Stopwatch;
 using static Microsoft.CodeAnalysis.CSharp.Scripting.CSharpScript;
 
 namespace DCM.DB;
 
+using Microsoft.CodeAnalysis.Scripting;
+
 internal sealed partial class ScoringSystem : IdentityRecord
 {
-    private const char Bar = '|';
+	private const char Bar = '|';
+
 	private static readonly TimeSpan ScriptTimeout = TimeSpan.FromSeconds(7);
 
-	private string _finalScoreFormula = Empty;
+	private string _finalScoreFormula = string.Empty;
 
+	internal static readonly ScoringSystem Empty = new ();
 	internal DrawRules DrawPermissions;
+	internal string OtherScoreAlias = string.Empty;
+	internal string PlayerAnteFormula = string.Empty;
+	internal string ProvisionalScoreFormula = string.Empty;
 	internal int? FinalGameYear;
-	internal string OtherScoreAlias = Empty;
-	internal string PlayerAnteFormula = Empty;
 	internal int? PointsPerGame;
-	internal string ProvisionalScoreFormula = Empty;
 	internal int SignificantDigits;
 	internal List<GamePlayer>? TestGamePlayers;
 	internal bool UsesCenterCount;
@@ -40,7 +43,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 	private string TestGameData
 	{
 		get => TestGamePlayers is null
-				   ? Empty
+				   ? string.Empty
 				   : Join(Bar,
 						  TestGamePlayers.Select(static player => Join(Comma,
 																	   player.Power,
@@ -67,17 +70,19 @@ internal sealed partial class ScoringSystem : IdentityRecord
 							  .ToArray();
 			if (powers.Any(static data => data.Length is not 5))
 				throw new InvalidOperationException(); //	TODO
-			TestGamePlayers = [..powers.Select(static data => new GamePlayer
-														      {
-															       Power = data[0].As<PowerNames>(),
-															       Result = data[1].Length is 0
-																			    ? Unknown
-																			    : data[1].As<Results>(),
-															       Centers = data[2].AsNullableInteger(),
-															       Years = data[3].AsNullableInteger(),
-															       Other = data[4].AsDecimal()
-														      })
-									   .Order()];
+			TestGamePlayers = [
+								..powers.Select(static data => new GamePlayer
+															   {
+																   Power = data[0].As<PowerNames>(),
+																   Result = data[1].Length is 0
+																				? Unknown
+																				: data[1].As<Results>(),
+																   Centers = data[2].AsNullableInteger(),
+																   Years = data[3].AsNullableInteger(),
+																   Other = data[4].AsDouble()
+															   })
+										.Order()
+							  ];
 			//	TODO: Could add a lot more checks, like that winners all play to the final
 			//	TODO: game-year, or that no Centers are given if the scoring system doesn't
 			//	TODO: call for them, etc., or that if it does call for Centers, all seven
@@ -85,7 +90,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 			//	TODO: 34, etc., etc.  However, the only strings coming in here should come
 			//	TODO: from test games; they have all this validation already.
 			if (TestGamePlayers.Any(static gamePlayer => gamePlayer.Power is TBD)
-			 || TestGamePlayers.Select(static gamePlayer => gamePlayer.Power)
+			||  TestGamePlayers.Select(static gamePlayer => gamePlayer.Power)
 							   .Distinct()
 							   .Count() < 7)
 				throw new InvalidOperationException(); //	TODO
@@ -98,7 +103,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 
 	internal string ScoreFormat => $"F{SignificantDigits}";
 
-	internal string FormattedScore(decimal score,
+	internal string FormattedScore(double score,
 								   bool trim = false)
 	{
 		var formatted = score.ToString(ScoreFormat);
@@ -110,9 +115,8 @@ internal sealed partial class ScoringSystem : IdentityRecord
 
 	internal void SetCompiledFormulae(bool isCompiled)
 	{
-		_finalScoreFormula = FinalScoreFormula;
 		if (isCompiled)
-			_finalScoreFormula += CompiledFormulaSuffix;
+			FinalScoreFormula += CompiledFormulaSuffix;
 	}
 
 	internal bool ScoreWithResults(List<GamePlayer> gamePlayers,
@@ -121,6 +125,8 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		const string bar = "─────────────────────────────────";
 		if (!GameDataValid(out results))
 			return false;
+		gamePlayers = gamePlayers.OrderBy(static gamePlayer => gamePlayer.Power)
+								 .ToList();
 		var watch = Settings.ShowTimingData
 						? StartNew()
 						: null;
@@ -138,7 +144,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		if (UsesPlayerAnte)
 		{
 			//	Set only each of the GamePlayer objects' .PlayerAnte at first
-			var defaultAnte = PointsPerGame / 7m ?? 0;
+			var defaultAnte = PointsPerGame / 7 ?? 0;
 			foreach (var gamePlayer in gamePlayers)
 				try
 				{
@@ -190,22 +196,22 @@ internal sealed partial class ScoringSystem : IdentityRecord
 				return false;
 			}
 		watch?.Stop();
-		decimal roundedAntes;
+		double roundedAntes;
 		if (UsesPlayerAnte)
 		{
 			var totalAntes = scoring.SumOfPlayerAntes;
-			roundedAntes = decimal.Round(totalAntes);
+			roundedAntes = double.Round(totalAntes);
 			results.Add(bar);
-			results.Add($"Total player antes{(totalAntes == roundedAntes ? null : " (rounded)")} = {roundedAntes}");
+			results.Add($"Total player antes{(totalAntes.Equals(roundedAntes) ? null : " (rounded)")} = {roundedAntes}");
 		}
 		else
 			roundedAntes = 0;
 		var total = gamePlayers.Sum(static gamePlayer => gamePlayer.FinalScore);
 		var roundedTotal = PointsPerGame is null
 							   ? total
-							   : decimal.Round(total);
+							   : double.Round(total);
 		results.Add(bar);
-		results.Add($"Total points awarded{(total == roundedTotal ? null : " (rounded)")} = {roundedTotal}");
+		results.Add($"Total points awarded{(total.Equals(roundedTotal) ? null : " (rounded)")} = {roundedTotal}");
 		if (watch is not null)
 		{
 			results.Add(bar);
@@ -216,9 +222,9 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		var expectedTotal = calculateAnte
 								? 0
 								: PointsPerGame;
-		var error = expectedTotal != roundedTotal
+		var error = expectedTotal != (int)roundedTotal
 						? $"Total did not match expected points per game of {expectedTotal}."
-						: UsesPlayerAnte && roundedAntes != PointsPerGame
+						: UsesPlayerAnte && (int)roundedAntes != PointsPerGame
 							? $"Player antes did not total to expected points per game of {PointsPerGame}."
 							: null;
 		var status = error is null;
@@ -232,8 +238,8 @@ internal sealed partial class ScoringSystem : IdentityRecord
 			return exception switch
 				   {
 					   CompilationErrorException when message.Count(static c => c is Colon) > 1 => Join(Colon, message.Split(Colon).Skip(2)),
-					   AggregateException aggregateException => Join(NewLine, aggregateException.InnerExceptions.Select(static inner => inner.Message)),
-					   _                                     => message
+					   AggregateException aggregateException                                    => Join(NewLine, aggregateException.InnerExceptions.Select(static inner => inner.Message)),
+					   _                                                                        => message
 				   };
 		}
 
@@ -252,8 +258,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 					issues.Add("Power found without win/loss result.");
 				if (gamePlayers.All(static gamePlayer => gamePlayer.Result is Loss))
 					issues.Add("No winning player(s) found.");
-				else if (!DrawsAllowed
-					  && gamePlayers.Count(static gamePlayer => gamePlayer.Result is Win) is not 1)
+				else if (!DrawsAllowed && gamePlayers.Count(static gamePlayer => gamePlayer.Result is Win) is not 1)
 					issues.Add("No solo victor found.");
 			}
 			else if (gamePlayers.Any(static gamePlayer => gamePlayer.Result is not Unknown))
@@ -272,8 +277,8 @@ internal sealed partial class ScoringSystem : IdentityRecord
 					if (gamePlayers.Any(static gamePlayer => gamePlayer is { Centers: > 17, Result: Loss }))
 						issues.Add("Solo victor not credited with win.");
 					if (DrawsIncludeAllSurvivors
-					 && gamePlayers.Count(static gamePlayer => gamePlayer.Result is Win) > 1 //	allows for solo or concession
-					 && gamePlayers.Any(static gamePlayer => gamePlayer is { Centers: > 0, Result: Loss }))
+					&&  gamePlayers.Count(static gamePlayer => gamePlayer.Result is Win) > 1 //	allows for solo or concession
+					&&  gamePlayers.Any(static gamePlayer => gamePlayer is { Centers: > 0, Result: Loss }))
 						issues.Add("Survivor not included in mandated DIAS.");
 				}
 			}
@@ -287,10 +292,10 @@ internal sealed partial class ScoringSystem : IdentityRecord
 				if (FinalGameYear > 0 && lastGameYear > FinalGameYear)
 					issues.Add("Final game year surpassed.");
 				if (UsesGameResult
-				 && gamePlayers.Any(gamePlayer => gamePlayer.Result is Win && gamePlayer.Years < lastGameYear))
+				&&  gamePlayers.Any(gamePlayer => gamePlayer.Result is Win && gamePlayer.Years < lastGameYear))
 					issues.Add("Winning power(s) exiting game early.");
 				if (UsesCenterCount
-				 && gamePlayers.Any(gamePlayer => gamePlayer.Centers > 0 && gamePlayer.Years < lastGameYear))
+				&&  gamePlayers.Any(gamePlayer => gamePlayer.Centers > 0 && gamePlayer.Years < lastGameYear))
 					issues.Add("Power with centers found not surviving final year.");
 			}
 			else if (gamePlayers.Any(static gamePlayer => gamePlayer.Years.HasValue))
@@ -298,8 +303,8 @@ internal sealed partial class ScoringSystem : IdentityRecord
 			return issues.Count is 0;
 		}
 
-		decimal Calculate(PowerNames powerName,
-						  FormulaType formulaType)
+		double Calculate(PowerNames powerName,
+						 FormulaType formulaType)
 		{
 			var code = formulaType switch
 					   {
@@ -319,25 +324,25 @@ internal sealed partial class ScoringSystem : IdentityRecord
 							 : CalculateStandard();
 			return formulaType is FormulaType.ProvisionalScore
 					   ? result
-					   : decimal.Round(result, SignificantDigits);
+					   : double.Round(result, SignificantDigits);
 
-			decimal CalculateStandard()
+			double CalculateStandard()
 				=> Calculator.Calculate(formula);
 
-			decimal CalculateCompiled()
+			double CalculateCompiled()
 			{
 				var compiled = Scripts.GetOrSet(formula,
 												static text =>
 												{
 													if (text.Last() is Semicolon)
-														text = $"new Func<decimal>(() => {{{text}}}).Invoke()";
-													return Create<decimal>($"return (decimal)({text});", Options, typeof (Scoring));
+														text = $"new Func<double>(() => {{{text}}}).Invoke()";
+													return Create<double>($"return (double)({text});", Options, typeof (Scoring));
 												});
 				using var cancellationTokenSource = new CancellationTokenSource();
 				using var task = compiled.RunAsync(scoring, cancellationTokenSource.Token);
 				if (task.Wait(ScriptTimeout))
-					return (decimal)task.Result
-										.ReturnValue;
+					return (double)task.Result
+									   .ReturnValue;
 				cancellationTokenSource.Cancel();
 				throw new OperationCanceledException();
 			}
@@ -377,18 +382,18 @@ internal sealed partial class ScoringSystem : IdentityRecord
 	{
 		//	This if isn't really necessary, since filtering the finishedGames (below) will answer
 		//	the same question, but in a tournament with a lot of games, this could be faster.
-		if ((UsesGameResult || !proposedScoringSystem.UsesGameResult)
-		 && (UsesCenterCount || !proposedScoringSystem.UsesCenterCount)
-		 && (UsesYearsPlayed || !proposedScoringSystem.UsesYearsPlayed)
-		 && (UsesOtherScore || !proposedScoringSystem.UsesOtherScore))
+		if ((UsesGameResult  || !proposedScoringSystem.UsesGameResult)
+		&&  (UsesCenterCount || !proposedScoringSystem.UsesCenterCount)
+		&&  (UsesYearsPlayed || !proposedScoringSystem.UsesYearsPlayed)
+		&&  (UsesOtherScore  || !proposedScoringSystem.UsesOtherScore))
 			return DialogResult.Yes;
 		finishedGames = [..finishedGames.Where(game =>
-                                               {
-											        var system = game.ScoringSystem;
-											        return !system.UsesGameResult && proposedScoringSystem.UsesGameResult
-												        || !system.UsesCenterCount && proposedScoringSystem.UsesCenterCount
-												        || !system.UsesYearsPlayed && proposedScoringSystem.UsesYearsPlayed
-												        || !system.UsesOtherScore && proposedScoringSystem.UsesOtherScore;
+											   {
+												   var system = game.ScoringSystem;
+												   return !system.UsesGameResult  && proposedScoringSystem.UsesGameResult
+													   || !system.UsesCenterCount && proposedScoringSystem.UsesCenterCount
+													   || !system.UsesYearsPlayed && proposedScoringSystem.UsesYearsPlayed
+													   || !system.UsesOtherScore  && proposedScoringSystem.UsesOtherScore;
 											   })];
 		var count = finishedGames.Length;
 		if (count is 0)
@@ -414,7 +419,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 	internal enum DrawRules : byte
 	{
 		//	IMPORTANT: Must be 0, 1, 2 to match SQL storage
-		None = 0,
+		None = default,
 		All = 1,
 		DIAS = 2
 	}
@@ -453,20 +458,20 @@ internal sealed partial class ScoringSystem : IdentityRecord
 	#endregion
 
 	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (Name)}}] = {0},
-	                                           [{{nameof (DrawPermissions)}}] = {1},
-	                                           [{{nameof (UsesGameResult)}}] = {2},
-	                                           [{{nameof (UsesCenterCount)}}] = {3},
-	                                           [{{nameof (UsesYearsPlayed)}}] = {4},
-	                                           [{{nameof (FinalGameYear)}}] = {5},
-	                                           [{{nameof (PointsPerGame)}}] = {6},
-	                                           [{{nameof (ProvisionalScoreFormula)}}] = {7},
-	                                           [{{nameof (FinalScoreFormula)}}] = {8},
-	                                           [{{nameof (TestGameData)}}] = {9},
-	                                           [{{nameof (SignificantDigits)}}] = {10},
-	                                           [{{nameof (OtherScoreAlias)}}] = {11},
-	                                           [{{nameof (PlayerAnteFormula)}}] = {12}
-	                                           """;
+											   [{{nameof (Name)}}] = {0},
+											   [{{nameof (DrawPermissions)}}] = {1},
+											   [{{nameof (UsesGameResult)}}] = {2},
+											   [{{nameof (UsesCenterCount)}}] = {3},
+											   [{{nameof (UsesYearsPlayed)}}] = {4},
+											   [{{nameof (FinalGameYear)}}] = {5},
+											   [{{nameof (PointsPerGame)}}] = {6},
+											   [{{nameof (ProvisionalScoreFormula)}}] = {7},
+											   [{{nameof (FinalScoreFormula)}}] = {8},
+											   [{{nameof (TestGameData)}}] = {9},
+											   [{{nameof (SignificantDigits)}}] = {10},
+											   [{{nameof (OtherScoreAlias)}}] = {11},
+											   [{{nameof (PlayerAnteFormula)}}] = {12}
+											   """;
 
 	public override string FieldValues => Format(FieldValuesFormat,
 												 Name.ForSql(),
@@ -488,7 +493,6 @@ internal sealed partial class ScoringSystem : IdentityRecord
 	#region Formula Calculation
 
 	private const string DocumentCommentSplitter = "**";
-
 	private const char CompiledFormulaSuffix = '\a'; //	Cannot be 0, as this truncates the SQL insert
 
 	//	For hacking the aliasing into C# scoring formulae by replacing each of the aliases with these.
@@ -502,7 +506,6 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		nameof (Scoring.SumOfOtherScores),
 		nameof (Scoring.OtherScore)
 	];
-
 	private static readonly ScriptOptions Options = ScriptOptions.Default
 																 .WithReferences(Assembly.GetAssembly(typeof (Enumerable)),
 																				 Assembly.GetExecutingAssembly())
@@ -523,10 +526,10 @@ internal sealed partial class ScoringSystem : IdentityRecord
 	/// </summary>
 	private static readonly SortedDictionary<string, Script> Scripts = [];
 
-    [GeneratedRegex(@"[\s_]")]
-    private static partial Regex Stripper();
+	[GeneratedRegex(@"[\s_]")]
+	private static partial Regex Stripper();
 
-    [GeneratedRegex("OtherScores?")]
+	[GeneratedRegex("OtherScores?")]
 	private static partial Regex OtherScores();
 
 	private string RemoveComments(string formula)
@@ -534,20 +537,20 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		const string lineCommentStart = "//";
 		const string blockComment = @"/\*(.*?)\*/";
 		const string lineComment = $@"{lineCommentStart}(.*?)\r?\n";
-		const string simpleString = """
-		                            "((\\[^\n]|[^\n\\])*)"
-		                            """;
-		const string verbatimString = """@("[^"]*")+""";
+		const string simpleString = """(\$*"(\\[^\n]|[^\n\\])*")""";
+		const string verbatimString = """(@\$*|\$+@)("[^"]*")+""";
+		const string rawString = """\$*("{3,}).*\1""";
 		const string formulaRegex = $"{blockComment}|{lineComment}";
-		const string cSharpRegex = $"{formulaRegex}|{simpleString}|{verbatimString}";
+		const string cSharpRegex = $"{formulaRegex}|{simpleString}|{verbatimString}|{rawString}";
 		const string underbar = "_";
 
+		//	TODO: For C# (compiled) formulae, the Regex.Replace doesn't seem to do a darn thing, so...why???
 		formula = Regex.Replace(formula.Trim(CompiledFormulaSuffix) + NewLine, //	Add NewLine to catch text-final line comments
 								UsesCompiledFormulas
 									? cSharpRegex
 									: formulaRegex,
 								static match => match.Value.Starts("/*")
-													? Empty
+													? string.Empty
 													: match.Value.Starts(lineCommentStart)
 														? NewLine
 														: match.Value,
@@ -572,7 +575,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 		void ReplaceOtherScoreAlias()
 		{
 			//	Set "alias" to the OtherScoreAlias without spaces or underbars.
-			var alias = Stripper().Replace(OtherScoreAlias, Empty);
+			var alias = Stripper().Replace(OtherScoreAlias, string.Empty);
 			var options = UsesCompiledFormulas
 							  ? RegexOptions.None
 							  : RegexOptions.IgnoreCase;
@@ -582,7 +585,7 @@ internal sealed partial class ScoringSystem : IdentityRecord
 																					$@"([^\w]){OtherScores().Replace(other, alias)}([^\w])",
 																					$"$1{other}$2",
 																					options));
-			//	The spaces we added on either end of "formula" should be removed; the caller will do it
+			//	The spaces we added on either end of "{formula}" should be removed; the caller will do it
 		}
 	}
 

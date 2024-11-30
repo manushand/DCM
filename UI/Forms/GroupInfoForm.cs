@@ -3,6 +3,8 @@
 internal sealed partial class GroupInfoForm : Form
 {
 	private static readonly ScoringSystem NoScoringSystem = new () { Name = "── NONE ──" };
+
+	[DesignerSerializationVisibility(Hidden)]
 	internal Group? Group { get; private set; }
 
 	private bool DetailsOnly { get; }
@@ -117,9 +119,7 @@ internal sealed partial class GroupInfoForm : Form
 	{
 		var system = ScoringSystemComboBox.GetSelected<ScoringSystem>();
 		var hasSystem = system != NoScoringSystem;
-		RatingMethodLabel.Visible =
-			RatingMethodDescriptionLabel.Visible =
-				hasSystem;
+		SetVisible(hasSystem, RatingMethodLabel, RatingMethodDescriptionLabel);
 		if (!hasSystem)
 			return;
 		RatingMethodDescriptionLabel.Text = system.UsesPlayerAnte || system.PointsPerGame is 0

@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -648,57 +648,57 @@
 
 		#endregion
 
-		private System.Windows.Forms.RichTextBox DescriptionTextBox;
-		private System.Windows.Forms.Button CopyButton;
-		private System.Windows.Forms.Label ScalePercentLabel;
-		private System.Windows.Forms.CheckBox ScaleCheckBox;
-		private System.Windows.Forms.CheckBox DropCheckBox;
-		private System.Windows.Forms.ComboBox DropWhenComboBox;
-		private System.Windows.Forms.Button CancelFormButton;
-		private System.Windows.Forms.Button OkButton;
-		private System.Windows.Forms.GroupBox TeamDetailsGroupBox;
-		private System.Windows.Forms.CheckBox MultiTeamMembershipCheckBox;
-		private System.Windows.Forms.ComboBox TeamRoundComboBox;
-		private System.Windows.Forms.ComboBox TeamSizeComboBox;
-		private System.Windows.Forms.Label TeamTournamentLabel;
-		private System.Windows.Forms.Label TeamRoundInfoLabel;
-		private System.Windows.Forms.Label TeamMemberConflictLabel;
-		private System.Windows.Forms.ComboBox TeamScoringComboBox;
-		private System.Windows.Forms.TextBox TeamMemberConflictTextBox;
-		private System.Windows.Forms.Label TeamScoringLabel;
-		private System.Windows.Forms.TextBox ScaleFactorTextBox;
-		private System.Windows.Forms.Label RoundsToScaleLabel;
-		private System.Windows.Forms.ComboBox RoundsToScaleComboBox;
-		private System.Windows.Forms.TextBox UnplayedScoreTextBox;
-		private System.Windows.Forms.Label UnplayedScoreLabel;
-		private System.Windows.Forms.Label RoundsToDropLabel;
-		private System.Windows.Forms.ComboBox RoundsToDropComboBox;
-		private System.Windows.Forms.Label MinimumToQualifyLabel;
-		private System.Windows.Forms.ComboBox MinimumRoundsComboBox;
-		private System.Windows.Forms.Label MinimumRoundsLabel;
-		private System.Windows.Forms.ComboBox TotalRoundsComboBox;
-		private System.Windows.Forms.Label TotalRoundsLabel;
-		private System.Windows.Forms.TextBox PowerConflictTextBox;
-		private System.Windows.Forms.Label RepeatingPowerLabel;
-		private System.Windows.Forms.TextBox PlayerConflictTextBox;
-		private System.Windows.Forms.Label PlayerConflictLabel;
-		private System.Windows.Forms.ComboBox PowerGroupComboBox;
-		private System.Windows.Forms.Label PowerGroupLabel;
-		private System.Windows.Forms.ComboBox PowerAssignmentComboBox;
-		private System.Windows.Forms.Label PowerAssignmentLabel;
-		private System.Windows.Forms.ComboBox ScoringSystemComboBox;
-		private System.Windows.Forms.Label ScoringSystemLabel;
-		private System.Windows.Forms.Label DescriptionLabel;
-		private System.Windows.Forms.TextBox NameTextBox;
-		private System.Windows.Forms.Label TournamentNameLabel;
-		private System.Windows.Forms.TextBox ScoreConflictTextBox;
-		private System.Windows.Forms.CheckBox ProgressiveScoreConflictCheckBox;
-		private System.Windows.Forms.Label ScoreConflictLabel;
-		private System.Windows.Forms.CheckBox ScoreConflictCheckBox;
-		private System.Windows.Forms.Label PlayerConflictPointsLabel;
-		private System.Windows.Forms.Label PowerConflictPointsLabel;
-		private System.Windows.Forms.Label DateLabel;
-		private System.Windows.Forms.DateTimePicker DateTimePicker;
-		private System.Windows.Forms.ToolTip ToolTip;
+		private RichTextBox DescriptionTextBox;
+		private Button CopyButton;
+		private Label ScalePercentLabel;
+		private CheckBox ScaleCheckBox;
+		private CheckBox DropCheckBox;
+		private ComboBox DropWhenComboBox;
+		private Button CancelFormButton;
+		private Button OkButton;
+		private GroupBox TeamDetailsGroupBox;
+		private CheckBox MultiTeamMembershipCheckBox;
+		private ComboBox TeamRoundComboBox;
+		private ComboBox TeamSizeComboBox;
+		private Label TeamTournamentLabel;
+		private Label TeamRoundInfoLabel;
+		private Label TeamMemberConflictLabel;
+		private ComboBox TeamScoringComboBox;
+		private TextBox TeamMemberConflictTextBox;
+		private Label TeamScoringLabel;
+		private TextBox ScaleFactorTextBox;
+		private Label RoundsToScaleLabel;
+		private ComboBox RoundsToScaleComboBox;
+		private TextBox UnplayedScoreTextBox;
+		private Label UnplayedScoreLabel;
+		private Label RoundsToDropLabel;
+		private ComboBox RoundsToDropComboBox;
+		private Label MinimumToQualifyLabel;
+		private ComboBox MinimumRoundsComboBox;
+		private Label MinimumRoundsLabel;
+		private ComboBox TotalRoundsComboBox;
+		private Label TotalRoundsLabel;
+		private TextBox PowerConflictTextBox;
+		private Label RepeatingPowerLabel;
+		private TextBox PlayerConflictTextBox;
+		private Label PlayerConflictLabel;
+		private ComboBox PowerGroupComboBox;
+		private Label PowerGroupLabel;
+		private ComboBox PowerAssignmentComboBox;
+		private Label PowerAssignmentLabel;
+		private ComboBox ScoringSystemComboBox;
+		private Label ScoringSystemLabel;
+		private Label DescriptionLabel;
+		private TextBox NameTextBox;
+		private Label TournamentNameLabel;
+		private TextBox ScoreConflictTextBox;
+		private CheckBox ProgressiveScoreConflictCheckBox;
+		private Label ScoreConflictLabel;
+		private CheckBox ScoreConflictCheckBox;
+		private Label PlayerConflictPointsLabel;
+		private Label PowerConflictPointsLabel;
+		private Label DateLabel;
+		private DateTimePicker DateTimePicker;
+		private ToolTip ToolTip;
 	}
 }

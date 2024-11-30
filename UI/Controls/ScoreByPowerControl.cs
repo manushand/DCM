@@ -43,8 +43,8 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 			{
 				var gameSystem = game.ScoringSystem;
 				if (gameSystem.UsesOtherScore
-				 && tournamentSystem.UsesOtherScore
-				 && !gameSystem.OtherScoreAlias.Matches(tournamentSystem.OtherScoreAlias))
+				&&  tournamentSystem.UsesOtherScore
+				&&  !gameSystem.OtherScoreAlias.Matches(tournamentSystem.OtherScoreAlias))
 					continue;
 			}
 			//	Best Game score calculation is always done using the Tournament's default scoring system.
@@ -99,13 +99,12 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 															DataGridViewBindingCompleteEventArgs e)
 	{
 		BestPowersDataGridView.FillColumn(2);
-		for (var index = 0; index < BestPowersDataGridView.ColumnCount; ++index)
-			BestPowersDataGridView.AlignColumn(index > 3
-												   ? MiddleCenter
-												   : index is 2
-													   ? MiddleLeft
-													   : MiddleRight,
-											   index);
+		ForRange(0, BestPowersDataGridView.ColumnCount, index => BestPowersDataGridView.AlignColumn(index > 3
+																										? MiddleCenter
+																										: index is 2
+																											? MiddleLeft
+																											: MiddleRight,
+																									index));
 		var overall = BestGamesTabControl.SelectedIndex is 0;
 		BestPowersDataGridView.Columns[0].Visible =
 			BestPowersDataGridView.Columns[4].Visible =
@@ -135,7 +134,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 
 	//	Do not make this a struct; it changes behavior.
 	[PublicAPI]
-	private sealed class BestGame : IRecord
+	private sealed record BestGame : IRecord
 	{
 		internal int OverallRank;
 		internal int PowerRank;
@@ -163,7 +162,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		public string Round => $"{Game.Round}─{Game.Number}";
 
 		internal PowerNames Power => GamePlayer.Power;
-		internal decimal GameScore => GamePlayer.FinalScore;
+		internal double GameScore => GamePlayer.FinalScore;
 
 		private GamePlayer GamePlayer { get; }
 

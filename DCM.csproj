@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net8.0-windows</TargetFramework>
+        <TargetFramework>net9.0-windows</TargetFramework>
         <OutputType>WinExe</OutputType>
         <Nullable>enable</Nullable>
         <PublishUrl>publish\</PublishUrl>
@@ -43,8 +43,9 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Update="Program.cs" />
-        <Compile Update="Cache.cs" />
-        <Compile Update="Database.cs" />
+        <Compile Update="DB\Database.Cache.cs">
+            <DependentUpon>Database.cs</DependentUpon>
+        </Compile>
         <Compile Update="DB\GamePlayer.cs">
             <DependentUpon>LinkRecord.cs</DependentUpon>
         </Compile>
@@ -119,6 +120,9 @@
         <Compile Update="Scoring.PowerData.cs">
             <DependentUpon>Scoring.cs</DependentUpon>
         </Compile>
+        <Compile Update="Scoring.PowerNames.cs">
+            <DependentUpon>Scoring.cs</DependentUpon>
+        </Compile>
         <Compile Update="DB\ScoringSystem.Calculator.cs">
             <DependentUpon>ScoringSystem.cs</DependentUpon>
         </Compile>
@@ -142,16 +146,16 @@
         <Content Include="DCM.ico" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.24318.1">
+        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.11.0-3.final" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.12.0-3.final" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
-        <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.0-preview.6.24327.6" />
-        <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+        <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.0" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     </ItemGroup>
     <ItemGroup>
       <None Update="Properties\Settings.settings">

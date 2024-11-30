@@ -5,7 +5,7 @@
 		/// <summary> 
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary> 
 		/// Clean up any resources being used.
@@ -170,15 +170,15 @@
 
 		#endregion
 
-		private System.Windows.Forms.Panel OrderByPanel;
-		private System.Windows.Forms.RadioButton LastNameRadioButton;
-		private System.Windows.Forms.RadioButton FirstNameRadioButton;
-		private System.Windows.Forms.Label OrderPlayersByLabel;
-		private System.Windows.Forms.Button MembershipsButton;
-		private System.Windows.Forms.Button JoinButton;
-		private System.Windows.Forms.Label MembersLabel;
-		private System.Windows.Forms.Label NonMemberLabel;
-		private System.Windows.Forms.ListBox MemberListBox;
-		private System.Windows.Forms.ListBox NonMemberListBox;
+		private Panel OrderByPanel;
+		private RadioButton LastNameRadioButton;
+		private RadioButton FirstNameRadioButton;
+		private Label OrderPlayersByLabel;
+		private Button MembershipsButton;
+		private Button JoinButton;
+		private Label MembersLabel;
+		private Label NonMemberLabel;
+		private ListBox MemberListBox;
+		private ListBox NonMemberListBox;
 	}
 }

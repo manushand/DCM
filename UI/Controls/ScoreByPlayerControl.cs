@@ -69,7 +69,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 										  .OrderDescending()
 										  .ToArray();
 				var rank = 0;
-				foreach (var tied in uniqueScores.Select(score => scorers.Where(total => total.Score == score)
+				foreach (var tied in uniqueScores.Select(score => scorers.Where(total => total.Score.Equals(score))
 																		 .ToArray()))
 				{
 					if (tied.Length is 1)
@@ -130,12 +130,10 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 		FinalScoresDataGridView.FillColumn(1);
 		FinalScoresDataGridView.AlignColumn(MiddleLeft, 1);
 		FinalScoresDataGridView.AlignColumn(MiddleRight, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
-		var scoredRounds = Tournament.FinishedGames
-									 .Select(static game => game.Round.Number)
-									 .Distinct()
-									 .ToArray();
-		for (var roundNumber = 1; roundNumber < 10; ++roundNumber)
-			FinalScoresDataGridView.Columns[2 + roundNumber].Visible = scoredRounds.Contains(roundNumber);
+		int[] scoredRounds = [..Tournament.FinishedGames
+										  .Select(static game => game.Round.Number)
+										  .Distinct()];
+		ForRange(1, 9, roundNumber => FinalScoresDataGridView.Columns[2 + roundNumber].Visible = scoredRounds.Contains(roundNumber));
 		FinalScoresDataGridView.Columns[12].Visible = Tournament.ScoringSystem.UsesCenterCount;
 		FinalScoresDataGridView.Columns[13].Visible = Tournament.ScoringSystem.UsesYearsPlayed;
 	}
@@ -163,15 +161,14 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 
 	//	Do not make this a struct; it changes behavior.
 	[PublicAPI]
-	private sealed class TournamentScore : IRecord
+	private sealed record TournamentScore : IRecord
 	{
-		private static Tournament? _tournament;
 		private static int _roundsToHaveScoreChanges;
 		private static int _roundsBeforeScoreChanges;
 		private readonly int _totalCenters;
 		private readonly int _totalYears;
 		internal readonly bool Qualified;
-		internal readonly decimal Score;
+		internal readonly double Score;
 
 		internal int Rank;
 
@@ -218,10 +215,12 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 
 		internal static Tournament Tournament
 		{
-			private get => _tournament.OrThrow();
+			private get => field == Tournament.Empty
+							   ? throw new NullReferenceException(nameof (Tournament))
+							   : field;
 			set
 			{
-				_tournament = value;
+				field = value;
 				_roundsToHaveScoreChanges = value.RoundsToDrop + value.RoundsToScale;
 				//	If there is no drop, we scale (if called for) as soon as the
 				//	player has played more than RoundsToScale rounds.
@@ -230,13 +229,14 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 				_roundsBeforeScoreChanges = value.RoundsToDrop is 0
 												? value.RoundsToScale
 												: value.TotalRounds
-												- value.DropBeforeFinalRound.AsInteger()
-												- 1;
+												  - value.DropBeforeFinalRound.AsInteger()
+												  - 1;
 			}
-		}
+		} = Tournament.Empty;
 
-		internal decimal BestRoundScore => RoundScores.Max();
-		private decimal[] RoundScores { get; } = new decimal[9];
+		internal double BestRoundScore => RoundScores.Max();
+
+		private double[] RoundScores { get; } = new double[9];
 
 		private string?[] ScoreNotes { get; } = new string[9];
 
@@ -259,7 +259,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 										   .SelectMany(static game => game.GamePlayers)
 										   .SingleOrDefault(gp => gp.PlayerId == player.Id);
 				RoundScores[roundNumber] = gamePlayer?.FinalScore
-										?? Tournament.UnplayedScore;
+										   ?? Tournament.UnplayedScore;
 				centers[roundNumber] = gamePlayer?.Centers ?? 0;
 				years[roundNumber] = gamePlayer?.Years ?? 0;
 				if (gamePlayer is null)
@@ -267,7 +267,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 				else
 				{
 					++roundsPlayed;
-					ScoreNotes[roundNumber] = Empty;
+					ScoreNotes[roundNumber] = string.Empty;
 				}
 			}
 			Qualified = roundsPlayed >= Tournament.MinimumRounds;
@@ -281,7 +281,9 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 					if (tuple.drop)
 					{
 						RoundScores[tuple.roundNumber] = Tournament.UnplayedScore;
-						centers[tuple.roundNumber] = years[tuple.roundNumber] = 0;
+						centers[tuple.roundNumber] =
+							years[tuple.roundNumber] =
+								0;
 					}
 					else
 						RoundScores[tuple.roundNumber] *= Tournament.ScalePercentage;
@@ -297,7 +299,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 		internal bool HasNote(char key)
 			=> ScoreNotes.Any(note => note?.Contains(key) is true);
 
-		private static string Formatted(decimal score)
+		private static string Formatted(double score)
 			=> Tournament.ScoringSystem.FormattedScore(score);
 	}
 

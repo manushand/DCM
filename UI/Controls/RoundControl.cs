@@ -2,12 +2,17 @@
 
 internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 {
-	private Round? _round;
-	private RoundInfoForm? _roundInfoForm;
+	private RoundInfoForm RoundInfoForm
+	{
+		get => field == RoundInfoForm.Empty ? throw new NullReferenceException(nameof (RoundInfoForm)) : field;
+		set;
+	} = RoundInfoForm.Empty;
 
-	private RoundInfoForm RoundInfoForm => _roundInfoForm.OrThrow();
-
-	private Round Round => _round.OrThrow();
+	private Round Round
+	{
+		get => field == Round.Empty ? throw new NullReferenceException(nameof (Round)) : field;
+		set;
+	} = Round.Empty;
 
 	private Tournament Tournament => RoundInfoForm.Tournament;
 
@@ -18,16 +23,17 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	{
 		//	If SmtpHost is null, email isn't available.
 		EmailButton.Visible = Settings.SmtpHost is not null;
-		_roundInfoForm = roundInfoForm;
-		SkipHandlers = true;
-		TournamentPlayersTabPage.Select();
-		FirstNameRadioButton.Checked = true;
-		SkipHandlers = false;
+		RoundInfoForm = roundInfoForm;
+		SkipHandlers(() =>
+					 {
+						 TournamentPlayersTabPage.Select();
+						 FirstNameRadioButton.Checked = true;
+					 });
 	}
 
 	internal void Activate(int roundNumber)
 	{
-		_round = Tournament.Rounds[roundNumber - 1];
+		Round = Tournament.Rounds[roundNumber - 1];
 		RoundLockedLabel.Visible = !Round.Workable;
 		if (RoundLockedLabel.Visible)
 			RoundLockedLabel.Text = $"Round is {(Round.Games.All(static game => game.Status is Finished)
@@ -48,14 +54,13 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 	private void SetButtonUsability()
 	{
-		ChangeRoundButton.Visible = false;
+		ChangeRoundButton.Hide();
 		if (Round.Workable)
 			//	Current round can only be discarded when there are no started games.
 			if (!Round.GamesStarted)
 			{
-				ChangeRoundButton.Visible =
-					ChangeRoundButton.Enabled =
-						true;
+				ChangeRoundButton.Show();
+				ChangeRoundButton.Enabled = true;
 				ChangeRoundButton.Text = $"Discard{NewLine}❌    This{NewLine}Round";
 				ChangeRoundButton.BackColor = Color.LightCoral;
 			}
@@ -121,13 +126,12 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 	private void FillPlayerLists(ListsToFill listsToFill = ListsToFill.All)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		var games = Round.Games;
 		var gamePlayers = games.SelectMany(static game => game.GamePlayers)
 							   .ToArray();
-		var gamePlayerIds = gamePlayers.Select(static gamePlayer => gamePlayer.PlayerId)
-									   .ToArray();
+		int[] gamePlayerIds = [..gamePlayers.Select(static gamePlayer => gamePlayer.PlayerId)];
 		var roundPlayerIds = Round.RoundPlayers
 								  .Select(static roundPlayer => roundPlayer.PlayerId)
 								  .Where(id => !gamePlayerIds.Contains(id))
@@ -137,73 +141,72 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 										  .Select(static tp => tp.PlayerId));
 		//	This next assignment SHOULD be unnecessary overkill, but can't hurt.
 		roundPlayerIds = [..roundPlayerIds.Where(id => !gamePlayerIds.Contains(id))
-									      .Distinct()]; //	Just in case!
-		SkipHandlers = true;
-		if (listsToFill.HasFlag(ListsToFill.Unregistered))
-		{
-			List<int>? tournamentPlayerIds;
-			if (WhichPlayersTabControl.SelectedIndex is 0)
+										  .Distinct()]; //	Just in case!
+		SkipHandlers(() =>
+        {
+			if (listsToFill.HasFlag(ListsToFill.Unregistered))
 			{
-				//	Everyone pre-registered for any round in the tournament
-				tournamentPlayerIds = [..Tournament.TournamentPlayers
-												   .Select(static tp => tp.PlayerId)];
-				//	And everyone who has been a RoundPlayer in any round of the tournament
-				tournamentPlayerIds.AddRange(Tournament.Rounds
-													   .SelectMany(static round => round.RoundPlayers)
-													   .Select(static rp => rp.PlayerId));
+				List<int>? tournamentPlayerIds;
+				if (WhichPlayersTabControl.SelectedIndex is 0)
+				{
+					//	Everyone pre-registered for any round in the tournament
+					tournamentPlayerIds = [..Tournament.TournamentPlayers.Select(static tp => tp.PlayerId)];
+					//	And everyone who has been a RoundPlayer in any round of the tournament
+					tournamentPlayerIds.AddRange(Tournament.Rounds
+														   .SelectMany(static round => round.RoundPlayers)
+														   .Select(static rp => rp.PlayerId));
+				}
+				else
+					//	Everyone at all
+					tournamentPlayerIds = null;
+
+				var unregisteredPlayers = ReadMany<Player>(player => (tournamentPlayerIds?.Contains(player.Id) ?? true)
+																	 && !gamePlayerIds.Contains(player.Id)
+																	 && !roundPlayerIds.Contains(player.Id))
+										  .Select(player => new SeedablePlayer(Tournament,
+																			   player,
+																			   tournamentPlayerIds is null
+																				   ? 0
+																				   : null))
+										  .OrderByDescending(player => SortByScoreCheckBox.Checked
+																		   ? player.ScoreBeforeRound
+																		   : 0)
+										  .ThenBy(player => FirstNameRadioButton.Checked
+																? player.Player.Name
+																: player.Player.LastFirst)
+										  .ToArray();
+				UnregisteredDataGridView.DataSource = unregisteredPlayers;
+				UnregisteredCountLabel.Text = $"{"Player".Pluralize(unregisteredPlayers, true)} Listed";
+				UnregisteredDataGridView.Deselect();
 			}
-			else
-				//	Everyone at all
-				tournamentPlayerIds = null;
 
-			var unregisteredPlayers = ReadMany<Player>(player => (tournamentPlayerIds?.Contains(player.Id) ?? true)
-															  && !gamePlayerIds.Contains(player.Id)
-															  && !roundPlayerIds.Contains(player.Id))
-									 .Select(player => new SeedablePlayer(Tournament,
-																		  player,
-																		  tournamentPlayerIds is null
-																			  ? 0
-																			  : null))
-									 .OrderByDescending(player => SortByScoreCheckBox.Checked
-																	  ? player.ScoreBeforeRound
-																	  : 0)
-									 .ThenBy(player => FirstNameRadioButton.Checked
-														   ? player.Player.Name
-														   : player.Player.LastFirst)
-									 .ToArray();
-			UnregisteredDataGridView.DataSource = unregisteredPlayers;
-			UnregisteredCountLabel.Text = $"{"Player".Pluralize(unregisteredPlayers, true)} Listed";
-			UnregisteredDataGridView.Deselect();
-		}
+			if (listsToFill.HasFlag(ListsToFill.Registered))
+			{
+				var playerIds = roundPlayerIds;
+				var registeredPlayers = ReadMany<Player>(player => playerIds.Contains(player.Id))
+										.Select(player => new SeedablePlayer(Tournament,
+																			 player,
+																			 Round.Number))
+										.OrderByDescending(player => SortByScoreCheckBox.Checked
+																		 ? player.ScoreBeforeRound
+																		 : default)
+										.ThenBy(player => FirstNameRadioButton.Checked
+															  ? player.Player.Name
+															  : player.Player.LastFirst)
+										.ToArray();
+				RegisteredDataGridView.FillWith(registeredPlayers);
+				RegisteredCountLabel.Text = $"{"Player".Pluralize(registeredPlayers, true)} Listed";
+				RegisteredDataGridView.Deselect();
+			}
 
-		if (listsToFill.HasFlag(ListsToFill.Registered))
-		{
-			var playerIds = roundPlayerIds;
-			var registeredPlayers = ReadMany<Player>(player => playerIds.Contains(player.Id))
-								   .Select(player => new SeedablePlayer(Tournament,
-																		player,
-																		Round.Number))
-								   .OrderByDescending(player => SortByScoreCheckBox.Checked
-																	? player.ScoreBeforeRound
-																	: default)
-								   .ThenBy(player => FirstNameRadioButton.Checked
-														 ? player.Player.Name
-														 : player.Player.LastFirst)
-								   .ToArray();
-			RegisteredDataGridView.FillWith(registeredPlayers);
-			RegisteredCountLabel.Text = $"{"Player".Pluralize(registeredPlayers, true)} Listed";
-			RegisteredDataGridView.Deselect();
-		}
-
-		if (listsToFill.HasFlag(ListsToFill.Seeded))
-		{
+			if (!listsToFill.HasFlag(ListsToFill.Seeded))
+				return;
 			var seededPlayers = gamePlayers.Order()
 										   .ToArray();
 			SeededDataGridView.FillWith(seededPlayers);
 			SeededPlayerCountLabel.Text = $"{seededPlayers.Length} Players in {games.Length} Games; Total Conflict {Round.Conflict.Points()}";
 			SeededDataGridView.Deselect();
-		}
-		SkipHandlers = false;
+        });
 	}
 
 	private void ScoringSystemComboBox_SelectedIndexChanged(object? sender = null,
@@ -217,9 +220,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 						  .CheckChange(scoringSystem, finishedGames, true);
 		if (answer is DialogResult.Cancel)
 		{
-			SkipHandlers = true;
-			ScoringSystemComboBox.SetSelectedItem(Round.ScoringSystem);
-			SkipHandlers = false;
+			SkipHandlers(() => ScoringSystemComboBox.SetSelectedItem(Round.ScoringSystem));
 			return;
 		}
 		//	Before changing the Round's system, if finished games that would go to the new
@@ -261,40 +262,38 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void NameSortControl_CheckedChanged(object sender,
 												EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		//	Remember which players were selected, if any
-		var unregisteredIds = UnregisteredDataGridView.GetMultiSelected<SeedablePlayer>()
-													  .Select(static seedable => seedable.Id)
-													  .ToArray();
-		var registeredIds = RegisteredDataGridView.GetMultiSelected<SeedablePlayer>()
-												  .Select(static seedable => seedable.Id)
-												  .ToArray();
+		int[] unregisteredIds = [..UnregisteredDataGridView.GetMultiSelected<SeedablePlayer>()
+														   .Select(static seedable => seedable.Id)];
+		int[] registeredIds = [..RegisteredDataGridView.GetMultiSelected<SeedablePlayer>()
+													   .Select(static seedable => seedable.Id)];
 		FillPlayerLists(ListsToFill.Unseeded);
 		//	Re-select the players who were selected before the refill
-		SkipHandlers = true;
-		if (unregisteredIds.Length is not 0)
+		SkipHandlers(() =>
+        {
 			foreach (DataGridViewRow row in UnregisteredDataGridView.Rows)
 				row.Selected = unregisteredIds.Contains(UnregisteredDataGridView.GetAtIndex<SeedablePlayer>(row.Index).Id);
-		if (registeredIds.Length is not 0)
 			foreach (DataGridViewRow row in RegisteredDataGridView.Rows)
 				row.Selected = registeredIds.Contains(RegisteredDataGridView.GetAtIndex<SeedablePlayer>(row.Index).Id);
-		SkipHandlers = false;
+        });
 	}
 
 	private void RegistrableDataGridView_SelectionChanged(object sender,
 														  EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
-		SkipHandlers = true;
-		var view = (DataGridView)sender;
-		(Round.Workable
-			 ? view == UnregisteredDataGridView
-				   ? RegisteredDataGridView
-				   : UnregisteredDataGridView
-			 : view).Deselect();
-		SkipHandlers = false;
+		SkipHandlers(() =>
+        {
+			var view = (DataGridView)sender;
+			(Round.Workable
+				 ? view == UnregisteredDataGridView
+					   ? RegisteredDataGridView
+					   : UnregisteredDataGridView
+				 : view).Deselect();
+        });
 		SetButtonUsability();
 	}
 
@@ -324,8 +323,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			UnregisterAllButton.Focus();
 		else
 		{
-			var playerIds = registeringPlayers.Select(static player => player.Id)
-											  .ToArray();
+			int[] playerIds = [..registeringPlayers.Select(static player => player.Id)];
 			foreach (DataGridViewRow row in RegisteredDataGridView.Rows)
 				row.Selected = playerIds.Contains(row.GetFromRow<SeedablePlayer>().Id);
 			RegisterForRoundButton.Focus();
@@ -336,18 +334,17 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void UnregisterPlayers(IEnumerable<SeedablePlayer>? players = null)
 	{
 		var unregisteringPlayers = (players ?? RegisteredDataGridView.GetAll<SeedablePlayer>()).ToArray();
-		var playerIds = unregisteringPlayers.Select(static player => player.Id)
-											.ToArray();
+		int[] playerIds = [..unregisteringPlayers.Select(static player => player.Id)];
 		var preregistered = Tournament.TournamentPlayers
 									  .Where(tp => playerIds.Contains(tp.PlayerId)
 												&& tp.RegisteredForRound(Round.Number))
 									  .ToArray();
 		var numberPreregistered = preregistered.Length;
 		if (numberPreregistered > 0
-		 && MessageBox.Show($"The {(numberPreregistered is 1
+		&&  MessageBox.Show($"The {(numberPreregistered is 1
 										? "player below is"
 										: $"{numberPreregistered} players below are")} preregistered for this round:{preregistered.Select(static tp => tp.Player)
-									   .BulletList()}{NewLine}{NewLine}Cancel preregistration?",
+																																  .BulletList()}{NewLine}{NewLine}Cancel preregistration?",
 							"Confirm Preregistration Cancellation",
 							YesNo,
 							Warning) is DialogResult.No)
@@ -370,12 +367,13 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void SeededDataGridView_SelectionChanged(object sender,
 													 EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
-		FindPlayerTextBox.Text = null;
-		SkipHandlers = true;
-		UnregisteredDataGridView.Deselect();
-		SkipHandlers = false;
+		SkipHandlers(() =>
+        {
+			FindPlayerTextBox.Clear();
+			UnregisteredDataGridView.Deselect();
+        });
 		SetButtonUsability();
 	}
 
@@ -438,14 +436,14 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		}
 		FillPlayerLists(ListsToFill.Seeded);
 		//	NOTE: I know I said that didn't work in the method above, but it works here.  Weird!
-        selected.ForEach(rowNumber => SeededDataGridView.Rows[rowNumber].Selected = true);
+		selected.ForEach(rowNumber => SeededDataGridView.Rows[rowNumber].Selected = true);
 	}
 
 	private void ReplaceButton_Click(object sender,
 									 EventArgs e)
 	{
 		if (SeededDataGridView.SelectedRows.Count is not 1
-		 || RegisteredDataGridView.SelectedRows.Count is not 1)
+		|| RegisteredDataGridView.SelectedRows.Count is not 1)
 			throw new InvalidOperationException(); //	TODO
 		var whichRow = SeededDataGridView.SelectedRows
 										 .Cast<DataGridViewRow>()
@@ -500,7 +498,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		decimal? elapsedMilliseconds;
 		using (var form = new WaitForm($"Seeding {"Game".Pluralize(totalSeededGameCount, true)}",
 									   () => Round.Seed(roundPlayers, SeedingAssignsPowersCheckBox.Checked)))
-        {
+		{
 			form.ShowDialog(this);
 			seededGamesConflict = form.Result;
 			elapsedMilliseconds = form.ElapsedMilliseconds;
@@ -533,9 +531,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void WhichPlayersTabControl_SelectedIndexChanged(object sender,
 															 EventArgs e)
 	{
-		var playerIds = UnregisteredDataGridView.GetMultiSelected<SeedablePlayer>()
-												.Select(static player => player.Id)
-												.ToArray();
+		int[] playerIds = [..UnregisteredDataGridView.GetMultiSelected<SeedablePlayer>()
+													 .Select(static player => player.Id)];
 		FillPlayerLists(ListsToFill.Unregistered);
 		foreach (DataGridViewRow row in UnregisteredDataGridView.Rows)
 			row.Selected = playerIds.Contains(UnregisteredDataGridView.GetAtIndex<SeedablePlayer>(row.Index).Id);
@@ -590,36 +587,38 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 		void EmailAssignments()
 		{
+			var template = Settings.AssignmentEmailTemplate
+								   .Replace("{TournamentName}", Tournament.Name)
+								   .Replace("{RoundNumber}", $"{Round}");
 			var messages = new List<MailMessage>();
 			foreach (var game in unstartedGames)
 			{
-				var assignments = """<table style="margin:auto; border: solid 1 black;">""";
+				var assignments = """
+								  <table style="margin:auto; border: solid 1 black;">
+								  """;
 				foreach (var gamePlayer in game.GamePlayers)
 				{
 					var power = gamePlayer.Power;
-					var style = power.CellStyle();
-					var powerCell = $"""<th style="color: {style.ForeColor}; background-color: {style.BackColor}">{power.InCaps()}</th>""";
-					assignments += $"<tr><td>{gamePlayer.Player}</td>{powerCell}</tr>";
+					assignments += $"""
+									<tr>
+									    <td>{gamePlayer.Player}</td>
+									    <th {power.CellStyle().Tag()}>{power.InCaps()}</th>
+									</tr>
+									""";
 				}
 				assignments += "</table>";
 				var tournamentName = Tournament.Name;
-				var template = Settings.AssignmentEmailTemplate
-									   .Replace("{TournamentName}", tournamentName)
-									   .Replace("{GameNumber}", $"{game.Number}")
-									   .Replace("{RoundNumber}", $"{Round}")
-									   .Replace("{Assignments}", assignments);
-				messages.AddRange(from gamePlayer
-									  in game.GamePlayers
-								  let player = gamePlayer.Player
-								  where player.EmailAddress.Length > 0
-								  let power = gamePlayer.Power
-								  select WriteEmail($"Round {Round} Board Assignment",
-													template.Replace("{PlayerName}", player.Name)
-															.Replace("{PowerName}", power is TBD
-																						? null
-																						: $"{power}"),
-													[player],
-													tournamentName));
+				var emailBody = template.Replace("{GameNumber}", $"{game.Number}")
+										.Replace("{Assignments}", assignments);
+				messages.AddRange(game.GamePlayers
+									  .Where(static gamePlayer => gamePlayer.Player.EmailAddress.Length > 0)
+									  .Select(gamePlayer => WriteEmail($"Round {Round} Board Assignment",
+																	   emailBody.Replace("{PlayerName}", gamePlayer.Player.Name)
+																				.Replace("{PowerName}", gamePlayer.Power is TBD
+																											? null
+																											: $"{gamePlayer.Power}"),
+																	   gamePlayer.Player,
+																	   tournamentName)));
 			}
 			//	TODO: maybe put up a "Waiting..." modal here?
 			var errors = SendEmail([..messages]);
@@ -648,13 +647,12 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	}
 
 	internal void DiscardRound()
-	{
-		SkipHandlers = true;
-		UnseedButton_Click();
-		Delete(Round.RoundPlayers);
-		Delete(Round);
-		SkipHandlers = false;
-	}
+		=> SkipHandlers(() =>
+						{
+							UnseedButton_Click();
+							Delete(Round.RoundPlayers);
+							Delete(Round);
+						});
 
 	private void SeedableDataGridView_DataBindingComplete(object sender,
 														  DataGridViewBindingCompleteEventArgs e)
@@ -663,7 +661,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		view.FillColumn(0);
 		view.AlignColumn(MiddleRight, 1);
 		view.Columns[1].Visible = SortByScoreCheckBox.Visible
-							   && SortByScoreCheckBox.Checked;
+								  && SortByScoreCheckBox.Checked;
 		view.AlternatingRowsDefaultCellStyle.BackColor = view.Columns[1].Visible
 															 ? SystemColors.ControlLight
 															 : view.DefaultCellStyle
@@ -692,17 +690,17 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 																			RegexOptions.IgnoreCase));
 		if (row is null)
 			return;
-		SkipHandlers = true;
-		SeededDataGridView.ClearSelection();
-		row.Selected = true;
-		SkipHandlers = false;
+		SkipHandlers(() =>
+        {
+			SeededDataGridView.ClearSelection();
+			row.Selected = true;
+        });
 		SeededDataGridView.FirstDisplayedScrollingRowIndex = row.Index;
 		SetButtonUsability();
 	}
 
 	private void NewPlayerButton_Click(object sender, EventArgs e)
-		=> Show<PlayerInfoForm>(static () => new (),
-								form =>
+		=> Show<PlayerInfoForm>(form =>
 								{
 									var newPlayer = form.Player;
 									if (newPlayer.Id > 0)
@@ -730,7 +728,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	{
 		internal readonly Player Player;
 
-		internal readonly decimal ScoreBeforeRound;
+		internal readonly double ScoreBeforeRound;
 
 		public string PlayerName => $"{Player}{(Preregistered ? " ✅" : null)}"; // or ✔ or ✓
 
@@ -778,7 +776,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void UnseedButton_Click(object? sender = null,
 									EventArgs? e = null)
 	{
-		if (!SkipHandlers)
+		if (!SkippingHandlers)
 			UnseedGames(Round.SeededGames);
 	}
 

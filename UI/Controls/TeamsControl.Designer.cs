@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -288,25 +288,25 @@
 
 		#endregion
 
-		private System.Windows.Forms.GroupBox NewTeamGroupBox;
-		private System.Windows.Forms.TextBox NewTeamNameTextBox;
-		private System.Windows.Forms.Button FormTeamButton;
-		private System.Windows.Forms.Label TeamNameLabel;
-		private System.Windows.Forms.Label TeamSizeLabel;
-		private System.Windows.Forms.Button DissolveButton;
-		private System.Windows.Forms.Button RenameButton;
-		private System.Windows.Forms.Label TeamsLabel;
-		private System.Windows.Forms.ListBox TeamListBox;
-		private System.Windows.Forms.Panel OrderByPanel;
-		private System.Windows.Forms.RadioButton LastNameRadioButton;
-		private System.Windows.Forms.RadioButton FirstNameRadioButton;
-		private System.Windows.Forms.Label OrderPlayersByLabel;
-		private System.Windows.Forms.Button JoinButton;
-		private System.Windows.Forms.Label MembersLabel;
-		private System.Windows.Forms.ListBox MemberListBox;
-		private System.Windows.Forms.ListBox NonMemberListBox;
-		private System.Windows.Forms.TabControl WhichPlayersTabControl;
-		private System.Windows.Forms.TabPage RegisteredPlayersTabPage;
-		private System.Windows.Forms.TabPage AllPlayersTabPage;
+		private GroupBox NewTeamGroupBox;
+		private TextBox NewTeamNameTextBox;
+		private Button FormTeamButton;
+		private Label TeamNameLabel;
+		private Label TeamSizeLabel;
+		private Button DissolveButton;
+		private Button RenameButton;
+		private Label TeamsLabel;
+		private ListBox TeamListBox;
+		private Panel OrderByPanel;
+		private RadioButton LastNameRadioButton;
+		private RadioButton FirstNameRadioButton;
+		private Label OrderPlayersByLabel;
+		private Button JoinButton;
+		private Label MembersLabel;
+		private ListBox MemberListBox;
+		private ListBox NonMemberListBox;
+		private TabControl WhichPlayersTabControl;
+		private TabPage RegisteredPlayersTabPage;
+		private TabPage AllPlayersTabPage;
 	}
 }

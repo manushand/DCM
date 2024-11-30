@@ -3,28 +3,28 @@
 //	TODO: Maybe rename this (including the db table) to TournamentRegistration?
 internal sealed class TournamentPlayer : LinkRecord, IInfoRecord
 {
-	private Tournament? _tournament;
 	internal int TournamentId { get; private set; }
 	private int RoundNumbers { get; set; } //	...you mean, like zero?  LOL
 
 	internal Tournament Tournament
 	{
-		private get => _tournament ??= ReadById<Tournament>(TournamentId).OrThrow();
-		init => (_tournament, TournamentId) = (value, value.Id);
-	}
+		private get  => field == Tournament.Empty
+							? field = ReadById<Tournament>(TournamentId).OrThrow()
+							: field;
+		init => (field, TournamentId) = (value, value.Id);
+	} = Tournament.Empty;
 
 	internal string RoundsRegistered
 	{
 		get
 		{
-			var roundNumbers = Range(1, Tournament.TotalRounds).Where(RegisteredForRound)
-															   .ToArray();
+			int[] roundNumbers = [..Range(1, Tournament.TotalRounds).Where(RegisteredForRound)];
 			var roundsRegistered = roundNumbers.Length;
 			return roundsRegistered == Tournament.TotalRounds
 					   ? "All Rounds"
 					   : roundsRegistered is 0
-						   ? Empty
-						   : $"{"Round".Pluralize(roundsRegistered)} {Join(", ", roundNumbers)}";
+						   ? string.Empty
+						   : $"{"Round".Pluralize(roundsRegistered)} {Join($"{Comma} ", roundNumbers)}";
 		}
 	}
 
@@ -57,8 +57,8 @@ internal sealed class TournamentPlayer : LinkRecord, IInfoRecord
 	#endregion
 
 	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (RoundNumbers)}}] = {0}
-	                                           """;
+											   [{{nameof (RoundNumbers)}}] = {0}
+											   """;
 
 	public string FieldValues => Format(FieldValuesFormat, RoundNumbers);
 

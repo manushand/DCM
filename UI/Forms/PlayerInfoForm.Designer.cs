@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -136,13 +136,13 @@
 
 		#endregion
 
-		private System.Windows.Forms.TextBox LastNameTextBox;
-		private System.Windows.Forms.Button OkButton;
-		private System.Windows.Forms.Label FirstNameLabel;
-		private System.Windows.Forms.TextBox EmailAddressTextBox;
-		private System.Windows.Forms.Label LastNameLabel;
-		private System.Windows.Forms.Label EmailLabel;
-		private System.Windows.Forms.TextBox FirstNameTextBox;
-		private System.Windows.Forms.Button CancelFormButton;
+		private TextBox LastNameTextBox;
+		private Button OkButton;
+		private Label FirstNameLabel;
+		private TextBox EmailAddressTextBox;
+		private Label LastNameLabel;
+		private Label EmailLabel;
+		private TextBox FirstNameTextBox;
+		private Button CancelFormButton;
 	}
 }

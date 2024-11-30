@@ -5,7 +5,7 @@
 		/// <summary> 
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary> 
 		/// Clean up any resources being used.
@@ -161,7 +161,7 @@
 			this.BestPowersDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
 			this.BestPowersDataGridView.BackgroundColor = System.Drawing.SystemColors.Window;
 			this.BestPowersDataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle2.Alignment = MiddleLeft;
 			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
 			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -200,16 +200,16 @@
 
 		#endregion
 
-		private System.Windows.Forms.TabControl BestGamesTabControl;
-		private System.Windows.Forms.TabPage BestAustriaTabPage;
-		private System.Windows.Forms.TabPage BestEnglandTabPage;
-		private System.Windows.Forms.TabPage BestFranceTabPage;
-		private System.Windows.Forms.TabPage BestGermanyTabPage;
-		private System.Windows.Forms.TabPage BestItalyTabPage;
-		private System.Windows.Forms.TabPage BestRussiaTabPage;
-		private System.Windows.Forms.TabPage BestTurkeyTabPage;
-		private System.Windows.Forms.TabPage BestGameTabPage;
-		private System.Windows.Forms.DataGridView BestPowersDataGridView;
-		private System.Windows.Forms.Button PrintButton;
+		private TabControl BestGamesTabControl;
+		private TabPage BestAustriaTabPage;
+		private TabPage BestEnglandTabPage;
+		private TabPage BestFranceTabPage;
+		private TabPage BestGermanyTabPage;
+		private TabPage BestItalyTabPage;
+		private TabPage BestRussiaTabPage;
+		private TabPage BestTurkeyTabPage;
+		private TabPage BestGameTabPage;
+		private DataGridView BestPowersDataGridView;
+		private Button PrintButton;
 	}
 }

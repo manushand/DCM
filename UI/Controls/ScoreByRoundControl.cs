@@ -76,7 +76,7 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 
 	//	Do not make this a struct; it changes behavior.
 	[PublicAPI]
-	private sealed class RoundScore : IRecord
+	private sealed record RoundScore : IRecord
 	{
 		[DisplayName("#")]
 		public string RoundRank => Rank.Dotted();
@@ -91,7 +91,7 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 		public string Score => Game.ScoringSystem
 								   .FormattedScore(FinalScore);
 
-		internal decimal FinalScore => GamePlayer.FinalScore;
+		internal double FinalScore => GamePlayer.FinalScore;
 		internal int Rank { private get; set; }
 		internal Game Game => GamePlayer.Game;
 

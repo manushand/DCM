@@ -4,15 +4,14 @@ internal sealed partial class GroupMembershipControl : UserControl
 {
 	private Group? _group;
 
+	[DesignerSerializationVisibility(Hidden)]
 	internal Group Group
 	{
 		private get => _group.OrThrow();
 		set
 		{
 			_group = value;
-			JoinButton.Enabled =
-				MembershipsButton.Enabled =
-					false;
+			SetEnabled(false, JoinButton, MembershipsButton);
 			FillMembershipLists();
 		}
 	}
@@ -30,22 +29,17 @@ internal sealed partial class GroupMembershipControl : UserControl
 		{
 			var joiningPlayers = NonMemberListBox.GetMultiSelected<Player>();
 			CreateMany(joiningPlayers.Select(player => new GroupPlayer { Group = Group, Player = player }));
-			SkipHandlers = true;
-			NonMemberListBox.ClearSelected();
-			SkipHandlers = false;
+			SkipHandlers(NonMemberListBox.ClearSelected);
 			FillMembershipLists();
 			joiningPlayers.ForEach(MemberListBox.SelectedItems.Add);
 		}
 		else if (MemberListBox.SelectedItems.Count > 0)
 		{
 			var leavingPlayers = MemberListBox.GetMultiSelected<Player>();
-			var playerIds = leavingPlayers.Ids()
-										  .ToArray();
+			int[] playerIds = [..leavingPlayers.Ids()];
 			Delete<GroupPlayer>(groupPlayer => groupPlayer.GroupId == Group.Id
 											&& playerIds.Contains(groupPlayer.PlayerId));
-			SkipHandlers = true;
-			MemberListBox.ClearSelected();
-			SkipHandlers = false;
+			SkipHandlers(MemberListBox.ClearSelected);
 			FillMembershipLists();
 			leavingPlayers.ForEach(NonMemberListBox.SelectedItems.Add);
 		}
@@ -92,28 +86,20 @@ internal sealed partial class GroupMembershipControl : UserControl
 	private void NonMemberListBox_SelectedIndexChanged(object sender,
 													   EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
-		SkipHandlers = true;
-		MemberListBox.ClearSelected();
-		SkipHandlers = false;
-		JoinButton.Enabled =
-			MembershipsButton.Enabled =
-				NonMemberListBox.SelectedItem is not null;
+		SkipHandlers(MemberListBox.ClearSelected);
+		SetEnabled(NonMemberListBox.SelectedItem is not null, JoinButton, MembershipsButton);
 		JoinButton.Text = "◀───── Join";
 	}
 
 	private void MemberListBox_SelectedIndexChanged(object sender,
 													EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
-		SkipHandlers = true;
-		NonMemberListBox.ClearSelected();
-		SkipHandlers = false;
-		JoinButton.Enabled =
-			MembershipsButton.Enabled =
-				MemberListBox.SelectedItem is not null;
+		SkipHandlers(NonMemberListBox.ClearSelected);
+		SetEnabled(MemberListBox.SelectedItem is not null, JoinButton, MembershipsButton);
 		JoinButton.Text = "Leave ─────▶";
 	}
 

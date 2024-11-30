@@ -2,6 +2,7 @@
 
 internal sealed partial class TournamentListForm : Form
 {
+	[DesignerSerializationVisibility(Hidden)]
 	internal Tournament? Tournament { get; private set; }
 
 	private bool Delete { get; }
@@ -19,7 +20,7 @@ internal sealed partial class TournamentListForm : Form
 				   ? "Delete Tournament"
 				   : "Open Tournament";
 		TournamentComboBox.FillWith(ReadMany<Tournament>(static tournament => tournament.GroupId is null)
-									   .OrderByDescending(static tournament => tournament.Date));
+										.OrderByDescending(static tournament => tournament.Date));
 	}
 
 	private void TournamentComboBox_SelectedIndexChanged(object sender,

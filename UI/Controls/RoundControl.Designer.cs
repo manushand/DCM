@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -358,7 +358,7 @@
 			this.SeededDataGridView.AllowUserToResizeRows = false;
 			this.SeededDataGridView.BackgroundColor = System.Drawing.SystemColors.Window;
 			this.SeededDataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-			dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle1.Alignment = MiddleLeft;
 			dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
 			dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -597,45 +597,45 @@
 
 		#endregion
 
-		private System.Windows.Forms.Button UnseedGameButton;
-		private System.Windows.Forms.Button SwapButton;
-		private System.Windows.Forms.Button ReplaceButton;
-		private System.Windows.Forms.Button ChangeRoundButton;
-		private System.Windows.Forms.Panel OrderPlayersByPanel;
-		private System.Windows.Forms.Button MoveGameDownButton;
-		private System.Windows.Forms.Button MoveGameUpButton;
-		private System.Windows.Forms.Label ScoringSystemDefaultLabel;
-		private System.Windows.Forms.ComboBox ScoringSystemComboBox;
-		private System.Windows.Forms.Label ScoringSystemLabel;
-		private System.Windows.Forms.Button ViewGamesButton;
-		private System.Windows.Forms.Button StartGamesButton;
-		private System.Windows.Forms.Label GamesAndPlayersLabel;
-		private System.Windows.Forms.Label PlayersRegisteredLabel;
-		private System.Windows.Forms.CheckBox SeedingAssignsPowersCheckBox;
-		private System.Windows.Forms.Label SeededPlayerCountLabel;
-		private System.Windows.Forms.Label RegisteredCountLabel;
-		private System.Windows.Forms.Label UnregisteredCountLabel;
-		private System.Windows.Forms.Button UnseedButton;
-		private System.Windows.Forms.Button SeedSomeButton;
-		private System.Windows.Forms.Button SeedAllButton;
-		private System.Windows.Forms.Button UnregisterAllButton;
-		private System.Windows.Forms.Button RegisterAllButton;
-		private System.Windows.Forms.Button RegisterForRoundButton;
-		private System.Windows.Forms.DataGridView SeededDataGridView;
-		private System.Windows.Forms.TabControl WhichPlayersTabControl;
-		private System.Windows.Forms.TabPage TournamentPlayersTabPage;
-		private System.Windows.Forms.TabPage AllPlayersTabPage;
-		private System.Windows.Forms.RadioButton LastNameRadioButton;
-		private System.Windows.Forms.RadioButton FirstNameRadioButton;
-		private System.Windows.Forms.Label OrderByLabel;
-		private System.Windows.Forms.CheckBox SortByScoreCheckBox;
-		private System.Windows.Forms.DataGridView UnregisteredDataGridView;
-		private System.Windows.Forms.DataGridView RegisteredDataGridView;
-		private System.Windows.Forms.Label RoundLockedLabel;
-		private System.Windows.Forms.Button PrintButton;
-		private System.Windows.Forms.Button EmailButton;
-		private System.Windows.Forms.TextBox FindPlayerTextBox;
-		private System.Windows.Forms.Label FindPlayerLabel;
-		private System.Windows.Forms.Button NewPlayerButton;
+		private Button UnseedGameButton;
+		private Button SwapButton;
+		private Button ReplaceButton;
+		private Button ChangeRoundButton;
+		private Panel OrderPlayersByPanel;
+		private Button MoveGameDownButton;
+		private Button MoveGameUpButton;
+		private Label ScoringSystemDefaultLabel;
+		private ComboBox ScoringSystemComboBox;
+		private Label ScoringSystemLabel;
+		private Button ViewGamesButton;
+		private Button StartGamesButton;
+		private Label GamesAndPlayersLabel;
+		private Label PlayersRegisteredLabel;
+		private CheckBox SeedingAssignsPowersCheckBox;
+		private Label SeededPlayerCountLabel;
+		private Label RegisteredCountLabel;
+		private Label UnregisteredCountLabel;
+		private Button UnseedButton;
+		private Button SeedSomeButton;
+		private Button SeedAllButton;
+		private Button UnregisterAllButton;
+		private Button RegisterAllButton;
+		private Button RegisterForRoundButton;
+		private DataGridView SeededDataGridView;
+		private TabControl WhichPlayersTabControl;
+		private TabPage TournamentPlayersTabPage;
+		private TabPage AllPlayersTabPage;
+		private RadioButton LastNameRadioButton;
+		private RadioButton FirstNameRadioButton;
+		private Label OrderByLabel;
+		private CheckBox SortByScoreCheckBox;
+		private DataGridView UnregisteredDataGridView;
+		private DataGridView RegisteredDataGridView;
+		private Label RoundLockedLabel;
+		private Button PrintButton;
+		private Button EmailButton;
+		private TextBox FindPlayerTextBox;
+		private Label FindPlayerLabel;
+		private Button NewPlayerButton;
 	}
 }

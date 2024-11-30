@@ -1,13 +1,13 @@
-﻿using DCM.UI.Controls;
-
-namespace DCM.UI.Forms
+﻿namespace DCM.UI.Forms
 {
+	using Controls;
+
 	internal partial class ScoringSystemInfoForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -485,40 +485,40 @@ namespace DCM.UI.Forms
 
 		#endregion
 
-		private System.Windows.Forms.Label SystemNameLabel;
-		private System.Windows.Forms.TextBox NameTextBox;
-		private System.Windows.Forms.CheckBox WinLossCheckBox;
-		private System.Windows.Forms.CheckBox DiasCheckBox;
-		private System.Windows.Forms.CheckBox CenterCountCheckBox;
-		private System.Windows.Forms.CheckBox YearsPlayedCheckBox;
-		private System.Windows.Forms.Label FinalGameYearLabel;
-		private System.Windows.Forms.ComboBox FinalGameYearComboBox;
-		private System.Windows.Forms.TabControl FormulaTabs;
-		private System.Windows.Forms.TabPage FinalScoreFormulaTabPage;
-		private System.Windows.Forms.TabPage ProvisionalScoreTabPage;
-		private System.Windows.Forms.GroupBox TestGameGroupBox;
-		private System.Windows.Forms.Button CancelFormButton;
-		private System.Windows.Forms.Button OkButton;
-		private System.Windows.Forms.Label SignificantDigitsLabel;
-		private System.Windows.Forms.ComboBox SignificantDigitsComboBox;
-		private System.Windows.Forms.Button CopyButton;
-		private System.Windows.Forms.CheckBox AllowDrawsCheckBox;
-		private System.Windows.Forms.Label FormulaTypeLabel;
-		private System.Windows.Forms.ComboBox FormulaTypeComboBox;
-		private System.Windows.Forms.RichTextBox FinalScoreFormulaTextBox;
-		private System.Windows.Forms.RichTextBox ProvisionalScoreFormulaTextBox;
+		private Label SystemNameLabel;
+		private TextBox NameTextBox;
+		private CheckBox WinLossCheckBox;
+		private CheckBox DiasCheckBox;
+		private CheckBox CenterCountCheckBox;
+		private CheckBox YearsPlayedCheckBox;
+		private Label FinalGameYearLabel;
+		private ComboBox FinalGameYearComboBox;
+		private TabControl FormulaTabs;
+		private TabPage FinalScoreFormulaTabPage;
+		private TabPage ProvisionalScoreTabPage;
+		private GroupBox TestGameGroupBox;
+		private Button CancelFormButton;
+		private Button OkButton;
+		private Label SignificantDigitsLabel;
+		private ComboBox SignificantDigitsComboBox;
+		private Button CopyButton;
+		private CheckBox AllowDrawsCheckBox;
+		private Label FormulaTypeLabel;
+		private ComboBox FormulaTypeComboBox;
+		private RichTextBox FinalScoreFormulaTextBox;
+		private RichTextBox ProvisionalScoreFormulaTextBox;
 		private GameControl GameControl;
-		private System.Windows.Forms.Button RunTestButton;
-		private System.Windows.Forms.Button NewTestButton;
-		private System.Windows.Forms.CheckBox TotalPointsFixedCheckBox;
-		private System.Windows.Forms.TextBox PointsPerGameTextBox;
-		private System.Windows.Forms.Label PointsPerGameLabel;
-		private System.Windows.Forms.CheckBox OtherScoringCheckBox;
-		private System.Windows.Forms.Label OtherAliasLabel;
-		private System.Windows.Forms.TextBox OtherAliasTextBox;
-		private System.Windows.Forms.TabPage PlayerAnteFormulaTabPage;
-		private System.Windows.Forms.RichTextBox PlayerAnteFormulaTextBox;
-		private System.Windows.Forms.CheckBox UsesProvisionalScoreCheckBox;
-		private System.Windows.Forms.CheckBox UsesPlayerAnteCheckBox;
+		private Button RunTestButton;
+		private Button NewTestButton;
+		private CheckBox TotalPointsFixedCheckBox;
+		private TextBox PointsPerGameTextBox;
+		private Label PointsPerGameLabel;
+		private CheckBox OtherScoringCheckBox;
+		private Label OtherAliasLabel;
+		private TextBox OtherAliasTextBox;
+		private TabPage PlayerAnteFormulaTabPage;
+		private RichTextBox PlayerAnteFormulaTextBox;
+		private CheckBox UsesProvisionalScoreCheckBox;
+		private CheckBox UsesPlayerAnteCheckBox;
 	}
 }

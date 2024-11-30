@@ -6,6 +6,8 @@ using static Tournament.PowerGroups;
 
 internal sealed class Tournament : IdentityRecord
 {
+	internal static readonly Tournament Empty = new ();
+
 	internal enum PowerGroups : byte
 	{
 		None,      //	F-R-I-G-A-T-E
@@ -20,28 +22,26 @@ internal sealed class Tournament : IdentityRecord
 	private static readonly SortedDictionary<PowerGroups, string[]> PowerInitialGroups =
 		new ()
 		{
-			[None] = [ "F", "R", "I", "G", "A", "T", "E" ],
-			[EastWest] = [ "AGI", "EF", "RT" ],
-			[Corners] = [ "AGI", "ET", "FR" ],
-			[Naval] = [ "AG", "EIT", "FR" ],
-			[LandSea] = [ "AI", "EFG", "RT" ],
-			[FleetNear] = [ "AI", "EF", "GRT" ],
-			[Lepanto] = [ "AIT", "EG", "FR" ]
+			[None] = ["F", "R", "I", "G", "A", "T", "E"],
+			[EastWest] = ["AGI", "EF", "RT"],
+			[Corners] = ["AGI", "ET", "FR"],
+			[Naval] = ["AG", "EIT", "FR"],
+			[LandSea] = ["AI", "EFG", "RT"],
+			[FleetNear] = ["AI", "EF", "GRT"],
+			[Lepanto] = ["AIT", "EG", "FR"]
 		};
 
-	private Group? _group;
-	private ScoringSystem? _scoringSystem;
-
-	internal bool AssignPowers;
 	internal DateTime Date;
-	internal string Description = Empty;
-	internal bool DropBeforeFinalRound;
 	internal PowerGroups GroupPowers;
-	internal int MinimumRounds;
+	internal string Description = string.Empty;
+	internal bool AssignPowers;
+	internal bool DropBeforeFinalRound;
 	internal bool PlayerCanJoinManyTeams;
+	internal bool ProgressiveScoreConflict;
+	internal bool TeamsPlayMultipleRounds;
+	internal int MinimumRounds;
 	internal int PlayerConflict;
 	internal int PowerConflict;
-	internal bool ProgressiveScoreConflict;
 	internal int RoundsToDrop;
 	internal int RoundsToScale;
 	internal int ScalePercentage;
@@ -49,30 +49,31 @@ internal sealed class Tournament : IdentityRecord
 	internal int TeamConflict;
 	internal int TeamRound;
 	internal int TeamSize;
-	internal bool TeamsPlayMultipleRounds;
 	internal int TotalRounds;
-	internal int UnplayedScore; //	TODO: this is an int in db; change to decimal?
+	internal int UnplayedScore; //	TODO: this is an int in db; change to double?
 
 	internal int? GroupId { get; private set; }
 	internal int ScoringSystemId { get; private set; }
 
 	internal ScoringSystem ScoringSystem
 	{
-		get => _scoringSystem ??= ReadById<ScoringSystem>(ScoringSystemId).OrThrow();
+		get => field == ScoringSystem.Empty
+				   ? field = ReadById<ScoringSystem>(ScoringSystemId).OrThrow()
+				   : field;
 		set
 		{
-			_scoringSystem = value;
+			field = value;
 			ScoringSystemId = value.Id;
 			Rounds.ForSome(round => round.ScoringSystemId == ScoringSystemId, round => round.ScoringSystem = value);
 		}
-	}
+	} = ScoringSystem.Empty;
 
 	internal Group? Group
 	{
 		get => GroupId is null
 				   ? null
-				   : _group ??= ReadById<Group>(GroupId.Value).OrThrow();
-		init => (_group, GroupId) = (value, value?.Id);
+				   : field ??= ReadById<Group>(GroupId.Value).OrThrow();
+		init => (field, GroupId) = (value, value?.Id);
 	}
 
 	internal bool HasTeamTournament => TeamSize > 0;
@@ -87,8 +88,8 @@ internal sealed class Tournament : IdentityRecord
 
 	internal Team[] Teams => [..ReadMany<Team>(team => team.TournamentId == Id)];
 
-	internal Round AddRound()
-		=> CreateOne(new Round { Tournament = this });
+	//  HostRound for Group games (which are modeled as a single-round Tournament)
+	internal Round HostRound => Rounds.SingleOrDefault() ?? CreateOne(new Round { Tournament = this });
 
 	internal void AddPlayer(Player player)
 		=> CreateOne(new TournamentPlayer { Tournament = this, Player = player });

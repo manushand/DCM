@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private global::System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -342,35 +342,35 @@
 		}
 
 		#endregion
-		private System.Windows.Forms.ToolStripMenuItem TournamentToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem NewTournamentToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem OpenTournamentMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem DeleteTournamentMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem PlayersToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ManagePlayersToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ConfigurationMenuItem;
-		private System.Windows.Forms.MenuStrip MainFormMenuStrip;
-		private System.Windows.Forms.Label TournamentNameLabel;
-		private System.Windows.Forms.ToolStripMenuItem PlayerConflictsToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem EmailConfigurationToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem GroupToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem OpenGroupMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ReportsConfigurationToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem HelpToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem HelpAboutToolStripMenuItem1;
-		private System.Windows.Forms.ToolStripMenuItem DatabaseConfigurationToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem HelpTopicsToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ManageGroupsToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ScoringToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ScoringSystemsToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem OpenDatabaseToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem SaveAsDatabaseToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ClearDatabaseToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem CheckDatabaseToolStripMenuItem;
-		private System.Windows.Forms.ToolStripMenuItem ShowTimingToolStripMenuItem;
-		private System.Windows.Forms.Panel ButtonPanel;
-		private System.Windows.Forms.Button RightButton;
-		private System.Windows.Forms.Button MiddleButton;
-		private System.Windows.Forms.Button LeftButton;
+		private ToolStripMenuItem TournamentToolStripMenuItem;
+		private ToolStripMenuItem NewTournamentToolStripMenuItem;
+		private ToolStripMenuItem OpenTournamentMenuItem;
+		private ToolStripMenuItem DeleteTournamentMenuItem;
+		private ToolStripMenuItem PlayersToolStripMenuItem;
+		private ToolStripMenuItem ManagePlayersToolStripMenuItem;
+		private ToolStripMenuItem ConfigurationMenuItem;
+		private MenuStrip MainFormMenuStrip;
+		private Label TournamentNameLabel;
+		private ToolStripMenuItem PlayerConflictsToolStripMenuItem;
+		private ToolStripMenuItem EmailConfigurationToolStripMenuItem;
+		private ToolStripMenuItem GroupToolStripMenuItem;
+		private ToolStripMenuItem OpenGroupMenuItem;
+		private ToolStripMenuItem ReportsConfigurationToolStripMenuItem;
+		private ToolStripMenuItem HelpToolStripMenuItem;
+		private ToolStripMenuItem HelpAboutToolStripMenuItem1;
+		private ToolStripMenuItem DatabaseConfigurationToolStripMenuItem;
+        private ToolStripMenuItem HelpTopicsToolStripMenuItem;
+		private ToolStripMenuItem ManageGroupsToolStripMenuItem;
+		private ToolStripMenuItem ScoringToolStripMenuItem;
+		private ToolStripMenuItem ScoringSystemsToolStripMenuItem;
+		private ToolStripMenuItem OpenDatabaseToolStripMenuItem;
+		private ToolStripMenuItem SaveAsDatabaseToolStripMenuItem;
+		private ToolStripMenuItem ClearDatabaseToolStripMenuItem;
+		private ToolStripMenuItem CheckDatabaseToolStripMenuItem;
+		private ToolStripMenuItem ShowTimingToolStripMenuItem;
+		private Panel ButtonPanel;
+		private Button RightButton;
+		private Button MiddleButton;
+		private Button LeftButton;
 	}
 }

@@ -5,7 +5,7 @@
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -359,30 +359,30 @@
 
         #endregion
 
-        private System.Windows.Forms.Label HostLabel;
-        private System.Windows.Forms.TextBox HostTextBox;
-        private System.Windows.Forms.Label PortLabel;
-        private System.Windows.Forms.TextBox PortTextBox;
-        private System.Windows.Forms.CheckBox UseSslCheckBox;
-        private System.Windows.Forms.Label UsernameLabel;
-        private System.Windows.Forms.TextBox UsernameTextBox;
-        private System.Windows.Forms.TextBox PasswordTextBox;
-        private System.Windows.Forms.Label PasswordLabel;
-        private System.Windows.Forms.TextBox TestEmailTextBox;
-        private System.Windows.Forms.Label TestEmailLabel;
-        private System.Windows.Forms.CheckBox OnlySendToTestCheckBox;
-        private System.Windows.Forms.Button SaveButton;
-        private System.Windows.Forms.TextBox MailFromTextBox;
-        private System.Windows.Forms.Label FromAddressLabel;
-        private System.Windows.Forms.TextBox FromNameTextBox;
-        private System.Windows.Forms.Label FromNameLabel;
-        private System.Windows.Forms.Label NonEventMailingsLabel;
-		private System.Windows.Forms.TabControl TemplatesTabControl;
-		private System.Windows.Forms.TabPage AssignmentTemplateTabPage;
-		private System.Windows.Forms.TextBox AssignmentTemplateTextBox;
-		private System.Windows.Forms.TabPage AnnouncementTemplateTabPage;
-		private System.Windows.Forms.Label TemplateLegendLabel;
-		private System.Windows.Forms.TextBox AnnouncementTemplateTextBox;
-		private System.Windows.Forms.Button SaveOrSendTemplateButton;
+        private Label HostLabel;
+        private TextBox HostTextBox;
+        private Label PortLabel;
+        private TextBox PortTextBox;
+        private CheckBox UseSslCheckBox;
+        private Label UsernameLabel;
+        private TextBox UsernameTextBox;
+        private TextBox PasswordTextBox;
+        private Label PasswordLabel;
+        private TextBox TestEmailTextBox;
+        private Label TestEmailLabel;
+        private CheckBox OnlySendToTestCheckBox;
+        private Button SaveButton;
+        private TextBox MailFromTextBox;
+        private Label FromAddressLabel;
+        private TextBox FromNameTextBox;
+        private Label FromNameLabel;
+        private Label NonEventMailingsLabel;
+		private TabControl TemplatesTabControl;
+		private TabPage AssignmentTemplateTabPage;
+		private TextBox AssignmentTemplateTextBox;
+		private TabPage AnnouncementTemplateTabPage;
+		private Label TemplateLegendLabel;
+		private TextBox AnnouncementTemplateTextBox;
+		private Button SaveOrSendTemplateButton;
 	}
 }

@@ -2,6 +2,7 @@
 
 internal sealed partial class RoundInfoForm : Form
 {
+	internal static readonly RoundInfoForm Empty = new (Tournament.Empty);
 	internal readonly Tournament Tournament;
 
 	internal RoundInfoForm(Tournament tournament)
@@ -16,18 +17,19 @@ internal sealed partial class RoundInfoForm : Form
 		SetFormTitle();
 		RegistrationControl.LoadControl(this);
 		RoundControl.LoadControl(this);
-		SkipHandlers = true;
-		RoundsTabControl.TabPages
-						.Clear();
-		RoundsTabControl.TabPages
-						.Add(RegistrationTabPage);
-		var roundNumber = Tournament.Rounds
-									.Length;
-		RegistrationTabPage.Enabled = roundNumber < Tournament.TotalRounds;
-		for (var round = 1; round <= roundNumber; ++round)
+		var roundNumber = 0;
+		SkipHandlers(() =>
+        {
 			RoundsTabControl.TabPages
-							.Add($"Round {round}");
-		SkipHandlers = false;
+							.Clear();
+			RoundsTabControl.TabPages
+							.Add(RegistrationTabPage);
+			roundNumber = Tournament.Rounds
+									.Length;
+			RegistrationTabPage.Enabled = roundNumber < Tournament.TotalRounds;
+			ForRange(1, roundNumber, round => RoundsTabControl.TabPages
+															  .Add($"Round {round}"));
+        });
 		RoundsTabControl.ActivateTab(roundNumber);
 	}
 
@@ -37,7 +39,7 @@ internal sealed partial class RoundInfoForm : Form
 	private void RoundsTabControl_SelectedIndexChanged(object sender,
 													   EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		const int margin = 20;
 		if (RoundsTabControl.SelectedIndex is 0)
@@ -48,7 +50,7 @@ internal sealed partial class RoundInfoForm : Form
 		else
 		{
 			var tabControls = RoundsTabControl.SelectedTab
-                                              .OrThrow()
+											  .OrThrow()
 											  .Controls;
 			if (tabControls.Count is 0)
 				//	TODO: do we need to set SkipHandlers to true for this?

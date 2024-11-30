@@ -1,9 +1,11 @@
 global using System.Collections;
 global using System.ComponentModel;
+global using System.Data;
 global using System.Data.Common;
 global using System.Net.Mail;
 global using System.Reflection;
 global using System.Text.RegularExpressions;
+global using static System.ComponentModel.DesignerSerializationVisibility;
 global using static System.Environment;
 global using static System.String;
 global using static System.Windows.Forms.MessageBoxButtons;
@@ -13,6 +15,7 @@ global using JetBrains.Annotations;
 global using DCM.DB;
 global using DCM.UI.Forms;
 global using static DCM.DCM;
+global using static DCM.DB.Database;
 global using static DCM.DB.Game;
 global using static DCM.DB.Game.Statuses;
 global using static DCM.DB.GamePlayer;
@@ -21,77 +24,78 @@ global using static DCM.Scoring;
 global using static DCM.Scoring.PowerNames;
 global using Group = DCM.DB.Group;
 //
-using System.Data;
+using System.Net;
 using DGVPrinterHelper;
+using static System.IO.Directory;
 using static System.Threading.Tasks.Task;
 using static DGVPrinterHelper.DGVPrinter;
 
 namespace DCM;
 
+using Properties;
+using static Database;
+
 internal static partial class DCM
 {
 	#region Fields and Properties
 
-	internal const string Version = "23.2.16";
-
-	//	TODO: Don't the French end in 1905 or 1906?
-	internal const int EarliestFinalGameYear = 1907; //	TODO: could be private to ScoringSystemInfoForm
-	internal const int LatestFinalGameYear = 1918; //	== 12 options
+	internal const string Version = "24.11.18";
+	internal const int LatestFinalGameYear = 1918;      //	== 12 options
 	internal const char Comma = ',';
 	internal const char Colon = ':';
 	internal const char Semicolon = ';';
 
-	internal static readonly SortedDictionary<PowerNames, DataGridViewCellStyle> PowerColors =
-		//	TODO: All these should be made Bold here (instead of wherever it's happening)
-		new ()
-		{
-			[Austria] = new ()
-						{
-							BackColor = Color.Red,
-							ForeColor = Color.White
-						},
-			[England] = new ()
-						{
-							BackColor = Color.RoyalBlue,
-							ForeColor = Color.White
-						},
-			[France] = new ()
-					   {
-						   BackColor = Color.SkyBlue,
-						   ForeColor = Color.Black
-					   },
-			[Germany] = new ()
-						{
-							BackColor = Color.Black,
-							ForeColor = Color.White
-						},
-			[Italy] = new ()
-					  {
-						  BackColor = Color.Lime,
-						  ForeColor = Color.Black
-					  },
-			[Russia] = new ()
-					   {
-						   BackColor = Color.White,
-						   ForeColor = Color.Black
-					   },
-			[Turkey] = new ()
-					   {
-						   BackColor = Color.Yellow,
-						   ForeColor = Color.Black
-					   },
-			[TBD] = new ()
-					{
-						BackColor = SystemColors.Control,
-						ForeColor = SystemColors.WindowText
-					}
-		};
-
-	internal static readonly Properties.Settings Settings = Properties.Settings.Default;
+	internal static readonly Settings Settings = Settings.Default;
 	internal static readonly Dictionary<Font, Font> BoldFonts = [];
-	internal static bool SkipHandlers;
+
+	internal static bool SkippingHandlers { get; private set; }
+	internal static int[] Seven => [..Range(0, 7).OrderBy(RandomNumber)];
 
 	private const string Null = nameof (Null);
+
+	private static readonly SortedDictionary<PowerNames, DataGridViewCellStyle> PowerColors = new ()
+																							  {
+																								  [Austria] = new ()
+																											  {
+																												  BackColor = Color.Red,
+																												  ForeColor = Color.White
+																											  },
+																								  [England] = new ()
+																											  {
+																												  BackColor = Color.RoyalBlue,
+																												  ForeColor = Color.White
+																											  },
+																								  [France] = new ()
+																											 {
+																												 BackColor = Color.SkyBlue,
+																												 ForeColor = Color.Black
+																											 },
+																								  [Germany] = new ()
+																											  {
+																												  BackColor = Color.Black,
+																												  ForeColor = Color.White
+																											  },
+																								  [Italy] = new ()
+																											{
+																												BackColor = Color.Lime,
+																												ForeColor = Color.Black
+																											},
+																								  [Russia] = new ()
+																											 {
+																												 BackColor = Color.White,
+																												 ForeColor = Color.Black
+																											 },
+																								  [Turkey] = new ()
+																											 {
+																												 BackColor = Color.Yellow,
+																												 ForeColor = Color.Black
+																											 },
+																								  [TBD] = new ()
+																										  {
+																											  BackColor = SystemColors.Control,
+																											  ForeColor = SystemColors.WindowText
+																										  }
+																							  };
 	private static readonly Random Random = new ();
 	private static readonly char[] EmailSplitter = [Comma, Semicolon];
 	private static readonly object[] EmptyEventArgs = [EventArgs.Empty];
@@ -103,13 +107,23 @@ internal static partial class DCM
 
 	#endregion
 
+	#region Constructor
+
+	static DCM()
+	{
+		var font = BoldFonts.GetOrSet(Control.DefaultFont, BoldFont);
+		PowerColors.Values.ForEach(value => (value.Font, value.Alignment) = (font, MiddleCenter));
+	}
+
+	#endregion
+
 	#region Methods
 
 	#region Database connection and CRUD methods
 
 	internal static bool OpenDatabase(string? dbFileName = null)
 	{
-		while (dbFileName is null || !Database.Connect(dbFileName))
+		while (dbFileName is null || !Connect(dbFileName))
 		{
 			using var dialog = new OpenFileDialog();
 			dialog.Title = "Choose DCM Data File";
@@ -121,7 +135,7 @@ internal static partial class DCM
 
 		if (dbFileName == Settings.DatabaseFile)
 			return true;
-		Cache.Flush();
+		FlushCache();
 		Settings.DatabaseFile = dbFileName;
 		SetEvent();
 		return true;
@@ -136,16 +150,12 @@ internal static partial class DCM
 		//	Otherwise, if there is one and only one file in
 		//	the CurrentDirectory with one of the extensions
 		//	we like, use it. Otherwise, make the user surf.
-		var files = Directory.GetFiles(Directory.GetCurrentDirectory())
-							 .Where(static name => DatabaseFileExtensions.Contains(Path.GetExtension(name)))
-							 .ToArray();
+		var files = GetFiles(GetCurrentDirectory()).Where(static name => DatabaseFileExtensions.Contains(Path.GetExtension(name)))
+												   .ToArray();
 		return files.Length is 1
-				   ? files[0]
+				   ? files.Single()
 				   : null;
 	}
-
-	internal static bool CheckDatabaseDriver()
-		=> Database.CheckAccessDriver();
 
 	internal static void SaveDatabase()
 	{
@@ -160,30 +170,9 @@ internal static partial class DCM
 		Settings.Save();
 	}
 
-	internal static void BeginTransaction()
-		=> Database.StartTransaction();
-
-	internal static void CommitTransaction()
-		=> Database.EndTransaction();
-
 	internal static void ClearDatabase()
 	{
-		BeginTransaction();
-		DeleteAll<GamePlayer>();
-		DeleteAll<Game>();
-		DeleteAll<RoundPlayer>();
-		DeleteAll<Round>();
-		DeleteAll<TeamPlayer>();
-		DeleteAll<Team>();
-		DeleteAll<GroupPlayer>();
-		DeleteAll<Group>();
-		DeleteAll<TournamentPlayer>();
-		DeleteAll<Tournament>();
-		DeleteAll<PlayerConflict>();
-		DeleteAll<Player>();
-		DeleteAll<ScoringSystem>();
-		CommitTransaction();
-		Cache.Flush();
+		Clear();
 		if (Settings.EventId > 0)
 			SetEvent();
 	}
@@ -194,185 +183,6 @@ internal static partial class DCM
 		Settings.EventIsGroup = identityRecord is Group;
 		Settings.Save();
 	}
-
-	internal static bool Any<T>(Func<T, bool>? func = null)
-		where T : IRecord
-		=> Cache.Exists(func);
-
-	internal static T CreateOne<T>(T record)
-		where T : class, IRecord
-		=> CreateMany(record).Single();
-
-	internal static IEnumerable<T> CreateMany<T>(params T[] records)
-		where T : IRecord
-	{
-		Database.BeginLocalTransaction();
-		using (var command = Database.Command())
-			foreach (var record in records)
-			{
-				command.CommandText = InsertStatement(record);
-				if (command.ExecuteNonQuery() is 0)
-					throw new (); //	TODO
-				if (record is not IdentityRecord identityRecord)
-					continue;
-				command.CommandText = "SELECT @@Identity";
-				identityRecord.Id = (int)command.ExecuteScalar().OrThrow();
-			}
-		Database.CommitLocalTransaction();
-		Cache.AddRange(records);
-		return records;
-
-		static string InsertStatement(T record)
-		{
-			var assignments = record is IInfoRecord infoRecord //	10 record types (7 that are not also IInfoRecord)
-								  ? infoRecord.FieldValues
-											  .Split(FieldValuesLineSplitter)
-											  .ToList()
-								  : [];
-			if (record is LinkRecord linkRecord) //	6 types, including 3 that are also IInfoRecord
-				assignments.AddRange(linkRecord.KeyFieldAssignments);
-			var list = assignments.Distinct()
-								  .Select(static assignment => assignment.Split('=', 2))
-								  .ToArray();
-			return $"""
-			        INSERT INTO {TableName<T>()} ({Join(Comma, list.Select(static a => a[0]))})
-			        VALUES ({Join(Comma, list.Select(static a => a[1]))})
-			        """;
-		}
-	}
-
-	internal static IEnumerable<T> CreateMany<T>(IEnumerable<T> records)
-		where T : IRecord
-		=> CreateMany([..records]);
-
-    //	It is up to the caller to Add any returned record(s) to the Cache
-    internal static List<T> Read<T>(T? record = null)
-        where T : class, IRecord, new()
-    {
-        Database.OpenConnection();
-        var records = new List<T>();
-        using (var command = Database.Command($"SELECT * FROM {TableName<T>()}{(record is null ? null : WhereClause(record))}"))
-        {
-            using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
-            while (reader.Read())
-                records.Add((T)new T().Load(reader));
-        }
-        Database.CloseConnection();
-        return records;
-    }
-
-	internal static T? ReadOne<T>(Func<T, bool> func)
-		where T : IRecord
-		=> Cache.FetchOne(func);
-
-	internal static T? ReadById<T>(int id)
-		where T : IdentityRecord
-		=> ReadOne<T>(record => record.Id == id);
-
-	internal static T? ReadByName<T>(T record)
-		where T : IdentityRecord
-		=> ReadOne<T>(t => t.Name.Matches(record.Name));
-
-	//	Important (for some reason): note that in all cases where we open and close the
-	//	database connection, we wait until the connection is closed to update the cache.
-
-	internal static T? ReadOne<T>(T record,
-								  bool fromCache = true)
-		where T : class, IRecord, new()
-	{
-		//	Load Cache for this type if not yet loaded
-		if (fromCache || !Cache.ContainsKey<T>())
-			return Cache.FetchOne(record);
-		var result = Read(record).SingleOrDefault();
-		if (result is not null)
-			Cache.Add(result);
-		return result;
-	}
-
-	internal static IEnumerable<T> ReadAll<T>()
-		where T : class, IRecord, new()
-		=> Cache.FetchAll<T>();
-
-	internal static IEnumerable<T> ReadMany<T>(Func<T, bool> func)
-		where T : IRecord
-		=> Cache.FetchMany(func);
-
-	internal static void UpdateOne<T>(T record,
-									  string? formerPrimaryKey = null)
-		where T : IInfoRecord
-	{
-		Database.OpenConnection();
-		var primaryKey = formerPrimaryKey ?? record.PrimaryKey;
-		Database.Execute(UpdateStatement(primaryKey, record));
-		Database.CloseConnection();
-		if (formerPrimaryKey is not null)
-			Cache.Remove<T>(formerPrimaryKey);
-		Cache.Add(record);
-	}
-
-	//	This method cannot be used to change primary key fields on any of the records involved
-	internal static void UpdateMany<T>(params T[] records)
-		where T : IInfoRecord
-	{
-		Database.BeginLocalTransaction();
-		Database.Execute(records.Select(UpdateStatement));
-		Database.CommitLocalTransaction();
-		Cache.AddRange(records);
-	}
-
-	internal static void UpdateMany<T>(IEnumerable<T> records)
-		where T : IInfoRecord
-		=> UpdateMany([..records]);
-
-	internal static void Delete<T>(params T[] records)
-		where T : IRecord
-	{
-		Database.BeginLocalTransaction();
-		Database.Execute(records.Select(static record => $"{DeleteStatement<T>()}{WhereClause(record)}"));
-		Database.CommitLocalTransaction();
-		Cache.Remove(records);
-	}
-
-	internal static void Delete<T>(IEnumerable<T> records)
-		where T : IRecord
-		=> Delete([..records]);
-
-	internal static void Delete<T>(Func<T, bool> func)
-		where T : IRecord
-		=> Delete(Cache.FetchMany(func));
-
-    #region Private database properties and methods
-
-	private static readonly string FieldValuesLineSplitter = $"{Comma}{NewLine}";
-
-	private static string TableName<T>()
-		where T : IRecord
-		=> $"[{typeof (T).Name}]";
-
-	private static string UpdateStatement<T>(T record)
-		where T : IInfoRecord
-		=> UpdateStatement(record.PrimaryKey, record);
-
-	private static string UpdateStatement<T>(string currentPrimaryKey,
-											 T record)
-		where T : IInfoRecord
-		=> $"UPDATE {TableName<T>()} SET {record.FieldValues}{WhereClause(currentPrimaryKey)}";
-
-	private static string DeleteStatement<T>()
-		where T : IRecord
-		=> $"DELETE FROM {TableName<T>()}";
-
-	private static string WhereClause(IRecord record)
-		=> WhereClause(record.PrimaryKey);
-
-	private static string WhereClause(string primaryKey)
-		=> $" WHERE {primaryKey}";
-
-    private static void DeleteAll<T>()
-        where T : IRecord
-        => Database.Execute(DeleteStatement<T>());
-
-	#endregion
 
 	#endregion
 
@@ -390,12 +200,14 @@ internal static partial class DCM
 
 	internal static void ForEach<T>([InstantHandle] this IEnumerable<T> collection,
 									Action<T> action)
-		=> collection.ToList().ForEach(action);
+		=> collection.ToList()
+					 .ForEach(action);
 
 	internal static void ForSome<T>([InstantHandle] this IEnumerable<T> collection,
 									Func<T, bool> func,
 									Action<T> action)
-		=> collection.Where(func).ForEach(action);
+		=> collection.Where(func)
+					 .ForEach(action);
 
 	internal static IEnumerable<int> Ids(this IEnumerable<IdentityRecord> records)
 		=> records.Select(static record => record.Id);
@@ -456,9 +268,13 @@ internal static partial class DCM
 	{
 		var ordinal = record.GetOrdinal(columnName);
 		return record.IsDBNull(ordinal)
-				   ? Empty
+				   ? string.Empty
 				   : record.GetString(ordinal);
 	}
+
+	internal static double Double(this IDataRecord record,
+									string columnName)
+		=> record.GetDouble(record.GetOrdinal(columnName));
 
 	internal static decimal Decimal(this IDataRecord record,
 									string columnName)
@@ -492,8 +308,8 @@ internal static partial class DCM
 				   : record.GetDateTime(ordinal);
 	}
 
-	internal static decimal AsDecimal(this string value)
-		=> decimal.Parse(value);
+	internal static double AsDouble(this string value)
+		=> double.Parse(value);
 
 	internal static int? AsNullableInteger(this string value)
 		=> value.Length is 0
@@ -514,28 +330,28 @@ internal static partial class DCM
 	internal static string Dotted(this int value)
 		=> $"{value}.";
 
-    internal static int NegatedIf(this int value, bool negator)
-        => negator ? -value : value;
+	internal static int NegatedIf(this int value, bool negator)
+		=> negator ? -value : value;
 
 	internal static string[] SplitEmailAddresses(this string addresses)
 		=> [..addresses.Split(EmailSplitter)
 					   .Select(static email => email.Trim())
 					   .Where(static email => email.Length is not 0)];
 
-    //	TODO: there's a lot of debate about what the best way to validate an email address is
-    //	TODO: I have usually used try { new MailAddress(text); } but it likes things I don't.
-    [GeneratedRegex(@"^(" +
-                    @"[\dA-Z]" +              //	Start with a digit or alphabetical
-                    @"([\+\-_\.][\dA-Z]+)*" + //	No continuous or ending +-_. chars in email
-                    @")+" +
-                    @"@(([\dA-Z][-\w]*[\dA-Z]*\.)+[\dA-Z]{2,17})$",
-        RegexOptions.IgnoreCase)]
-    private static partial Regex EmailAddressFormat();
+	//	TODO: there's a lot of debate about what the best way to validate an email address is
+	//	TODO: I have usually used try { new MailAddress(text); } but it likes things I don't.
+	[GeneratedRegex(@"^(" +
+					@"[\dA-Z]" +              //	Start with a digit or alphabetical
+					@"([\+\-_\.][\dA-Z]+)*" + //	No continuous or ending +-_. chars in email
+					@")+" +
+					@"@(([\dA-Z][-\w]*[\dA-Z]*\.)+[\dA-Z]{2,17})$",
+					RegexOptions.IgnoreCase)]
+	private static partial Regex EmailAddressFormat();
 
 	internal static bool IsValidEmail(this string text)
-        => EmailAddressFormat().IsMatch(text.Trim());
+		=> EmailAddressFormat().IsMatch(text.Trim());
 
-    internal static T As<T>(this string text)
+	internal static T As<T>(this string text)
 		where T : Enum
 		=> (T)Enum.Parse(typeof (T), text, true);
 
@@ -626,6 +442,9 @@ internal static partial class DCM
 	internal static T GetSelected<T>(this ComboBox comboBox)
 		=> (T)comboBox.SelectedItem.OrThrow();
 
+	internal static void Deselect(this ComboBox comboBox)
+		=> comboBox.SelectedItem = null;
+
 	internal static T? GetSelected<T>(this ListBox listBox)
 		where T : class
 		=> listBox.SelectedItem as T;
@@ -633,7 +452,7 @@ internal static partial class DCM
 	internal static List<T> GetMultiSelected<T>(this ListBox listBox)
 		where T : class
 		=> [..listBox.SelectedItems
-				     .Cast<T>()];
+					 .Cast<T>()];
 
 	internal static IEnumerable<T> GetAll<T>(this ListBox listBox)
 		where T : IRecord
@@ -677,9 +496,6 @@ internal static partial class DCM
 		=> dataGridView.Rows[index]
 					   .GetFromRow<T>();
 
-	internal static T GetFromRow<T>(this DataGridViewRow dataGridViewRow)
-		=> (T)dataGridViewRow.DataBoundItem;
-
 	internal static void SelectRowWhere<T>(this DataGridView dataGridView,
 										   Func<T, bool> func)
 		=> dataGridView.CurrentCell = dataGridView.Rows
@@ -694,9 +510,6 @@ internal static partial class DCM
 		dataGridView.AutoSize = false;
 		dataGridView.DataSource = dataSource;
 	}
-
-	internal static void Deselect(this ComboBox comboBox)
-		=> comboBox.SelectedItem = null;
 
 	internal static void Deselect(this DataGridView dataGridView)
 	{
@@ -732,6 +545,9 @@ internal static partial class DCM
 		foreach (DataGridViewRow row in dataGridView.Rows)
 			row.Cells[column].Style = $"{row.Cells[column].Value}".As<PowerNames>().CellStyle();
 	}
+
+	internal static T GetFromRow<T>(this DataGridViewRow dataGridViewRow)
+		=> (T)dataGridViewRow.DataBoundItem.OrThrow();
 
 	#region ComboBox-to-Label toggler methods
 
@@ -779,26 +595,27 @@ internal static partial class DCM
 		//	Checking for .IsDisposed is important.  Re-create the Label if it's been Disposed.
 		if (box.Enabled && (label?.IsDisposed ?? true))
 		{
-			if (label is not null)
-				label.Visible = false;
+			label?.Hide();
 			return;
 		}
 		//	I think (?) this if-statement is overkill, but in case I'm wrong, it can't hurt.
 		var parent = box.Parent.OrThrow();
 		if (label is not null && parent.Contains(label))
 			parent.Controls.Remove(label);
-		label = ShadowLabels[name] = new ()
-									 {
-										 Name = name,
-										 Location = box.Location,
-										 Size = box.Size,
-										 Visible = !box.Visible,
-										 ForeColor = SystemColors.WindowText,
-										 Font = box.Font.Bold //	TODO: Probably never true, so this may actually waste not save cycles
-													? box.Font
-													: BoldFonts.GetOrSet(box.Font, BoldFont),
-										 BorderStyle = BorderStyle.FixedSingle
-									 };
+		label =
+			ShadowLabels[name] =
+				new ()
+				{
+					Name = name,
+					Location = box.Location,
+					Size = box.Size,
+					Visible = !box.Visible,
+					ForeColor = SystemColors.WindowText,
+					Font = box.Font.Bold //	TODO: Probably never true, so this may actually waste not save cycles
+							   ? box.Font
+							   : BoldFonts.GetOrSet(box.Font, BoldFont),
+					BorderStyle = BorderStyle.FixedSingle
+				};
 		box.UpdateShadowLabel(label);
 		(box.Parent?.Controls).OrThrow().Add(label);
 		//	It took me hours to figure out that this next line was
@@ -852,11 +669,14 @@ internal static partial class DCM
 	internal static string BulletList(this IEnumerable<object> items)
 		=> $"{Bullet}{Join(Bullet, items)}";
 
-	internal static string Points(this decimal number)
+	internal static string Points(this double number)
 		=> ((int)number).Points();
 
 	internal static string Points(this int number)
 		=> $"{"pt".Pluralize(number, true)}.";
+
+	internal static bool NotEquals(this double @this, double other)
+		=> !@this.Equals(other);
 
 	internal static void ActivateTab(this TabControl tabControl,
 									 int tabNumber)
@@ -873,8 +693,8 @@ internal static partial class DCM
 									 bool add,
 									 int? position = null)
 		=> (add
-				? page => tabControl.TabPages.Insert(position ?? tabControl.TabCount, page)
-				: (Action<TabPage>)tabControl.TabPages.Remove)(tabPage);
+            ? page => tabControl.TabPages.Insert(position ?? tabControl.TabCount, page)
+            : (Action<TabPage>)tabControl.TabPages.Remove)(tabPage);
 
 	internal static IEnumerable<T> WithPlayerId<T>(this IEnumerable<T> linkRecords,
 												   int playerId)
@@ -902,9 +722,19 @@ internal static partial class DCM
 	internal static DataGridViewCellStyle CellStyle(this PowerNames power)
 		=> PowerColors[power];
 
+	internal static string Tag(this DataGridViewCellStyle style)
+		=> $"""style="color: {style.ForeColor}; background-color: {style.BackColor};" """;
+
 	#endregion
 
 	#region UI utility methods
+
+	internal static void SkipHandlers(Action action)
+	{
+		SkippingHandlers = true;
+		action();
+		SkippingHandlers = false;
+	}
 
 	internal static void Show<T>(Action<T>? after = null)
 		where T : Form, new()
@@ -923,12 +753,21 @@ internal static partial class DCM
 	internal static Font BoldFont(Font font)
 		=> new (font, FontStyle.Bold);
 
+	internal static void SetVisible(bool visible, params List<Control> controls)
+		=> controls.ForEach(control => control.Visible = visible);
+
+	internal static void SetEnabled(bool enabled, params List<Control> controls)
+		=> controls.ForEach(control => control.Enabled = enabled);
+
 	#endregion
 
 	#region Other utility methods
 
-	internal static IEnumerable<int> Range(int x, int y)
-		=> Enumerable.Range(x, y);
+	internal static void ForRange(int start, int count, Action<int> action)
+		=> Range(start, count).ForEach(action);
+
+	internal static IEnumerable<int> Range(int start, int count)
+		=> Enumerable.Range(start, count);
 
 	internal static int RandomNumber(int maxValue = int.MaxValue)
 		=> Random.Next(maxValue);
@@ -939,9 +778,8 @@ internal static partial class DCM
 
 	internal static MailMessage WriteEmail(string subject,
 										   string body,
-										   IEnumerable<Player> toPlayers,
-										   string? fromName = null,
-										   bool toTestAddressOnly = false)
+										   Player? toPlayer = null,
+										   string? fromName = null)
 	{
 		var message = new MailMessage
 					  {
@@ -950,13 +788,13 @@ internal static partial class DCM
 						  Body = body,
 						  IsBodyHtml = true
 					  };
-		if (toTestAddressOnly || Settings.TestEmailOnly)
+		if (toPlayer is null || Settings.TestEmailOnly)
 		{
 			const string toTestOnlyInfo = """
-			                              <h4 style='text-align:center; color:red;'>
-			                              												THIS EMAIL WAS SENT TO THE TEST ADDRESS ONLY!
-			                              											</h4>
-			                              """;
+                                          <h4 style='text-align:center; color:red;'>
+                                              THIS EMAIL WAS SENT TO THE TEST ADDRESS ONLY!
+                                          </h4>
+                                          """;
 			var testAddress = Settings.TestEmailAddress;
 			if (testAddress.Length is 0)
 				throw new InvalidOperationException(); //	TODO
@@ -965,9 +803,9 @@ internal static partial class DCM
 			message.Body = toTestOnlyInfo + body;
 		}
 		else
-			toPlayers.SelectMany(static player => player.EmailAddresses
-														.Select(email => new MailAddress(email, player.Name)))
-					 .ForEach(message.To.Add);
+			toPlayer.EmailAddresses
+					.Select(email => new MailAddress(email, toPlayer.Name))
+					.ForEach(message.To.Add);
 		return message;
 	}
 
@@ -977,17 +815,17 @@ internal static partial class DCM
 		if (host.Length is 0)
 			return SmtpHostNotSet;
 		using var client = new SmtpClient(host, Settings.SmtpPort);
-		client.Credentials = new System.Net.NetworkCredential(Settings.SmtpUsername, Settings.SmtpPassword);
+		client.Credentials = new NetworkCredential(Settings.SmtpUsername, Settings.SmtpPassword);
 		client.EnableSsl = Settings.SmtpSsl;
 		var tasks = messages.ToDictionary(static message => message.To, client.SendMailAsync);
 		WaitAll([..tasks.Values]);
 		return [..tasks.Where(static t => t.Value.IsFaulted)
-					   .Select(static task => $"Problem sending email to {task.Key}: {task.Value.Exception?.Message}")];
+					   .Select(static task => $"Problem sending email to {task.Key}: {task.Value.Exception?.Message ?? "UNKNOWN"}")];
 	}
 
 	internal static string[] SendTestEmail(string subject,
 										   string body)
-		=> SendEmail(WriteEmail(subject, body, Array.Empty<Player>(), toTestAddressOnly: true));
+		=> SendEmail(WriteEmail(subject, body));
 
 	#endregion
 

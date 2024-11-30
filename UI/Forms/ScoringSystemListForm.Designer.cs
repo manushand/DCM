@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -103,9 +103,9 @@
 
 		#endregion
 
-		private System.Windows.Forms.ListBox ScoringSystemListBox;
-		private System.Windows.Forms.Button OpenButton;
-		private System.Windows.Forms.Button NewButton;
-		private System.Windows.Forms.Button DeleteButton;
+		private ListBox ScoringSystemListBox;
+		private Button OpenButton;
+		private Button NewButton;
+		private Button DeleteButton;
 	}
 }

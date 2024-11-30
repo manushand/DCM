@@ -34,18 +34,13 @@ internal sealed partial class EmailSettingsForm : Form
 
 	#region Fields and properties
 
-	private static readonly string TemplateLegend = Join(NewLine,
-														 "Available", "Mustaches:", null,
-														 "{TournamentName}", "{PlayerName}");
+	private static readonly string[] TemplateLegend = ["Available", "Fill-Ins:", string.Empty, "{TournamentName}", "{PlayerName}"];
 
 	private static readonly string AssignmentTemplateLegend = Join(NewLine,
-																   TemplateLegend,
-																   "{PowerName}", "{GameNumber}",
-																   "{RoundNumber}, {Assignments}");
+																   [..TemplateLegend,
+																   "{PowerName}", "{GameNumber}", "{RoundNumber}", "{Assignments}"]);
 
-	private static readonly string AnnouncementTemplateLegend = Join(NewLine,
-																	 TemplateLegend,
-																	 "{MessageText}");
+	private static readonly string AnnouncementTemplateLegend = Join(NewLine, [..TemplateLegend, "{MessageText}"]);
 
 	private bool SettingsSaved => HostTextBox.Text.Matches(Settings.SmtpHost)
 							   && PortTextBox.Text == $"{Settings.SmtpPort}"
@@ -67,8 +62,8 @@ internal sealed partial class EmailSettingsForm : Form
 	private void SaveAndSendButton_Click(object sender,
 										 EventArgs e)
 	{
-		string? error = null;
-		var port = 0;
+		var error = string.Empty;
+		var port = 25;
 		if (Uri.CheckHostName(HostTextBox.Text) is UriHostNameType.Unknown)
 			error = "Host name is invalid.";
 		else if (PortTextBox.TextLength > 0 && (!int.TryParse(PortTextBox.Text, out port) || port is < 1 or > 65535))
@@ -77,27 +72,25 @@ internal sealed partial class EmailSettingsForm : Form
 			error = "From email address is missing or invalid.";
 		else if (TestEmailTextBox.TextLength is 0 || !TestEmailTextBox.Text.IsValidEmail())
 			error = "Test email address is missing or invalid.";
-		else if (port is 0)
-			port = 25;
-		if (error is null)
+		if (error.Length > 0)
 		{
-			Settings.SmtpHost = HostTextBox.Text;
-			Settings.SmtpPort = port;
-			Settings.SmtpSsl = UseSslCheckBox.Checked;
-			Settings.SmtpUsername = UsernameTextBox.Text;
-			Settings.SmtpPassword = PasswordTextBox.Text;
-			Settings.TestEmailAddress = TestEmailTextBox.Text;
-			Settings.FromEmailAddress = MailFromTextBox.Text;
-			Settings.FromEmailName = FromNameTextBox.Text;
-			Settings.TestEmailOnly = OnlySendToTestCheckBox.Checked;
-			Settings.Save();
-			Settings_Changed();
+			MessageBox.Show(error,
+							"Invalid Email Settings",
+							OK,
+							Error);
 			return;
 		}
-		MessageBox.Show(error,
-						"Invalid Email Settings",
-						OK,
-						Error);
+		Settings.SmtpHost = HostTextBox.Text;
+		Settings.SmtpPort = port;
+		Settings.SmtpSsl = UseSslCheckBox.Checked;
+		Settings.SmtpUsername = UsernameTextBox.Text;
+		Settings.SmtpPassword = PasswordTextBox.Text;
+		Settings.TestEmailAddress = TestEmailTextBox.Text;
+		Settings.FromEmailAddress = MailFromTextBox.Text;
+		Settings.FromEmailName = FromNameTextBox.Text;
+		Settings.TestEmailOnly = OnlySendToTestCheckBox.Checked;
+		Settings.Save();
+		Settings_Changed();
 	}
 
 	private void TemplatesTabControl_SelectedIndexChanged(object? sender = null,
@@ -116,28 +109,28 @@ internal sealed partial class EmailSettingsForm : Form
 	private void SaveOrSendTemplateButton_Click(object sender,
 												EventArgs e)
 	{
-		if (TemplatesSaved)
+		if (!TemplatesSaved)
 		{
-			var currentTab = TemplatesTabControl.SelectedTab.OrThrow();
-			var result = SendTestEmail($"DCM TEST EMAIL: {currentTab.Text}",
-									   currentTab == AssignmentTemplateTabPage
-										   ? AssignmentTemplateTextBox.Text
-										   : AnnouncementTemplateTextBox.Text);
-			var succeeded = result.Length is 0;
-			MessageBox.Show(succeeded
-								? "Test email sent successfully."
-								: Join(NewLine, result),
-							"Test Email Result",
-							OK,
-							succeeded
-								? Information
-								: Error);
+			Settings.AssignmentEmailTemplate = AssignmentTemplateTextBox.Text;
+			Settings.AnnouncementEmailTemplate = AnnouncementTemplateTextBox.Text;
+			Settings.Save();
+			TemplateTextBox_TextChanged();
 			return;
 		}
-		Settings.AssignmentEmailTemplate = AssignmentTemplateTextBox.Text;
-		Settings.AnnouncementEmailTemplate = AnnouncementTemplateTextBox.Text;
-		Settings.Save();
-		TemplateTextBox_TextChanged();
+		var currentTab = TemplatesTabControl.SelectedTab.OrThrow();
+		var result = SendTestEmail($"DCM TEST EMAIL: {currentTab.Text}",
+								   currentTab == AssignmentTemplateTabPage
+									   ? AssignmentTemplateTextBox.Text
+									   : AnnouncementTemplateTextBox.Text);
+		var succeeded = result.Length is 0;
+		MessageBox.Show(succeeded
+							? "Test email sent successfully."
+							: Join(NewLine, result),
+						"Test Email Result",
+						OK,
+						succeeded
+							? Information
+							: Error);
 	}
 
 	private void Settings_Changed(object? sender = null,

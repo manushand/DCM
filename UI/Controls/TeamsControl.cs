@@ -23,9 +23,7 @@ internal sealed partial class TeamsControl : UserControl
 	{
 		_tournamentInfoForm = tournamentInfoForm;
 		LastNameRadioButton.Checked = true;
-		JoinButton.Enabled =
-			FormTeamButton.Enabled =
-				false;
+		SetEnabled(false, JoinButton, FormTeamButton);
 		FillTeamList();
 		TeamSizeLabel.Text = $"Maximum{NewLine}Team Size: {Tournament.TeamSize}";
 	}
@@ -86,9 +84,7 @@ internal sealed partial class TeamsControl : UserControl
 
 	private void SelectNoTeam()
 	{
-		RenameButton.Enabled =
-			DissolveButton.Enabled =
-				false;
+		SetEnabled(false, RenameButton, DissolveButton);
 		MemberListBox.Items.Clear();
 		NonMemberListBox.Items.Clear();
 		MembersLabel.Text = "Members";
@@ -99,18 +95,14 @@ internal sealed partial class TeamsControl : UserControl
 	{
 		if (NonMemberListBox.SelectedItem is Player joiningPlayer)
 		{
-			SkipHandlers = true;
-			NonMemberListBox.ClearSelected();
-			SkipHandlers = false;
+			SkipHandlers(NonMemberListBox.ClearSelected);
 			Team.AddPlayer(joiningPlayer);
 			FillMembershipLists();
 			MemberListBox.SelectedItem = MemberListBox.Find(joiningPlayer);
 		}
 		else if (MemberListBox.SelectedItem is Player leavingPlayer)
 		{
-			SkipHandlers = true;
-			MemberListBox.ClearSelected();
-			SkipHandlers = false;
+			SkipHandlers(MemberListBox.ClearSelected);
 			Delete(Team.TeamPlayers.ByPlayerId(leavingPlayer.Id));
 			FillMembershipLists();
 			NonMemberListBox.SelectedItem = NonMemberListBox.Find(leavingPlayer);
@@ -120,11 +112,9 @@ internal sealed partial class TeamsControl : UserControl
 	private void NonMemberListBox_SelectedIndexChanged(object sender,
 													   EventArgs e)
 	{
-		if (SkipHandlers || _team is null)
+		if (SkippingHandlers || _team is null)
 			return;
-		SkipHandlers = true;
-		MemberListBox.ClearSelected();
-		SkipHandlers = false;
+		SkipHandlers(MemberListBox.ClearSelected);
 		JoinButton.Enabled = MemberListBox.Items.Count < Tournament.TeamSize
 						  && NonMemberListBox.SelectedItem is not null;
 		JoinButton.Text = "◀─── Join Team";
@@ -133,11 +123,9 @@ internal sealed partial class TeamsControl : UserControl
 	private void MemberListBox_SelectedIndexChanged(object sender,
 													EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
-		SkipHandlers = true;
-		NonMemberListBox.ClearSelected();
-		SkipHandlers = false;
+		SkipHandlers(NonMemberListBox.ClearSelected);
 		JoinButton.Enabled = MemberListBox.SelectedItem is not null;
 		JoinButton.Text = "Leave Team ─▶";
 	}
@@ -150,14 +138,13 @@ internal sealed partial class TeamsControl : UserControl
 		NewTeamNameTextBox.Text = null;
 		FormTeamButton.Enabled = false;
 		_team = team;
-		SkipHandlers = true;
-		MemberListBox.ClearSelected();
-		NonMemberListBox.ClearSelected();
-		SkipHandlers = false;
+		SkipHandlers(() =>
+					 {
+						 MemberListBox.ClearSelected();
+						 NonMemberListBox.ClearSelected();
+					 });
 		FillMembershipLists();
-		RenameButton.Enabled =
-			DissolveButton.Enabled =
-				true;
+		SetEnabled(true, RenameButton, DissolveButton);
 		JoinButton.Enabled = false;
 	}
 

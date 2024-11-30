@@ -2,9 +2,11 @@
 
 internal sealed partial class RegistrationControl : UserControl
 {
-	private RoundInfoForm? _roundInfoForm;
-
-	private RoundInfoForm RoundInfoForm => _roundInfoForm.OrThrow();
+	private RoundInfoForm RoundInfoForm
+	{
+		get => field == RoundInfoForm.Empty ? throw new NullReferenceException(nameof (RoundInfoForm)) : field;
+		set;
+	} = RoundInfoForm.Empty;
 
 	private List<Player> UnregisteredPlayers { get; } = [];
 
@@ -30,16 +32,15 @@ internal sealed partial class RegistrationControl : UserControl
 
 	internal void LoadControl(RoundInfoForm roundChanger)
 	{
-		_roundInfoForm = roundChanger;
+		RoundInfoForm = roundChanger;
 		var startedRounds = Tournament.Rounds.Length - 1;
 		RegistrationCheckBoxes.Apply((box, roundNumber) =>
 									 {
 										 box.Visible = roundNumber < Tournament.TotalRounds;
 										 box.Enabled = roundNumber > startedRounds;
 									 });
-		RoundsRegisteredGroupBox.Visible =
-			RegisterPlayerButton.Visible =
-				false;
+		RoundsRegisteredGroupBox.Hide();
+		RegisterPlayerButton.Hide();
 		LastNameRegistrationTabRadioButton.Checked = true;
 	}
 
@@ -73,9 +74,8 @@ internal sealed partial class RegistrationControl : UserControl
 																		? player.Name
 																		: player.ByLastName)
 												 .ToArray();
-		SkipHandlers = true; //	TODO - is this necessary?
-		RegisteredDataGridView.FillWith(registeredPlayers);
-		SkipHandlers = false;
+		//  TODO - Is Eventless needed??
+		SkipHandlers(() => RegisteredDataGridView.FillWith(registeredPlayers));
 		RegisteredPlayersLabel.Text = "Registered Player".Pluralize(registeredPlayers, true);
 		if (selectedRegisteredPlayer is not null)
 			SetRegisteredPlayer(selectedRegisteredPlayer);
@@ -84,16 +84,12 @@ internal sealed partial class RegistrationControl : UserControl
 	private void UnregisteredListBox_SelectedIndexChanged(object sender,
 														  EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		if (RegisteredDataGridView.CurrentRow is not null)
-		{
-			SkipHandlers = true;
-			RegisteredDataGridView.Deselect();
-			SkipHandlers = false;
-		}
-		RoundsRegisteredGroupBox.Visible = false;
-		RegisterPlayerButton.Visible = true;
+			SkipHandlers(RegisteredDataGridView.Deselect);
+		RoundsRegisteredGroupBox.Hide();
+		RegisterPlayerButton.Show();
 		RegisterPlayerButton.Text = "Register This Player  ───────▶";
 	}
 
@@ -131,17 +127,14 @@ internal sealed partial class RegistrationControl : UserControl
 		var tournamentPlayer = Tournament.TournamentPlayers
 										 .ByPlayerId(player.Id);
 		RoundsRegisteredGroupBox.Text = player.Name;
-		SkipHandlers = true;
-		for (var round = 0; round < Tournament.TotalRounds; ++round)
-			RegistrationCheckBoxes[round].Checked = tournamentPlayer.RegisteredForRound(round + 1);
-		SkipHandlers = false;
+		SkipHandlers(() => ForRange(0, Tournament.TotalRounds, round => RegistrationCheckBoxes[round].Checked = tournamentPlayer.RegisteredForRound(round + 1)));
 		RegisteredDataGridView.SelectRowWhere<RegisteredPlayer>(rp => rp.Id == player.Id);
 	}
 
 	private void RoundRegistrationCheckBox_CheckedChanged(object sender,
 														  EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		var checkBox = (CheckBox)sender;
 		var roundNumber = RegistrationCheckBoxes.IndexOf(checkBox) + 1;
@@ -160,21 +153,18 @@ internal sealed partial class RegistrationControl : UserControl
 
 	private void RegisteredDataGridView_DataBindingComplete(object sender,
 															DataGridViewBindingCompleteEventArgs e)
-		=> RegisteredDataGridView.FillColumn(0);
+		=> RegisteredDataGridView.FillColumn(default);
 
 	private void RegisteredDataGridView_SelectionChanged(object? sender = null,
 														 EventArgs? e = null)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
-		SkipHandlers = true;
-		UnregisteredListBox.ClearSelected();
-		SkipHandlers = false;
+		SkipHandlers(UnregisteredListBox.ClearSelected);
 		if (RegisteredDataGridView.CurrentRow?.DataBoundItem is not RegisteredPlayer registeredPlayer)
 			return;
-		RoundsRegisteredGroupBox.Visible =
-			RegisterPlayerButton.Visible =
-				true;
+		RoundsRegisteredGroupBox.Show();
+		RegisterPlayerButton.Show();
 		RegisterPlayerButton.Text = "◀───────  Unregister This Player";
 		SetRegisteredPlayer(registeredPlayer.Player);
 	}
@@ -204,8 +194,7 @@ internal sealed partial class RegistrationControl : UserControl
 		=> RegistrationCheckBoxes[Tournament.Rounds.Length - 1].Enabled = enabled;
 
 	private void NewPlayerButton_Click(object sender, EventArgs e)
-		=> Show<PlayerInfoForm>(static () => new (),
-								form =>
+		=> Show<PlayerInfoForm>(form =>
 								{
 									var newPlayer = form.Player;
 									if (newPlayer.Id > 0)

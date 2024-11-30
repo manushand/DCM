@@ -3,8 +3,8 @@
 internal interface IRecord
 {
 	[Browsable(false)]
-	public string PrimaryKey => throw new NotSupportedException();
+	internal string PrimaryKey => throw new NotSupportedException();
 
-	public IRecord Load(DbDataReader _)
+	internal IRecord Load(DbDataReader _)
 		=> throw new NotSupportedException();
 }

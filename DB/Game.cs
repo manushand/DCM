@@ -3,8 +3,6 @@
 internal sealed class Game : IdentityRecord
 {
 	private DateTime? _date;
-	private Round? _round;
-	private ScoringSystem? _scoringSystem;
 	private int? _scoringSystemId;
 
 	internal int Number;
@@ -38,21 +36,23 @@ internal sealed class Game : IdentityRecord
 
 	internal Round Round
 	{
-		get => _round ??= ReadById<Round>(RoundId).OrThrow();
-		init => (_round, RoundId) = (value, value.Id);
-	}
+		get => field == Round.Empty
+				   ? field = ReadById<Round>(RoundId).OrThrow()
+				   : field;
+		init => (field, RoundId) = (value, value.Id);
+	} = Round.Empty;
 
 	internal ScoringSystem ScoringSystem
 	{
-		get => _scoringSystem ??= ReadById<ScoringSystem>(ScoringSystemId).OrThrow();
-		set => (_scoringSystem, _scoringSystemId) = (value, value.Id == Round.ScoringSystemId
-																? null
-																: value.Id);
-	}
+		get => field == ScoringSystem.Empty
+				   ? field = ReadById<ScoringSystem>(ScoringSystemId).OrThrow()
+				   : field;
+		set => (field, _scoringSystemId) = (value, value.Id == Round.ScoringSystemId ? null : value.Id);
+	} = ScoringSystem.Empty;
 
 	internal IEnumerable<int> PlayerIds => GamePlayers.Select(static gamePlayer => gamePlayer.PlayerId);
 
-	internal decimal AveragePreGameScore => GamePlayers.Select(PreGameScore)
+	internal double AveragePreGameScore => GamePlayers.Select(PreGameScore)
 													   .ToArray() //	These two .ToArray() call aren't needed, ...
 													   .DefaultIfEmpty(Tournament.UnplayedScore)
 													   .ToArray() //	...but for some reason they increase speed big-time
@@ -65,13 +65,12 @@ internal sealed class Game : IdentityRecord
 	///     games according to the group's ratings rules) for this player as-of before this Game was played.
 	/// </summary>
 	/// <returns></returns>
-	internal decimal PreGameScore(GamePlayer gamePlayer)
+	internal double PreGameScore(GamePlayer gamePlayer)
 		=> Tournament.Group is null
 			   ? Round.PreRoundScore(gamePlayer)
 			   : Tournament.Group
 						   .RatePlayer(gamePlayer.Player, this)?
-						   .Rating
-			  ?? 0m;
+						   .Rating ?? 0;
 
 	/// <summary>
 	///     Calculates the FinalScore for all GamePlayers in the game, according to the

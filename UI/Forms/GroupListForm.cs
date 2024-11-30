@@ -2,6 +2,7 @@
 
 internal sealed partial class GroupListForm : Form
 {
+	[DesignerSerializationVisibility(Hidden)]
 	internal Group? Group { get; private set; }
 
 	public GroupListForm()

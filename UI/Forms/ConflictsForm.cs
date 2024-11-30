@@ -9,12 +9,8 @@ internal sealed partial class ConflictsForm : Form
 	{
 		//	TODO: add ability to order by last name??
 		PlayerNameComboBox.FillWithSorted<Player>();
-		IncreaseButton.Visible =
-			DecreaseButton.Visible =
-				false;
-		NewConflictLabel.Visible =
-			NewConflictNameComboBox.Visible =
-				Player is not null;
+		SetVisible(false, IncreaseButton, DecreaseButton);
+		SetVisible(Player is not null, NewConflictLabel, NewConflictNameComboBox);
 		PlayerNameComboBox.SetSelectedItem(Player);
 	}
 
@@ -23,22 +19,19 @@ internal sealed partial class ConflictsForm : Form
 	#region Utility method
 
 	private void UpdateConflictInfo()
-	{
-		var player = Player.OrThrow();
-		SkipHandlers = true;
-		var playerId = player.Id;
-		var conflicts = player.PlayerConflicts;
-		var conflictedIds = conflicts.SelectMany(static conflict => conflict.PlayerIds)
-									 .ToArray();
-		//	TODO: This sorts by first name only
-		NewConflictNameComboBox.FillWithSortedPlayers(other => !conflictedIds.Contains(other.Id)
-															   //	This && clause is overkill
-															&& other.Id != playerId);
-		ConflictsDataGridView.FillWith(conflicts.Select(conflict => new ConflictedPlayer(conflict, playerId))
-												.OrderBy(static conflictedPlayer => conflictedPlayer.Player.Name)
-												.ToArray());
-		SkipHandlers = false;
-	}
+		=> SkipHandlers(() =>
+						{
+							var player = Player.OrThrow();
+							var playerId = player.Id;
+							var conflicts = player.PlayerConflicts;
+							int[] conflictedIds = [..conflicts.SelectMany(static conflict => conflict.PlayerIds)];
+							//	TODO: This sorts by first name only
+							NewConflictNameComboBox.FillWithSortedPlayers(other => !conflictedIds.Contains(other.Id)
+																				   //	This && clause is overkill
+																				   && other.Id != playerId);
+							ConflictsDataGridView.FillWith(conflicts.Select(conflict => new ConflictedPlayer(conflict, playerId))
+																	.OrderBy(static conflictedPlayer => conflictedPlayer.Player.Name));
+						});
 
 	#endregion
 
@@ -81,24 +74,18 @@ internal sealed partial class ConflictsForm : Form
 
 	#region Fields and Properties
 
-	private Player? _player;
-
 	private Player? Player
 	{
-		get => _player;
+		get;
 		set
 		{
-			_player = value;
+			field = value;
 			if (value is null)
 				return;
-			NewConflictLabel.Visible =
-				NewConflictNameComboBox.Visible =
-					true;
+			SetVisible(true, NewConflictLabel, NewConflictNameComboBox);
 			UpdateConflictInfo();
 			ConflictsDataGridView.Deselect();
-			IncreaseButton.Visible =
-				DecreaseButton.Visible =
-					false;
+			SetVisible(false, IncreaseButton, DecreaseButton);
 		}
 	}
 
@@ -130,12 +117,13 @@ internal sealed partial class ConflictsForm : Form
 											.Index;
 		conflictee.ModifyConflict(sender == DecreaseButton);
 		UpdateConflictInfo();
-		SkipHandlers = true;
-		if (ConflictsDataGridView.RowCount > selected
-		 && ConflictsDataGridView.GetAtIndex<ConflictedPlayer>(selected).Player.Is(conflictee.Player))
-			ConflictsDataGridView.CurrentCell = ConflictsDataGridView.Rows[selected]
-																	 .Cells[0];
-		SkipHandlers = false;
+		SkipHandlers(() =>
+        {
+			if (ConflictsDataGridView.RowCount > selected
+				&&  ConflictsDataGridView.GetAtIndex<ConflictedPlayer>(selected).Player.Is(conflictee.Player))
+				ConflictsDataGridView.CurrentCell = ConflictsDataGridView.Rows[selected]
+																		 .Cells[0];
+        });
 		ConflictsDataGridView_SelectionChanged();
 	}
 
@@ -158,12 +146,10 @@ internal sealed partial class ConflictsForm : Form
 	private void ConflictsDataGridView_SelectionChanged(object? sender = null,
 														EventArgs? e = null)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		Conflictee = (ConflictedPlayer?)ConflictsDataGridView.CurrentRow?.DataBoundItem;
-		IncreaseButton.Visible =
-			DecreaseButton.Visible =
-				Conflictee is not null;
+		SetVisible(Conflictee is not null, IncreaseButton, DecreaseButton);
 	}
 
 	#endregion

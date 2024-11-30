@@ -4,7 +4,7 @@ internal abstract class IdentityRecord : IInfoRecord, IComparable<IdentityRecord
 {
 	internal int Id;
 
-	internal virtual string Name { get; set; } = Empty;
+	internal virtual string Name { get; set; } = string.Empty;
 
 	internal bool Is(IdentityRecord other)
 		=> Id == other.Id;

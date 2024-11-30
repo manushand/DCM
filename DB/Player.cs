@@ -2,9 +2,11 @@
 
 internal sealed class Player : IdentityRecord
 {
-	internal string EmailAddress = Empty;
-	internal string FirstName = Empty;
-	internal string LastName = Empty;
+	internal static readonly Player Empty = new ();
+
+	internal string EmailAddress = string.Empty;
+	internal string FirstName = string.Empty;
+	internal string LastName = string.Empty;
 
 	internal override string Name => $"{FirstName} {LastName}";
 

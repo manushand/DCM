@@ -19,62 +19,62 @@ internal sealed partial class TournamentControl : UserControl
 
 	internal void LoadControl(TournamentInfoForm tournamentInfoForm)
 	{
-		SkipHandlers = true;
-		_tournamentInfoForm = tournamentInfoForm;
-		ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
-		MinimumRoundsComboBox.FillRange(1, 9);
-		if (Tournament.Id is 0)
-		{
-			Text = "New Tournament ─ Settings";
-			CopyButton.Visible = false;
-			Tournament.TotalRounds = 2;
-			Tournament.MinimumRounds = 1;
-			TotalRoundsComboBox.SelectedIndex =
-				MinimumRoundsComboBox.SelectedIndex =
-					PowerAssignmentComboBox.SelectedIndex =
-						PowerGroupComboBox.SelectedIndex =
-							TeamSizeComboBox.SelectedIndex =
-								0;
-			UnplayedScoreTextBox.Text = "0";
-			PlayerConflictTextBox.Text =
-				PowerConflictTextBox.Text =
-					"1";
-			DateTimePicker.Value = DateTime.Today;
-		}
-		else
-		{
-			ScoringSystemComboBox.SetSelectedItem(Tournament.ScoringSystem);
-			TournamentInfoForm.SetFormTitle();
-			NameTextBox.Text = Tournament.Name;
-			DescriptionTextBox.Text = Tournament.Description;
-			TotalRoundsComboBox.SelectedIndex = Tournament.TotalRounds - 2;
-			MinimumRoundsComboBox.SelectedIndex = Tournament.MinimumRounds - 1;
-			UnplayedScoreTextBox.Text = $"{Tournament.UnplayedScore}";
-			DropCheckBox.Checked = Tournament.RoundsToDrop is not 0;
-			RoundsToDropComboBox.SelectedIndex = Abs(Tournament.RoundsToDrop) - 1;
-			DropWhenComboBox.SelectedIndex = Tournament.DropBeforeFinalRound
-													   .AsInteger();
-			ScaleCheckBox.Checked = Tournament.RoundsToScale is not 0;
-			RoundsToScaleComboBox.SelectedIndex = Abs(Tournament.RoundsToScale) - 1;
-			ScaleFactorTextBox.Text = $"{Tournament.ScalePercentage}";
-			PowerGroupComboBox.SelectedIndex = Tournament.GroupPowers
-														 .AsInteger();
-			PowerAssignmentComboBox.SelectedIndex = (!Tournament.AssignPowers).AsInteger();
-			PlayerConflictTextBox.Text = $"{Tournament.PlayerConflict}";
-			PowerConflictTextBox.Text = $"{Tournament.PowerConflict}";
-			ScoreConflictTextBox.Text = $"{Tournament.ScoreConflict}";
-			TeamSizeComboBox.SelectedIndex = Max(Tournament.TeamSize - 2, 0);
-			DateTimePicker.Value = Tournament.Date;
-			if (Tournament.HasTeamTournament)
+		SkipHandlers(() =>
+        {
+			_tournamentInfoForm = tournamentInfoForm;
+			ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
+			MinimumRoundsComboBox.FillRange(1, 9);
+			if (Tournament.Id is 0)
 			{
+				Text = "New Tournament ─ Settings";
+				CopyButton.Hide();
+				Tournament.TotalRounds = 2;
+				Tournament.MinimumRounds = 1;
+				TotalRoundsComboBox.SelectedIndex =
+					MinimumRoundsComboBox.SelectedIndex =
+						PowerAssignmentComboBox.SelectedIndex =
+							PowerGroupComboBox.SelectedIndex =
+								TeamSizeComboBox.SelectedIndex =
+									0;
+				UnplayedScoreTextBox.Text = "0";
+				PlayerConflictTextBox.Text =
+					PowerConflictTextBox.Text =
+						"1";
+				DateTimePicker.Value = DateTime.Today;
+			}
+			else
+			{
+				ScoringSystemComboBox.SetSelectedItem(Tournament.ScoringSystem);
+				TournamentInfoForm.SetFormTitle();
+				NameTextBox.Text = Tournament.Name;
+				DescriptionTextBox.Text = Tournament.Description;
+				TotalRoundsComboBox.SelectedIndex = Tournament.TotalRounds - 2;
+				MinimumRoundsComboBox.SelectedIndex = Tournament.MinimumRounds - 1;
+				UnplayedScoreTextBox.Text = $"{Tournament.UnplayedScore}";
+				DropCheckBox.Checked = Tournament.RoundsToDrop is not 0;
+				RoundsToDropComboBox.SelectedIndex = Abs(Tournament.RoundsToDrop) - 1;
+				DropWhenComboBox.SelectedIndex = Tournament.DropBeforeFinalRound
+														   .AsInteger();
+				ScaleCheckBox.Checked = Tournament.RoundsToScale is not 0;
+				RoundsToScaleComboBox.SelectedIndex = Abs(Tournament.RoundsToScale) - 1;
+				ScaleFactorTextBox.Text = $"{Tournament.ScalePercentage}";
+				PowerGroupComboBox.SelectedIndex = Tournament.GroupPowers
+															 .AsInteger();
+				PowerAssignmentComboBox.SelectedIndex = (!Tournament.AssignPowers).AsInteger();
+				PlayerConflictTextBox.Text = $"{Tournament.PlayerConflict}";
+				PowerConflictTextBox.Text = $"{Tournament.PowerConflict}";
+				ScoreConflictTextBox.Text = $"{Tournament.ScoreConflict}";
+				TeamSizeComboBox.SelectedIndex = Max(Tournament.TeamSize - 2, 0);
+				DateTimePicker.Value = Tournament.Date;
+				if (!Tournament.HasTeamTournament)
+					return;
 				TeamMemberConflictTextBox.Text = $"{Tournament.TeamConflict}";
 				TeamRoundComboBox.SelectedIndex = Tournament.TeamRound - 1;
 				TeamScoringComboBox.SelectedIndex = Tournament.TeamsPlayMultipleRounds
 															  .AsInteger();
 				MultiTeamMembershipCheckBox.Checked = Tournament.PlayerCanJoinManyTeams;
 			}
-		}
-		SkipHandlers = false;
+        });
 		//	Run the handlers that were skipped
 		if (!DropCheckBox.Checked)
 			DropCheckBox_CheckedChanged();
@@ -90,10 +90,7 @@ internal sealed partial class TournamentControl : UserControl
 		var totalRounds =
 			Tournament.TotalRounds =
 				TotalRoundsComboBox.SelectedIndex + 2;
-		MinimumRoundsComboBox.Enabled =
-			RoundsToDropComboBox.Enabled =
-				RoundsToScaleComboBox.Enabled =
-					true;
+		SetEnabled(true, MinimumRoundsComboBox, RoundsToDropComboBox, RoundsToScaleComboBox);
 		//	Hold the ComboBox's SelectedIndex before refilling it
 		var minimumRounds = MinimumRoundsComboBox.SelectedIndex;
 		MinimumRoundsComboBox.FillRange(1, totalRounds);
@@ -158,7 +155,7 @@ internal sealed partial class TournamentControl : UserControl
 	private void TeamSizeComboBox_SelectedIndexChanged(object? sender = null,
 													   EventArgs? e = null)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		var teamSize = TeamSizeComboBox.SelectedIndex;
 		if (teamSize > 0)
@@ -175,22 +172,15 @@ internal sealed partial class TournamentControl : UserControl
 								$"Cannot Set Team Size to {teamSize}",
 								OK,
 								Stop);
-				SkipHandlers = true;
-				TeamSizeComboBox.SelectedIndex = Tournament.TeamSize
-											   - (Tournament.TeamSize is 0 ? 0 : 2);
-				SkipHandlers = false;
+				SkipHandlers(() => TeamSizeComboBox.SelectedIndex = Tournament.TeamSize
+                                                                  - (Tournament.TeamSize is 0 ? 0 : 2));
 				return;
 			}
 		}
 		Tournament.TeamSize = teamSize;
-		TeamMemberConflictLabel.Visible =
-			TeamMemberConflictTextBox.Visible =
-				TeamScoringLabel.Visible =
-					TeamScoringComboBox.Visible =
-						TeamRoundInfoLabel.Visible =
-							TeamRoundComboBox.Visible =
-								MultiTeamMembershipCheckBox.Visible =
-									Tournament.HasTeamTournament;
+		SetVisible(Tournament.HasTeamTournament,
+				   TeamMemberConflictLabel, TeamMemberConflictTextBox, TeamScoringLabel, TeamScoringComboBox,
+				   TeamRoundInfoLabel, TeamRoundComboBox, MultiTeamMembershipCheckBox);
 		if (Tournament.HasTeamTournament
 		 && TeamScoringComboBox.SelectedItem is null)
 			TeamScoringComboBox.SelectedIndex = 0;
@@ -206,9 +196,8 @@ internal sealed partial class TournamentControl : UserControl
 														  EventArgs e)
 	{
 		Tournament.TeamsPlayMultipleRounds = TeamScoringComboBox.SelectedIndex is 1;
-		TeamRoundInfoLabel.Visible =
-			TeamRoundComboBox.Visible =
-				true;
+		TeamRoundInfoLabel.Show();
+		TeamRoundComboBox.Show();
 		TeamRoundInfoLabel.Text = TeamScoringComboBox.SelectedIndex is 0
 									  ? "Round Number to Use for Team Scoring:"
 									  : "Highest-Scoring Games to Score per Player:";
@@ -219,7 +208,7 @@ internal sealed partial class TournamentControl : UserControl
 	private void ScoringSystemComboBox_SelectedIndexChanged(object sender,
 															EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		var scoringSystem = ScoringSystemComboBox.GetSelected<ScoringSystem>();
 		var finishedGames = Tournament.FinishedGames;
@@ -227,9 +216,7 @@ internal sealed partial class TournamentControl : UserControl
 		 && Tournament.ScoringSystem
 					  .CheckChange(scoringSystem, finishedGames) is not DialogResult.Yes)
 		{
-			SkipHandlers = true;
-			ScoringSystemComboBox.SetSelectedItem(Tournament.ScoringSystem);
-			SkipHandlers = false;
+			SkipHandlers(() => ScoringSystemComboBox.SetSelectedItem(Tournament.ScoringSystem));
 			return;
 		}
 		Tournament.ScoringSystem = scoringSystem;
@@ -245,13 +232,10 @@ internal sealed partial class TournamentControl : UserControl
 	private void DropCheckBox_CheckedChanged(object? sender = null,
 											 EventArgs? e = null)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
-		var drop =
-			RoundsToDropComboBox.Visible =
-				RoundsToDropLabel.Visible =
-					DropWhenComboBox.Visible =
-						DropCheckBox.Checked;
+		var drop = DropCheckBox.Checked;
+		SetVisible(drop, RoundsToDropComboBox, RoundsToDropLabel, DropWhenComboBox);
 		DropCheckBox.Text = drop
 								? "Drop the lowest"
 								: "Drop scores?";
@@ -294,14 +278,10 @@ internal sealed partial class TournamentControl : UserControl
 	private void ScaleCheckBox_CheckedChanged(object? sender = null,
 											  EventArgs? e = null)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		var scale = ScaleCheckBox.Checked;
-		RoundsToScaleComboBox.Visible =
-			RoundsToScaleLabel.Visible =
-				ScaleFactorTextBox.Visible =
-					ScalePercentLabel.Visible =
-						scale;
+		SetVisible(scale, RoundsToScaleComboBox, RoundsToScaleLabel, ScaleFactorTextBox, ScalePercentLabel);
 		if (scale)
 		{
 			SetScaleCheckBoxText(DropCheckBox.Checked);
@@ -330,7 +310,7 @@ internal sealed partial class TournamentControl : UserControl
 	{
 		Tournament.Id = 0;
 		NameTextBox.Text = $"COPY OF {Tournament}";
-		CopyButton.Visible = false;
+		CopyButton.Hide();
 	}
 
 	private void OkButton_Click(object sender,
@@ -412,10 +392,7 @@ internal sealed partial class TournamentControl : UserControl
 													  EventArgs? e = null)
 	{
 		var useScoreConflicts = ScoreConflictCheckBox.Checked;
-		ScoreConflictTextBox.Visible =
-			ScoreConflictLabel.Visible =
-				ProgressiveScoreConflictCheckBox.Visible =
-					useScoreConflicts;
+		SetVisible(useScoreConflicts, ScoreConflictTextBox, ScoreConflictLabel, ProgressiveScoreConflictCheckBox);
 		ScoreConflictCheckBox.Text = useScoreConflicts
 										 ? "1 conflict pt. each"
 										 : "Score Conflict?";

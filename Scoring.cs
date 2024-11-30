@@ -1,24 +1,14 @@
 ﻿namespace DCM;
 
-//	This class (and each of its public members) is public so that C# formulas have access to it
+//	This class is public (as are most of its members) so that C# formulas have access to it
 [PublicAPI]
 public sealed partial class Scoring
 {
-	public enum PowerNames : sbyte
-	{
-		//	IMPORTANT: Values must be -1 through 6 to match ComboBox item order
-		TBD = -1,
-		Austria = 0,
-		England = 1,
-		France = 2,
-		Germany = 3,
-		Italy = 4,
-		Russia = 5,
-		Turkey = 6
-	}
+	internal static readonly Scoring Empty = new (ScoringSystem.Empty, []);
+
+	private PowerData? _player;
 
 	private ScoringSystem ScoringSystem { get; }
-
 	private Dictionary<PowerNames, GamePlayer> GamePlayers { get; }
 
 	internal PowerNames PlayerPower
@@ -32,7 +22,6 @@ public sealed partial class Scoring
 		ScoringSystem = scoringSystem;
 		GamePlayers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, static gamePlayer => gamePlayer);
 		Powers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, gamePlayer => new PowerData(this, gamePlayer));
-		AllPowerYears = [..gamePlayers.Select(static gamePlayer => gamePlayer.Years ?? 0)];
 	}
 
 	internal void UpdateProvisionalScores()
@@ -41,85 +30,67 @@ public sealed partial class Scoring
 	internal void UpdatePlayerAntes()
 		=> Powers.Keys.ForEach(power => Powers[power].PlayerAnte = GamePlayers[power].PlayerAnte);
 
-	#region Scoring properties
+	#region Scoring fields and properties
+
+	private IEnumerable<double> AllProvisionalScores => Powers.Select(static power => power.Value.ProvisionalScore);
+	private IEnumerable<double> AllPlayerAntes => Powers.Select(static power => power.Value.PlayerAnte);
+	private IEnumerable<double> RunningScores => Powers.Select(static power => power.Value.RunningScore);
+	private IEnumerable<double> AverageGameScores => Powers.Select(static power => power.Value.AverageGameScore);
+	private IEnumerable<double> AllOtherScores => Powers.Select(static power => power.Value.OtherScore);
 
 	#region Scoring properties shared by all players
 
-	//	Properties that are public are [UsedImplicitly] because they are exposed for use in C# formulae
-
-	private PowerData? _player;
-
-	//	C# Formula use case: if (Player is Austria) ...
-	public PowerData Player => _player.OrThrow();
-
+	//  C# Formula use case: foreach (var (name, data) in Powers) ...
 	public Dictionary<PowerNames, PowerData> Powers { get; }
 
-	public int PointsPerGame => ScoringSystem.PointsPerGame ?? 0;
+	//	C# Formula use case: if (Player == Austria) ...
+	public PowerData Player => _player.OrThrow();
 
 	//	C# Formula use case: Austria.Centers, England.Scoring, etc.
 	public PowerData Austria => Powers[PowerNames.Austria];
-
 	public PowerData England => Powers[PowerNames.England];
-
 	public PowerData France => Powers[PowerNames.France];
-
 	public PowerData Germany => Powers[PowerNames.Germany];
-
 	public PowerData Italy => Powers[PowerNames.Italy];
-
 	public PowerData Russia => Powers[PowerNames.Russia];
-
 	public PowerData Turkey => Powers[PowerNames.Turkey];
 
-	public int Winners => Powers.Count(static power => power.Value.Won);
-	public int Losers => Powers.Count(static power => power.Value.Lost);
-	public int DrawSize => Winners;
-	public int Survivors => Powers.Count(static power => power.Value.Survived);
-	public int LeaderCenters => Powers.Max(static power => power.Value.Centers);
+	public bool SingleWinner => Winners is 1;
+	public bool ScoringFirstPlayer => Player == Austria;
 
+	public int PointsPerGame => ScoringSystem.PointsPerGame ?? 0;
+	public int Losers => Powers.Count(static power => power.Value.Lost);
+	public int Survivors => Powers.Count(static power => power.Value.Survived);
+	public int Winners => Powers.Count(static power => power.Value.Won);
+	public int DrawSize => Winners;
+	public int LeaderCenters => Powers.Max(static power => power.Value.Centers);
 	public int FewestCenters => Powers.Where(static power => power.Value.Centers > 0)
 									  .Min(static power => power.Value.Centers);
-
 	public int SurvivorsCenters => Powers.Where(static power => power.Value.Lost)
 										 .Sum(static power => power.Value.Centers);
-
 	public int WinnersCenters => Powers.Where(static power => power.Value.Won)
 									   .Sum(static power => power.Value.Centers);
-
+	public int SumOfCentersSquared => Powers.Sum(static power => power.Value.CentersSquared);
 	public int GameYears => Powers.Max(static power => power.Value.Years);
+	public int SumOfYears => Powers.Sum(static power => power.Value.Years);
+	public int UnplayedYears => (ScoringSystem.FinalGameYear - 1900 ?? GameYears) - Player.Years;
 
-	public decimal SumOfCentersSquared => Powers.Values
-												.Sum(static power => power.CentersSquared);
-
-	public decimal SumOfYears => AllPowerYears.Sum();
-	public decimal SumOfProvisionalScores => AllProvisionalScores.Sum();
-	public decimal AverageProvisionalScore => AllProvisionalScores.Average();
-	public decimal SumOfPlayerAntes => AllPlayerAntes.Sum();
-	public decimal AveragePlayerAnte => AllPlayerAntes.Average();
-	public decimal LowestPlayerAnte => AllPlayerAntes.Min();
-	public decimal HighestPlayerAnte => AllPlayerAntes.Max();
-	public decimal SumOfRunningScores => RunningScores.Sum();
-	public decimal AverageRunningScore => RunningScores.Average();
-	public decimal LowestRunningScore => RunningScores.Min();
-	public decimal HighestRunningScore => RunningScores.Max();
-	public decimal AverageOfAverageGameScores => AverageGameScores.Average();
-	public decimal SumOfOtherScores => AllOtherScores.Sum();
-	public decimal SumOfEveryOtherScore => SumOfOtherScores;
-	public decimal AverageOtherScore => AllOtherScores.Average();
-	public decimal LowestOtherScore => AllOtherScores.Min();
-	public decimal HighestOtherScore => AllOtherScores.Max();
-
-	private List<int> AllPowerYears { get; }
-
-	private IEnumerable<decimal> AllProvisionalScores => Powers.Select(static power => power.Value.ProvisionalScore);
-
-	private IEnumerable<decimal> AllPlayerAntes => Powers.Select(static power => power.Value.PlayerAnte);
-
-	private IEnumerable<decimal> RunningScores => Powers.Select(static power => power.Value.RunningScore);
-
-	private IEnumerable<decimal> AverageGameScores => Powers.Select(static power => power.Value.AverageGameScore);
-
-	private IEnumerable<decimal> AllOtherScores => Powers.Select(static power => power.Value.OtherScore);
+	public double SumOfProvisionalScores => AllProvisionalScores.Sum();
+	public double AverageProvisionalScore => AllProvisionalScores.Average();
+	public double SumOfPlayerAntes => AllPlayerAntes.Sum();
+	public double AveragePlayerAnte => AllPlayerAntes.Average();
+	public double LowestPlayerAnte => AllPlayerAntes.Min();
+	public double HighestPlayerAnte => AllPlayerAntes.Max();
+	public double SumOfRunningScores => RunningScores.Sum();
+	public double AverageRunningScore => RunningScores.Average();
+	public double LowestRunningScore => RunningScores.Min();
+	public double HighestRunningScore => RunningScores.Max();
+	public double AverageOfAverageGameScores => AverageGameScores.Average();
+	public double SumOfOtherScores => AllOtherScores.Sum();
+	public double SumOfEveryOtherScore => SumOfOtherScores;
+	public double AverageOtherScore => AllOtherScores.Average();
+	public double LowestOtherScore => AllOtherScores.Min();
+	public double HighestOtherScore => AllOtherScores.Max();
 
 	#endregion
 
@@ -137,8 +108,10 @@ public sealed partial class Scoring
 	public bool SurvivedSolo => Player.SurvivedSolo;
 	public bool SurvivedDraw => Player.SurvivedDraw;
 	public bool SurvivedConcession => Player.SurvivedConcession;
+	public bool LostToSoleWinner => Player.LostToSoleWinner;
 	public bool Conceded => Player.Conceded;
 	public bool WasLeader => Player.WasLeader;
+
 	public int Centers => Player.Centers;
 	public int Years => Player.Years;
 	public int CentersSquared => Player.CentersSquared;
@@ -152,13 +125,14 @@ public sealed partial class Scoring
 	public int BestEliminationOrder => Player.BestEliminationOrder;
 	public int WorstEliminationOrder => Player.WorstEliminationOrder;
 	public int EliminationOrderSharers => Player.EliminationOrderSharers;
-	public decimal EliminationOrder => Player.EliminationOrder;
-	public decimal CenterRank => Player.CenterRank;
-	public decimal ProvisionalScore => Player.ProvisionalScore;
-	public decimal AverageGameScore => Player.AverageGameScore;
-	public decimal RunningScore => Player.RunningScore;
-	public decimal PlayerAnte => Player.PlayerAnte;
-	public decimal OtherScore => Player.OtherScore;
+
+	public double EliminationOrder => Player.EliminationOrder;
+	public double CenterRank => Player.CenterRank;
+	public double ProvisionalScore => Player.ProvisionalScore;
+	public double AverageGameScore => Player.AverageGameScore;
+	public double RunningScore => Player.RunningScore;
+	public double PlayerAnte => Player.PlayerAnte;
+	public double OtherScore => Player.OtherScore;
 
 	#endregion
 

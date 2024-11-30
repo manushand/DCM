@@ -7,13 +7,13 @@
 /// </summary>
 internal abstract class LinkRecord : IRecord
 {
-	private Player? _player;
-
 	internal Player Player
 	{
-		get => _player ??= ReadById<Player>(PlayerId).OrThrow();
-		set => (_player, PlayerId) = (value, value.Id);
-	}
+		get => field == Player.Empty
+				   ? field = ReadById<Player>(PlayerId).OrThrow()
+				   : field;
+		set => (field, PlayerId) = (value, value.Id);
+	} = Player.Empty;
 
 	internal virtual int PlayerId { get; private protected set; }
 

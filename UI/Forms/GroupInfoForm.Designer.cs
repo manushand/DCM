@@ -1,13 +1,13 @@
-﻿using DCM.UI.Controls;
-
-namespace DCM.UI.Forms
+﻿namespace DCM.UI.Forms
 {
+	using Controls;
+
 	partial class GroupInfoForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -208,18 +208,18 @@ namespace DCM.UI.Forms
 
 		#endregion
 
-		private System.Windows.Forms.ComboBox ScoringSystemComboBox;
-		private System.Windows.Forms.Label ScoringSystemLabel;
-		private System.Windows.Forms.TextBox ConflictTextBox;
-		private System.Windows.Forms.TextBox GroupNameTextBox;
-		private System.Windows.Forms.Button OkButton;
-		private System.Windows.Forms.Label MemberConflictLabel;
-		private System.Windows.Forms.Label GroupNameLabel;
-		private System.Windows.Forms.Button CancelFormButton;
+		private ComboBox ScoringSystemComboBox;
+		private Label ScoringSystemLabel;
+		private TextBox ConflictTextBox;
+		private TextBox GroupNameTextBox;
+		private Button OkButton;
+		private Label MemberConflictLabel;
+		private Label GroupNameLabel;
+		private Button CancelFormButton;
 		private GroupMembershipControl GroupMembershipControl;
-		private System.Windows.Forms.TextBox DescriptionTextBox;
-		private System.Windows.Forms.Label DescriptionLabel;
-		private System.Windows.Forms.Label RatingMethodLabel;
-		private System.Windows.Forms.Label RatingMethodDescriptionLabel;
+		private TextBox DescriptionTextBox;
+		private Label DescriptionLabel;
+		private Label RatingMethodLabel;
+		private Label RatingMethodDescriptionLabel;
 	}
 }

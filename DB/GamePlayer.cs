@@ -12,16 +12,15 @@ internal sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlay
 	}
 
 	internal int? Centers;
-	internal decimal Other;
-	internal decimal PlayerAnte;
+	internal double Other;
+	internal double PlayerAnte;
 	internal PowerNames Power;
-	internal decimal ProvisionalScore;
+	internal double ProvisionalScore;
 	internal Results Result;
 	internal int? Years;
 
-	private decimal? _finalScore;
+	private double? _finalScore;
 	private Game? _game;
-	private Tournament? _tournament;
 
 	[DisplayName(nameof (Game))]
 	public int GameNumber => Game.Number;
@@ -34,7 +33,7 @@ internal sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlay
 
 	public string Status => Game.Status switch
 							{
-								Seeded => Empty,
+								Seeded => string.Empty,
 								Underway => PlayComplete
 												? "⬤"
 												: "◯",
@@ -50,14 +49,14 @@ internal sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlay
 		set => (_game, GameId) = (value, value.Id);
 	}
 
-	internal decimal FinalScore
+	internal double FinalScore
 	{
 		get
 		{
 			//	TODO: Changing this to if (!Game.Scored) causes a stack overflow
 			if (_finalScore is null)
 				Game.CalculateScores();
-			return _finalScore ?? 0;
+			return _finalScore ?? default;
 		}
 		set
 		{
@@ -74,7 +73,7 @@ internal sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlay
 								|| Game.ScoringSystem.UsesCenterCount && Centers is null
 								|| Game.ScoringSystem.UsesYearsPlayed && Years is null;
 
-	private Tournament Tournament => _tournament ??= Game.Tournament;
+	private Tournament Tournament => Game.Tournament;
 
 	#region IComparable interface implementation
 
@@ -105,7 +104,7 @@ internal sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlay
 		Result = record.IntegerAs<Results>(nameof (Result));
 		Years = record.NullableInteger(nameof (Years));
 		Centers = record.NullableInteger(nameof (Centers));
-		Other = record.Decimal(nameof (Other));
+		Other = record.Double(nameof (Other));
 		return this;
 	}
 
@@ -134,19 +133,16 @@ internal sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlay
 
 	#region Seeding data and code
 
+	private int? _roundNumber;
 	private int? _conflict;
 
 	internal int Conflict
 	{
-		//	BUG: https://youtrack.jetbrains.com/issue/RSRP-475010 but R# is actually correct, viz.:
-		//	BUG: https://github.com/dotnet/csharplang/blob/master/meetings/2019/LDM-2019-04-15.md#result-type-of--expression
 		get => _conflict ??= CalculateConflict();
 		private set => _conflict = value;
 	}
 
-	internal readonly List<string> ConflictDetails = [];
-
-	private int? _roundNumber;
+	internal List<string> ConflictDetails { get; } = [];
 
 	private List<PlayerConflict> PlayerConflicts { get; } = [];
 
@@ -162,7 +158,7 @@ internal sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlay
 	//	will be re-referenced a lot during seeding when swaps are made and unmade.
 	internal GamePlayer PrepareForSeeding()
 	{
-		Conflict = 0;
+		Conflict = default;
 		ConflictDetails.Clear();
 		_roundNumber = Game.Round
 						   .Number;
@@ -200,8 +196,7 @@ internal sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlay
 												 && gamePlayer.PlayerId != PlayerId)
 							   .Select(static gamePlayer => gamePlayer.Player)
 							   .ToArray();
-		var opponentIds = opponents.Ids()
-								   .ToArray();
+		int[] opponentIds = [..opponents.Ids()];
 
 		//	Player-Personal conflicts
 		Conflict = PlayerConflicts.Where(playerConflict => playerConflict.PlayerIds.Any(opponentIds.Contains))

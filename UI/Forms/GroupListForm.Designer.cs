@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -74,7 +74,7 @@
 
 		#endregion
 
-		private System.Windows.Forms.ComboBox GroupComboBox;
-		private System.Windows.Forms.Label GroupNameLabel;
+		private ComboBox GroupComboBox;
+		private Label GroupNameLabel;
 	}
 }

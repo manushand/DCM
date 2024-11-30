@@ -5,10 +5,10 @@ internal sealed partial class Group
 	[PublicAPI]
 	internal sealed class RatingInfo : IRecord
 	{
-		internal readonly decimal Rating;
+		internal readonly double Rating;
 
 		[DisplayName(nameof (Rank))]
-		public string DisplayRank { get; private set; } = Empty;
+		public string DisplayRank { get; private set; } = string.Empty;
 
 		public Player Player { get; }
 
@@ -23,7 +23,7 @@ internal sealed partial class Group
 		}
 
 		internal RatingInfo(Player player,
-							decimal rating,
+							double rating,
 							ScoringSystem scoringSystem,
 							int games)
 			=> (Player, Rating, DisplayRating, Games) = (player, rating, scoringSystem.FormattedScore(rating), games);

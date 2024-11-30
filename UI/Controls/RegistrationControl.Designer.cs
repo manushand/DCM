@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -258,7 +258,7 @@
 			this.RegisteredDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
 			this.RegisteredDataGridView.BackgroundColor = System.Drawing.SystemColors.Window;
 			this.RegisteredDataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle2.Alignment = MiddleLeft;
 			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
 			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -342,26 +342,26 @@
 
 		#endregion
 
-		private System.Windows.Forms.Button StartFirstRoundButton;
-		private System.Windows.Forms.Panel OrderByNamePanel;
-		private System.Windows.Forms.RadioButton LastNameRegistrationTabRadioButton;
-		private System.Windows.Forms.RadioButton FirstNameRegistrationTabRadioButton;
-		private System.Windows.Forms.Label OrderByNameLabel;
-		private System.Windows.Forms.Label RegisteredPlayersLabel;
-		private System.Windows.Forms.Label UnregisteredPlayersLabel;
-		private System.Windows.Forms.GroupBox RoundsRegisteredGroupBox;
-		private System.Windows.Forms.CheckBox Round9RegistrationCheckBox;
-		private System.Windows.Forms.CheckBox Round8RegistrationCheckBox;
-		private System.Windows.Forms.CheckBox Round7RegistrationCheckBox;
-		private System.Windows.Forms.CheckBox Round6RegistrationCheckBox;
-		private System.Windows.Forms.CheckBox Round5RegistrationCheckBox;
-		private System.Windows.Forms.CheckBox Round4RegistrationCheckBox;
-		private System.Windows.Forms.CheckBox Round3RegistrationCheckBox;
-		private System.Windows.Forms.CheckBox Round2RegistrationCheckBox;
-		private System.Windows.Forms.CheckBox Round1RegistrationCheckBox;
-		private System.Windows.Forms.DataGridView RegisteredDataGridView;
-		private System.Windows.Forms.Button RegisterPlayerButton;
-		private System.Windows.Forms.ListBox UnregisteredListBox;
-		private System.Windows.Forms.Button NewPlayerButton;
+		private Button StartFirstRoundButton;
+		private Panel OrderByNamePanel;
+		private RadioButton LastNameRegistrationTabRadioButton;
+		private RadioButton FirstNameRegistrationTabRadioButton;
+		private Label OrderByNameLabel;
+		private Label RegisteredPlayersLabel;
+		private Label UnregisteredPlayersLabel;
+		private GroupBox RoundsRegisteredGroupBox;
+		private CheckBox Round9RegistrationCheckBox;
+		private CheckBox Round8RegistrationCheckBox;
+		private CheckBox Round7RegistrationCheckBox;
+		private CheckBox Round6RegistrationCheckBox;
+		private CheckBox Round5RegistrationCheckBox;
+		private CheckBox Round4RegistrationCheckBox;
+		private CheckBox Round3RegistrationCheckBox;
+		private CheckBox Round2RegistrationCheckBox;
+		private CheckBox Round1RegistrationCheckBox;
+		private DataGridView RegisteredDataGridView;
+		private Button RegisterPlayerButton;
+		private ListBox UnregisteredListBox;
+		private Button NewPlayerButton;
 	}
 }

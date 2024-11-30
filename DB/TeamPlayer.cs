@@ -2,14 +2,15 @@
 
 internal sealed class TeamPlayer : LinkRecord
 {
-	private Team? _team;
 	internal int TeamId { get; private set; }
 
 	internal Team Team
 	{
-		get => _team ??= ReadById<Team>(TeamId).OrThrow();
-		init => (_team, TeamId) = (value, value.Id);
-	}
+		get => field == Team.Null
+				   ? field = ReadById<Team>(TeamId).OrThrow()
+				   : field;
+		init => (field, TeamId) = (value, value.Id);
+	} = Team.Null;
 
 	#region IRecord interface implementation
 

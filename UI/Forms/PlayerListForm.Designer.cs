@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private global::System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -260,23 +260,23 @@
 
 		#endregion
 
-		private global::System.Windows.Forms.ListBox PlayerListBox;
-		private global::System.Windows.Forms.Label FirstNameLabel;
-		private global::System.Windows.Forms.Label LastNameLabel;
-		private global::System.Windows.Forms.Label EmailLabel;
-		private global::System.Windows.Forms.TextBox FirstNameTextBox;
-		private global::System.Windows.Forms.TextBox LastNameTextBox;
-		private global::System.Windows.Forms.TextBox EmailAddressTextBox;
-		private global::System.Windows.Forms.Button AddPlayerButton;
-		private global::System.Windows.Forms.Panel NewPlayerPanel;
-		private System.Windows.Forms.Button EditButton;
-		private System.Windows.Forms.Button ConflictsButton;
-		private System.Windows.Forms.Button GroupsButton;
-		private System.Windows.Forms.Button RemoveButton;
-		private System.Windows.Forms.Label OrderPlayersByLabel;
-		private System.Windows.Forms.Panel OrderPlayersByPanel;
-		private System.Windows.Forms.RadioButton LastNameRadioButton;
-		private System.Windows.Forms.RadioButton FirstNameRadioButton;
-		private System.Windows.Forms.ToolTip ToolTip;
+		private ListBox PlayerListBox;
+		private Label FirstNameLabel;
+		private Label LastNameLabel;
+		private Label EmailLabel;
+		private TextBox FirstNameTextBox;
+		private TextBox LastNameTextBox;
+		private TextBox EmailAddressTextBox;
+		private Button AddPlayerButton;
+		private Panel NewPlayerPanel;
+		private Button EditButton;
+		private Button ConflictsButton;
+		private Button GroupsButton;
+		private Button RemoveButton;
+		private Label OrderPlayersByLabel;
+		private Panel OrderPlayersByPanel;
+		private RadioButton LastNameRadioButton;
+		private RadioButton FirstNameRadioButton;
+		private ToolTip ToolTip;
 	}
 }

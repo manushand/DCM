@@ -1,13 +1,13 @@
-﻿using DCM.UI.Controls;
-
-namespace DCM.UI.Forms
+﻿namespace DCM.UI.Forms
 {
+	using Controls;
+
 	partial class GroupsForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -121,11 +121,11 @@ namespace DCM.UI.Forms
 
 		#endregion
 
-		private System.Windows.Forms.ListBox GroupListBox;
-		private System.Windows.Forms.Label GroupsLabel;
-		private System.Windows.Forms.Button DissolveButton;
-		private System.Windows.Forms.Button EditButton;
-		private System.Windows.Forms.Button NewGroupButton;
+		private ListBox GroupListBox;
+		private Label GroupsLabel;
+		private Button DissolveButton;
+		private Button EditButton;
+		private Button NewGroupButton;
 		private GroupMembershipControl GroupMembershipControl;
 	}
 }

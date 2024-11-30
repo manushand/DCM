@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -50,7 +50,7 @@
 			this.RatingsDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
 			this.RatingsDataGridView.BackgroundColor = System.Drawing.SystemColors.Window;
 			this.RatingsDataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle2.Alignment = MiddleLeft;
 			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
 			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.1F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -154,11 +154,11 @@
 
 		#endregion
 
-		private System.Windows.Forms.DataGridView RatingsDataGridView;
-		private System.Windows.Forms.TabControl RatingsTabControl;
-		private System.Windows.Forms.TabPage GroupGamesTabPage;
-		private System.Windows.Forms.TabPage SystemGamesTabPage;
-		private System.Windows.Forms.TabPage ScorableGamesTabPage;
-		private System.Windows.Forms.Label RatedGamesLabel;
+		private DataGridView RatingsDataGridView;
+		private TabControl RatingsTabControl;
+		private TabPage GroupGamesTabPage;
+		private TabPage SystemGamesTabPage;
+		private TabPage ScorableGamesTabPage;
+		private Label RatedGamesLabel;
 	}
 }

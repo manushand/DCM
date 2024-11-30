@@ -16,9 +16,7 @@ internal sealed partial class ScoringSystemListForm : Form
 		ScoringSystemListBox.FillWithSorted<ScoringSystem>();
 		if (scoringSystem is not null)
 			ScoringSystemListBox.SelectedItem = ScoringSystemListBox.Find(scoringSystem);
-		OpenButton.Visible =
-			DeleteButton.Visible =
-				ScoringSystemListBox.SelectedItem is not null;
+		SetVisible(ScoringSystemListBox.SelectedItem is not null, OpenButton, DeleteButton);
 	}
 
 	private void ScoringSystemListBox_MouseDoubleClick(object sender,
@@ -34,11 +32,10 @@ internal sealed partial class ScoringSystemListForm : Form
 		var scoringSystem = ScoringSystemListBox.GetSelected<ScoringSystem>();
 		if (scoringSystem is null)
 			return;
-		OpenButton.Visible =
-			DeleteButton.Visible =
-				true;
+		OpenButton.Show();
+		DeleteButton.Show();
 		DeleteButton.Text = scoringSystem.Tournaments.Count is 0
-                                ? "Delete…"
+								? "Delete…"
 								: UsedIn;
 	}
 

@@ -5,7 +5,7 @@
 		/// <summary> 
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary> 
 		/// Clean up any resources being used.
@@ -48,7 +48,7 @@
 			this.ScoresByRoundDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
 			this.ScoresByRoundDataGridView.BackgroundColor = System.Drawing.SystemColors.Window;
 			this.ScoresByRoundDataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle2.Alignment = MiddleLeft;
 			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
 			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -118,9 +118,9 @@
 
 		#endregion
 
-		private System.Windows.Forms.DataGridView ScoresByRoundDataGridView;
-		private System.Windows.Forms.TabControl RoundScoresTabControl;
-		private System.Windows.Forms.TabPage Round1ScoresTab;
-		private System.Windows.Forms.Button PrintButton;
+		private DataGridView ScoresByRoundDataGridView;
+		private TabControl RoundScoresTabControl;
+		private TabPage Round1ScoresTab;
+		private Button PrintButton;
 	}
 }

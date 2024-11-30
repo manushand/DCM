@@ -1,13 +1,13 @@
-﻿using DCM.UI.Controls;
-
-namespace DCM.UI.Forms
+﻿namespace DCM.UI.Forms
 {
+	using Controls;
+
 	partial class GamesForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -597,48 +597,48 @@ namespace DCM.UI.Forms
 
 		#endregion
 
-		private System.Windows.Forms.TabControl GamesTabControl;
-		private System.Windows.Forms.TabPage GameInfoTabPage;
-		private System.Windows.Forms.Label ScoringSystemDefaultLabel;
-		private System.Windows.Forms.ComboBox ScoringSystemComboBox;
-		private System.Windows.Forms.Label ScoringSystemLabel;
-		private System.Windows.Forms.Label GameStatusLabel;
-		private System.Windows.Forms.ComboBox GameStatusComboBox;
-		private System.Windows.Forms.Label ScoreColumnHeaderLabel;
+		private TabControl GamesTabControl;
+		private TabPage GameInfoTabPage;
+		private Label ScoringSystemDefaultLabel;
+		private ComboBox ScoringSystemComboBox;
+		private Label ScoringSystemLabel;
+		private Label GameStatusLabel;
+		private ComboBox GameStatusComboBox;
+		private Label ScoreColumnHeaderLabel;
 		private GameControl GameControl;
-		private System.Windows.Forms.Label TotalScoreTextLabel;
-		private System.Windows.Forms.Label ScoreTotalBarLabel;
-		private System.Windows.Forms.ToolTip ToolTip;
-		private System.Windows.Forms.Label TotalScoreLabel;
-		private System.Windows.Forms.Button GameInErrorButton;
-		private System.Windows.Forms.Label PlayerAssignmentAdviceLabel;
-		private System.Windows.Forms.Panel ConflictsPanel;
-		private System.Windows.Forms.Panel PlayerPanel;
-		private System.Windows.Forms.Panel ScoresPanel;
-		private System.Windows.Forms.Label AustriaScoreLabel;
-		private System.Windows.Forms.Label EnglandScoreLabel;
-		private System.Windows.Forms.Label FranceScoreLabel;
-		private System.Windows.Forms.Label GermanyScoreLabel;
-		private System.Windows.Forms.Label ItalyScoreLabel;
-		private System.Windows.Forms.Label RussiaScoreLabel;
-		private System.Windows.Forms.Label TurkeyScoreLabel;
-		private System.Windows.Forms.LinkLabel TurkeyConflictLinkLabel;
-		private System.Windows.Forms.LinkLabel RussiaConflictLinkLabel;
-		private System.Windows.Forms.LinkLabel ItalyConflictLinkLabel;
-		private System.Windows.Forms.LinkLabel GermanyConflictLinkLabel;
-		private System.Windows.Forms.LinkLabel FranceConflictLinkLabel;
-		private System.Windows.Forms.LinkLabel EnglandConflictLinkLabel;
-		private System.Windows.Forms.LinkLabel AustriaConflictLinkLabel;
-		private System.Windows.Forms.Label TotalConflictsLabel;
-		private System.Windows.Forms.Label ConflictsTotalBarLabel;
-		private System.Windows.Forms.Label ConflictsColumnHeaderLabel;
-		private System.Windows.Forms.ComboBox TurkeyPlayerComboBox;
-		private System.Windows.Forms.ComboBox RussiaPlayerComboBox;
-		private System.Windows.Forms.ComboBox ItalyPlayerComboBox;
-		private System.Windows.Forms.ComboBox GermanyPlayerComboBox;
-		private System.Windows.Forms.ComboBox FrancePlayerComboBox;
-		private System.Windows.Forms.ComboBox EnglandPlayerComboBox;
-		private System.Windows.Forms.ComboBox AustriaPlayerComboBox;
-		private System.Windows.Forms.Label PlayersColumnHeaderLabel;
+		private Label TotalScoreTextLabel;
+		private Label ScoreTotalBarLabel;
+		private ToolTip ToolTip;
+		private Label TotalScoreLabel;
+		private Button GameInErrorButton;
+		private Label PlayerAssignmentAdviceLabel;
+		private Panel ConflictsPanel;
+		private Panel PlayerPanel;
+		private Panel ScoresPanel;
+		private Label AustriaScoreLabel;
+		private Label EnglandScoreLabel;
+		private Label FranceScoreLabel;
+		private Label GermanyScoreLabel;
+		private Label ItalyScoreLabel;
+		private Label RussiaScoreLabel;
+		private Label TurkeyScoreLabel;
+		private LinkLabel TurkeyConflictLinkLabel;
+		private LinkLabel RussiaConflictLinkLabel;
+		private LinkLabel ItalyConflictLinkLabel;
+		private LinkLabel GermanyConflictLinkLabel;
+		private LinkLabel FranceConflictLinkLabel;
+		private LinkLabel EnglandConflictLinkLabel;
+		private LinkLabel AustriaConflictLinkLabel;
+		private Label TotalConflictsLabel;
+		private Label ConflictsTotalBarLabel;
+		private Label ConflictsColumnHeaderLabel;
+		private ComboBox TurkeyPlayerComboBox;
+		private ComboBox RussiaPlayerComboBox;
+		private ComboBox ItalyPlayerComboBox;
+		private ComboBox GermanyPlayerComboBox;
+		private ComboBox FrancePlayerComboBox;
+		private ComboBox EnglandPlayerComboBox;
+		private ComboBox AustriaPlayerComboBox;
+		private Label PlayersColumnHeaderLabel;
 	}
 }

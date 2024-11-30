@@ -4,32 +4,30 @@ namespace DCM.UI.Forms;
 
 internal sealed partial class MainForm : Form
 {
-	private IdentityRecord? _event;
-
 	private IdentityRecord? Event
 	{
 		get
 		{
 			var eventId = Settings.EventId;
-			return _event is not null || eventId is 0
-					   ? _event
-					   : _event = Settings.EventIsGroup
-									  ? ReadById<Group>(eventId)
-									  : ReadById<Tournament>(eventId);
+			return field is not null || eventId is 0
+					   ? field
+					   : field = Settings.EventIsGroup
+									 ? ReadById<Group>(eventId)
+									 : ReadById<Tournament>(eventId);
 		}
 		set
 		{
-			_event = value;
-			SetEvent(_event);
+			field = value;
+			SetEvent(field);
 			MainForm_Load();
 		}
 	}
 
 	internal MainForm()
-    {
+	{
 		InitializeComponent();
 		ConfigurationMenuItem.DropDown.Closing += static (_, e) => e.Cancel = e.CloseReason is ItemClicked;
-        StartPosition = FormStartPosition.CenterScreen;
+		StartPosition = FormStartPosition.CenterScreen;
 	}
 
 	private void MainForm_Load(object? sender = null,
@@ -47,8 +45,8 @@ internal sealed partial class MainForm : Form
 		{
 		case null:
 			var version = Assembly.GetEntryAssembly()
-								 ?.GetCustomAttribute<AssemblyFileVersionAttribute>()
-								 ?.Version;
+								  ?.GetCustomAttribute<AssemblyFileVersionAttribute>()
+								  ?.Version;
 			TournamentNameLabel.Text = $"DCM version {version ?? "??"}{NewLine}Stab You Soon!";
 			break;
 		case Group group:
@@ -265,7 +263,7 @@ internal sealed partial class MainForm : Form
 	private void DatabaseCheckToolStripMenuItem_Click(object sender,
 													  EventArgs e)
 	{
-		if (CheckDatabaseDriver())
+		if (CheckDriver())
 			MessageBox.Show("Your system is equipped to use both .accdb and .mdb data files.",
 							"Database Driver Report",
 							OK,

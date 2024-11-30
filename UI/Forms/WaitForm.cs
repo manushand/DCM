@@ -4,10 +4,13 @@ namespace DCM.UI.Forms;
 
 internal sealed partial class WaitForm : Form
 {
-	internal int Result { get; private set; }
-	internal decimal? ElapsedMilliseconds { get; private set; }
+    private readonly Func<int> _function;
 
-	private Func<int> Function { get; }
+    [DesignerSerializationVisibility(Hidden)]
+	internal int Result { get; private set; }
+
+    [DesignerSerializationVisibility(Hidden)]
+	internal decimal? ElapsedMilliseconds { get; private set; }
 
 	internal WaitForm(string caption,
 					  Func<int> function)
@@ -16,7 +19,7 @@ internal sealed partial class WaitForm : Form
 		Text =
 			ActivityLabel.Text =
 				$"{caption}…";
-		Function = function;
+		_function = function;
 	}
 
 	private void WaitForm_Load(object sender,
@@ -25,8 +28,7 @@ internal sealed partial class WaitForm : Form
 		var watch = Settings.ShowTimingData
 						? StartNew()
 						: null;
-		Task.Factory
-			.StartNew(Function)
+		Task.Run(_function)
 			.ContinueWith(task =>
 						  {
 							  watch?.Stop();

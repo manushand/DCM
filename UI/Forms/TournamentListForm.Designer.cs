@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private global::System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -74,7 +74,7 @@
 
 		#endregion
 
-		private global::System.Windows.Forms.Label TournamentNameLabel;
-		private global::System.Windows.Forms.ComboBox TournamentComboBox;
+		private Label TournamentNameLabel;
+		private ComboBox TournamentComboBox;
 	}
 }

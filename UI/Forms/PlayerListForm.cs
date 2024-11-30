@@ -7,7 +7,7 @@ internal sealed partial class PlayerListForm : Form
 	private const string EmailLabelToolTipText = "Separate multiple addresses using comma or semicolon.";
 
 	private static readonly string FirstNameLabelToolTipText = $"If player First Name does not begin with a letter,{NewLine}" +
-															   "tournament and group rankings will be hidden.";
+															    "tournament and group rankings will be hidden.";
 
 	private Player? _player;
 
@@ -34,9 +34,7 @@ internal sealed partial class PlayerListForm : Form
 	{
 		PlayerListBox.FillWithSortedPlayers(LastNameRadioButton.Checked);
 		PlayerListBox.SelectedItem = PlayerListBox.Find(_player);
-		EmailLabel.Enabled =
-			EmailAddressTextBox.Enabled =
-				false;
+		SetEnabled(false, EmailLabel, EmailAddressTextBox);
 	}
 
 	private void NewPlayerTextBoxes_GotFocus(object sender,
@@ -50,10 +48,7 @@ internal sealed partial class PlayerListForm : Form
 													EventArgs? e = null)
 	{
 		_player = PlayerListBox.GetSelected<Player>();
-		EditButton.Enabled =
-			GroupsButton.Enabled =
-				RemoveButton.Enabled =
-					_player is not null;
+		SetEnabled(_player is not null, EditButton, GroupsButton, RemoveButton);
 		ConflictsButton.Enabled = _player is not null && PlayerListBox.Items.Count > 1;
 		RemoveButton.Text = _player?.Games.Any() is false
 								? "Remove"
@@ -85,7 +80,7 @@ internal sealed partial class PlayerListForm : Form
 		}
 		var name = $"{firstName} {lastName}";
 		if (ReadMany<Player>(player => player.Name.Matches(name)).Any()
-		 && MessageBox.Show($"Player named {name} already exists.  Add another of same name?",
+		&&  MessageBox.Show($"Player named {name} already exists.  Add another of same name?",
 							"Confirm Duplicate Player Name",
 							YesNo,
 							Question) is DialogResult.No)
@@ -103,9 +98,10 @@ internal sealed partial class PlayerListForm : Form
 								Error);
 				return;
 			}
+
 			if ((from email in addresses
 				 let playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses
-                                                                             .Any(email.Matches))
+																			 .Any(email.Matches))
                                                                              .ToArray()
 				 where playersWithThisEmail.Length is not 0
                    && MessageBox.Show($"The email address {email} is already being used by:{playersWithThisEmail.BulletList()}" +
@@ -129,6 +125,7 @@ internal sealed partial class PlayerListForm : Form
 	private void RemoveButton_Click(object sender,
 									EventArgs e)
 	{
+		//  Someone who is associated with Games cannot be removed; show which Games they are in.
 		if (Player.Games.Any())
 		{
 			Show<GamesForm>(() => new (Player));
@@ -188,15 +185,13 @@ internal sealed partial class PlayerListForm : Form
 										EventArgs e)
 	{
 		var wasEnabled = EmailAddressTextBox.Enabled;
-		var nowEnabled =
-			EmailLabel.Enabled =
-				EmailAddressTextBox.Enabled =
-					char.IsLetter(FirstNameTextBox.Text.Trim().FirstOrDefault());
+		var nowEnabled = char.IsLetter(FirstNameTextBox.Text.Trim().FirstOrDefault());
+		SetEnabled(nowEnabled, EmailLabel, EmailAddressTextBox);
 		if (!nowEnabled)
 		{
 			if (EmailAddressTextBox.TextLength > 0)
 				SavedEmail = EmailAddressTextBox.Text;
-			EmailAddressTextBox.Text = null;
+			EmailAddressTextBox.Clear();
 		}
 		else if (!wasEnabled)
 			EmailAddressTextBox.Text = SavedEmail;

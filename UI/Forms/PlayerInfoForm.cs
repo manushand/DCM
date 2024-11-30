@@ -4,6 +4,8 @@ internal sealed partial class PlayerInfoForm : Form
 {
 	internal Player Player { get; }
 
+	public PlayerInfoForm() : this(null) { }
+
 	internal PlayerInfoForm(Player? player = null)
 	{
 		InitializeComponent();
@@ -41,7 +43,7 @@ internal sealed partial class PlayerInfoForm : Form
 			else if (!emailAddress.Matches(Player.EmailAddress))
 			{
 				var playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses
-                                                                            .Any(emailAddress.Matches))
+																			.Any(emailAddress.Matches))
                                                                             .ToArray();
 				if (playersWithThisEmail.Length > 0
 				 && MessageBox.Show($"The email address {emailAddress} is already being used by:{playersWithThisEmail.BulletList()}" +

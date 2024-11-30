@@ -1,13 +1,13 @@
-﻿using DCM.UI.Controls;
-
-namespace DCM.UI.Forms
+﻿namespace DCM.UI.Forms
 {
+	using Controls;
+
 	partial class TournamentInfoForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -116,9 +116,9 @@ namespace DCM.UI.Forms
 
 		#endregion
 
-		private System.Windows.Forms.TabControl DetailsTabControl;
-		private System.Windows.Forms.TabPage DetailsTabPage;
-		private System.Windows.Forms.TabPage TeamsTabPage;
+		private TabControl DetailsTabControl;
+		private TabPage DetailsTabPage;
+		private TabPage TeamsTabPage;
 		private TournamentControl TournamentControl;
 		private TeamsControl TeamsControl;
 	}

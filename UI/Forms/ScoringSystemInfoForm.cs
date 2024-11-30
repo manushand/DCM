@@ -4,6 +4,8 @@ using static ScoringSystem.DrawRules;
 
 internal sealed partial class ScoringSystemInfoForm : Form
 {
+	//	TODO: Don't the French end in 1905 or 1906?
+	private const int EarliestFinalGameYear = 1907;
 	private ScoringSystem ScoringSystem { get; set; }
 
 	internal ScoringSystemInfoForm(ScoringSystem scoringSystem)
@@ -27,9 +29,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		if (ScoringSystem.Id is 0)
 		{
 			FinalScoreFormulaTextBox.Text = "// (REQUIRED)";
-			CopyButton.Visible =
-				OtherScoringCheckBox.Checked =
-					false;
+			CopyButton.Hide();
+			OtherScoringCheckBox.Checked = false;
 			SignificantDigitsComboBox.SelectedIndex =
 				FormulaTypeComboBox.SelectedIndex =
 					FinalGameYearComboBox.SelectedIndex =
@@ -77,8 +78,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 				WinLossCheckBox.Checked;
 		GameControl.SetResultComboBoxUsability(WinLossCheckBox.Checked);
 		DiasCheckBox.Visible = WinLossCheckBox.Checked
-							&& CenterCountCheckBox.Checked
-							&& AllowDrawsCheckBox.Checked;
+							   && CenterCountCheckBox.Checked
+							   && AllowDrawsCheckBox.Checked;
 		SetTestButtonUsability();
 		GameControl.SetConcessionCheckBoxUsability();
 	}
@@ -89,8 +90,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		ScoringSystem.UsesCenterCount = CenterCountCheckBox.Checked;
 		GameControl.SetCentersComboBoxUsability(CenterCountCheckBox.Checked);
 		DiasCheckBox.Visible = WinLossCheckBox.Checked
-							&& CenterCountCheckBox.Checked
-							&& AllowDrawsCheckBox.Checked;
+							   && CenterCountCheckBox.Checked
+							   && AllowDrawsCheckBox.Checked;
 		SetTestButtonUsability();
 		GameControl.SetConcessionCheckBoxUsability();
 	}
@@ -115,8 +116,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		GameControl.FillYearComboBoxes();
 	}
 
-    [GeneratedRegex("^[A-Z_][\\w\\s]*$", RegexOptions.IgnoreCase)]
-    private static partial Regex AliasFormat();
+	[GeneratedRegex("^[A-Z_][\\w\\s]*$", RegexOptions.IgnoreCase)]
+	private static partial Regex AliasFormat();
 
 	private bool ValidateSystem(out string? error)
 	{
@@ -133,7 +134,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		else if (TotalPointsFixedCheckBox.Checked && ScoringSystem.PointsPerGame is null)
 			error = "Points per game must be supplied as an integer.";
 		else if (OtherScoringCheckBox.Checked
-			  && !AliasFormat().IsMatch(OtherAliasTextBox.Text))
+				 && !AliasFormat().IsMatch(OtherAliasTextBox.Text))
 			error = "Formula alias for Other Score must be a legal alias (after spaces are removed).";
 		else if (ScoringSystem.TestGamePlayers is not null)
 			return GameControl.FinalGameDataValidation(out error);
@@ -145,10 +146,10 @@ internal sealed partial class ScoringSystemInfoForm : Form
 											.Trim();
 			ScoringSystem.PlayerAnteFormula = UsesPlayerAnteCheckBox.Checked
 												  ? PlayerAnteFormulaTextBox.Text
-												  : Empty;
+												  : string.Empty;
 			ScoringSystem.ProvisionalScoreFormula = UsesProvisionalScoreCheckBox.Checked
 														? ProvisionalScoreFormulaTextBox.Text
-														: Empty;
+														: string.Empty;
 			ScoringSystem.FinalScoreFormula = FinalScoreFormulaTextBox.Text;
 			ScoringSystem.SetCompiledFormulae(FormulaTypeComboBox.SelectedIndex is 1);
 			ScoringSystem.DrawPermissions = AllowDrawsCheckBox.Checked
@@ -162,10 +163,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 													: null
 											  : null;
 			ScoringSystem.OtherScoreAlias = OtherScoringCheckBox.Checked
-												? FormulaTypeComboBox.SelectedIndex is 0
-													  ? OtherAliasTextBox.Text
-													  : nameof (Scoring.OtherScore)
-												: Empty;
+												? OtherAliasTextBox.Text
+												: string.Empty;
 			ScoringSystem.TestGamePlayers = GameControl.GetPlayerData();
 		}
 	}
@@ -192,7 +191,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 			DialogResult = DialogResult.OK;
 			//	TODO: check for errors
 			ReadMany<Game>(scored => scored.ScoringSystemId == ScoringSystem.Id
-								  && scored.Scored).ForEach(static game => game.Scored = false);
+									 && scored.Scored).ForEach(static game => game.Scored = false);
 			Close();
 		}
 		else
@@ -234,23 +233,23 @@ internal sealed partial class ScoringSystemInfoForm : Form
 	{
 		NameTextBox.Text = $"COPY OF {ScoringSystem}";
 		ScoringSystem = new ()
-		{
-			Id = 0,
-			Name = NameTextBox.Text,
-			DrawPermissions = ScoringSystem.DrawPermissions,
-			FinalGameYear = ScoringSystem.FinalGameYear,
-			FinalScoreFormula = ScoringSystem.FinalScoreFormula,
-			OtherScoreAlias = ScoringSystem.OtherScoreAlias,
-			PlayerAnteFormula = ScoringSystem.PlayerAnteFormula,
-			PointsPerGame = ScoringSystem.PointsPerGame,
-			ProvisionalScoreFormula = ScoringSystem.ProvisionalScoreFormula,
-			SignificantDigits = ScoringSystem.SignificantDigits,
-			UsesCenterCount = ScoringSystem.UsesCenterCount,
-			UsesGameResult = ScoringSystem.UsesGameResult,
-			UsesYearsPlayed = ScoringSystem.UsesYearsPlayed,
-			TestGamePlayers = ScoringSystem.TestGamePlayers?.ToList()
-		};
-		CopyButton.Visible = false;
+						{
+							Id = 0,
+							Name = NameTextBox.Text,
+							DrawPermissions = ScoringSystem.DrawPermissions,
+							FinalGameYear = ScoringSystem.FinalGameYear,
+							FinalScoreFormula = ScoringSystem.FinalScoreFormula,
+							OtherScoreAlias = ScoringSystem.OtherScoreAlias,
+							PlayerAnteFormula = ScoringSystem.PlayerAnteFormula,
+							PointsPerGame = ScoringSystem.PointsPerGame,
+							ProvisionalScoreFormula = ScoringSystem.ProvisionalScoreFormula,
+							SignificantDigits = ScoringSystem.SignificantDigits,
+							UsesCenterCount = ScoringSystem.UsesCenterCount,
+							UsesGameResult = ScoringSystem.UsesGameResult,
+							UsesYearsPlayed = ScoringSystem.UsesYearsPlayed,
+							TestGamePlayers = ScoringSystem.TestGamePlayers?.ToList()
+						};
+		CopyButton.Hide();
 	}
 
 	private void ScoringSystemDetailsForm_FormClosing(object sender,
@@ -263,20 +262,13 @@ internal sealed partial class ScoringSystemInfoForm : Form
 	}
 
 	private void SetButtonUse(bool enabled)
-		=> OkButton.Enabled =
-			   CancelFormButton.Enabled =
-				   NewTestButton.Enabled =
-					   RunTestButton.Enabled =
-						   CopyButton.Enabled =
-							   enabled;
+		=> SetEnabled(enabled, OkButton, CancelFormButton, NewTestButton, RunTestButton, CopyButton);
 
 	private void SetTestButtonUsability()
-		=> NewTestButton.Enabled =
-			   RunTestButton.Enabled =
-				   ScoringSystem.UsesGameResult
-				|| ScoringSystem.UsesCenterCount
-				|| ScoringSystem.UsesYearsPlayed
-				|| ScoringSystem.UsesOtherScore;
+		=> SetEnabled(ScoringSystem.UsesGameResult
+					  || ScoringSystem.UsesCenterCount
+					  || ScoringSystem.UsesYearsPlayed
+					  || ScoringSystem.UsesOtherScore, NewTestButton, RunTestButton);
 
 	private void NewTestButton_Click(object sender,
 									 EventArgs e)
@@ -310,16 +302,12 @@ internal sealed partial class ScoringSystemInfoForm : Form
 
 	private void TotalPointsFixedCheckBox_CheckedChanged(object? sender = null,
 														 EventArgs? e = null)
-		=> PointsPerGameLabel.Visible =
-			   PointsPerGameTextBox.Visible =
-				   TotalPointsFixedCheckBox.Checked;
+		=> SetVisible(TotalPointsFixedCheckBox.Checked, PointsPerGameLabel, PointsPerGameTextBox);
 
 	private void OtherScoringCheckBox_CheckedChanged(object? sender = null,
 													 EventArgs? e = null)
 	{
-		OtherAliasLabel.Visible =
-			OtherAliasTextBox.Visible =
-				OtherScoringCheckBox.Checked;
+		SetVisible(OtherScoringCheckBox.Checked, OtherAliasLabel, OtherAliasTextBox);
 		OtherAliasTextBox_TextChanged();
 		GameControl.SetOtherTextBoxUsability(OtherScoringCheckBox.Checked);
 	}
@@ -328,7 +316,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 											   EventArgs? e = null)
 		=> GameControl.SetOtherScoreLabel(OtherAliasLabel.Visible
 											  ? OtherAliasTextBox.Text
-											  : Empty);
+											  : string.Empty);
 
 	private void UsesProvisionalScoreCheckBox_CheckedChanged(object sender,
 															 EventArgs e)

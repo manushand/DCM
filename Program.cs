@@ -2,14 +2,10 @@
 
 namespace DCM;
 
-using UI.Forms;
-
-internal static class Program
+file static class Program
 {
 	static Program()
 	{
-		var font = BoldFonts.GetOrSet(Control.DefaultFont, BoldFont);
-		PowerColors.Values.ForEach(value => (value.Font, value.Alignment) = (font, MiddleCenter));
 		EnableVisualStyles();
 		SetCompatibleTextRenderingDefault(false);
 	}
@@ -17,11 +13,11 @@ internal static class Program
 	[STAThread]
 	private static void Main(string[] args)
 	{
-        //  Be sure the proper Access database driver is installed on this host computer.
-		if (!CheckDatabaseDriver())
+		//  Be sure the proper database driver is installed on this host computer.
+		if (!CheckDriver())
 			return;
 
-        //	If a db file name is on the command line, use that.  Otherwise, get it from saved settings if possible.
+		//	If a db file name is on the command line, use that.  Otherwise, get it from saved settings if possible.
 		var dbFileName = args.FirstOrDefault() ?? GetDatabaseFile();
 
 		//	TODO: if (dbFileName is null || !File.Exists(dbFileName))

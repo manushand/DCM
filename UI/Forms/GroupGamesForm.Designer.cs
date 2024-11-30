@@ -1,13 +1,13 @@
-﻿using DCM.UI.Controls;
-
-namespace DCM.UI.Forms
+﻿namespace DCM.UI.Forms
 {
+	using Controls;
+
 	partial class GroupGamesForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -199,7 +199,7 @@ namespace DCM.UI.Forms
 			this.GroupGamesDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
 			this.GroupGamesDataGridView.BackgroundColor = System.Drawing.SystemColors.Window;
 			this.GroupGamesDataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-			dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+			dataGridViewCellStyle2.Alignment = MiddleLeft;
 			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
 			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
@@ -529,41 +529,41 @@ namespace DCM.UI.Forms
 
 		#endregion
 		private GameControl GameControl;
-		private System.Windows.Forms.Panel OrderByNamePanel;
-		private System.Windows.Forms.RadioButton LastNameRegistrationTabRadioButton;
-		private System.Windows.Forms.RadioButton FirstNameRegistrationTabRadioButton;
-		private System.Windows.Forms.Label OrderByNameLabel;
-		private System.Windows.Forms.ComboBox GameStatusComboBox;
-		private System.Windows.Forms.Label GameStatusLabel;
-		private System.Windows.Forms.Button NewGameButton;
-		private System.Windows.Forms.Label GameNameLabel;
-		private System.Windows.Forms.TextBox GameNameTextBox;
-		private System.Windows.Forms.Label GameDateLabel;
-		private System.Windows.Forms.DateTimePicker GameDateTimePicker;
-		private System.Windows.Forms.DataGridView GroupGamesDataGridView;
-		private System.Windows.Forms.Button DeleteGameButton;
-		private System.Windows.Forms.Button GameInErrorButton;
-		private System.Windows.Forms.Label TotalScoreLabel;
-		private System.Windows.Forms.Label ScoreTotalBarLabel;
-		private System.Windows.Forms.Label TotalScoreTextLabel;
-		private System.Windows.Forms.Label ScoreColumnHeaderLabel;
-		private System.Windows.Forms.Panel PlayersPanel;
-		private System.Windows.Forms.Label PlayerColumnHeaderLabel;
-		private System.Windows.Forms.ComboBox TurkeyPlayerComboBox;
-		private System.Windows.Forms.ComboBox RussiaPlayerComboBox;
-		private System.Windows.Forms.ComboBox ItalyPlayerComboBox;
-		private System.Windows.Forms.ComboBox GermanyPlayerComboBox;
-		private System.Windows.Forms.ComboBox FrancePlayerComboBox;
-		private System.Windows.Forms.ComboBox EnglandPlayerComboBox;
-		private System.Windows.Forms.ComboBox AustriaPlayerComboBox;
-		private System.Windows.Forms.Panel ScoresPanel;
-		private System.Windows.Forms.Label AustriaScoreLabel;
-		private System.Windows.Forms.Label EnglandScoreLabel;
-		private System.Windows.Forms.Label FranceScoreLabel;
-		private System.Windows.Forms.Label GermanyScoreLabel;
-		private System.Windows.Forms.Label ItalyScoreLabel;
-		private System.Windows.Forms.Label RussiaScoreLabel;
-		private System.Windows.Forms.Label TurkeyScoreLabel;
-		private System.Windows.Forms.ToolTip ToolTip;
+		private Panel OrderByNamePanel;
+		private RadioButton LastNameRegistrationTabRadioButton;
+		private RadioButton FirstNameRegistrationTabRadioButton;
+		private Label OrderByNameLabel;
+		private ComboBox GameStatusComboBox;
+		private Label GameStatusLabel;
+		private Button NewGameButton;
+		private Label GameNameLabel;
+		private TextBox GameNameTextBox;
+		private Label GameDateLabel;
+		private DateTimePicker GameDateTimePicker;
+		private DataGridView GroupGamesDataGridView;
+		private Button DeleteGameButton;
+		private Button GameInErrorButton;
+		private Label TotalScoreLabel;
+		private Label ScoreTotalBarLabel;
+		private Label TotalScoreTextLabel;
+		private Label ScoreColumnHeaderLabel;
+		private Panel PlayersPanel;
+		private Label PlayerColumnHeaderLabel;
+		private ComboBox TurkeyPlayerComboBox;
+		private ComboBox RussiaPlayerComboBox;
+		private ComboBox ItalyPlayerComboBox;
+		private ComboBox GermanyPlayerComboBox;
+		private ComboBox FrancePlayerComboBox;
+		private ComboBox EnglandPlayerComboBox;
+		private ComboBox AustriaPlayerComboBox;
+		private Panel ScoresPanel;
+		private Label AustriaScoreLabel;
+		private Label EnglandScoreLabel;
+		private Label FranceScoreLabel;
+		private Label GermanyScoreLabel;
+		private Label ItalyScoreLabel;
+		private Label RussiaScoreLabel;
+		private Label TurkeyScoreLabel;
+		private ToolTip ToolTip;
 	}
 }

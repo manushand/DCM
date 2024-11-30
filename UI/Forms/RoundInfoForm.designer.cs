@@ -1,13 +1,13 @@
-﻿using DCM.UI.Controls;
-
-namespace DCM.UI.Forms
+﻿namespace DCM.UI.Forms
 {
+	using Controls;
+
 	partial class RoundInfoForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -112,9 +112,9 @@ namespace DCM.UI.Forms
 		}
 
 		#endregion
-		private System.Windows.Forms.TabControl RoundsTabControl;
-		private System.Windows.Forms.TabPage RegistrationTabPage;
-		private System.Windows.Forms.TabPage Round1TabPage;
+		private TabControl RoundsTabControl;
+		private TabPage RegistrationTabPage;
+		private TabPage Round1TabPage;
 		private RegistrationControl RegistrationControl;
 		private RoundControl RoundControl;
 	}

@@ -2,6 +2,8 @@
 
 internal sealed class Team : IdentityRecord
 {
+	internal static readonly Team Null = new ();
+
 	internal int TournamentId;
 
 	internal TeamPlayer[] TeamPlayers => [..ReadMany<TeamPlayer>(teamPlayer => teamPlayer.TeamId == Id)];

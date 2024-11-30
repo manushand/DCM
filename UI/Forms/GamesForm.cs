@@ -53,15 +53,16 @@ internal sealed partial class GamesForm : Form
 		Text = _round is null
 				   ? $"{Player} ─ Games"
 				   : $"{Round.Tournament} ─ Round {Round} Games";
-		SkipHandlers = true;
-		//	TODO - Do NOT change this to a .FillWith call.  It blows up.  Not sure why.
-		GamesTabControl.TabPages
-					   .Clear();
-		Games.ForEach(game => GamesTabControl.TabPages
-											 .Add(_round is null
-													  ? game.FullName
-													  : $"Game {game.Number}"));
-		SkipHandlers = false;
+		SkipHandlers(() =>
+        {
+			//	TODO - Do NOT change this to a .FillWith call.  It blows up.  Not sure why.
+			GamesTabControl.TabPages
+						   .Clear();
+			Games.ForEach(game => GamesTabControl.TabPages
+												 .Add(_round is null
+														  ? game.FullName
+														  : $"Game {game.Number}"));
+        });
 		GameControl.GameDataChangedCallback = GameDataUpdated;
 		//	Set the active tab and be sure the event runs.
 		GamesTabControl.ActivateTab(_player is null
@@ -72,27 +73,28 @@ internal sealed partial class GamesForm : Form
 	private void GamesTabControl_SelectedIndexChanged(object sender,
 													  EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		_game = Games[GamesTabControl.SelectedIndex];
 		GameControl.ClearGame();
 		GameControl.TournamentScoringSystem = _game.Tournament
 												   .ScoringSystem;
 		GameControl.ScoringSystem = Game.ScoringSystem;
-		SkipHandlers = true;
-		GameStatusComboBox.SelectedIndex = Game.Status
-											   .AsInteger();
-		ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
-		ScoringSystemComboBox.SetSelectedItem(Game.ScoringSystem);
-		var players = GamePlayers.SelectSorted(static gamePlayer => gamePlayer.Player) //	TODO: does this not have/need a by last name option?
-								 .ToArray();
-		foreach (var (box, power) in PlayerNameComboBoxes.Select(static (box, power) => (box, power.As<PowerNames>())))
-		{
-			box.FillWithRecords(players);
-			box.Enabled = AnyPowerUnassigned;
-			box.SetSelectedItem(GamePlayers.SingleOrDefault(gp => gp.Power == power)?.Player);
-		}
-		SkipHandlers = false;
+		SkipHandlers(() =>
+        {
+			GameStatusComboBox.SelectedIndex = Game.Status
+												   .AsInteger();
+			ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
+			ScoringSystemComboBox.SetSelectedItem(Game.ScoringSystem);
+			var players = GamePlayers.SelectSorted(static gamePlayer => gamePlayer.Player) //	TODO: does this not have/need a by last name option?
+									 .ToArray();
+			foreach (var (box, power) in PlayerNameComboBoxes.Select(static (box, power) => (box, power.As<PowerNames>())))
+			{
+				box.FillWithRecords(players);
+				box.Enabled = AnyPowerUnassigned;
+				box.SetSelectedItem(GamePlayers.SingleOrDefault(gp => gp.Power == power)?.Player);
+			}
+        });
 		PlayerAssignmentAdviceLabel.Visible = AnyPowerUnassigned;
 		GameControl.Active = Game.Status is Underway
 						  && !AnyPowerUnassigned;
@@ -111,15 +113,10 @@ internal sealed partial class GamesForm : Form
 
 	private void GameDataUpdated(bool allFilledIn)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		UpdateMany(GamePlayers);
-		ScoreColumnHeaderLabel.Visible =
-			ScoreTotalBarLabel.Visible =
-				TotalScoreTextLabel.Visible =
-					TotalScoreLabel.Visible =
-						allFilledIn;
-		ScoreLabels.ForEach(label => label.Visible = allFilledIn);
+		SetVisible(allFilledIn, [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
 		//	If all GamePlayers are Completely filled in, but we were told NOT allFilledIn,
 		//	this means that FinalGameDataValidation failed. Show the GameInErrorButton.
 		GameInErrorButton.Visible = !allFilledIn
@@ -141,7 +138,7 @@ internal sealed partial class GamesForm : Form
 															EventArgs e)
 	{
 		ScoringSystemComboBox.UpdateShadowLabel();
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		var scoringSystem = ScoringSystemComboBox.GetSelected<ScoringSystem>();
 		if (Game.ScoringSystemId == scoringSystem.Id)
@@ -149,9 +146,7 @@ internal sealed partial class GamesForm : Form
 		Game.ScoringSystem = scoringSystem;
 		UpdateOne(Game);
 		//	Enable/disable+empty the needed/unneeded ComboBoxes.
-		SkipHandlers = true;
-		GameControl.ScoringSystem = scoringSystem;
-		SkipHandlers = false;
+		SkipHandlers(() => GameControl.ScoringSystem = scoringSystem);
 		ScoringSystemDefaultLabel.Visible = Game.ScoringSystemIsDefault;
 		GameDataUpdated(GameControl.AllFilledIn);
 	}
@@ -161,13 +156,10 @@ internal sealed partial class GamesForm : Form
 		ConflictsPanel.Visible = Game.Tournament.Group is null;
 		if (!ConflictsPanel.Visible)
 			return;
-		ConflictsColumnHeaderLabel.Visible =
-			TotalConflictsLabel.Visible =
-				ConflictsTotalBarLabel.Visible =
-					!AnyPowerUnassigned;
+		SetVisible(!AnyPowerUnassigned, ConflictsColumnHeaderLabel, TotalConflictsLabel, ConflictsTotalBarLabel);
 		ConflictLabels.ForEach(label =>
 							   {
-								   label.Text = Empty;
+								   label.Text = string.Empty;
 								   label.Enabled = !AnyPowerUnassigned;
 							   });
 		if (AnyPowerUnassigned)
@@ -191,33 +183,31 @@ internal sealed partial class GamesForm : Form
 	{
 		var playerComboBox = (ComboBox)sender;
 		playerComboBox.UpdateShadowLabel();
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
-		SkipHandlers = true;
-		foreach (var box in PlayerNameComboBoxes)
-		{
-			if (box.SelectedIndex != playerComboBox.SelectedIndex || box == playerComboBox)
-				continue;
-			var otherGamePlayer = GamePlayers.ByPlayerId(box.GetSelected<Player>().Id);
-			box.Deselect();
-			otherGamePlayer.Power = TBD;
-			UpdateOne(otherGamePlayer);
-			break;
-		}
-		SkipHandlers = false;
+		SkipHandlers(() =>
+        {
+			foreach (var box in PlayerNameComboBoxes.Where(box => box.SelectedIndex == playerComboBox.SelectedIndex && box != playerComboBox))
+			{
+				var otherGamePlayer = GamePlayers.ByPlayerId(box.GetSelected<Player>().Id);
+				box.Deselect();
+				otherGamePlayer.Power = TBD;
+				UpdateOne(otherGamePlayer);
+				break;
+			}
+        });
 		var gamePlayer = GamePlayers.ByPlayerId(playerComboBox.GetSelected<Player>().Id);
 		gamePlayer.Power = PlayerNameComboBoxes.IndexOf(playerComboBox)
 											   .As<PowerNames>();
 		UpdateOne(gamePlayer);
-		SkipHandlers = false;
 		if (PlayerNameComboBoxes.All(static box => box.SelectedItem is not null))
-		{
-			PlayerNameComboBoxes.ForEach(static box => box.Enabled = false);
-			GameControl.Active = Game.Status is Underway;
-			PlayerAssignmentAdviceLabel.Visible = false;
-			FillConflicts();
-		}
-		SkipHandlers = false;
+			SkipHandlers(() =>
+						 {
+							 SetEnabled(false, [..PlayerNameComboBoxes]);
+							 GameControl.Active = Game.Status is Underway;
+							 PlayerAssignmentAdviceLabel.Hide();
+							 FillConflicts();
+						 });
 	}
 
 	//	TODO: This method is duplicated verbatim in GroupGamesForm.cs
@@ -234,7 +224,7 @@ internal sealed partial class GamesForm : Form
 	private void GameStatusComboBox_SelectedIndexChanged(object sender,
 														 EventArgs e)
 	{
-		if (SkipHandlers)
+		if (SkippingHandlers)
 			return;
 		var newStatus = GameStatusComboBox.SelectedIndex
 										  .As<Statuses>();

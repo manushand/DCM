@@ -1,13 +1,13 @@
-﻿using DCM.UI.Controls;
-
-namespace DCM.UI.Forms
+﻿namespace DCM.UI.Forms
 {
+	using Controls;
+
 	partial class ScoresForm
 	{
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -133,10 +133,10 @@ namespace DCM.UI.Forms
 
 		#endregion
 
-		private System.Windows.Forms.TabControl ScoresTabControl;
-		private System.Windows.Forms.TabPage PlayerScoreTabPage;
-		private System.Windows.Forms.TabPage RoundScoreTabPage;
-		private System.Windows.Forms.TabPage PowerScoreTabPage;
+		private TabControl ScoresTabControl;
+		private TabPage PlayerScoreTabPage;
+		private TabPage RoundScoreTabPage;
+		private TabPage PowerScoreTabPage;
 		private ScoreByPlayerControl ScoreByPlayerControl;
 		private ScoreByRoundControl ScoreByRoundControl;
 		private ScoreByPowerControl ScoreByPowerControl;

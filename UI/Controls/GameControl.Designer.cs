@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		private System.ComponentModel.IContainer components = null;
+		private IContainer components = null;
 
 		/// <summary>
 		/// Clean up any resources being used.
@@ -659,50 +659,50 @@
 		}
 
 		#endregion
-		private System.Windows.Forms.Label AustriaLabel;
-		private System.Windows.Forms.Label EnglandLabel;
-		private System.Windows.Forms.Label FranceLabel;
-		private System.Windows.Forms.Label GermanyLabel;
-		private System.Windows.Forms.Label ItalyLabel;
-		private System.Windows.Forms.Label RussiaLabel;
-		private System.Windows.Forms.Label TurkeyLabel;
-		private System.Windows.Forms.Label PowerColumnHeaderLabel;
-		private System.Windows.Forms.Panel CentersPanel;
-		private System.Windows.Forms.ComboBox TurkeyCentersComboBox;
-		private System.Windows.Forms.ComboBox RussiaCentersComboBox;
-		private System.Windows.Forms.ComboBox ItalyCentersComboBox;
-		private System.Windows.Forms.ComboBox GermanyCentersComboBox;
-		private System.Windows.Forms.ComboBox FranceCentersComboBox;
-		private System.Windows.Forms.ComboBox EnglandCentersComboBox;
-		private System.Windows.Forms.ComboBox AustriaCentersComboBox;
-		private System.Windows.Forms.Panel ResultPanel;
-		private System.Windows.Forms.ComboBox TurkeyResultComboBox;
-		private System.Windows.Forms.ComboBox RussiaResultComboBox;
-		private System.Windows.Forms.ComboBox ItalyResultComboBox;
-		private System.Windows.Forms.ComboBox GermanyResultComboBox;
-		private System.Windows.Forms.ComboBox AustriaResultComboBox;
-		private System.Windows.Forms.ComboBox EnglandResultComboBox;
-		private System.Windows.Forms.ComboBox FranceResultComboBox;
-		private System.Windows.Forms.Panel YearsPanel;
-		private System.Windows.Forms.CheckBox SoloConcededCheckBox;
-		private System.Windows.Forms.ComboBox TurkeyYearsComboBox;
-		private System.Windows.Forms.ComboBox RussiaYearsComboBox;
-		private System.Windows.Forms.ComboBox ItalyYearsComboBox;
-		private System.Windows.Forms.ComboBox GermanyYearsComboBox;
-		private System.Windows.Forms.ComboBox FranceYearsComboBox;
-		private System.Windows.Forms.ComboBox EnglandYearsComboBox;
-		private System.Windows.Forms.ComboBox AustriaYearsComboBox;
-		private System.Windows.Forms.Label CentersHeaderLabel;
-		private System.Windows.Forms.Label ResultHeaderLabel;
-		private System.Windows.Forms.Label YearsHeaderLabel;
-		private System.Windows.Forms.Panel OtherPanel;
-		private System.Windows.Forms.TextBox TurkeyOtherTextBox;
-		private System.Windows.Forms.TextBox RussiaOtherTextBox;
-		private System.Windows.Forms.TextBox ItalyOtherTextBox;
-		private System.Windows.Forms.TextBox GermanyOtherTextBox;
-		private System.Windows.Forms.TextBox FranceOtherTextBox;
-		private System.Windows.Forms.TextBox EnglandOtherTextBox;
-		private System.Windows.Forms.TextBox AustriaOtherTextBox;
-		private System.Windows.Forms.Label OtherScoreLabel;
+		private Label AustriaLabel;
+		private Label EnglandLabel;
+		private Label FranceLabel;
+		private Label GermanyLabel;
+		private Label ItalyLabel;
+		private Label RussiaLabel;
+		private Label TurkeyLabel;
+		private Label PowerColumnHeaderLabel;
+		private Panel CentersPanel;
+		private ComboBox TurkeyCentersComboBox;
+		private ComboBox RussiaCentersComboBox;
+		private ComboBox ItalyCentersComboBox;
+		private ComboBox GermanyCentersComboBox;
+		private ComboBox FranceCentersComboBox;
+		private ComboBox EnglandCentersComboBox;
+		private ComboBox AustriaCentersComboBox;
+		private Panel ResultPanel;
+		private ComboBox TurkeyResultComboBox;
+		private ComboBox RussiaResultComboBox;
+		private ComboBox ItalyResultComboBox;
+		private ComboBox GermanyResultComboBox;
+		private ComboBox AustriaResultComboBox;
+		private ComboBox EnglandResultComboBox;
+		private ComboBox FranceResultComboBox;
+		private Panel YearsPanel;
+		private CheckBox SoloConcededCheckBox;
+		private ComboBox TurkeyYearsComboBox;
+		private ComboBox RussiaYearsComboBox;
+		private ComboBox ItalyYearsComboBox;
+		private ComboBox GermanyYearsComboBox;
+		private ComboBox FranceYearsComboBox;
+		private ComboBox EnglandYearsComboBox;
+		private ComboBox AustriaYearsComboBox;
+		private Label CentersHeaderLabel;
+		private Label ResultHeaderLabel;
+		private Label YearsHeaderLabel;
+		private Panel OtherPanel;
+		private TextBox TurkeyOtherTextBox;
+		private TextBox RussiaOtherTextBox;
+		private TextBox ItalyOtherTextBox;
+		private TextBox GermanyOtherTextBox;
+		private TextBox FranceOtherTextBox;
+		private TextBox EnglandOtherTextBox;
+		private TextBox AustriaOtherTextBox;
+		private Label OtherScoreLabel;
 	}
 }
