@@ -2,20 +2,20 @@
 
 internal sealed partial class GroupsForm : Form
 {
-    private Group? Group
-    {
-        get;
-        set
-        {
-            field = value;
-            FillGroupList();
-            if (value is not null)
-                GroupMembershipControl.Group = value;
-            SetEnabled(value is not null, EditButton, DissolveButton);
-        }
-    }
+	private Group? Group
+	{
+		get;
+		set
+		{
+			field = value;
+			FillGroupList();
+			if (value is not null)
+				GroupMembershipControl.Group = value;
+			SetEnabled(value is not null, EditButton, DissolveButton);
+		}
+	}
 
-    public GroupsForm()
+	public GroupsForm()
 		=> InitializeComponent();
 
 	private void GroupsForm_Load(object sender,

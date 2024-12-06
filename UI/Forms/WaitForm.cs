@@ -4,12 +4,12 @@ namespace DCM.UI.Forms;
 
 internal sealed partial class WaitForm : Form
 {
-    private readonly Func<int> _function;
+	private readonly Func<int> _function;
 
-    [DesignerSerializationVisibility(Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	internal int Result { get; private set; }
 
-    [DesignerSerializationVisibility(Hidden)]
+	[DesignerSerializationVisibility(Hidden)]
 	internal decimal? ElapsedMilliseconds { get; private set; }
 
 	internal WaitForm(string caption,

@@ -23,7 +23,7 @@ internal sealed partial class ScoresForm : Form
 													   EventArgs? e = null)
 	{
 		var scoreControl = ScoresTabControl.SelectedTab
-                                           .OrThrow()
+										   .OrThrow()
 										   .Controls
 										   .OfType<IScoreControl>()
 										   .Single();
