@@ -501,7 +501,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		var totalSeededGameCount = preseededGameCount + seededGameCount;
 
 		int seededGamesConflict;
-		decimal? elapsedMilliseconds;
+		long? elapsedMilliseconds;
 		using (var form = new WaitForm($"Seeding {"Game".Pluralize(totalSeededGameCount, true)}",
 									   () => Round.Seed(roundPlayers, SeedingAssignsPowersCheckBox.Checked)))
 		{

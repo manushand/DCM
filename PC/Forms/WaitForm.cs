@@ -10,7 +10,7 @@ internal sealed partial class WaitForm : Form
 	internal int Result { get; private set; }
 
 	[DesignerSerializationVisibility(Hidden)]
-	internal decimal? ElapsedMilliseconds { get; private set; }
+	internal long? ElapsedMilliseconds { get; private set; }
 
 	internal WaitForm(string caption,
 					  Func<int> function)
