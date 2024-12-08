@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace DCM.Properties {
+namespace PC.Properties {
 	using System.CodeDom.Compiler;
 	using System.Diagnostics;
 	using System.Diagnostics.CodeAnalysis;

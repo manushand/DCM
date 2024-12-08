@@ -1,6 +1,6 @@
 ﻿using static System.Windows.Forms.Application;
 
-namespace DCM;
+namespace PC;
 
 file static class Program
 {
@@ -14,7 +14,7 @@ file static class Program
 	private static void Main(string[] args)
 	{
 		//  Be sure the proper database driver is installed on this host computer.
-		if (!CheckDriver())
+		if (!CheckDriver(static message => MessageBox.Show(message, "Data Driver Error", OK, Error)))
 			return;
 
 		//	If a db file name is on the command line, use that.  Otherwise, get it from saved settings if possible.
