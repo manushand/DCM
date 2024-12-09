@@ -1,6 +1,0 @@
-
-**/bin/**
-**/obj/**
-**/PublishProfiles/**
-
-*.csproj.user
