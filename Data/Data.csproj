@@ -1,0 +1,92 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0-windows</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Update="Scoring.PowerData.cs">
+            <DependentUpon>Scoring.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Data.Cache.cs">
+            <DependentUpon>Database.cs</DependentUpon>
+        </Compile>
+        <Compile Update="GamePlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="LinkRecord.cs">
+            <DependentUpon>IRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Group.RatingInfo.cs">
+            <DependentUpon>Group.cs</DependentUpon>
+        </Compile>
+        <Compile Update="GroupPlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="PlayerConflict.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="RoundPlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="TeamPlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="TournamentPlayer.cs">
+            <DependentUpon>LinkRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Properties\Settings.Designer.cs">
+            <DesignTimeSharedInput>True</DesignTimeSharedInput>
+            <AutoGen>True</AutoGen>
+            <DependentUpon>Settings.settings</DependentUpon>
+        </Compile>
+        <Compile Update="IInfoRecord.cs">
+            <DependentUpon>IRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="ScoringSystem.Calculator.cs">
+            <DependentUpon>ScoringSystem.cs</DependentUpon>
+        </Compile>
+        <Compile Update="IdentityRecord.cs">
+            <DependentUpon>IInfoRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Game.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Group.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Player.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Round.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="ScoringSystem.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Team.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Tournament.cs">
+            <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+      <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+      <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.12.0" />
+      <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+      <PackageReference Include="System.Data.Odbc" Version="9.0.0" />
+      <PackageReference Include="System.Data.OleDb" Version="9.0.0" />
+      <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\DCM\DCM.csproj" />
+    </ItemGroup>
+
+</Project>
