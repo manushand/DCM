@@ -15,14 +15,13 @@ public sealed partial class ScoringSystem
 	{
 		internal static Scoring Scoring
 		{
-			private get => field == Scoring.None
-							   ? throw new NullReferenceException(nameof (Scoring))
-							   : field;
+			get => field == Scoring.None
+					   ? throw new NullReferenceException(nameof (Scoring))
+					   : field;
 			set;
 		} = Scoring.None;
 
 		private readonly PowerData _inContextPowerData;
-		private readonly double _result;
 		private string _formula;
 		private double _term;
 
@@ -236,6 +235,8 @@ public sealed partial class ScoringSystem
 				[nameof (Scoring.OtherScore)] = static powerData => powerData.OtherScore
 			};
 
+		private double Result { get; }
+
 		static Calculator()
 			=> ReservedAliases.UnionWith([
 											 nameof (Scoring),
@@ -249,7 +250,7 @@ public sealed partial class ScoringSystem
 		internal static double Calculate(string formula)
 		{
 			Aliases.Clear();
-			return new Calculator(formula, Scoring.Player)._result;
+			return new Calculator(formula, Scoring.Player).Result;
 		}
 
 		private Calculator(string formula,
@@ -261,14 +262,14 @@ public sealed partial class ScoringSystem
 			while (_formula.Length > 0)
 			{
 				if (@operator is Operators.Reset)
-					_result = 0;
+					Result = 0;
 				GetOperator();
 				if (_formula.Length is 0 && @operator is not Operators.Reset)
 					throw new InvalidOperationException($"Missing term for '{@operator}' operation.");
 				GetTerm();
-				_result = Operate.TryGetValue(@operator, out var func)
-							  ? func(_result, _term)
-							  : throw new InvalidOperationException($"Unimplemented operator ({@operator}).");
+				Result = Operate.TryGetValue(@operator, out var func)
+							 ? func(Result, _term)
+							 : throw new InvalidOperationException($"Unimplemented operator ({@operator}).");
 			}
 
 			void GetOperator()
@@ -331,8 +332,8 @@ public sealed partial class ScoringSystem
 					{
 						var ch = _formula[position];
 						if (braceLevel is 1
-							&& (ch is Colon || _formula[position..].Starts("else") //	.Starts checks Formula[4] for us
-								&& (position is 0 || !char.IsLetterOrDigit(_formula[position - 1]))))
+						&& (ch is Colon || _formula[position..].Starts("else") //	.Starts checks Formula[4] for us
+										&& (position is 0 || !char.IsLetterOrDigit(_formula[position - 1]))))
 						{
 							formulaToRun = _formula[..(position - 1)];
 							start =
@@ -346,14 +347,14 @@ public sealed partial class ScoringSystem
 					}
 					if (braceLevel > 0)
 						throw new InvalidOperationException("Unclosed if/else brace.");
-					if (_result is not 0)
+					if (Result is not 0)
 						formulaToRun ??= _formula[..(position - 2)];
 					else if (start is not 0)
 						formulaToRun = _formula[start..(position - 1)];
 					DropCount(position);
 					_term = formulaToRun is null
 								? 0
-								: new Calculator(formulaToRun, _inContextPowerData)._result;
+								: new Calculator(formulaToRun, _inContextPowerData).Result;
 					return;
 				//	If getting a Term for the Becomes operator, the next "Term" is an alias name; set it.
 				case Operators.Becomes when GetAlias(out var alias):
@@ -361,7 +362,7 @@ public sealed partial class ScoringSystem
 						throw new InvalidOperationException($"Attempt to redefine reserved alias name: {alias}");
 					Aliases[alias] =
 						_term =
-							_result;
+							Result;
 					return;
 				case Operators.Becomes:
 					throw new InvalidOperationException($"Invalid alias name: {_formula.Split().First()}");
@@ -370,7 +371,7 @@ public sealed partial class ScoringSystem
 					var error = _formula.Split(Semicolon)
 										.First();
 					DropText(error);
-					if (_result is 0)
+					if (Result is 0)
 						return;
 					error = error.Trim();
 					throw new InvalidOperationException(error.Length is 0
@@ -417,7 +418,7 @@ public sealed partial class ScoringSystem
 						parenCount += AdjustEmbedCount(_formula[position], '(', ')');
 					if (parenCount > 0)
 						throw new InvalidOperationException("Unclosed parenthesis.");
-					_term = new Calculator(_formula[1..position], _inContextPowerData)._result;
+					_term = new Calculator(_formula[1..position], _inContextPowerData).Result;
 					DropCount(++position);
 					return;
 				//	Numbers
@@ -442,19 +443,19 @@ public sealed partial class ScoringSystem
 				case '@':
 					//	Don't reverse the order of the && or the GetUnaryTerm may not get parsed past!
 					_term = (Scoring.Winners == (int)GetUnaryTerm()
-							 && _inContextPowerData.Won).AsInteger();
+						 &&  _inContextPowerData.Won).AsInteger();
 					return;
 				case '#':
 					_term = (_inContextPowerData.BestCenterRank <= GetUnaryTerm()
-							 && _inContextPowerData.WorstCenterRank >= _term).AsInteger();
+						 &&  _inContextPowerData.WorstCenterRank >= _term).AsInteger();
 					return;
 				case '$':
 					_term = (_inContextPowerData.BestSurvivorRank <= GetUnaryTerm()
-							 && _inContextPowerData.WorstSurvivorRank >= _term).AsInteger();
+						 &&  _inContextPowerData.WorstSurvivorRank >= _term).AsInteger();
 					return;
 				case '~':
 					_term = (_inContextPowerData.WorstEliminationOrder <= GetUnaryTerm()
-							 && _inContextPowerData.BestEliminationOrder >= _term).AsInteger();
+						 &&  _inContextPowerData.BestEliminationOrder >= _term).AsInteger();
 					return;
 				case '\\' when _formula.Starts(@"\|"):
 					DropCount(); //	Since this is a two-character unary operator, we need to drop one of the two ourselves.
@@ -486,7 +487,7 @@ public sealed partial class ScoringSystem
 								bracketLevel += AdjustEmbedCount(_formula[position], '[', ']');
 							if (bracketLevel > 0)
 								throw new InvalidOperationException($"Unclosed power reference bracket after {alias}.");
-							_term = new Calculator(_formula[1..position], powerContext)._result;
+							_term = new Calculator(_formula[1..position], powerContext).Result;
 							DropCount(++position);
 							return;
 						case '.':
@@ -539,7 +540,7 @@ public sealed partial class ScoringSystem
 						return;
 					//	The @operator has already been changed to Operators.Plus; figure out the addend.
 					if (_inContextPowerData.Lost)
-						_term = -_result;
+						_term = -Result;
 					else
 					{
 						var drawSize = Scoring.Winners;
@@ -547,10 +548,10 @@ public sealed partial class ScoringSystem
 							_term = 0;
 						else
 						{
-							var equation = $"{_result}";
+							var equation = $"{Result}";
 							while (--drawSize > 0)
 								equation += routineText;
-							_term = new Calculator(equation, _inContextPowerData)._result - _result;
+							_term = new Calculator(equation, _inContextPowerData).Result - Result;
 						}
 					}
 #if Routines

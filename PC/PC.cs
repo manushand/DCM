@@ -496,10 +496,10 @@ internal static class PC
 	internal static Font BoldFont(Font font)
 		=> new (font, FontStyle.Bold);
 
-	internal static void SetVisible(bool visible, params List<Control> controls)
+	internal static void SetVisible(bool visible, params IEnumerable<Control> controls)
 		=> controls.ForEach(control => control.Visible = visible);
 
-	internal static void SetEnabled(bool enabled, params List<Control> controls)
+	internal static void SetEnabled(bool enabled, params IEnumerable<Control> controls)
 		=> controls.ForEach(control => control.Enabled = enabled);
 
 	#endregion

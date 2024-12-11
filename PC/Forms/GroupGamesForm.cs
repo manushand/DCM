@@ -320,7 +320,7 @@ internal sealed partial class GroupGamesForm : Form
 		AllFilledIn = allFilledIn && !GameInErrorButton.Visible;
 		var showScores = allFilledIn
 					  && (Game.Status is Finished
-					   || Group.ScoringSystem?.UsesPlayerAnte is not true);
+					  ||  Group.ScoringSystem?.UsesPlayerAnte is not true);
 		ScoreColumnHeaderLabel.Visible =
 			ScoreTotalBarLabel.Visible =
 				TotalScoreTextLabel.Visible =
@@ -384,10 +384,8 @@ internal sealed partial class GroupGamesForm : Form
 							  details.Clear();
 							  details.Add($"Pre-Game {scoreOrRating}: {preGame}");
 							  if (usesAnte)
-							  {
-								  details.Add($"Player Ante: {ante}");
-								  details.Add($"Game Score: {ante + score}");
-							  }
+								  details.AddRange($"Player Ante: {ante}",
+												   $"Game Score: {ante + score}");
 							  if (isGroup)
 								  details.Add($"Rating Change: {postGame - preGame}");
 							  details.Add($"Post-Game {scoreOrRating}: {postGame}");

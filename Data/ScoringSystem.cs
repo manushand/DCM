@@ -12,20 +12,14 @@ public sealed partial class ScoringSystem : IdentityRecord
 	public static readonly ScoringSystem None = new ();
 	public static bool ShowTimingData { private get; set; }
 
-	private const char Bar = '|';
-
-	private static readonly TimeSpan ScriptTimeout = TimeSpan.FromSeconds(7);
-
-	private string _finalScoreFormula = Empty;
-
 	public DrawRules DrawPermissions;
+	public List<GamePlayer>? TestGamePlayers;
 	public string OtherScoreAlias = Empty;
 	public string PlayerAnteFormula = Empty;
 	public string ProvisionalScoreFormula = Empty;
 	public int? FinalGameYear;
 	public int? PointsPerGame;
 	public int SignificantDigits;
-	public List<GamePlayer>? TestGamePlayers;
 	public bool UsesCenterCount;
 	public bool UsesGameResult;
 	public bool UsesYearsPlayed;
@@ -43,6 +37,12 @@ public sealed partial class ScoringSystem : IdentityRecord
 	public bool DrawsIncludeAllSurvivors => DrawPermissions is DrawRules.DIAS;
 	public bool UsesOtherScore => OtherScoreAlias.Length > 0;
 	public bool UsesCompiledFormulas => _finalScoreFormula.LastOrDefault() is CompiledFormulaSuffix;
+
+	private const char Bar = '|';
+
+	private static readonly TimeSpan ScriptTimeout = TimeSpan.FromSeconds(7);
+
+	private string _finalScoreFormula = Empty;
 
 	private string TestGameData
 	{
@@ -90,7 +90,7 @@ public sealed partial class ScoringSystem : IdentityRecord
 			//	TODO: Could add a lot more checks, like that winners all play to the final
 			//	TODO: game-year, or that no Centers are given if the scoring system doesn't
 			//	TODO: call for them, etc., or that if it does call for Centers, all seven
-			//	TODO: players provide it, or that the total center count is between 22 and
+			//	TODO: players provide it, or that the total center count is between 22 andAddRe
 			//	TODO: 34, etc., etc.  However, the only strings coming in here should come
 			//	TODO: from test games; they have all this validation already.
 			if (TestGamePlayers.Any(static gamePlayer => gamePlayer.Power is TBD)
@@ -111,22 +111,20 @@ public sealed partial class ScoringSystem : IdentityRecord
 								 bool trim = false)
 	{
 		var formatted = score.ToString(ScoreFormat);
-		if (trim && formatted.Contains('.'))
-			formatted = formatted.TrimEnd('0')
-								 .TrimEnd('.');
+		if (trim)
+			formatted = InsignificantDigits().Replace(formatted, Empty);
 		return formatted;
 	}
 
 	public void SetCompiledFormulae(bool isCompiled)
-	{
-		if (isCompiled)
-			FinalScoreFormula += CompiledFormulaSuffix;
-	}
+		=> FinalScoreFormula += isCompiled
+									? CompiledFormulaSuffix
+									: Empty;
 
 	public bool ScoreWithResults(List<GamePlayer> gamePlayers,
 								 out List<string?> results)
 	{
-		const string bar = "─────────────────────────────────";
+		const string bar = "――――――――――――――――――――";
 		if (!GameDataValid(out results))
 			return false;
 		gamePlayers = gamePlayers.OrderBy(static gamePlayer => gamePlayer.Power)
@@ -205,8 +203,7 @@ public sealed partial class ScoringSystem : IdentityRecord
 		{
 			var totalAntes = scoring.SumOfPlayerAntes;
 			roundedAntes = double.Round(totalAntes);
-			results.Add(bar);
-			results.Add($"Total player antes{(totalAntes.Equals(roundedAntes) ? null : " (rounded)")} = {roundedAntes}");
+			results.AddRange(bar, $"Total player antes{(totalAntes.Equals(roundedAntes) ? null : " (rounded)")} = {roundedAntes}");
 		}
 		else
 			roundedAntes = 0;
@@ -214,13 +211,9 @@ public sealed partial class ScoringSystem : IdentityRecord
 		var roundedTotal = PointsPerGame is null
 							   ? total
 							   : double.Round(total);
-		results.Add(bar);
-		results.Add($"Total points awarded{(total.Equals(roundedTotal) ? null : " (rounded)")} = {roundedTotal}");
+		results.AddRange(bar, $"Total points awarded{(total.Equals(roundedTotal) ? null : " (rounded)")} = {roundedTotal}");
 		if (watch is not null)
-		{
-			results.Add(bar);
-			results.Add($"Time to score: {watch.ElapsedMilliseconds / 1_000m} sec.");
-		}
+			results.AddRange(bar, $"Time to score: {watch.ElapsedMilliseconds / 1_000m} sec.");
 		if (PointsPerGame is null)
 			return true;
 		var expectedTotal = calculateAnte
@@ -233,7 +226,7 @@ public sealed partial class ScoringSystem : IdentityRecord
 							: null;
 		var status = error is null;
 		if (!status)
-			results.AddRange([null, error]);
+			results.AddRange(null, error);
 		return status;
 
 		static string ErrorDetail(Exception exception)
@@ -242,7 +235,8 @@ public sealed partial class ScoringSystem : IdentityRecord
 			return exception switch
 				   {
 					   CompilationErrorException when message.Count(static c => c is Colon) > 1 => Join(Colon, message.Split(Colon).Skip(2)),
-					   AggregateException aggregateException                                    => Join(NewLine, aggregateException.InnerExceptions.Select(static inner => inner.Message)),
+					   AggregateException aggregateException                                    => Join(NewLine, aggregateException.InnerExceptions
+																																   .Select(static inner => inner.Message)),
 					   _                                                                        => message
 				   };
 		}
@@ -447,11 +441,9 @@ public sealed partial class ScoringSystem : IdentityRecord
 																 .WithReferences(Assembly.GetAssembly(typeof (Enumerable)),
 																				 Assembly.GetExecutingAssembly())
 																 .WithImports(nameof (System),
-																			  // typeof (IList).Namespace,
 																			  typeof (List<int>).Namespace,
 																			  typeof (Enumerable).Namespace,
-																			  typeof (Math).FullName,
-																			  nameof (DCM));
+																			  typeof (Math).FullName); // nameof (DCM) used to be here too; unnecessary???
 
 	/// <summary>
 	///     Holds formulae after comments have been removed and OtherScoreAlias instances swapped out.
@@ -469,19 +461,22 @@ public sealed partial class ScoringSystem : IdentityRecord
 	[GeneratedRegex("OtherScores?")]
 	private static partial Regex OtherScores();
 
+	[GeneratedRegex("[.]0*$")]
+	private static partial Regex InsignificantDigits();
+
 	private string RemoveComments(string formula)
 	{
 		const string lineCommentStart = "//";
-		const string blockComment = @"/\*(.*?)\*/";
-		const string lineComment = $@"{lineCommentStart}(.*?)\r?\n";
-		const string simpleString = """(\$*"(\\[^\n]|[^\n\\])*")""";
-		const string verbatimString = """(@\$*|\$+@)("[^"]*")+""";
-		const string rawString = """\$*("{3,}).*\1""";
+		const string blockComment = "/[*].*?[*]/";
+		const string lineComment = $@"{lineCommentStart}.*?\n";
+		const string rawString = """[$]*("{3,}).*?\1""";
+		const string simpleString = """[$]*"(\\(.|\r?\n)|[^\n\\"])*["]""";
+		const string verbatimString = """(@[$]*|[$]+@)("[^"]*")+""";
 		const string formulaRegex = $"{blockComment}|{lineComment}";
-		const string cSharpRegex = $"{formulaRegex}|{simpleString}|{verbatimString}|{rawString}";
+		const string cSharpRegex = $"{rawString}|{simpleString}|{verbatimString}|{formulaRegex}";
 		const string underbar = "_";
 
-		//	TODO: For C# (compiled) formulae, the Regex.Replace doesn't seem to do a darn thing, so...why???
+		//	NOTE: In the cSharpRegex, the comments regex must be AFTER the strings, so that comment-like text in strings are protected
 		formula = Regex.Replace(formula.Trim(CompiledFormulaSuffix) + NewLine, //	Add NewLine to catch text-final line comments
 								UsesCompiledFormulas
 									? cSharpRegex

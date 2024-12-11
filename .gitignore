@@ -1,6 +1,8 @@
+**/.idea/**
 **/.vs/**
 **/bin/**
 **/obj/**
 **/PublishProfiles/**
 
 *.csproj.user
+*.DotSettings*
