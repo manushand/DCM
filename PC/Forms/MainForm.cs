@@ -4,11 +4,15 @@ namespace PC.Forms;
 
 internal sealed partial class MainForm : Form
 {
+	private static bool Connected => Settings.DatabaseType.As<DatabaseTypes>() is DatabaseTypes.Access or DatabaseTypes.SqlServer;
+
 	private IdentityRecord? Event
 	{
 		get
 		{
-			var eventId = Settings.EventId;
+			var eventId = Connected
+				? Settings.EventId
+				: 0;
 			return field is not null || eventId is 0
 					   ? field
 					   : field = Settings.EventIsGroup
@@ -28,21 +32,27 @@ internal sealed partial class MainForm : Form
 		InitializeComponent();
 		ConfigurationMenuItem.DropDown.Closing += static (_, e) => e.Cancel = e.CloseReason is ItemClicked;
 		StartPosition = FormStartPosition.CenterScreen;
+		OpenDatabase();
 	}
 
 	private void MainForm_Load(object? sender = null,
 							   EventArgs? e = null)
 	{
 		Activate();
+		PlayersToolStripMenuItem.Visible =
+			GroupToolStripMenuItem.Visible =
+				ScoringToolStripMenuItem.Visible =
+					TournamentToolStripMenuItem.Visible =
+						Connected;
 		ShowTimingToolStripMenuItem.Checked =
 			ScoringSystem.ShowTimingData =
 				Settings.ShowTimingData;
 		OpenTournamentMenuItem.Enabled =
 			DeleteTournamentMenuItem.Enabled =
-				Any<Tournament>(static tournament => tournament.GroupId is null);
-		OpenGroupMenuItem.Enabled = Any<Group>();
-		PlayerConflictsToolStripMenuItem.Enabled = ReadAll<Player>().Count() > 1;
-		ButtonPanel.Visible = Settings.EventId > 0;
+				Connected && Any<Tournament>(static tournament => tournament.GroupId is null);
+		OpenGroupMenuItem.Enabled = Connected && Any<Group>();
+		PlayerConflictsToolStripMenuItem.Enabled = Connected && ReadAll<Player>().Count() > 1;
+		ButtonPanel.Visible = Connected && Settings.EventId > 0;
 		switch (Event)
 		{
 		case null:
@@ -240,21 +250,37 @@ internal sealed partial class MainForm : Form
 												   EventArgs e)
 		=> Show<EmailSettingsForm>();
 
+	private void SqlServerToolStripMenuItem_Click(object sender, EventArgs e)
+		=> Show<SqlServerSettingsForm>();
+
 	private void DatabaseOpenToolStripMenuItem_Click(object sender,
 													 EventArgs e)
 	{
-		if (OpenDatabase())
-			Event = null;
+		if (!OpenAccessDatabase())
+			return;
+		Event = null;
 	}
 
 	private void DatabaseSaveAsToolStripMenuItem_Click(object sender,
 													   EventArgs e)
-		=> SaveDatabase();
+		=> SaveAccessDatabase();
 
 	private void DatabaseClearToolStripMenuItem_Click(object sender,
 													  EventArgs e)
 	{
-		if (MessageBox.Show($"Are you absolutely sure you want to clear all data in the file {Settings.DatabaseFile}?{NewLine}{NewLine}THERE IS NO UNDO!",
+		var connection = Settings.DatabaseType.As<DatabaseTypes>();
+		var host = connection switch
+				   {
+					   DatabaseTypes.Access    => $"Access file {Settings.DatabaseFile}",
+					   DatabaseTypes.SqlServer => "connected SQL Server database",
+					   DatabaseTypes.None      => null,
+					   _                       => throw new InvalidOperationException()
+				   };
+		if (host is null
+		||  MessageBox.Show($"""
+							 Are you absolutely sure you want to clear all data in the {host}?
+							 {NewLine}THERE IS NO UNDO!
+							 """,
 							"Confirm Data Clear",
 							YesNo,
 							Exclamation) is DialogResult.No)
@@ -266,11 +292,18 @@ internal sealed partial class MainForm : Form
 	private void DatabaseCheckToolStripMenuItem_Click(object sender,
 													  EventArgs e)
 	{
-		if (CheckDriver(static message => MessageBox.Show(message, "Data Driver Error", OK, Error)))
-			MessageBox.Show("Your system is equipped to use both .accdb and .mdb data files.",
+		try
+		{
+			CheckDriver();
+			MessageBox.Show("Your system is equipped to use both .accdb and .mdb data files (either type may be renamed .dcm).",
 							"Data Driver Report",
 							OK,
 							Information);
+		}
+		catch (Exception ex)
+		{
+			MessageBox.Show(ex.Message, "Data Driver Error", OK, Error);
+		}
 	}
 
 	#endregion

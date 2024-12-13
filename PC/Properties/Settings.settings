@@ -1,55 +1,60 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)"
-              GeneratedClassNamespace="DCM.Properties" GeneratedClassName="Settings">
-    <Profiles/>
-    <Settings>
-        <Setting Name="DatabaseFile" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="EventId" Type="System.Int32" Scope="User">
-            <Value Profile="(Default)">0</Value>
-        </Setting>
-        <Setting Name="EventIsGroup" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="SmtpHost" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="SmtpPort" Type="System.Int32" Scope="User">
-            <Value Profile="(Default)">25</Value>
-        </Setting>
-        <Setting Name="SmtpSsl" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="SmtpUsername" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="SmtpPassword" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="TestEmailAddress" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="FromEmailAddress" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="FromEmailName" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="TestEmailOnly" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="AssignmentEmailTemplate" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="AnnouncementEmailTemplate" Type="System.String" Scope="User">
-            <Value Profile="(Default)"/>
-        </Setting>
-        <Setting Name="ShowTimingData" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-        <Setting Name="DatabaseChecked" Type="System.Boolean" Scope="User">
-            <Value Profile="(Default)">False</Value>
-        </Setting>
-    </Settings>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="PC.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="DatabaseFile" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="EventId" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="EventIsGroup" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SmtpHost" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SmtpPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">25</Value>
+    </Setting>
+    <Setting Name="SmtpSsl" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="SmtpUsername" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SmtpPassword" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TestEmailAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="FromEmailAddress" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="FromEmailName" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="TestEmailOnly" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="AssignmentEmailTemplate" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="AnnouncementEmailTemplate" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ShowTimingData" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DatabaseChecked" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="DatabaseType" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="DatabaseConnectionString" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+  </Settings>
 </SettingsFile>

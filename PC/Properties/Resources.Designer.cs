@@ -27,15 +27,15 @@ namespace PC.Properties {
     [DebuggerNonUserCode()]
     [CompilerGenerated()]
     internal class Resources {
-        
+
         private static ResourceManager resourceMan;
-        
+
         private static CultureInfo resourceCulture;
-        
+
         [SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
         internal Resources() {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
@@ -43,13 +43,13 @@ namespace PC.Properties {
         internal static ResourceManager ResourceManager {
             get {
                 if (ReferenceEquals(resourceMan, null)) {
-                    ResourceManager temp = new ResourceManager("DCM.Properties.Resources", typeof(Resources).Assembly);
+                    ResourceManager temp = new ResourceManager("PC.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.

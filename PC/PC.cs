@@ -39,7 +39,7 @@ internal static class PC
 {
 	#region Fields and Properties
 
-	internal const string Version = "24.12.07";
+	internal const string Version = "24.12.12";
 
 	internal static readonly Settings Settings = Settings.Default;
 	internal static readonly Dictionary<Font, Font> BoldFonts = [];
@@ -113,9 +113,42 @@ internal static class PC
 
 	#region Data connection and CRUD methods
 
-	internal static bool OpenDatabase(string? dbFileName = null)
+	public static void OpenDatabase()
 	{
-		while (dbFileName is null || !Connect(dbFileName))
+		switch (Settings.DatabaseType.As<DatabaseTypes>())
+		{
+		case DatabaseTypes.Access:
+			//  Be sure the proper database driver is installed on this host computer.
+			try
+			{
+				CheckDriver();
+				//	Get the db file name from saved settings if possible.
+				var dbFileName = GetAccessDatabaseFile();
+				if (OpenAccessDatabase(dbFileName))
+					return;
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Data Driver Error", OK, Error);
+			}
+			break;
+		case DatabaseTypes.SqlServer:
+			var connectionString = Settings.DatabaseConnectionString;
+			if (OpenSqlServerDatabase(connectionString))
+				return;
+			break;
+		case DatabaseTypes.None:
+			return;
+		default:
+			throw new NotImplementedException($"Invalid Database Type ({Settings.DatabaseType}");
+		}
+		Settings.DatabaseType = default;
+		Settings.Save();
+	}
+
+	internal static bool OpenAccessDatabase(string? dbFileName = null)
+	{
+		while (dbFileName is null || !ConnectToAccessDatabase(dbFileName))
 		{
 			if (dbFileName is not null)
 				MessageBox.Show("Failed to connect to database file.",
@@ -123,20 +156,22 @@ internal static class PC
 			using var dialog = new OpenFileDialog();
 			dialog.Title = "Choose DCM Data File";
 			dialog.Filter = DatabaseFileDialogFilter;
+			dialog.FileName = Settings.DatabaseFile;
 			if (dialog.ShowDialog() is not DialogResult.OK)
 				return false;
 			dbFileName = dialog.FileName;
 		}
 
-		if (dbFileName == Settings.DatabaseFile)
+		if (Settings.DatabaseType.As<DatabaseTypes>() is DatabaseTypes.Access && dbFileName == Settings.DatabaseFile)
 			return true;
 		FlushCache();
+		Settings.DatabaseType = DatabaseTypes.Access.AsInteger();
 		Settings.DatabaseFile = dbFileName;
 		SetEvent();
 		return true;
 	}
 
-	internal static string? GetDatabaseFile()
+	private static string? GetAccessDatabaseFile()
 	{
 		//	If a db file has been saved in Settings, use that.
 		if (File.Exists(Settings.DatabaseFile))
@@ -152,7 +187,7 @@ internal static class PC
 				   : null;
 	}
 
-	internal static void SaveDatabase()
+	internal static void SaveAccessDatabase()
 	{
 		using var dialog = new SaveFileDialog();
 		dialog.Title = "Save DCM Data File As…";
@@ -163,6 +198,26 @@ internal static class PC
 		File.Copy(Settings.DatabaseFile, dialog.FileName);
 		Settings.DatabaseFile = dialog.FileName;
 		Settings.Save();
+	}
+
+	internal static bool OpenSqlServerDatabase(string connectionString)
+	{
+		try
+		{
+			ConnectToSqlServerDatabase(connectionString);
+		}
+		catch (Exception ex)
+		{
+			MessageBox.Show($"Could not connect to SQL Server: {ex.Message}", "Data Connection Failed", OK, Error);
+			return false;
+		}
+		if (Settings.DatabaseType.As<DatabaseTypes>() is DatabaseTypes.SqlServer && Settings.DatabaseConnectionString == connectionString)
+			return true;
+		FlushCache();
+		Settings.DatabaseType = DatabaseTypes.SqlServer.AsInteger();
+		Settings.DatabaseConnectionString = connectionString;
+		SetEvent();
+		return true;
 	}
 
 	internal static void ClearDatabase()

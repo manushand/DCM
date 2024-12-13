@@ -28,317 +28,309 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-			this.TournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.OpenTournamentMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.NewTournamentToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.DeleteTournamentMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.PlayersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ManagePlayersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.PlayerConflictsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ConfigurationMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ShowTimingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.EmailConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ReportsConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.DatabaseConfigurationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.OpenDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.SaveAsDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.CheckDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ClearDatabaseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.MainFormMenuStrip = new System.Windows.Forms.MenuStrip();
-			this.GroupToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.OpenGroupMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ManageGroupsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ScoringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.ScoringSystemsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.HelpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.HelpTopicsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.HelpAboutToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-			this.TournamentNameLabel = new System.Windows.Forms.Label();
-			this.ButtonPanel = new System.Windows.Forms.Panel();
-			this.RightButton = new System.Windows.Forms.Button();
-			this.MiddleButton = new System.Windows.Forms.Button();
-			this.LeftButton = new System.Windows.Forms.Button();
-			this.MainFormMenuStrip.SuspendLayout();
-			this.ButtonPanel.SuspendLayout();
-			this.SuspendLayout();
+			TournamentToolStripMenuItem = new ToolStripMenuItem();
+			OpenTournamentMenuItem = new ToolStripMenuItem();
+			NewTournamentToolStripMenuItem = new ToolStripMenuItem();
+			DeleteTournamentMenuItem = new ToolStripMenuItem();
+			PlayersToolStripMenuItem = new ToolStripMenuItem();
+			ManagePlayersToolStripMenuItem = new ToolStripMenuItem();
+			PlayerConflictsToolStripMenuItem = new ToolStripMenuItem();
+			ConfigurationMenuItem = new ToolStripMenuItem();
+			ShowTimingToolStripMenuItem = new ToolStripMenuItem();
+			EmailConfigurationToolStripMenuItem = new ToolStripMenuItem();
+			ReportsConfigurationToolStripMenuItem = new ToolStripMenuItem();
+			MainFormMenuStrip = new MenuStrip();
+			GroupToolStripMenuItem = new ToolStripMenuItem();
+			OpenGroupMenuItem = new ToolStripMenuItem();
+			ManageGroupsToolStripMenuItem = new ToolStripMenuItem();
+			ScoringToolStripMenuItem = new ToolStripMenuItem();
+			ScoringSystemsToolStripMenuItem = new ToolStripMenuItem();
+			HelpToolStripMenuItem = new ToolStripMenuItem();
+			HelpTopicsToolStripMenuItem = new ToolStripMenuItem();
+			HelpAboutToolStripMenuItem1 = new ToolStripMenuItem();
+			TournamentNameLabel = new Label();
+			ButtonPanel = new Panel();
+			RightButton = new Button();
+			MiddleButton = new Button();
+			LeftButton = new Button();
+			DatabaseToolStripMenuItem = new ToolStripMenuItem();
+			SqlServerToolStripMenuItem = new ToolStripMenuItem();
+			AccessToolStripMenuItem = new ToolStripMenuItem();
+			AccessOpenToolStripMenuItem = new ToolStripMenuItem();
+			SaveAsDatabaseToolStripMenuItem = new ToolStripMenuItem();
+			CheckDatabaseToolStripMenuItem = new ToolStripMenuItem();
+			ClearDatabaseToolStripMenuItem = new ToolStripMenuItem();
+			MainFormMenuStrip.SuspendLayout();
+			ButtonPanel.SuspendLayout();
+			SuspendLayout();
 			//
 			// TournamentToolStripMenuItem
 			//
-			this.TournamentToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.OpenTournamentMenuItem,
-            this.NewTournamentToolStripMenuItem,
-            this.DeleteTournamentMenuItem});
-			this.TournamentToolStripMenuItem.Name = "TournamentToolStripMenuItem";
-			this.TournamentToolStripMenuItem.Size = new System.Drawing.Size(84, 20);
-			this.TournamentToolStripMenuItem.Text = "&Tournament";
+			TournamentToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { OpenTournamentMenuItem, NewTournamentToolStripMenuItem, DeleteTournamentMenuItem });
+			TournamentToolStripMenuItem.Name = "TournamentToolStripMenuItem";
+			TournamentToolStripMenuItem.Size = new Size(84, 20);
+			TournamentToolStripMenuItem.Text = "&Tournament";
 			//
 			// OpenTournamentMenuItem
 			//
-			this.OpenTournamentMenuItem.Name = "OpenTournamentMenuItem";
-			this.OpenTournamentMenuItem.Size = new System.Drawing.Size(116, 22);
-			this.OpenTournamentMenuItem.Text = "&Open…";
-			this.OpenTournamentMenuItem.Click += new System.EventHandler(this.OpenTournamentMenuItem_Click);
+			OpenTournamentMenuItem.Name = "OpenTournamentMenuItem";
+			OpenTournamentMenuItem.Size = new Size(116, 22);
+			OpenTournamentMenuItem.Text = "&Open…";
+			OpenTournamentMenuItem.Click += OpenTournamentMenuItem_Click;
 			//
 			// NewTournamentToolStripMenuItem
 			//
-			this.NewTournamentToolStripMenuItem.Name = "NewTournamentToolStripMenuItem";
-			this.NewTournamentToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
-			this.NewTournamentToolStripMenuItem.Text = "&New…";
-			this.NewTournamentToolStripMenuItem.Click += new System.EventHandler(this.NewTournamentMenuItem_Click);
+			NewTournamentToolStripMenuItem.Name = "NewTournamentToolStripMenuItem";
+			NewTournamentToolStripMenuItem.Size = new Size(116, 22);
+			NewTournamentToolStripMenuItem.Text = "&New…";
+			NewTournamentToolStripMenuItem.Click += NewTournamentMenuItem_Click;
 			//
 			// DeleteTournamentMenuItem
 			//
-			this.DeleteTournamentMenuItem.Name = "DeleteTournamentMenuItem";
-			this.DeleteTournamentMenuItem.Size = new System.Drawing.Size(116, 22);
-			this.DeleteTournamentMenuItem.Text = "&Delete…";
-			this.DeleteTournamentMenuItem.Click += new System.EventHandler(this.DeleteTournamentMenuItem_Click);
+			DeleteTournamentMenuItem.Name = "DeleteTournamentMenuItem";
+			DeleteTournamentMenuItem.Size = new Size(116, 22);
+			DeleteTournamentMenuItem.Text = "&Delete…";
+			DeleteTournamentMenuItem.Click += DeleteTournamentMenuItem_Click;
 			//
 			// PlayersToolStripMenuItem
 			//
-			this.PlayersToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ManagePlayersToolStripMenuItem,
-            this.PlayerConflictsToolStripMenuItem});
-			this.PlayersToolStripMenuItem.Name = "PlayersToolStripMenuItem";
-			this.PlayersToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
-			this.PlayersToolStripMenuItem.Text = "&Players";
+			PlayersToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { ManagePlayersToolStripMenuItem, PlayerConflictsToolStripMenuItem });
+			PlayersToolStripMenuItem.Name = "PlayersToolStripMenuItem";
+			PlayersToolStripMenuItem.Size = new Size(56, 20);
+			PlayersToolStripMenuItem.Text = "&Players";
 			//
 			// ManagePlayersToolStripMenuItem
 			//
-			this.ManagePlayersToolStripMenuItem.Name = "ManagePlayersToolStripMenuItem";
-			this.ManagePlayersToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
-			this.ManagePlayersToolStripMenuItem.Text = "&Manage…";
-			this.ManagePlayersToolStripMenuItem.Click += new System.EventHandler(this.PlayerManagementMenuItem_Click);
+			ManagePlayersToolStripMenuItem.Name = "ManagePlayersToolStripMenuItem";
+			ManagePlayersToolStripMenuItem.Size = new Size(130, 22);
+			ManagePlayersToolStripMenuItem.Text = "&Manage…";
+			ManagePlayersToolStripMenuItem.Click += PlayerManagementMenuItem_Click;
 			//
 			// PlayerConflictsToolStripMenuItem
 			//
-			this.PlayerConflictsToolStripMenuItem.Name = "PlayerConflictsToolStripMenuItem";
-			this.PlayerConflictsToolStripMenuItem.Size = new System.Drawing.Size(130, 22);
-			this.PlayerConflictsToolStripMenuItem.Text = "&Conflicts…";
-			this.PlayerConflictsToolStripMenuItem.Click += new System.EventHandler(this.PlayerConflictsMenuItem_Click);
+			PlayerConflictsToolStripMenuItem.Name = "PlayerConflictsToolStripMenuItem";
+			PlayerConflictsToolStripMenuItem.Size = new Size(130, 22);
+			PlayerConflictsToolStripMenuItem.Text = "&Conflicts…";
+			PlayerConflictsToolStripMenuItem.Click += PlayerConflictsMenuItem_Click;
 			//
 			// ConfigurationMenuItem
 			//
-			this.ConfigurationMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ShowTimingToolStripMenuItem,
-            this.EmailConfigurationToolStripMenuItem,
-            this.ReportsConfigurationToolStripMenuItem,
-            this.DatabaseConfigurationToolStripMenuItem});
-			this.ConfigurationMenuItem.Name = "ConfigurationMenuItem";
-			this.ConfigurationMenuItem.Size = new System.Drawing.Size(93, 20);
-			this.ConfigurationMenuItem.Text = "&Configuration";
+			ConfigurationMenuItem.DropDownItems.AddRange(new ToolStripItem[] { ShowTimingToolStripMenuItem, EmailConfigurationToolStripMenuItem, DatabaseToolStripMenuItem, ReportsConfigurationToolStripMenuItem });
+			ConfigurationMenuItem.Name = "ConfigurationMenuItem";
+			ConfigurationMenuItem.Size = new Size(93, 20);
+			ConfigurationMenuItem.Text = "&Configuration";
 			//
 			// ShowTimingToolStripMenuItem
 			//
-			this.ShowTimingToolStripMenuItem.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
-			this.ShowTimingToolStripMenuItem.Name = "ShowTimingToolStripMenuItem";
-			this.ShowTimingToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
-			this.ShowTimingToolStripMenuItem.Text = "Show &Timing";
-			this.ShowTimingToolStripMenuItem.ToolTipText = "Display elapsed time taken by seeding and game scoring";
-			this.ShowTimingToolStripMenuItem.Click += new System.EventHandler(this.ShowTimingToolStripMenuItem_Click);
+			ShowTimingToolStripMenuItem.ImageScaling = ToolStripItemImageScaling.None;
+			ShowTimingToolStripMenuItem.Name = "ShowTimingToolStripMenuItem";
+			ShowTimingToolStripMenuItem.Size = new Size(180, 22);
+			ShowTimingToolStripMenuItem.Text = "Show &Timing";
+			ShowTimingToolStripMenuItem.ToolTipText = "Display elapsed time taken by seeding and game scoring";
+			ShowTimingToolStripMenuItem.Click += ShowTimingToolStripMenuItem_Click;
 			//
 			// EmailConfigurationToolStripMenuItem
 			//
-			this.EmailConfigurationToolStripMenuItem.Name = "EmailConfigurationToolStripMenuItem";
-			this.EmailConfigurationToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
-			this.EmailConfigurationToolStripMenuItem.Text = "&Email…";
-			this.EmailConfigurationToolStripMenuItem.Click += new System.EventHandler(this.EmailSetupToolStripMenuItem_Click);
+			EmailConfigurationToolStripMenuItem.Name = "EmailConfigurationToolStripMenuItem";
+			EmailConfigurationToolStripMenuItem.Size = new Size(180, 22);
+			EmailConfigurationToolStripMenuItem.Text = "&Email…";
+			EmailConfigurationToolStripMenuItem.Click += EmailSetupToolStripMenuItem_Click;
 			//
 			// ReportsConfigurationToolStripMenuItem
 			//
-			this.ReportsConfigurationToolStripMenuItem.Name = "ReportsConfigurationToolStripMenuItem";
-			this.ReportsConfigurationToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
-			this.ReportsConfigurationToolStripMenuItem.Text = "&Reports…";
-			//
-			// DatabaseConfigurationToolStripMenuItem
-			//
-			this.DatabaseConfigurationToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.OpenDatabaseToolStripMenuItem,
-            this.SaveAsDatabaseToolStripMenuItem,
-            this.CheckDatabaseToolStripMenuItem,
-            this.ClearDatabaseToolStripMenuItem});
-			this.DatabaseConfigurationToolStripMenuItem.Name = "DatabaseConfigurationToolStripMenuItem";
-			this.DatabaseConfigurationToolStripMenuItem.Size = new System.Drawing.Size(144, 22);
-			this.DatabaseConfigurationToolStripMenuItem.Text = "&Data";
-			//
-			// OpenDatabaseToolStripMenuItem
-			//
-			this.OpenDatabaseToolStripMenuItem.Name = "OpenDatabaseToolStripMenuItem";
-			this.OpenDatabaseToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
-			this.OpenDatabaseToolStripMenuItem.Text = "&Open…";
-			this.OpenDatabaseToolStripMenuItem.Click += new System.EventHandler(this.DatabaseOpenToolStripMenuItem_Click);
-			//
-			// SaveAsDatabaseToolStripMenuItem
-			//
-			this.SaveAsDatabaseToolStripMenuItem.Name = "SaveAsDatabaseToolStripMenuItem";
-			this.SaveAsDatabaseToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
-			this.SaveAsDatabaseToolStripMenuItem.Text = "&Save As…";
-			this.SaveAsDatabaseToolStripMenuItem.Click += new System.EventHandler(this.DatabaseSaveAsToolStripMenuItem_Click);
-			//
-			// CheckDatabaseToolStripMenuItem
-			//
-			this.CheckDatabaseToolStripMenuItem.Name = "CheckDatabaseToolStripMenuItem";
-			this.CheckDatabaseToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
-			this.CheckDatabaseToolStripMenuItem.Text = "&Accessibility";
-			this.CheckDatabaseToolStripMenuItem.Click += new System.EventHandler(this.DatabaseCheckToolStripMenuItem_Click);
-			//
-			// ClearDatabaseToolStripMenuItem
-			//
-			this.ClearDatabaseToolStripMenuItem.Name = "ClearDatabaseToolStripMenuItem";
-			this.ClearDatabaseToolStripMenuItem.Size = new System.Drawing.Size(139, 22);
-			this.ClearDatabaseToolStripMenuItem.Text = "&Clear…";
-			this.ClearDatabaseToolStripMenuItem.Click += new System.EventHandler(this.DatabaseClearToolStripMenuItem_Click);
+			ReportsConfigurationToolStripMenuItem.Name = "ReportsConfigurationToolStripMenuItem";
+			ReportsConfigurationToolStripMenuItem.Size = new Size(180, 22);
+			ReportsConfigurationToolStripMenuItem.Text = "&Reports…";
 			//
 			// MainFormMenuStrip
 			//
-			this.MainFormMenuStrip.ImageScalingSize = new System.Drawing.Size(40, 40);
-			this.MainFormMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.PlayersToolStripMenuItem,
-            this.GroupToolStripMenuItem,
-            this.ScoringToolStripMenuItem,
-            this.TournamentToolStripMenuItem,
-            this.ConfigurationMenuItem,
-            this.HelpToolStripMenuItem});
-			this.MainFormMenuStrip.Location = new System.Drawing.Point(0, 0);
-			this.MainFormMenuStrip.Name = "MainFormMenuStrip";
-			this.MainFormMenuStrip.Size = new System.Drawing.Size(450, 24);
-			this.MainFormMenuStrip.TabIndex = 5;
+			MainFormMenuStrip.ImageScalingSize = new Size(40, 40);
+			MainFormMenuStrip.Items.AddRange(new ToolStripItem[] { PlayersToolStripMenuItem, GroupToolStripMenuItem, ScoringToolStripMenuItem, TournamentToolStripMenuItem, ConfigurationMenuItem, HelpToolStripMenuItem });
+			MainFormMenuStrip.Location = new Point(0, 0);
+			MainFormMenuStrip.Name = "MainFormMenuStrip";
+			MainFormMenuStrip.Padding = new Padding(7, 2, 0, 2);
+			MainFormMenuStrip.Size = new Size(525, 24);
+			MainFormMenuStrip.TabIndex = 5;
 			//
 			// GroupToolStripMenuItem
 			//
-			this.GroupToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.OpenGroupMenuItem,
-            this.ManageGroupsToolStripMenuItem});
-			this.GroupToolStripMenuItem.Name = "GroupToolStripMenuItem";
-			this.GroupToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
-			this.GroupToolStripMenuItem.Text = "&Group";
+			GroupToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { OpenGroupMenuItem, ManageGroupsToolStripMenuItem });
+			GroupToolStripMenuItem.Name = "GroupToolStripMenuItem";
+			GroupToolStripMenuItem.Size = new Size(52, 20);
+			GroupToolStripMenuItem.Text = "&Group";
 			//
 			// OpenGroupMenuItem
 			//
-			this.OpenGroupMenuItem.Name = "OpenGroupMenuItem";
-			this.OpenGroupMenuItem.Size = new System.Drawing.Size(126, 22);
-			this.OpenGroupMenuItem.Text = "&Open…";
-			this.OpenGroupMenuItem.Click += new System.EventHandler(this.OpenGroupMenuItem_Click);
+			OpenGroupMenuItem.Name = "OpenGroupMenuItem";
+			OpenGroupMenuItem.Size = new Size(126, 22);
+			OpenGroupMenuItem.Text = "&Open…";
+			OpenGroupMenuItem.Click += OpenGroupMenuItem_Click;
 			//
 			// ManageGroupsToolStripMenuItem
 			//
-			this.ManageGroupsToolStripMenuItem.Name = "ManageGroupsToolStripMenuItem";
-			this.ManageGroupsToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
-			this.ManageGroupsToolStripMenuItem.Text = "&Manage…";
-			this.ManageGroupsToolStripMenuItem.Click += new System.EventHandler(this.GroupManagementMenuItem_Click);
+			ManageGroupsToolStripMenuItem.Name = "ManageGroupsToolStripMenuItem";
+			ManageGroupsToolStripMenuItem.Size = new Size(126, 22);
+			ManageGroupsToolStripMenuItem.Text = "&Manage…";
+			ManageGroupsToolStripMenuItem.Click += GroupManagementMenuItem_Click;
 			//
 			// ScoringToolStripMenuItem
 			//
-			this.ScoringToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.ScoringSystemsToolStripMenuItem});
-			this.ScoringToolStripMenuItem.Name = "ScoringToolStripMenuItem";
-			this.ScoringToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
-			this.ScoringToolStripMenuItem.Text = "&Scoring";
+			ScoringToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { ScoringSystemsToolStripMenuItem });
+			ScoringToolStripMenuItem.Name = "ScoringToolStripMenuItem";
+			ScoringToolStripMenuItem.Size = new Size(59, 20);
+			ScoringToolStripMenuItem.Text = "&Scoring";
 			//
 			// ScoringSystemsToolStripMenuItem
 			//
-			this.ScoringSystemsToolStripMenuItem.Name = "ScoringSystemsToolStripMenuItem";
-			this.ScoringSystemsToolStripMenuItem.Size = new System.Drawing.Size(126, 22);
-			this.ScoringSystemsToolStripMenuItem.Text = "&Systems…";
-			this.ScoringSystemsToolStripMenuItem.Click += new System.EventHandler(this.ScoringSystemsMenuItem_Click);
+			ScoringSystemsToolStripMenuItem.Name = "ScoringSystemsToolStripMenuItem";
+			ScoringSystemsToolStripMenuItem.Size = new Size(126, 22);
+			ScoringSystemsToolStripMenuItem.Text = "&Systems…";
+			ScoringSystemsToolStripMenuItem.Click += ScoringSystemsMenuItem_Click;
 			//
 			// HelpToolStripMenuItem
 			//
-			this.HelpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.HelpTopicsToolStripMenuItem,
-            this.HelpAboutToolStripMenuItem1});
-			this.HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
-			this.HelpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
-			this.HelpToolStripMenuItem.Text = "&Help";
+			HelpToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { HelpTopicsToolStripMenuItem, HelpAboutToolStripMenuItem1 });
+			HelpToolStripMenuItem.Name = "HelpToolStripMenuItem";
+			HelpToolStripMenuItem.Size = new Size(44, 20);
+			HelpToolStripMenuItem.Text = "&Help";
 			//
 			// HelpTopicsToolStripMenuItem
 			//
-			this.HelpTopicsToolStripMenuItem.Name = "HelpTopicsToolStripMenuItem";
-			this.HelpTopicsToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
-			this.HelpTopicsToolStripMenuItem.Text = "&Topics…";
-			this.HelpTopicsToolStripMenuItem.Click += new System.EventHandler(this.HelpTopicsToolStripMenuItem_Click);
+			HelpTopicsToolStripMenuItem.Name = "HelpTopicsToolStripMenuItem";
+			HelpTopicsToolStripMenuItem.Size = new Size(180, 22);
+			HelpTopicsToolStripMenuItem.Text = "&Topics…";
+			HelpTopicsToolStripMenuItem.Click += HelpTopicsToolStripMenuItem_Click;
 			//
 			// HelpAboutToolStripMenuItem1
 			//
-			this.HelpAboutToolStripMenuItem1.Name = "HelpAboutToolStripMenuItem1";
-			this.HelpAboutToolStripMenuItem1.Size = new System.Drawing.Size(117, 22);
-			this.HelpAboutToolStripMenuItem1.Text = "&About…";
-			this.HelpAboutToolStripMenuItem1.Click += new System.EventHandler(this.HelpAboutToolStripMenuItem_Click);
+			HelpAboutToolStripMenuItem1.Name = "HelpAboutToolStripMenuItem1";
+			HelpAboutToolStripMenuItem1.Size = new Size(180, 22);
+			HelpAboutToolStripMenuItem1.Text = "&About…";
+			HelpAboutToolStripMenuItem1.Click += HelpAboutToolStripMenuItem_Click;
 			//
 			// TournamentNameLabel
 			//
-			this.TournamentNameLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.TournamentNameLabel.Location = new System.Drawing.Point(6, 24);
-			this.TournamentNameLabel.Name = "TournamentNameLabel";
-			this.TournamentNameLabel.Size = new System.Drawing.Size(437, 58);
-			this.TournamentNameLabel.TabIndex = 7;
-			this.TournamentNameLabel.Text = "DCM version yy.mm.dd\r\nStab You Soon!";
-			this.TournamentNameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			TournamentNameLabel.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			TournamentNameLabel.Location = new Point(7, 28);
+			TournamentNameLabel.Margin = new Padding(4, 0, 4, 0);
+			TournamentNameLabel.Name = "TournamentNameLabel";
+			TournamentNameLabel.Size = new Size(510, 67);
+			TournamentNameLabel.TabIndex = 7;
+			TournamentNameLabel.Text = "DCM version yy.mm.dd\r\nStab You Soon!";
+			TournamentNameLabel.TextAlign = ContentAlignment.MiddleCenter;
 			//
 			// ButtonPanel
 			//
-			this.ButtonPanel.Controls.Add(this.RightButton);
-			this.ButtonPanel.Controls.Add(this.MiddleButton);
-			this.ButtonPanel.Controls.Add(this.LeftButton);
-			this.ButtonPanel.Location = new System.Drawing.Point(10, 85);
-			this.ButtonPanel.Name = "ButtonPanel";
-			this.ButtonPanel.Size = new System.Drawing.Size(428, 44);
-			this.ButtonPanel.TabIndex = 9;
+			ButtonPanel.Controls.Add(RightButton);
+			ButtonPanel.Controls.Add(MiddleButton);
+			ButtonPanel.Controls.Add(LeftButton);
+			ButtonPanel.Location = new Point(12, 98);
+			ButtonPanel.Margin = new Padding(4, 3, 4, 3);
+			ButtonPanel.Name = "ButtonPanel";
+			ButtonPanel.Size = new Size(499, 51);
+			ButtonPanel.TabIndex = 9;
 			//
-			// ScoresButton
+			// RightButton
 			//
-			this.RightButton.Location = new System.Drawing.Point(286, 1);
-			this.RightButton.Margin = new System.Windows.Forms.Padding(2);
-			this.RightButton.Name = "RightButton";
-			this.RightButton.Size = new System.Drawing.Size(137, 41);
-			this.RightButton.TabIndex = 11;
-			this.RightButton.Text = "Scores";
-			this.RightButton.UseVisualStyleBackColor = true;
-			this.RightButton.Click += new System.EventHandler(this.RightButton_Click);
+			RightButton.Location = new Point(334, 1);
+			RightButton.Margin = new Padding(2);
+			RightButton.Name = "RightButton";
+			RightButton.Size = new Size(160, 47);
+			RightButton.TabIndex = 11;
+			RightButton.Text = "Scores";
+			RightButton.UseVisualStyleBackColor = true;
+			RightButton.Click += RightButton_Click;
 			//
-			// RoundsButton
+			// MiddleButton
 			//
-			this.MiddleButton.Location = new System.Drawing.Point(145, 1);
-			this.MiddleButton.Margin = new System.Windows.Forms.Padding(2);
-			this.MiddleButton.Name = "MiddleButton";
-			this.MiddleButton.Size = new System.Drawing.Size(137, 41);
-			this.MiddleButton.TabIndex = 10;
-			this.MiddleButton.Text = "Rounds";
-			this.MiddleButton.UseVisualStyleBackColor = true;
-			this.MiddleButton.Click += new System.EventHandler(this.MiddleButton_Click);
+			MiddleButton.Location = new Point(169, 1);
+			MiddleButton.Margin = new Padding(2);
+			MiddleButton.Name = "MiddleButton";
+			MiddleButton.Size = new Size(160, 47);
+			MiddleButton.TabIndex = 10;
+			MiddleButton.Text = "Rounds";
+			MiddleButton.UseVisualStyleBackColor = true;
+			MiddleButton.Click += MiddleButton_Click;
 			//
-			// DetailsButton
+			// LeftButton
 			//
-			this.LeftButton.Location = new System.Drawing.Point(4, 1);
-			this.LeftButton.Margin = new System.Windows.Forms.Padding(2);
-			this.LeftButton.Name = "LeftButton";
-			this.LeftButton.Size = new System.Drawing.Size(137, 41);
-			this.LeftButton.TabIndex = 9;
-			this.LeftButton.Text = "Details";
-			this.LeftButton.UseVisualStyleBackColor = true;
-			this.LeftButton.Click += new System.EventHandler(this.LeftButton_Click);
+			LeftButton.Location = new Point(5, 1);
+			LeftButton.Margin = new Padding(2);
+			LeftButton.Name = "LeftButton";
+			LeftButton.Size = new Size(160, 47);
+			LeftButton.TabIndex = 9;
+			LeftButton.Text = "Details";
+			LeftButton.UseVisualStyleBackColor = true;
+			LeftButton.Click += LeftButton_Click;
+			//
+			// databaseToolStripMenuItem
+			//
+			DatabaseToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { AccessToolStripMenuItem, SqlServerToolStripMenuItem, ClearDatabaseToolStripMenuItem });
+			DatabaseToolStripMenuItem.Name = "DatabaseToolStripMenuItem";
+			DatabaseToolStripMenuItem.Size = new Size(180, 22);
+			DatabaseToolStripMenuItem.Text = "&Database";
+			//
+			// SqlServerToolStripMenuItem
+			//
+			SqlServerToolStripMenuItem.Name = "SqlServerToolStripMenuItem";
+			SqlServerToolStripMenuItem.Size = new Size(180, 22);
+			SqlServerToolStripMenuItem.Text = "&SQL Server…";
+			SqlServerToolStripMenuItem.Click += SqlServerToolStripMenuItem_Click;
+			//
+			// DatabaseConfigurationToolStripMenuItem
+			//
+			AccessToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { AccessOpenToolStripMenuItem, SaveAsDatabaseToolStripMenuItem, CheckDatabaseToolStripMenuItem });
+			AccessToolStripMenuItem.Name = "AccessToolStripMenuItem";
+			AccessToolStripMenuItem.Size = new Size(180, 22);
+			AccessToolStripMenuItem.Text = "&Access";
+			//
+			// OpenDatabaseToolStripMenuItem
+			//
+			AccessOpenToolStripMenuItem.Name = "AccessOpenToolStripMenuItem";
+			AccessOpenToolStripMenuItem.Size = new Size(180, 22);
+			AccessOpenToolStripMenuItem.Text = "&Open…";
+			AccessOpenToolStripMenuItem.Click += DatabaseOpenToolStripMenuItem_Click;
+			//
+			// SaveAsDatabaseToolStripMenuItem
+			//
+			SaveAsDatabaseToolStripMenuItem.Name = "SaveAsDatabaseToolStripMenuItem";
+			SaveAsDatabaseToolStripMenuItem.Size = new Size(180, 22);
+			SaveAsDatabaseToolStripMenuItem.Text = "&Save As…";
+			SaveAsDatabaseToolStripMenuItem.Click += DatabaseSaveAsToolStripMenuItem_Click;
+			//
+			// CheckDatabaseToolStripMenuItem
+			//
+			CheckDatabaseToolStripMenuItem.Name = "CheckDatabaseToolStripMenuItem";
+			CheckDatabaseToolStripMenuItem.Size = new Size(180, 22);
+			CheckDatabaseToolStripMenuItem.Text = "&Accessibility";
+			CheckDatabaseToolStripMenuItem.Click += DatabaseCheckToolStripMenuItem_Click;
+			//
+			// ClearDatabaseToolStripMenuItem
+			//
+			ClearDatabaseToolStripMenuItem.Name = "ClearDatabaseToolStripMenuItem";
+			ClearDatabaseToolStripMenuItem.Size = new Size(180, 22);
+			ClearDatabaseToolStripMenuItem.Text = "&Clear…";
+			ClearDatabaseToolStripMenuItem.Click += DatabaseClearToolStripMenuItem_Click;
 			//
 			// MainForm
 			//
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(450, 140);
-			this.Controls.Add(this.ButtonPanel);
-			this.Controls.Add(this.TournamentNameLabel);
-			this.Controls.Add(this.MainFormMenuStrip);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-			this.Margin = new System.Windows.Forms.Padding(2);
-			this.MaximizeBox = false;
-			this.Name = "MainForm";
-			this.Text = "Diplomacy Competition Manager";
-			this.Load += new System.EventHandler(this.MainForm_Load);
-			this.MainFormMenuStrip.ResumeLayout(false);
-			this.MainFormMenuStrip.PerformLayout();
-			this.ButtonPanel.ResumeLayout(false);
-			this.ResumeLayout(false);
-			this.PerformLayout();
-
+			AutoScaleDimensions = new SizeF(7F, 15F);
+			AutoScaleMode = AutoScaleMode.Font;
+			ClientSize = new Size(525, 162);
+			Controls.Add(ButtonPanel);
+			Controls.Add(TournamentNameLabel);
+			Controls.Add(MainFormMenuStrip);
+			FormBorderStyle = FormBorderStyle.FixedSingle;
+			Margin = new Padding(2);
+			MaximizeBox = false;
+			Name = "MainForm";
+			Text = "Diplomacy Competition Manager";
+			Load += MainForm_Load;
+			MainFormMenuStrip.ResumeLayout(false);
+			MainFormMenuStrip.PerformLayout();
+			ButtonPanel.ResumeLayout(false);
+			ResumeLayout(false);
+			PerformLayout();
 		}
 
 		#endregion
@@ -348,7 +340,7 @@
 		private ToolStripMenuItem DeleteTournamentMenuItem;
 		private ToolStripMenuItem PlayersToolStripMenuItem;
 		private ToolStripMenuItem ManagePlayersToolStripMenuItem;
-		private ToolStripMenuItem ConfigurationMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem ConfigurationMenuItem;
 		private MenuStrip MainFormMenuStrip;
 		private Label TournamentNameLabel;
 		private ToolStripMenuItem PlayerConflictsToolStripMenuItem;
@@ -358,19 +350,21 @@
 		private ToolStripMenuItem ReportsConfigurationToolStripMenuItem;
 		private ToolStripMenuItem HelpToolStripMenuItem;
 		private ToolStripMenuItem HelpAboutToolStripMenuItem1;
-		private ToolStripMenuItem DatabaseConfigurationToolStripMenuItem;
         private ToolStripMenuItem HelpTopicsToolStripMenuItem;
 		private ToolStripMenuItem ManageGroupsToolStripMenuItem;
 		private ToolStripMenuItem ScoringToolStripMenuItem;
 		private ToolStripMenuItem ScoringSystemsToolStripMenuItem;
-		private ToolStripMenuItem OpenDatabaseToolStripMenuItem;
-		private ToolStripMenuItem SaveAsDatabaseToolStripMenuItem;
-		private ToolStripMenuItem ClearDatabaseToolStripMenuItem;
-		private ToolStripMenuItem CheckDatabaseToolStripMenuItem;
 		private ToolStripMenuItem ShowTimingToolStripMenuItem;
 		private Panel ButtonPanel;
 		private Button RightButton;
 		private Button MiddleButton;
 		private Button LeftButton;
+		private ToolStripMenuItem DatabaseToolStripMenuItem;
+		private ToolStripMenuItem AccessToolStripMenuItem;
+		private ToolStripMenuItem AccessOpenToolStripMenuItem;
+		private ToolStripMenuItem SaveAsDatabaseToolStripMenuItem;
+		private ToolStripMenuItem CheckDatabaseToolStripMenuItem;
+		private ToolStripMenuItem SqlServerToolStripMenuItem;
+		private ToolStripMenuItem ClearDatabaseToolStripMenuItem;
 	}
 }

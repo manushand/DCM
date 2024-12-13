@@ -10,9 +10,10 @@ global using static Data.Game.Statuses;
 global using static Data.GamePlayer.Results;
 global using static Data.Tournament.PowerGroups;
 //
-using System.Data.Odbc;
 using System.Data;
+using System.Data.Odbc;
 using System.Data.OleDb;
+using Microsoft.Data.SqlClient;
 using Microsoft.Win32;
 using static System.Environment;
 
@@ -22,7 +23,14 @@ public static partial class Data
 {
 	private const string Null = nameof (Null);
 
-	public static bool Connect(string databaseFile)
+	public enum DatabaseTypes : sbyte
+	{
+		None = default,
+		Access = 1,
+		SqlServer = 2
+	}
+
+	public static bool ConnectToAccessDatabase(string databaseFile)
 	{
 		foreach (var provider in Providers)
 			try
@@ -37,6 +45,14 @@ public static partial class Data
 				//	TODO: log?
 			}
 		return false;
+	}
+
+	public static void ConnectToSqlServerDatabase(string connectionString)
+	{
+		//	NOTE: This method may throw.  Don't worry; the exception is caught by the caller
+		_connection = new SqlConnection(connectionString);
+		OpenConnection();
+		CloseConnection();
 	}
 
 	internal static void StartTransaction()
@@ -56,20 +72,19 @@ public static partial class Data
 		CloseConnection();
 	}
 
-	public static bool CheckDriver(Action<string> onError)
+	public static void CheckDriver()
 	{
 		var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
 											  Is64BitOperatingSystem
 												  ? RegistryView.Registry64
 												  : RegistryView.Registry32);
 		if (RegistryKeyExists(Is64BitProcess))
-			return true;
+			return;
 		var mismatch = RegistryKeyExists(!Is64BitProcess);
-		onError($"{(mismatch ? "The wrong" : "No")} database engine is installed for .accdb file support.{NewLine}" +
-				$"{(Is64BitProcess ? null : $"{NewLine}The DCM will work with .mdb files only.{NewLine}{NewLine}")}" +
-				$"If you wish it to work with .accdb files, {(mismatch ? "uninstall your Microsoft Access database engine then " : null)}" +
-				$"install the {(Is64BitProcess ? 64 : 32)} bit driver from https://www.microsoft.com/en-us/download/details.aspx?id=54920");
-		return false;
+		throw new ($"{(mismatch ? "The wrong" : "No")} database engine is installed for .accdb file support.{NewLine}" +
+				   $"{(Is64BitProcess ? null : $"{NewLine}The DCM will work with .mdb files only.{NewLine}{NewLine}")}" +
+				   $"If you wish it to work with .accdb files, {(mismatch ? "uninstall your Microsoft Access database engine then " : null)}" +
+				   $"install the {(Is64BitProcess ? 64 : 32)} bit driver from https://www.microsoft.com/en-us/download/details.aspx?id=54920");
 
 		bool RegistryKeyExists(bool is64Bit)
 			=> OfficeVersionFolders.Any(version => baseKey.OpenSubKey($@"SOFTWARE\{(is64Bit ? null : @"Wow6432Node\")}Microsoft\Office\{version}\Access Connectivity Engine\InstallRoot") is not null);
@@ -373,6 +388,7 @@ public static partial class Data
 		{
 			OdbcConnection odbcConnection => new OdbcCommand(sql, odbcConnection, _transaction as OdbcTransaction),
 			OleDbConnection oleConnection => new OleDbCommand(sql, oleConnection, _transaction as OleDbTransaction),
+			SqlConnection sqlConnection => new SqlCommand(sql, sqlConnection, _transaction as SqlTransaction),
 			_                             => throw new ()
 		};
 

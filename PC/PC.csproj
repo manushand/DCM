@@ -14,8 +14,8 @@
         <UpdateRequired>false</UpdateRequired>
         <MapFileExtensions>true</MapFileExtensions>
         <ApplicationRevision>0</ApplicationRevision>
-        <AssemblyVersion>24.7.29</AssemblyVersion>
-        <ApplicationVersion>24.7.29.%2a</ApplicationVersion>
+        <AssemblyVersion>24.12.12</AssemblyVersion>
+        <ApplicationVersion>24.12.12.%2a</ApplicationVersion>
         <IsWebBootstrapper>false</IsWebBootstrapper>
         <UseApplicationTrust>false</UseApplicationTrust>
         <BootstrapperEnabled>true</BootstrapperEnabled>
@@ -43,67 +43,10 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Update="Program.cs" />
-        <Compile Update="DB\Database.Cache.cs">
-            <DependentUpon>Database.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\GamePlayer.cs">
-            <DependentUpon>LinkRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\GroupPlayer.cs">
-            <DependentUpon>LinkRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\LinkRecord.cs">
-            <DependentUpon>IRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\Group.RatingInfo.cs">
-            <DependentUpon>Group.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\PlayerConflict.cs">
-            <DependentUpon>LinkRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\RoundPlayer.cs">
-            <DependentUpon>LinkRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\TeamPlayer.cs">
-            <DependentUpon>LinkRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\TournamentPlayer.cs">
-            <DependentUpon>LinkRecord.cs</DependentUpon>
-        </Compile>
         <Compile Update="Properties\Settings.Designer.cs">
           <DesignTimeSharedInput>True</DesignTimeSharedInput>
           <AutoGen>True</AutoGen>
           <DependentUpon>Settings.settings</DependentUpon>
-        </Compile>
-        <Compile Update="DB\Game.cs">
-            <DependentUpon>IdentityRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\Group.cs">
-            <DependentUpon>IdentityRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\IdentityRecord.cs">
-            <DependentUpon>IInfoRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\Player.cs">
-            <DependentUpon>IdentityRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\Round.cs">
-            <DependentUpon>IdentityRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\IInfoRecord.cs">
-            <DependentUpon>IRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\ScoringSystem.Calculator.cs">
-            <DependentUpon>ScoringSystem.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\ScoringSystem.cs">
-            <DependentUpon>IdentityRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\Team.cs">
-            <DependentUpon>IdentityRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="DB\Tournament.cs">
-            <DependentUpon>IdentityRecord.cs</DependentUpon>
         </Compile>
     </ItemGroup>
     <ItemGroup>
