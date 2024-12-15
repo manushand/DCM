@@ -39,7 +39,10 @@ internal static class PC
 {
 	#region Fields and Properties
 
-	internal const string Version = "24.12.12";
+	internal static readonly string Version = Assembly.GetEntryAssembly()
+													  ?.GetCustomAttribute<AssemblyFileVersionAttribute>()
+													  ?.Version
+													  ?? "??";
 
 	internal static readonly Settings Settings = Settings.Default;
 	internal static readonly Dictionary<Font, Font> BoldFonts = [];
@@ -487,7 +490,7 @@ internal static class PC
 						  PageNumberInHeader = false,
 						  TableAlignment = Alignment.Center,
 						  ColumnWidth = ColumnWidthSetting.DataWidth,
-						  Footer = $"{nameof (PC)} © {DateTime.Now.Year} ARMADA",
+						  Footer = $"{nameof (DCM)} © {DateTime.Now.Year} ARMADA",
 						  FooterSpacing = 15
 					  };
 		foreach (var cellStyle in printer.ColumnStyles.Values)

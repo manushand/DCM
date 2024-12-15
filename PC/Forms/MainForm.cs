@@ -56,10 +56,7 @@ internal sealed partial class MainForm : Form
 		switch (Event)
 		{
 		case null:
-			var version = Assembly.GetEntryAssembly()
-								  ?.GetCustomAttribute<AssemblyFileVersionAttribute>()
-								  ?.Version;
-			TournamentNameLabel.Text = $"DCM version {version ?? "??"}{NewLine}Stab You Soon!";
+			TournamentNameLabel.Text = $"DCM version {PC.Version}{NewLine}Stab You Soon!";
 			break;
 		case Group group:
 			TournamentNameLabel.Text = group.Name;
@@ -323,9 +320,9 @@ internal sealed partial class MainForm : Form
 		const string companyName = "ARMADA (The Association of Rocky Mountain Area Diplomacy Adversaries) and Manus Hand";
 		const string comments = "Contact the ARMADA at https://www.armada-dip.com where the latest version of the DCM can be found and downloaded.";
 
-		MessageBox.Show($"Diplomacy Competition Manager ({nameof (PC)}) is {legalCopyright}-{DateTime.Now.Year} " +
+		MessageBox.Show($"Diplomacy Competition Manager ({nameof (DCM)}) is {legalCopyright}-{DateTime.Now.Year} " +
 						$"{companyName}.{NewLine}{NewLine}{comments}{NewLine}{NewLine}This version: {PC.Version}",
-						$"About the {nameof (PC)}",
+						$"About the {nameof (DCM)}",
 						OK,
 						Information);
 	}
