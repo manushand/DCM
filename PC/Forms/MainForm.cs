@@ -1,10 +1,10 @@
-﻿using static System.Windows.Forms.ToolStripDropDownCloseReason;
+﻿namespace PC.Forms;
 
-namespace PC.Forms;
+using static DatabaseTypes;
 
 internal sealed partial class MainForm : Form
 {
-	private static bool Connected => Settings.DatabaseType.As<DatabaseTypes>() is DatabaseTypes.Access or DatabaseTypes.SqlServer;
+	private static bool Connected => Settings.DatabaseType.As<DatabaseTypes>() is Access or SqlServer;
 
 	private IdentityRecord? Event
 	{
@@ -21,8 +21,7 @@ internal sealed partial class MainForm : Form
 		}
 		set
 		{
-			field = value;
-			SetEvent(field);
+			SetEvent(field = value);
 			MainForm_Load();
 		}
 	}
@@ -30,7 +29,7 @@ internal sealed partial class MainForm : Form
 	internal MainForm()
 	{
 		InitializeComponent();
-		ConfigurationMenuItem.DropDown.Closing += static (_, e) => e.Cancel = e.CloseReason is ItemClicked;
+		ConfigurationMenuItem.DropDown.Closing += static (_, e) => e.Cancel = e.CloseReason is ToolStripDropDownCloseReason.ItemClicked;
 		StartPosition = FormStartPosition.CenterScreen;
 		OpenDatabase();
 	}
@@ -39,20 +38,21 @@ internal sealed partial class MainForm : Form
 							   EventArgs? e = null)
 	{
 		Activate();
+		var connected = Connected;
 		PlayersToolStripMenuItem.Visible =
 			GroupToolStripMenuItem.Visible =
 				ScoringToolStripMenuItem.Visible =
 					TournamentToolStripMenuItem.Visible =
-						Connected;
+						connected;
 		ShowTimingToolStripMenuItem.Checked =
 			ScoringSystem.ShowTimingData =
 				Settings.ShowTimingData;
 		OpenTournamentMenuItem.Enabled =
 			DeleteTournamentMenuItem.Enabled =
-				Connected && Any<Tournament>(static tournament => tournament.GroupId is null);
-		OpenGroupMenuItem.Enabled = Connected && Any<Group>();
-		PlayerConflictsToolStripMenuItem.Enabled = Connected && ReadAll<Player>().Count() > 1;
-		ButtonPanel.Visible = Connected && Settings.EventId > 0;
+				connected && Any<Tournament>(static tournament => tournament.GroupId is null);
+		OpenGroupMenuItem.Enabled = connected && Any<Group>();
+		PlayerConflictsToolStripMenuItem.Enabled = connected && ReadAll<Player>().Count() > 1;
+		ButtonPanel.Visible = connected && Settings.EventId > 0;
 		switch (Event)
 		{
 		case null:
@@ -268,9 +268,9 @@ internal sealed partial class MainForm : Form
 		var connection = Settings.DatabaseType.As<DatabaseTypes>();
 		var host = connection switch
 				   {
-					   DatabaseTypes.Access    => $"Access file {Settings.DatabaseFile}",
-					   DatabaseTypes.SqlServer => "connected SQL Server database",
-					   DatabaseTypes.None      => null,
+					   Access    => $"Access file {Settings.DatabaseFile}",
+					   SqlServer => "connected SQL Server database",
+					   None      => null,
 					   _                       => throw new InvalidOperationException()
 				   };
 		if (host is null
@@ -316,11 +316,11 @@ internal sealed partial class MainForm : Form
 	private void HelpAboutToolStripMenuItem_Click(object sender,
 												  EventArgs e)
 	{
-		const string legalCopyright = "Copyright © 2018";
+		const string copyright = "Copyright © 2018";
 		const string companyName = "ARMADA (The Association of Rocky Mountain Area Diplomacy Adversaries) and Manus Hand";
-		const string comments = "Contact the ARMADA at https://www.armada-dip.com where the latest version of the DCM can be found and downloaded.";
+		const string comments = $"Contact the ARMADA at https://www.armada-dip.com where the latest version of the {nameof (DCM)} can be found and downloaded.";
 
-		MessageBox.Show($"Diplomacy Competition Manager ({nameof (DCM)}) is {legalCopyright}-{DateTime.Now.Year} " +
+		MessageBox.Show($"The Diplomacy Competition Manager ({nameof (DCM)}) is {copyright}-{DateTime.Now.Year} " +
 						$"{companyName}.{NewLine}{NewLine}{comments}{NewLine}{NewLine}This version: {PC.Version}",
 						$"About the {nameof (DCM)}",
 						OK,

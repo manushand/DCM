@@ -48,10 +48,10 @@ public sealed class Tournament : IdentityRecord
 	public int TeamRound;
 	public int TeamSize;
 	public int TotalRounds;
-	public int UnplayedScore; //	TODO: this is an int in db; change to double?
+	public int UnplayedScore; // TODO: this is an int in db; change to double?
 
-	public int? GroupId { get; private set; }
 	public int ScoringSystemId { get; private set; }
+	public int? GroupId { get; private set; }
 
 	public ScoringSystem ScoringSystem
 	{

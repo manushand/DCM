@@ -1,5 +1,6 @@
 ﻿global using System.Data.Common;
 global using JetBrains.Annotations;
+global using static System.Reflection.BindingFlags;
 global using static System.String;
 //
 global using DCM;
@@ -14,8 +15,10 @@ using System.Data;
 using System.Data.Odbc;
 using System.Data.OleDb;
 using Microsoft.Data.SqlClient;
-using Microsoft.Win32;
 using static System.Environment;
+using static Microsoft.Win32.RegistryKey;
+using static Microsoft.Win32.RegistryHive;
+using static Microsoft.Win32.RegistryView;
 
 namespace Data;
 
@@ -74,10 +77,10 @@ public static partial class Data
 
 	public static void CheckDriver()
 	{
-		var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine,
-											  Is64BitOperatingSystem
-												  ? RegistryView.Registry64
-												  : RegistryView.Registry32);
+		var baseKey = OpenBaseKey(LocalMachine,
+								  Is64BitOperatingSystem
+									  ? Registry64
+									  : Registry32);
 		if (RegistryKeyExists(Is64BitProcess))
 			return;
 		var mismatch = RegistryKeyExists(!Is64BitProcess);
@@ -107,7 +110,7 @@ public static partial class Data
 			{
 				command.CommandText = InsertStatement(record);
 				if (command.ExecuteNonQuery() is 0)
-					throw new (); //	TODO
+					throw new (); // TODO
 				if (record is not IdentityRecord identityRecord)
 					continue;
 				command.CommandText = "SELECT @@Identity";
@@ -120,7 +123,7 @@ public static partial class Data
 
 		static string InsertStatement(T record)
 		{
-			var assignments = record is IInfoRecord infoRecord //	10 record types (7 that are not also IInfoRecord)
+			var assignments = record is IInfoRecord infoRecord // 10 record types (7 that are not also IInfoRecord)
 								  ? infoRecord.FieldValues
 											  .Split(FieldValuesLineSplitter)
 											  .ToList()
@@ -270,7 +273,7 @@ public static partial class Data
 		=> linkRecords.Any(linkRecord => linkRecord.PlayerId == playerId);
 
 	public static T ByPlayerId<T>(this IEnumerable<T> linkRecords,
-									int playerId)
+								  int playerId)
 		where T : LinkRecord
 		=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
 
@@ -385,12 +388,12 @@ public static partial class Data
 
 	private static DbCommand Command(string? sql = null)
 		=> Connection switch
-		{
-			OdbcConnection odbcConnection => new OdbcCommand(sql, odbcConnection, _transaction as OdbcTransaction),
-			OleDbConnection oleConnection => new OleDbCommand(sql, oleConnection, _transaction as OleDbTransaction),
-			SqlConnection sqlConnection => new SqlCommand(sql, sqlConnection, _transaction as SqlTransaction),
-			_                             => throw new ()
-		};
+		   {
+			   OdbcConnection odbcConnection => new OdbcCommand(sql, odbcConnection, _transaction as OdbcTransaction),
+			   OleDbConnection oleConnection => new OleDbCommand(sql, oleConnection, _transaction as OleDbTransaction),
+			   SqlConnection sqlConnection   => new SqlCommand(sql, sqlConnection, _transaction as SqlTransaction),
+			   _                             => throw new ()
+		   };
 
 	private static void OpenConnection()
 	{

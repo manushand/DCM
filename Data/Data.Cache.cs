@@ -10,7 +10,7 @@ public static partial class Data
 
 		private static readonly Dictionary<Type, SortedDictionary<string, IRecord>> Data = [];
 
-		private static readonly MethodInfo LoadMethod = typeof (Cache).GetMethod(nameof (Load), BindingFlags.Static | BindingFlags.NonPublic)
+		private static readonly MethodInfo LoadMethod = typeof (Cache).GetMethod(nameof (Load), Static | NonPublic)
 																	  .OrThrow();
 
 		private static readonly Dictionary<Type[], MethodInfo> LoadMethods = [];

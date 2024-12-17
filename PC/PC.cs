@@ -27,6 +27,7 @@ global using Group = Data.Group;
 using System.Net;
 using DGVPrinterHelper;
 using static System.IO.Directory;
+using static System.Reflection.BindingFlags;
 using static System.Threading.Tasks.Task;
 using static DGVPrinterHelper.DGVPrinter;
 
@@ -48,7 +49,7 @@ internal static class PC
 	internal static readonly Dictionary<Font, Font> BoldFonts = [];
 
 	internal static bool SkippingHandlers { get; private set; }
-	internal static int[] Seven => [..Range(0, 7).OrderBy(RandomNumber)];
+	internal static int[] Seven => [..Range(0, 7).OrderBy(static _ => RandomNumber())];
 
 	private static readonly SortedDictionary<PowerNames, DataGridViewCellStyle> PowerColors
 		= new ()
@@ -94,6 +95,7 @@ internal static class PC
 						  ForeColor = SystemColors.WindowText
 					  }
 		  };
+	private static readonly MethodInfo? TabSelectionChangedMethod = typeof (TabControl).GetMethod("OnSelectedIndexChanged", NonPublic | Instance);
 	private static readonly object[] EmptyEventArgs = [EventArgs.Empty];
 	private static readonly string[] DatabaseFileExtensions = [".dcm", ".mdb", ".accdb"];
 	private static readonly string[] SmtpHostNotSet = ["SMTP (email) host is not set."];
@@ -506,8 +508,7 @@ internal static class PC
 									 int tabNumber)
 	{
 		if (tabControl.SelectedIndex == tabNumber)
-			typeof (TabControl).GetMethod("OnSelectedIndexChanged", BindingFlags.NonPublic | BindingFlags.Instance)
-							  ?.Invoke(tabControl, EmptyEventArgs);
+			TabSelectionChangedMethod?.Invoke(tabControl, EmptyEventArgs);
 		else
 			tabControl.SelectedIndex = tabNumber;
 	}

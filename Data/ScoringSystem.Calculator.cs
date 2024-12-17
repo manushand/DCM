@@ -1,6 +1,5 @@
 ﻿//	#define Routines
 
-using System.Reflection;
 using System.Text.RegularExpressions;
 using static System.Double;
 using static System.StringComparer;
@@ -240,7 +239,7 @@ public sealed partial class ScoringSystem
 		static Calculator()
 			=> ReservedAliases.UnionWith([
 											 nameof (Scoring),
-											 ..typeof (Scoring).GetProperties(BindingFlags.Instance | BindingFlags.Public)
+											 ..typeof (Scoring).GetProperties(Instance | Public)
 															   .Where(static property => property.PropertyType.IsValueType)
 															   .Select(static property => property.Name),
 											 ..PowerNames,
