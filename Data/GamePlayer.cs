@@ -31,17 +31,18 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 												? "⬤"
 												: "◯",
 								Finished => "✔", // or ✓ or ✅
-								_        => throw new ArgumentOutOfRangeException() //	TODO
+								_        => throw new ArgumentOutOfRangeException(nameof (Game.Status), Game.Status, "Invalid Game Status")
 							};
 
 	public int GameId { get; private set; }
 
-	private Game? _game;
 	public Game Game
 	{
-		get => _game ??= ReadById<Game>(GameId).OrThrow();
-		set => (_game, GameId) = (value, value.Id);
-	}
+		get => field == Game.None && GameId > 0
+				   ? ReadById<Game>(GameId).OrThrow()
+				   : field;
+		set => (field, GameId) = (value, value.Id);
+	} = Game.None;
 
 	public double FinalScore
 	{
@@ -55,7 +56,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		internal set
 		{
 			_finalScore = value;
-			if (_game is not null) // Test Games will be null here
+			if (Game != Game.None) // Test Games will be Game.None here
 				Game.Tournament
 					.Rounds
 					.Skip(Game.Round.Number)
@@ -209,18 +210,19 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 		//	Player-Group Conflicts
 		foreach (var (group, memberIds) in PlayerGroups)
-			opponentIds.ForSome(memberIds.Contains, opponent =>
-													{
-														var conflict = group.Conflict;
-														Conflict += conflict;
-														if (fillDetails)
-															ConflictDetails.Add($"{conflict.Points()} for being in the group {group} with {opponent}.");
-													});
+			opponentIds.ForSome(memberIds.Contains,
+								opponent =>
+								{
+									var conflict = group.Conflict;
+									Conflict += conflict;
+									if (fillDetails)
+										ConflictDetails.Add($"{conflict.Points()} for being in the group {group} with {opponent}.");
+								});
 
 		//	Powers-Played-Earlier Conflicts
 		if (Power is not TBD)
 		{
-			var powerConflicts = PowersPlayedInTournament.Where(power => Tournament.SharePowerGroup(power, Power))
+			var powerConflicts = PowersPlayedInTournament.Where(power => Tournament.GroupPowers.GroupSharedBy(power, Power))
 														 .ToArray();
 			if (powerConflicts.Length is not 0)
 				Conflict += powerConflicts.Distinct()
@@ -230,9 +232,9 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 												   var conflict = Tournament.PowerConflict * times;
 												   //	The worst thing in the world is to play the SAME power.  Repeating
 												   //	play in a Power GROUP is unavoidable, but repeating the same POWER
-												   //	is unforgivable.  Make sure that is graded TEN TIMES WORSE.
+												   //	is unforgivable.  Make sure that is graded SEVEN TIMES WORSE.
 												   if (power == Power && Tournament.GroupPowers is not None)
-													   conflict *= 10;
+													   conflict *= 7;
 												   if (fillDetails)
 													   ConflictDetails.Add($"{conflict.Points()} for playing {power} {ThisMany(times)} earlier{
 														   (power == Power ? null : $" (same power group as {Power})")}.");

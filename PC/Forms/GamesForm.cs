@@ -5,15 +5,19 @@ internal sealed partial class GamesForm : Form
 	private readonly Player? _player;
 	private readonly Round? _round;
 
-	private Game? _game;
-
 	private Game[] Games { get; }
 
 	private Round Round => _round.OrThrow();
 
 	private Player Player => _player.OrThrow();
 
-	private Game Game => _game.OrThrow();
+	private Game Game
+	{
+		get => field != Game.None
+			   ? field
+			   : throw new InvalidOperationException();
+		set;
+	} = Game.None;
 
 	private int? GameNumber { get; }
 
@@ -44,7 +48,7 @@ internal sealed partial class GamesForm : Form
 	}
 
 	internal GamesForm(Player player,
-					   params Game[] games) : this(games.Length > 0 ? games : player.Games)
+					   params Game[] games) : this(games.Length is not 0 ? games : player.Games)
 		=> _player = player;
 
 	private void GamesForm_Load(object sender,
@@ -64,7 +68,7 @@ internal sealed partial class GamesForm : Form
 														  : $"Game {game.Number}"));
         });
 		GameControl.GameDataChangedCallback = GameDataUpdated;
-		//	Set the active tab and be sure the event runs.
+		//	Set the active tab, which will fire an event setting "Game".
 		GamesTabControl.ActivateTab(_player is null
 										? GameNumber ?? (Games.FirstOrDefault(static game => game.Status < Finished) ?? Games[0]).Number - 1
 										: 0);
@@ -75,10 +79,10 @@ internal sealed partial class GamesForm : Form
 	{
 		if (SkippingHandlers)
 			return;
-		_game = Games[GamesTabControl.SelectedIndex];
+		Game = Games[GamesTabControl.SelectedIndex];
 		GameControl.ClearGame();
-		GameControl.TournamentScoringSystem = _game.Tournament
-												   .ScoringSystem;
+		GameControl.TournamentScoringSystem = Game.Tournament
+												  .ScoringSystem;
 		GameControl.ScoringSystem = Game.ScoringSystem;
 		SkipHandlers(() =>
         {
@@ -153,7 +157,7 @@ internal sealed partial class GamesForm : Form
 
 	private void FillConflicts()
 	{
-		ConflictsPanel.Visible = Game.Tournament.Group is null;
+		ConflictsPanel.Visible = Game.Tournament.IsEvent;
 		if (!ConflictsPanel.Visible)
 			return;
 		SetVisible(!AnyPowerUnassigned, ConflictsColumnHeaderLabel, TotalConflictsLabel, ConflictsTotalBarLabel);

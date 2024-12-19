@@ -143,11 +143,11 @@ internal sealed partial class GameControl : UserControl
 						 CentersComboBoxes.ForEach(static comboBox => comboBox.FillRange(0, 34));
 						 AllComboBoxes.ForEach(static box => box.Deselect());
 						 var concessionPossible = ScoringSystem is { UsesGameResult: true, UsesCenterCount: true }
-												  && GamePlayers.Max(static player => player.Centers) < 18;
+											   && GamePlayers.Max(static player => player.Centers) < 18;
 						 SoloConcededCheckBox.Enabled = concessionPossible
-														&& Active;
+													 && Active;
 						 SoloConcededCheckBox.Checked = concessionPossible
-														&& GamePlayers.Count(static player => player.Result is Win) is 1;
+													 && GamePlayers.Count(static player => player.Result is Win) is 1;
 						 var held = GamePlayers.Select(static player => new
 																		{
 																			player.Result,
@@ -231,7 +231,7 @@ internal sealed partial class GameControl : UserControl
 								 : yearsComboBox.Text
 												.AsInteger() - 1900
 						   : null,
-			   Other = otherTextBox is { Enabled: true, TextLength: > 0 }
+			   Other = otherTextBox is { Enabled: true, TextLength: not 0 }
 						   ? otherTextBox.Text
 										 .AsDouble()
 						   : 0
@@ -298,7 +298,7 @@ internal sealed partial class GameControl : UserControl
 							 //	If this claims to be a conceded solo, and only
 							 //	one power has centers, set that power to Win.
 							 if (SoloConcededCheckBox.Checked
-								 && CentersComboBoxes.Count(box => box != centersComboBox && box.SelectedIndex > 0) is 1)
+							 && CentersComboBoxes.Count(box => box != centersComboBox && box.SelectedIndex > 0) is 1)
 								 ResultBoxFor(CentersComboBoxes.Single(box => box != centersComboBox && box.SelectedIndex > 0)).SelectedIndex = 1;
 							 break;
 						 case 1 when centersComboBox.SelectedIndex is 0:
@@ -401,12 +401,12 @@ internal sealed partial class GameControl : UserControl
 								 else if (ScoringSystem.DrawsIncludeAllSurvivors)
 									 //	If DIAS and no other power claims a solo, set box to WIN
 									 if (CentersComboBoxes.All(static comboBox => comboBox.SelectedIndex < 18)
-										 && (NumberOfWinners is not 1 || !SoloConcededCheckBox.Checked))
+									 && (NumberOfWinners is not 1 || !SoloConcededCheckBox.Checked))
 									 {
 										 //	If we HAD said SOLO, everyone with centers is back in a draw
 										 //	TODO: This seems like a bad way to check this, ...?
 										 if (resultComboBox.SelectedItem is not null // this null check is necessary to prevent ker-blam
-											 &&  resultComboBox.GetSelected<string>() is SoloText)
+										 &&  resultComboBox.GetSelected<string>() is SoloText)
 											 ResultComboBoxes.ForSome(box => CentersBoxFor(box).SelectedIndex > 0,
 																	  static resultBox => resultBox.SelectedIndex = 1);
 										 resultComboBox.SelectedIndex = 1;
@@ -440,7 +440,7 @@ internal sealed partial class GameControl : UserControl
 		var resultComboBox = ResultBoxFor(yearsComboBox);
 		var centersComboBox = CentersBoxFor(yearsComboBox);
 		if ((ScoringSystem.UsesGameResult || ScoringSystem.UsesCenterCount)
-		 && (resultComboBox.SelectedItem is not null || centersComboBox.SelectedItem is not null))
+		&& (resultComboBox.SelectedItem is not null || centersComboBox.SelectedItem is not null))
 		{
 			var won = ScoringSystem.UsesGameResult
 						  ? resultComboBox.SelectedIndex is 1
@@ -779,7 +779,7 @@ internal sealed partial class GameControl : UserControl
 	internal void SetDiasOptions()
 	{
 		var isSolo = ResultComboBoxes.All(static box => box.SelectedItem is not null)
-					 && NumberOfWinners is 1;
+				  && NumberOfWinners is 1;
 		foreach (var resultComboBox in ResultComboBoxes)
 		{
 			var centersComboBox = CentersBoxFor(resultComboBox);

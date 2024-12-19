@@ -94,11 +94,11 @@ public sealed partial class Scoring
 			if (system.UsesOtherScore)
 				_other = gamePlayer.Other;
 			//	ScoringSystem test games have a GameId of 0
-			if (gamePlayer.GameId is 0)
+			if (gamePlayer.Game == Game.None)
 				return;
 			var game = gamePlayer.Game;
 			RunningScore = game.PreGameScore(gamePlayer);
-			AverageGameScore = game.Tournament.Group is null
+			AverageGameScore = game.Tournament.IsEvent
 								   ? game.Round.PreGameAverage(gamePlayer)
 								   : game.PreGameScore(gamePlayer);
 		}

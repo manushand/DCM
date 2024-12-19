@@ -1,9 +1,7 @@
 ﻿namespace Data;
 
-public sealed class Round : IdentityRecord
+public sealed class Round : IdentityRecord<Round>
 {
-	public static readonly Round None = new ();
-
 	/// <summary>
 	///     Holds calculated scores (sum of scores in prior rounds of the same tournament) for a given round.
 	///     These calculations are held in this cache because they are expensive and the result often requested
@@ -25,13 +23,13 @@ public sealed class Round : IdentityRecord
 
 	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 
-	public bool GamesSeeded => SeededGames.Length > 0;
-	public bool GamesStarted => StartedGames.Length > 0;
+	public bool GamesSeeded => SeededGames.Length is not 0;
+	public bool GamesStarted => StartedGames.Length is not 0;
 
 	//	TODO - It may be useful to have Workable return true if a specific Setting is set,
 	//	TODO - allowing ALL rounds to be workable, even when finished
 	public bool Workable => Number == (Tournament.Rounds.Length is 0 ? default : Tournament.Rounds.Max(static round => round.Number))
-                           && (Number < Tournament.TotalRounds || Games.Any(static game => game.Status is not Finished));
+                         && (Number < Tournament.TotalRounds || Games.Any(static game => game.Status is not Finished));
 
 	public int ScoringSystemId => _scoringSystemId ?? Tournament.ScoringSystemId;
 
@@ -73,7 +71,7 @@ public sealed class Round : IdentityRecord
 	public int Seed(List<RoundPlayer> roundPlayers,
 					bool assignPowers)
 	{
-		if (roundPlayers.Count % 7 > 0)
+		if (roundPlayers.Count % 7 is not 0)
 			throw new ArgumentOutOfRangeException(nameof (roundPlayers), "Invalid number of roundPlayers (must be multiple of 7)");
 
 		StartTransaction();
@@ -120,7 +118,7 @@ public sealed class Round : IdentityRecord
 				}
 
 		/*  TODO: I see no reason why I was making a copy of the gamePlayers List and using it instead below.
-		var seedList = gamePlayers.ToList();
+		var seedList = [..gamePlayers];
 		*/
 
 		//	Now add in for optimization all the existing players in seeded but not started games
@@ -241,14 +239,14 @@ public sealed class Round : IdentityRecord
 		=> _preRoundGames.GetOrSet(gamePlayer.PlayerId,
 								   playerId =>
 								   {
-									   var roundsPrior = Tournament.Group is null
+									   var roundsPrior = Tournament.IsEvent
 															 ? Number - 1
 															 : 1;
 									   var scores = Tournament.Rounds
 															  .Take(roundsPrior)
 															  .SelectMany(static r => r.FinishedGames)
-															  .Where(game => (Tournament.Group is null || game.Date < gamePlayer.Game.Date)
-																			 && game.GamePlayers.HasPlayerId(playerId))
+															  .Where(game => (Tournament.IsEvent || game.Date < gamePlayer.Game.Date)
+																		  && game.GamePlayers.HasPlayerId(playerId))
 															  .Select(game => game.GamePlayers.ByPlayerId(playerId).FinalScore)
 															  //	Leave this .DefaultIfEmpty; it's important that at least one score is in the List
 															  .DefaultIfEmpty(Tournament.UnplayedScore)

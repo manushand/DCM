@@ -2,8 +2,10 @@
 
 using static Group.GamesToRate;
 
-public sealed partial class Group : IdentityRecord
+public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 {
+	public sealed record RatingRecord(Player Player, double Rating, int Games);
+
 	public enum GamesToRate : byte
 	{
 		//	IMPORTANT: Must be 0, 1, 2 to match tab index in GroupRatingsForm
@@ -16,20 +18,20 @@ public sealed partial class Group : IdentityRecord
 
 	public string Description = Empty;
 
-	public int? ScoringSystemId => Tournament?.ScoringSystemId;
+	public int? ScoringSystemId => Tournament.ScoringSystemId;
 
 	public IEnumerable<Player> Players => ReadMany<GroupPlayer>(groupPlayer => groupPlayer.GroupId == Id).Select(static groupPlayer => groupPlayer.Player);
 
-	public Tournament? Tournament => ReadOne<Tournament>(tournament => tournament.GroupId == Id);
+	public Tournament Tournament => ReadOne<Tournament>(tournament => tournament.GroupId == Id) ?? Tournament.None;
 
-	public ScoringSystem? ScoringSystem
+	public ScoringSystem ScoringSystem
 	{
-		get => Tournament?.ScoringSystem;
+		get => Tournament.ScoringSystem;
 		set
 		{
-			if (value is null)
+			if (value == ScoringSystem.None)
 			{
-				if (Tournament is null)
+				if (Tournament == Tournament.None)
 					return;
 				var games = Tournament.Games;
 				Delete(games.SelectMany(static game => game.GamePlayers));
@@ -37,7 +39,7 @@ public sealed partial class Group : IdentityRecord
 				Delete(Tournament.Rounds);
 				Delete(Tournament);
 			}
-			else if (Tournament is null)
+			else if (Tournament == Tournament.None)
 				CreateOne(new Round
 						  {
 							  Tournament = CreateOne(new Tournament { Group = this, ScoringSystem = value })
@@ -50,12 +52,13 @@ public sealed partial class Group : IdentityRecord
 		}
 	}
 
-	public Game[] Games => Tournament?.Rounds
-									 .Single()
-									 .Games
-									 .OrderBy(static game => game.Date)
-									 .ToArray()
-						   ?? [];
+	public Game[] Games => Tournament == Tournament.None
+							   ? []
+							   : Tournament.Rounds
+										   .Single()
+										   .Games
+										   .OrderBy(static game => game.Date)
+										   .ToArray();
 
 	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 
@@ -70,10 +73,10 @@ public sealed partial class Group : IdentityRecord
 			   _                                => throw new ArgumentOutOfRangeException(nameof (gamesToRate), "Unrecognized GamesToRate value")
 		   };
 
-	public RatingInfo? RatePlayer(Player player,
-								  Game? beforeThisGame = null,
-								  GamesToRate gamesToRate = default,
-								  bool includeTheBeforeGame = false)
+	public RatingRecord? RatePlayer(Player player,
+									Game? beforeThisGame = null,
+									GamesToRate gamesToRate = default,
+									bool includeTheBeforeGame = false)
 	{
 		var scoringSystem = ScoringSystem.OrThrow();
 		var playerId = player.Id;
@@ -96,12 +99,11 @@ public sealed partial class Group : IdentityRecord
 					.ToArray();
 		return scores.Length is 0
 				   ? null
-				   : new RatingInfo(player,
-									scoringSystem.UsesPlayerAnte || scoringSystem.PointsPerGame is 0
-										? scores.Sum()
-										: scores.Average(),
-									scoringSystem,
-									scores.Length);
+				   : new RatingRecord(player,
+									  scoringSystem.UsesPlayerAnte || scoringSystem.PointsPerGame is 0
+										  ? scores.Sum()
+										  : scores.Average(),
+									  scores.Length);
 	}
 
 	#region IInfoRecord interface implementation

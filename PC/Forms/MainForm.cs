@@ -6,7 +6,7 @@ internal sealed partial class MainForm : Form
 {
 	private static bool Connected => Settings.DatabaseType.As<DatabaseTypes>() is Access or SqlServer;
 
-	private IdentityRecord? Event
+	private IdInfoRecord? Event
 	{
 		get
 		{
@@ -21,7 +21,8 @@ internal sealed partial class MainForm : Form
 		}
 		set
 		{
-			SetEvent(field = value);
+			SetEvent(value);
+			field = value;
 			MainForm_Load();
 		}
 	}
@@ -65,7 +66,7 @@ internal sealed partial class MainForm : Form
 			RightButton.Text = "Member Ratings";
 			MiddleButton.Enabled = group.ScoringSystemId
 										.HasValue;
-			RightButton.Enabled = group.FinishedGames.Length > 0;
+			RightButton.Enabled = group.FinishedGames.Length is not 0;
 			if (MiddleButton.Enabled)
 				return;
 			var needSystem = $"{NewLine}(No Rating System)";
@@ -93,8 +94,9 @@ internal sealed partial class MainForm : Form
 		}
 	}
 
-	protected override void OnFormClosing(FormClosingEventArgs e)
-		=> e.Cancel = MessageBox.Show("Really Quit the Diplomacy Competition Manager?",
+	protected override void OnFormClosing(FormClosingEventArgs? e)
+		=> e.OrThrow()
+			.Cancel = MessageBox.Show("Really Quit the Diplomacy Competition Manager?",
 									  "Confirm Quit",
 									  YesNo,
 									  Question) is DialogResult.No;
@@ -157,10 +159,10 @@ internal sealed partial class MainForm : Form
 	{
 		switch (Event)
 		{
-		case Group { FinishedGames.Length: > 0 } group:
+		case Group { FinishedGames.Length: not 0 } group:
 			Show<GroupRatingsForm>(() => new (group));
 			break;
-		case Tournament { FinishedGames.Length: > 0 } tournament:
+		case Tournament { FinishedGames.Length: not 0 } tournament:
 			Show<ScoresForm>(() => new (tournament));
 			break;
 		default:

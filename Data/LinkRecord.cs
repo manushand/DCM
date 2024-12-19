@@ -25,7 +25,7 @@ public abstract class LinkRecord : IRecord
 
 	internal IEnumerable<string> KeyFieldAssignments => [PlayerLinkKey, LinkKey];
 
-	public string PrimaryKey => $"{PlayerLinkKey} AND {LinkKey}";
+	public string PrimaryKey => Join(" AND ", KeyFieldAssignments);
 
 	public abstract IRecord Load(DbDataReader record);
 }

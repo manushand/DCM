@@ -232,10 +232,12 @@ internal static class PC
 			SetEvent();
 	}
 
-	internal static void SetEvent(IdentityRecord? identityRecord = null)
+	internal static void SetEvent(IdInfoRecord? eventRecord = null)
 	{
-		Settings.EventId = identityRecord?.Id ?? 0;
-		Settings.EventIsGroup = identityRecord is Group;
+		if (eventRecord is not null and not IdInfoRecord.IEvent)
+			throw new ArgumentException($"Invalid EventRecord type ({eventRecord.GetType().Name}).");
+		Settings.EventId = eventRecord?.Id ?? 0;
+		Settings.EventIsGroup = eventRecord is Group;
 		Settings.Save();
 	}
 
@@ -257,7 +259,7 @@ internal static class PC
 		=> listControl.FillWith(ReadMany(func).Sorted());
 
 	internal static void FillWithSorted<T>(this ListControl listControl)
-		where T : IdentityRecord, new()
+		where T : IdInfoRecord
 		=> listControl.FillWith(ReadAll<T>().Order());
 
 	internal static void FillWithRecords<T>(this ListControl listControl,
@@ -283,7 +285,7 @@ internal static class PC
 
 	internal static void SetSelectedItem<T>(this ComboBox comboBox,
 											T? record)
-		where T : IdentityRecord
+		where T : IdentityRecord<T>, new()
 		=> comboBox.SelectedItem = comboBox.Items
 										   .Cast<T>()
 										   .SingleOrDefault(t => t.Id == (record?.Id ?? 0));
@@ -310,7 +312,7 @@ internal static class PC
 
 	internal static T? Find<T>(this ListBox listBox,
 							   T? record)
-		where T : IdentityRecord
+		where T : IdInfoRecord
 		=> record is null
 			   ? null
 			   : listBox.GetAll<T>()

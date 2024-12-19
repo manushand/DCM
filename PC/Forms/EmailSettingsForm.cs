@@ -66,13 +66,13 @@ internal sealed partial class EmailSettingsForm : Form
 		var port = 25;
 		if (Uri.CheckHostName(HostTextBox.Text) is UriHostNameType.Unknown)
 			error = "Host name is invalid.";
-		else if (PortTextBox.TextLength > 0 && (!int.TryParse(PortTextBox.Text, out port) || port is < 1 or > 65535))
+		else if (PortTextBox.TextLength is not 0 && (!int.TryParse(PortTextBox.Text, out port) || port is < 1 or > 65535))
 			error = "Port must be a number in the range 1 to 65535.";
 		else if (MailFromTextBox.TextLength is 0 || !MailFromTextBox.Text.IsValidEmail())
 			error = "From email address is missing or invalid.";
 		else if (TestEmailTextBox.TextLength is 0 || !TestEmailTextBox.Text.IsValidEmail())
 			error = "Test email address is missing or invalid.";
-		if (error.Length > 0)
+		if (error.Length is not 0)
 		{
 			MessageBox.Show(error,
 							"Invalid Email Settings",
@@ -135,7 +135,7 @@ internal sealed partial class EmailSettingsForm : Form
 
 	private void Settings_Changed(object? sender = null,
 								  EventArgs? e = null)
-		=> SaveButton.Visible = !SettingsSaved && HostTextBox.TextLength > 0;
+		=> SaveButton.Visible = !SettingsSaved && HostTextBox.TextLength is not 0;
 
 	#endregion
 }

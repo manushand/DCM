@@ -45,7 +45,7 @@ internal sealed partial class GroupsForm : Form
 							Question) is DialogResult.No)
 			return;
 		var tournament = group.Tournament;
-		if (tournament is not null)
+		if (tournament != Tournament.None)
 		{
 			var games = group.Games;
 			Delete(games.SelectMany(static game => game.GamePlayers));

@@ -14,6 +14,7 @@ global using static Data.Tournament.PowerGroups;
 using System.Data;
 using System.Data.Odbc;
 using System.Data.OleDb;
+using System.Reflection;
 using Microsoft.Data.SqlClient;
 using static System.Environment;
 using static Microsoft.Win32.RegistryKey;
@@ -22,9 +23,12 @@ using static Microsoft.Win32.RegistryView;
 
 namespace Data;
 
+using static Tournament;
+
 public static partial class Data
 {
 	private const string Null = nameof (Null);
+	private static string _selectIdentityCommandText = Empty;
 
 	public enum DatabaseTypes : sbyte
 	{
@@ -41,6 +45,7 @@ public static partial class Data
 				_connection = provider(databaseFile);
 				OpenConnection();
 				CloseConnection();
+				_selectIdentityCommandText = "SELECT @@IDENTITY";
 				return true;
 			}
 			catch // (Exception exception)
@@ -56,6 +61,7 @@ public static partial class Data
 		_connection = new SqlConnection(connectionString);
 		OpenConnection();
 		CloseConnection();
+		_selectIdentityCommandText = "SELECT SCOPE_IDENTITY()";
 	}
 
 	internal static void StartTransaction()
@@ -110,13 +116,12 @@ public static partial class Data
 			{
 				command.CommandText = InsertStatement(record);
 				if (command.ExecuteNonQuery() is 0)
-					throw new (); // TODO
-				if (record is not IdentityRecord identityRecord)
+					throw new ($"Record insertion failed: {command.CommandText}");
+				if (record is not IdInfoRecord idInfoRecord)
 					continue;
-				command.CommandText = "SELECT @@Identity";
-				identityRecord.Id = (int)command.ExecuteScalar().OrThrow();
+				command.CommandText = _selectIdentityCommandText;
+				idInfoRecord.Id = (int)command.ExecuteScalar().OrThrow();
 			}
-
 		CommitLocalTransaction();
 		Cache.AddRange(records);
 		return records;
@@ -149,11 +154,11 @@ public static partial class Data
 		=> Cache.FetchOne(func);
 
 	public static T? ReadById<T>(int id)
-		where T : IdentityRecord
+		where T : IdInfoRecord
 		=> ReadOne<T>(record => record.Id == id);
 
 	public static T? ReadByName<T>(T record)
-		where T : IdentityRecord
+		where T : IdInfoRecord
 		=> ReadOne<T>(t => t.Name.Matches(record.Name));
 
 	//	Important (for some reason): note that in all cases where we open and close the
@@ -173,7 +178,7 @@ public static partial class Data
 	}
 
 	public static IEnumerable<T> ReadAll<T>()
-		where T : class, IRecord, new()
+		where T : IRecord
 		=> Cache.FetchAll<T>();
 
 	public static IEnumerable<T> ReadMany<T>(Func<T, bool> func)
@@ -259,7 +264,8 @@ public static partial class Data
 		=> items.Select(func)
 				.Order();
 
-	public static IEnumerable<int> Ids(this IEnumerable<IdentityRecord> records)
+	public static IEnumerable<int> Ids<T>(this IEnumerable<IdentityRecord<T>> records)
+		where T : class, new()
 		=> records.Select(static record => record.Id);
 
 	internal static IEnumerable<T> WithPlayerId<T>(this IEnumerable<T> linkRecords,
@@ -356,6 +362,15 @@ public static partial class Data
 		return record.IsDBNull(ordinal)
 				   ? null
 				   : record.GetDateTime(ordinal);
+	}
+
+	internal static bool GroupSharedBy(this PowerGroups groups, PowerNames power1, PowerNames power2)
+	{
+		var groupings = (typeof (PowerGroups).GetField(groups.ToString())
+											 ?.GetCustomAttribute(typeof (PowerGroupingsAttribute)) as PowerGroupingsAttribute)
+											 ?.Groups
+						?? throw new InvalidOperationException("Missing PowerGroupings attribute");
+		return groupings.Single(group => group.Contains(power1.Abbreviation())) == groupings.Single(group => group.Contains(power2.Abbreviation()));
 	}
 
 	#region Private fields, property, and methods

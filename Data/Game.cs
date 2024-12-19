@@ -1,6 +1,6 @@
 ﻿namespace Data;
 
-public sealed class Game : IdentityRecord
+public sealed class Game : IdentityRecord<Game>
 {
 	private DateTime? _date;
 	private int? _scoringSystemId;
@@ -66,7 +66,7 @@ public sealed class Game : IdentityRecord
 	/// </summary>
 	/// <returns></returns>
 	internal double PreGameScore(GamePlayer gamePlayer)
-		=> Tournament.Group is null
+		=> Tournament.IsEvent
 			   ? Round.PreRoundScore(gamePlayer)
 			   : Tournament.Group
 						   .RatePlayer(gamePlayer.Player, this)?

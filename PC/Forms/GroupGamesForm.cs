@@ -2,13 +2,11 @@
 
 internal sealed partial class GroupGamesForm : Form
 {
-	private Game? _game;
-
 	private Group Group { get; }
 
 	private Round HostRound { get; }
 
-	private Game Game => _game.OrThrow();
+	private Game Game { get; set; } = Game.None;
 
 	private List<GamePlayer> GamePlayers => [..Game.GamePlayers];
 
@@ -29,12 +27,13 @@ internal sealed partial class GroupGamesForm : Form
 			GameControl.ScoringSystem =
 				Group.ScoringSystem
 					 .OrThrow();
-		var hostTournament = Group.Tournament
-					      ?? CreateOne(new Tournament
+		var hostTournament = Group.Tournament == Tournament.None
+								 ? CreateOne(new Tournament
 									   {
 										   Name = $"{Group} Group Games",
 										   Group = Group
-									   });
+									   })
+								 : Group.Tournament;
 		HostRound = hostTournament.HostRound;
 		PlayerComboBoxes = PlayersPanel.PowerControls<ComboBox>();
 		ScoreLabels = ScoresPanel.PowerControls<Label>();
@@ -58,8 +57,8 @@ internal sealed partial class GroupGamesForm : Form
 		GroupGamesDataGridView.FillWith(Group.Games
 											 .Select(static game => new GroupGame(game))
 											 .Reverse());
-		ShowControls(_game is not null);
-		if (_game is null)
+		ShowControls(Game != Game.None);
+		if (Game == Game.None)
 		{
 			GroupGamesDataGridView.Deselect();
 			NewGameButton.Text = "New Game";
@@ -117,8 +116,8 @@ internal sealed partial class GroupGamesForm : Form
 		SetVisible(visible,
 				   GameControl, GameStatusComboBox, GameDateTimePicker, GameNameTextBox,
 				   PlayerColumnHeaderLabel, GameStatusLabel, GameNameLabel, GameDateLabel);
-		SetEnabled(_game is null, [..PlayerComboBoxes]);
-		var scored = _game?.Status is Finished;
+		SetEnabled(Game == Game.None, [..PlayerComboBoxes]);
+		var scored = Game.Status is Finished;
 		SetVisible(scored, [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
 		OrderByNamePanel.Visible = GameStatusComboBox.SelectedIndex < 1;
 	}
@@ -134,7 +133,7 @@ internal sealed partial class GroupGamesForm : Form
 		GameControl.Active = true;
 		//  TODO - Is there some reason that the line above prevents the one below from joining the SetVisible above?
 		SetVisible(false, [..ScoreLabels]);
-		_game = null;
+		Game = Game.None;
 		GameControl.ClearGame();
 		GameNameTextBox.Clear();
 		PlayerComboBoxes.ForEach(static box =>
@@ -154,7 +153,7 @@ internal sealed partial class GroupGamesForm : Form
 	{
 		Delete(Game.GamePlayers);
 		Delete(Game);
-		_game = null;
+		Game = Game.None;
 		FillGameList();
 	}
 
@@ -163,9 +162,9 @@ internal sealed partial class GroupGamesForm : Form
 	{
 		if (SkippingHandlers)
 			return;
-		switch (GameStatusComboBox.SelectedIndex)
+		switch (GameStatusComboBox.SelectedIndex.As<Statuses>())
 		{
-		case 0 when _game is not null:
+		case Seeded when Game != Game.None:
 			if (MessageBox.Show("Do you really want to re-seed this group game?",
 								"Confirm Game Re-Seeding",
 								YesNo,
@@ -174,21 +173,21 @@ internal sealed partial class GroupGamesForm : Form
 			DeleteGame();
 			NewGameButton_Click();
 			break;
-		case 2 when _game is null || !AllFilledIn:
+		case Finished when Game == Game.None || !AllFilledIn:
 			SkipHandlers(() => GameStatusComboBox.SelectedIndex = 1);
-			if (_game is null)
+			if (Game == Game.None)
 				goto CreateGame;
 			break;
-		case 1 when _game is null:
+		case Underway when Game == Game.None:
 		CreateGame:
-			_game = CreateOne(new Game
-							  {
-								  Round = HostRound,
-								  Number = Group.Games.Length + 1,
-								  Name = GameNameTextBox.Text
-														.Trim(),
-								  Date = GameDateTimePicker.Value
-							  });
+			Game = CreateOne(new Game
+							 {
+								 Round = HostRound,
+								 Number = Group.Games.Length + 1,
+								 Name = GameNameTextBox.Text
+													   .Trim(),
+								 Date = GameDateTimePicker.Value
+							 });
 			CreateMany(Seven.Select(index => new GamePlayer
 											 {
 												 Game = Game,
@@ -202,9 +201,9 @@ internal sealed partial class GroupGamesForm : Form
 			DeleteGameButton.Text = "Delete Game";
 			GameControl.LoadGame(GamePlayers);
 			break;
-		case 0:
-		case 1:
-		case 2:
+		case Seeded:
+		case Underway:
+		case Finished:
 			break;
 		default:
 			throw new (); //	TODO
@@ -222,7 +221,7 @@ internal sealed partial class GroupGamesForm : Form
 		UpdateOne(Game);
 		//  If the game just got changed to Finished and the scoring system
 		//  uses a player ante, then scores have not yet been calculated.
-		if (Game.Status is Finished && Group.ScoringSystem?.UsesPlayerAnte is true)
+		if (Game.Status is Finished && Group.ScoringSystem.UsesPlayerAnte)
 			GameDataUpdated(true);
 	}
 
@@ -236,8 +235,8 @@ internal sealed partial class GroupGamesForm : Form
 	private void GroupGamesDataGridView_CellClick(object? sender = null,
 												  DataGridViewCellEventArgs? e = null)
 	{
-		_game = GroupGamesDataGridView.GetSelected<GroupGame>()
-									  .Game;
+		Game = GroupGamesDataGridView.GetSelected<GroupGame>()
+									 .Game;
 		SkipHandlers(() =>
 					 {
 						 GameDateTimePicker.Value = Game.Date;
@@ -260,7 +259,7 @@ internal sealed partial class GroupGamesForm : Form
 	private void DeleteGameButton_Click(object sender,
 										EventArgs e)
 	{
-		if (_game is null)
+		if (Game == Game.None)
 		{
 			//	Cancel New Game
 			ShowControls(false);
@@ -280,7 +279,7 @@ internal sealed partial class GroupGamesForm : Form
 	private void GameDateTimePicker_ValueChanged(object sender,
 												 EventArgs e)
 	{
-		if (SkippingHandlers || _game is null)
+		if (SkippingHandlers || Game == Game.None)
 			return;
 		var newDate = GameDateTimePicker.Value;
 		var earlier = Game.Date < newDate
@@ -289,7 +288,7 @@ internal sealed partial class GroupGamesForm : Form
 		Game.Date = newDate;
 		UpdateOne(Game);
 		//	BUG: This doesn't seem to work to change player scores like I would expect....??
-		if (Group.ScoringSystem?.UsesPlayerAnte is true)
+		if (Group.ScoringSystem.UsesPlayerAnte)
 			RescoreGamesFrom(earlier);
 		FillGameList();
 		GameDataUpdated(AllFilledIn);
@@ -300,7 +299,7 @@ internal sealed partial class GroupGamesForm : Form
 	private void GameNameTextBox_Leave(object sender,
 									   EventArgs e)
 	{
-		if (SkippingHandlers || _game is null)
+		if (SkippingHandlers || Game == Game.None)
 			return;
 		Game.Name = GameNameTextBox.Text;
 		UpdateOne(Game);
@@ -310,7 +309,7 @@ internal sealed partial class GroupGamesForm : Form
 	private void GameDataUpdated(bool allFilledIn)
 	{
 		AllFilledIn = allFilledIn;
-		if (SkippingHandlers || _game is null)
+		if (SkippingHandlers || Game == Game.None)
 			return;
 		UpdateMany(GamePlayers);
 		//	If all GamePlayers are Completely filled in, but we were told NOT allFilledIn,
@@ -319,8 +318,7 @@ internal sealed partial class GroupGamesForm : Form
 								 && GamePlayers.All(static gamePlayer => gamePlayer.PlayComplete);
 		AllFilledIn = allFilledIn && !GameInErrorButton.Visible;
 		var showScores = allFilledIn
-					  && (Game.Status is Finished
-					  ||  Group.ScoringSystem?.UsesPlayerAnte is not true);
+					  && (Game.Status is Finished || Group.ScoringSystem.UsesPlayerAnte is not true);
 		ScoreColumnHeaderLabel.Visible =
 			ScoreTotalBarLabel.Visible =
 				TotalScoreTextLabel.Visible =
@@ -362,7 +360,7 @@ internal sealed partial class GroupGamesForm : Form
 	{
 		var format = game.ScoringSystem.ScoreFormat;
 		var gamePlayers = game.GamePlayers.ToArray();
-		var isGroup = game.Tournament.Group is not null;
+		var isGroup = !game.Tournament.IsEvent;
 		var scoreOrRating = isGroup
 								? "Rating"
 								: "Score";
@@ -376,7 +374,6 @@ internal sealed partial class GroupGamesForm : Form
 							  var preGame = game.Round.PreRoundScore(gamePlayer);
 							  var postGame = isGroup
 												 ? game.Tournament.Group
-													   .OrThrow()
 													   .RatePlayer(gamePlayer.Player, game, includeTheBeforeGame: true)?
 													   .Rating ?? 0
 												 : preGame + score;

@@ -1,9 +1,7 @@
 ﻿namespace Data;
 
-public sealed class Team : IdentityRecord
+public sealed class Team : IdentityRecord<Team>
 {
-	internal static readonly Team None = new ();
-
 	public int TournamentId;
 
 	public TeamPlayer[] TeamPlayers => [..ReadMany<TeamPlayer>(teamPlayer => teamPlayer.TeamId == Id)];

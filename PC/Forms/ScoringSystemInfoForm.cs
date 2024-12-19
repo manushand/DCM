@@ -56,7 +56,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 			SignificantDigitsComboBox.SelectedIndex = ScoringSystem.SignificantDigits;
 			TotalPointsFixedCheckBox.Checked = ScoringSystem.PointsPerGame is not null;
 			PointsPerGameTextBox.Text = ScoringSystem.PointsPerGame?.ToString();
-			OtherScoringCheckBox.Checked = ScoringSystem.OtherScoreAlias.Length > 0;
+			OtherScoringCheckBox.Checked = ScoringSystem.OtherScoreAlias.Length is not 0;
 			OtherAliasTextBox.Text = ScoringSystem.OtherScoreAlias;
 			UsesProvisionalScoreCheckBox.Checked = ScoringSystem.UsesProvisionalScore;
 			UsesPlayerAnteCheckBox.Checked = ScoringSystem.UsesPlayerAnte;
@@ -78,8 +78,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 				WinLossCheckBox.Checked;
 		GameControl.SetResultComboBoxUsability(WinLossCheckBox.Checked);
 		DiasCheckBox.Visible = WinLossCheckBox.Checked
-							   && CenterCountCheckBox.Checked
-							   && AllowDrawsCheckBox.Checked;
+							&& CenterCountCheckBox.Checked
+							&& AllowDrawsCheckBox.Checked;
 		SetTestButtonUsability();
 		GameControl.SetConcessionCheckBoxUsability();
 	}
@@ -90,8 +90,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		ScoringSystem.UsesCenterCount = CenterCountCheckBox.Checked;
 		GameControl.SetCentersComboBoxUsability(CenterCountCheckBox.Checked);
 		DiasCheckBox.Visible = WinLossCheckBox.Checked
-							   && CenterCountCheckBox.Checked
-							   && AllowDrawsCheckBox.Checked;
+							&& CenterCountCheckBox.Checked
+							&& AllowDrawsCheckBox.Checked;
 		SetTestButtonUsability();
 		GameControl.SetConcessionCheckBoxUsability();
 	}
@@ -134,7 +134,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		else if (TotalPointsFixedCheckBox.Checked && ScoringSystem.PointsPerGame is null)
 			error = "Points per game must be supplied as an integer.";
 		else if (OtherScoringCheckBox.Checked
-				 && !AliasFormat().IsMatch(OtherAliasTextBox.Text))
+			 && !AliasFormat().IsMatch(OtherAliasTextBox.Text))
 			error = "Formula alias for Other Score must be a legal alias (after spaces are removed).";
 		else if (ScoringSystem.TestGamePlayers is not null)
 			return GameControl.FinalGameDataValidation(out error);
@@ -190,8 +190,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 				UpdateOne(ScoringSystem);
 			DialogResult = DialogResult.OK;
 			//	TODO: check for errors
-			ReadMany<Game>(scored => scored.ScoringSystemId == ScoringSystem.Id
-									 && scored.Scored).ForEach(static game => game.Scored = false);
+			ScoringSystem.Games.ForSome(static game => game.Scored, static game => game.Scored = false);
 			Close();
 		}
 		else

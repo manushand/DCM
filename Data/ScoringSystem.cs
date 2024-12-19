@@ -7,9 +7,8 @@ using static Microsoft.CodeAnalysis.CSharp.Scripting.CSharpScript;
 
 namespace Data;
 
-public sealed partial class ScoringSystem : IdentityRecord
+public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 {
-	public static readonly ScoringSystem None = new ();
 	public static bool ShowTimingData { private get; set; }
 
 	public DrawRules DrawPermissions;
@@ -30,12 +29,12 @@ public sealed partial class ScoringSystem : IdentityRecord
 		set => _finalScoreFormula = value;
 	}
 
-	public bool UsesProvisionalScore => ProvisionalScoreFormula.Length > 0;
-	public bool UsesPlayerAnte => PlayerAnteFormula.Length > 0;
+	public bool UsesProvisionalScore => ProvisionalScoreFormula.Length is not 0;
+	public bool UsesPlayerAnte => PlayerAnteFormula.Length is not 0;
 	public bool FinalScoreFormulaMissing => RemoveComments(FinalScoreFormula).Length is 0;
 	public bool DrawsAllowed => DrawPermissions is not DrawRules.None;
 	public bool DrawsIncludeAllSurvivors => DrawPermissions is DrawRules.DIAS;
-	public bool UsesOtherScore => OtherScoreAlias.Length > 0;
+	public bool UsesOtherScore => OtherScoreAlias.Length is not 0;
 	public bool UsesCompiledFormulas => _finalScoreFormula.LastOrDefault() is CompiledFormulaSuffix;
 
 	private const char Bar = '|';
@@ -105,6 +104,7 @@ public sealed partial class ScoringSystem : IdentityRecord
 																			  || tournament.Rounds.Any(round => round.ScoringSystemId == Id)
 																			  || tournament.Games.Any(game => game.ScoringSystemId == Id))];
 
+	public IEnumerable<Game> Games => [..ReadMany<Game>(game => game.ScoringSystemId == Id)];
 	public string ScoreFormat => $"F{SignificantDigits}";
 
 	public string FormattedScore(double score,
@@ -127,8 +127,7 @@ public sealed partial class ScoringSystem : IdentityRecord
 		const string bar = "――――――――――――――――――――";
 		if (!GameDataValid(out results))
 			return false;
-		gamePlayers = gamePlayers.OrderBy(static gamePlayer => gamePlayer.Power)
-								 .ToList();
+		gamePlayers = [..gamePlayers.OrderBy(static gamePlayer => gamePlayer.Power)];
 		var watch = ShowTimingData
 						? StartNew()
 						: null;
@@ -140,13 +139,13 @@ public sealed partial class ScoringSystem : IdentityRecord
 		//	This calculated ante is later subtracted from the player's FinalScore.
 		//	Tournament games, however, use PointsPerGame / 7 as the PlayerAnte,
 		//	and do NOT auto-subtract it from the FinalScore.
-		var gameId = gamePlayers.First()
-								.GameId;
-		var calculateAnte = UsesPlayerAnte && (gameId is 0 || ReadById<Game>(gameId)?.Tournament.Group is not null);
+		var game = gamePlayers.First()
+							  .Game;
+		var calculateAnte = UsesPlayerAnte && (game == Game.None || !game.Tournament.IsEvent);
 		if (UsesPlayerAnte)
 		{
 			//	Set only each of the GamePlayer objects' .PlayerAnte at first
-			var defaultAnte = PointsPerGame / 7 ?? 0;
+			var defaultAnte = PointsPerGame / 7 ?? default;
 			foreach (var gamePlayer in gamePlayers)
 				try
 				{
@@ -199,11 +198,12 @@ public sealed partial class ScoringSystem : IdentityRecord
 			}
 		watch?.Stop();
 		double roundedAntes;
+		const string rounded = " (rounded)";
 		if (UsesPlayerAnte)
 		{
 			var totalAntes = scoring.SumOfPlayerAntes;
 			roundedAntes = double.Round(totalAntes);
-			results.AddRange(bar, $"Total player antes{(totalAntes.Equals(roundedAntes) ? null : " (rounded)")} = {roundedAntes}");
+			results.AddRange(bar, $"Total player antes{(totalAntes.Equals(roundedAntes) ? null : rounded)} = {roundedAntes}");
 		}
 		else
 			roundedAntes = 0;
@@ -211,7 +211,9 @@ public sealed partial class ScoringSystem : IdentityRecord
 		var roundedTotal = PointsPerGame is null
 							   ? total
 							   : double.Round(total);
-		results.AddRange(bar, $"Total points awarded{(total.Equals(roundedTotal) ? null : " (rounded)")} = {roundedTotal}");
+		if (roundedTotal.Equals(double.NegativeZero))
+			roundedTotal = 0;
+		results.AddRange(bar, $"Total points awarded{(total.Equals(roundedTotal) ? null : rounded)} = {roundedTotal}");
 		if (watch is not null)
 			results.AddRange(bar, $"Time to score: {watch.ElapsedMilliseconds / 1_000m} sec.");
 		if (PointsPerGame is null)
@@ -276,7 +278,7 @@ public sealed partial class ScoringSystem : IdentityRecord
 						issues.Add("Solo victor not credited with win.");
 					if (DrawsIncludeAllSurvivors
 					&&  gamePlayers.Count(static gamePlayer => gamePlayer.Result is Win) > 1 //	allows for solo or concession
-					&&  gamePlayers.Any(static gamePlayer => gamePlayer is { Centers: > 0, Result: Loss }))
+					&&  gamePlayers.Any(static gamePlayer => gamePlayer is { Centers: not 0, Result: Loss }))
 						issues.Add("Survivor not included in mandated DIAS.");
 				}
 			}
@@ -339,10 +341,8 @@ public sealed partial class ScoringSystem : IdentityRecord
 				using var cancellationTokenSource = new CancellationTokenSource();
 				using var task = compiled.RunAsync(scoring, cancellationTokenSource.Token);
 				if (task.Wait(ScriptTimeout))
-					return (double)task.Result
-									   .ReturnValue;
-				cancellationTokenSource.Cancel();
-				throw new OperationCanceledException();
+					return task.Result.ReturnValue;
+				throw new TimeoutException();
 			}
 		}
 	}
@@ -453,7 +453,7 @@ public sealed partial class ScoringSystem : IdentityRecord
 	/// <summary>
 	///     Holds compiled C# formulae, and doing so really speeds up things considerably.
 	/// </summary>
-	private static readonly SortedDictionary<string, Script> Scripts = [];
+	private static readonly SortedDictionary<string, Script<double>> Scripts = [];
 
 	[GeneratedRegex(@"[\s_]")]
 	private static partial Regex Stripper();
@@ -492,7 +492,7 @@ public sealed partial class ScoringSystem : IdentityRecord
 			formula = formula.Split(DocumentCommentSplitter)
 							 .First()
 							 .Replace(underbar, null);
-		if (OtherScoreAlias.Length > 0)
+		if (OtherScoreAlias.Length is not 0)
 			ReplaceOtherScoreAlias();
 		return formula.Trim();
 

@@ -69,11 +69,10 @@ internal sealed partial class ScoringSystemListForm : Form
 		{
 			var tournaments = scoringSystem.Tournaments;
 			var groups = tournaments.Select(static tournament => tournament.Group)
-									.OfType<Group>()
 									.ToList();
 			var groupCount = groups.Count;
 			var usedInGroups = groupCount > 0;
-			tournaments = [..tournaments.Where(static tournament => tournament.Group is null)];
+			tournaments = [..tournaments.Where(static tournament => tournament.IsEvent)];
 			var tournamentCount = tournaments.Count;
 			var message = $"The {scoringSystem} scoring system is used ";
 			if (tournamentCount > 0)

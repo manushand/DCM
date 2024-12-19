@@ -119,7 +119,7 @@ internal sealed partial class ConflictsForm : Form
 		SkipHandlers(() =>
         {
 			if (ConflictsDataGridView.RowCount > selected
-				&&  ConflictsDataGridView.GetAtIndex<ConflictedPlayer>(selected).Player.Is(conflictee.Player))
+			&&  ConflictsDataGridView.GetAtIndex<ConflictedPlayer>(selected).Player.Is(conflictee.Player))
 				ConflictsDataGridView.CurrentCell = ConflictsDataGridView.Rows[selected]
 																		 .Cells[0];
         });

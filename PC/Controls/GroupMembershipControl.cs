@@ -25,7 +25,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 	private void JoinButton_Click(object sender,
 								  EventArgs e)
 	{
-		if (NonMemberListBox.SelectedItems.Count > 0)
+		if (NonMemberListBox.SelectedItems.Count is not 0)
 		{
 			var joiningPlayers = NonMemberListBox.GetMultiSelected<Player>();
 			CreateMany(joiningPlayers.Select(player => new GroupPlayer { Group = Group, Player = player }).ToArray());
@@ -33,7 +33,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 			FillMembershipLists();
 			joiningPlayers.ForEach(MemberListBox.SelectedItems.Add);
 		}
-		else if (MemberListBox.SelectedItems.Count > 0)
+		else if (MemberListBox.SelectedItems.Count is not 0)
 		{
 			var leavingPlayers = MemberListBox.GetMultiSelected<Player>();
 			int[] playerIds = [..leavingPlayers.Ids()];

@@ -64,8 +64,7 @@ internal sealed partial class TeamsControl : UserControl
 		var candidatePlayers = WhichPlayersTabControl.SelectedIndex is 0
 								   ? ReadMany<TournamentPlayer>(tp => tp.TournamentId == Tournament.Id).Select(static tp => tp.Player)
 								   : ReadAll<Player>();
-		var nonMembers = candidatePlayers.Where(player => (Tournament.PlayerCanJoinManyTeams
-														|| !player.Teams(Tournament.Id).Any())
+		var nonMembers = candidatePlayers.Where(player => (Tournament.PlayerCanJoinManyTeams || !player.Teams(Tournament.Id).Any())
 													   && !memberIds.Contains(player.Id))
 										 .Sorted(LastNameRadioButton.Checked);
 		NonMemberListBox.FillWith(nonMembers);

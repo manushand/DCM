@@ -16,6 +16,8 @@ public sealed partial class Scoring
 		set => _player = Powers[value];
 	}
 
+	private Scoring() : this(ScoringSystem.None, []) { }
+
 	internal Scoring(ScoringSystem scoringSystem,
 					 IReadOnlyCollection<GamePlayer> gamePlayers)
 	{

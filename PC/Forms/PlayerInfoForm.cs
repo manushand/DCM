@@ -27,7 +27,7 @@ internal sealed partial class PlayerInfoForm : Form
 		var name = $"{firstName} {lastName}";
 		var players = ReadMany<Player>(player => player.Name.Matches(name)).ToArray();
 		if (players.Any(player => player.IsNot(Player))
-		 && MessageBox.Show($"Player named {name} already exists.  Use this same name?",
+		&&  MessageBox.Show($"Player named {name} already exists.  Use this same name?",
 							"Confirm Duplicate Player Name",
 							YesNo,
 							Question) is DialogResult.No)
@@ -45,8 +45,8 @@ internal sealed partial class PlayerInfoForm : Form
 				var playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses
 																			.Any(emailAddress.Matches))
                                                                             .ToArray();
-				if (playersWithThisEmail.Length > 0
-				 && MessageBox.Show($"The email address {emailAddress} is already being used by:{playersWithThisEmail.BulletList()}" +
+				if (playersWithThisEmail.Length is not 0
+				&& MessageBox.Show($"The email address {emailAddress} is already being used by:{playersWithThisEmail.BulletList()}" +
 									"Have this player use the same address?",
 									"Confirm Duplicate Player Email",
 									YesNo,

@@ -258,7 +258,7 @@ public sealed partial class ScoringSystem
 			_formula = formula.Trim();
 			_inContextPowerData = contextPlayer;
 			var @operator = Operators.Reset;
-			while (_formula.Length > 0)
+			while (_formula.Length is not 0)
 			{
 				if (@operator is Operators.Reset)
 					Result = 0;

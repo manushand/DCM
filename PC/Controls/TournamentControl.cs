@@ -182,7 +182,7 @@ internal sealed partial class TournamentControl : UserControl
 				   TeamMemberConflictLabel, TeamMemberConflictTextBox, TeamScoringLabel, TeamScoringComboBox,
 				   TeamRoundInfoLabel, TeamRoundComboBox, MultiTeamMembershipCheckBox);
 		if (Tournament.HasTeamTournament
-		 && TeamScoringComboBox.SelectedItem is null)
+		&&  TeamScoringComboBox.SelectedItem is null)
 			TeamScoringComboBox.SelectedIndex = 0;
 		TournamentInfoForm.SetTeamsTabVisibility();
 	}
@@ -343,7 +343,7 @@ internal sealed partial class TournamentControl : UserControl
 		else if (!TryGetInteger(TeamMemberConflictTextBox, ref teamConflict))
 			error = "Team member conflict value must be a number.";
 		else if (ScoreConflictCheckBox.Checked
-			  && (!TryGetInteger(ScoreConflictTextBox, ref scoreConflict, true) || scoreConflict <= 0))
+			 && (!TryGetInteger(ScoreConflictTextBox, ref scoreConflict, true) || scoreConflict <= 0))
 			error = "Score conflict value must be a positive number.";
 		if (error is null)
 		{

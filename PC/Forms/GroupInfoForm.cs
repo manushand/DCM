@@ -9,7 +9,7 @@ internal sealed partial class GroupInfoForm : Form
 
 	private bool DetailsOnly { get; }
 
-	private bool GroupHasGames => Group?.Tournament?.Games.Length > 0;
+	private bool GroupHasGames => Group?.Tournament.Games.Length > 0;
 
 	public GroupInfoForm()
 		=> InitializeComponent();
@@ -60,11 +60,11 @@ internal sealed partial class GroupInfoForm : Form
 		//  (Actually, I believe this could happen even now after a setting the system for the first time ever,
 		//  which doesn't remove the None option, then creating a game all in the same run of this Form.)
 		if (scoringSystem.Id is 0
-		 && GroupHasGames
-		 && MessageBox.Show("By removing the scoring system, all Group Games will be deleted. Really proceed?",
-							"Delete all Group Games?",
-							YesNo,
-							Question) is DialogResult.No)
+		&& GroupHasGames
+		&& MessageBox.Show("By removing the scoring system, all Group Games will be deleted. Really proceed?",
+						   "Delete all Group Games?",
+						   YesNo,
+						   Question) is DialogResult.No)
 			return;
 		var groupName = GroupNameTextBox.Text
 										.Trim();
@@ -74,8 +74,8 @@ internal sealed partial class GroupInfoForm : Form
 			error = "Player Group must have a name.";
 		else if (ReadOne<Group>(group => group.Name.Matches(groupName) && group.Id != Group?.Id) is not null)
 			error = "Another Player Group with that name already exists.";
-		else if (ConflictTextBox.TextLength > 0
-			  && !int.TryParse(ConflictTextBox.Text, out conflict))
+		else if (ConflictTextBox.TextLength is not 0
+			 && !int.TryParse(ConflictTextBox.Text, out conflict))
 			error = "Tournament conflict value must be numeric.";
 		else
 		{
@@ -94,7 +94,7 @@ internal sealed partial class GroupInfoForm : Form
 				UpdateOne(Group);
 			}
 			Group.ScoringSystem = scoringSystem.Id is 0
-									  ? null
+									  ? ScoringSystem.None
 									  : scoringSystem;
 			DialogResult = DialogResult.OK;
 			Close();

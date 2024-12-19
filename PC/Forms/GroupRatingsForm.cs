@@ -23,6 +23,8 @@ internal sealed partial class GroupRatingsForm : Form
 	private void RatingsDataGridView_DataBindingComplete(object sender,
 														 DataGridViewBindingCompleteEventArgs e)
 	{
+		if (RatingsDataGridView.Columns.Count is 0)
+			return;
 		RatingsDataGridView.FillColumn(1);
 		RatingsDataGridView.AlignColumn(MiddleRight, 0, 2);
 		RatingsDataGridView.AlignColumn(MiddleCenter, 3);
@@ -31,15 +33,17 @@ internal sealed partial class GroupRatingsForm : Form
 	private void RatingsTabControl_SelectedIndexChanged(object? sender = null,
 														EventArgs? e = null)
 	{
+		RatingInfo.ScoringSystem = Group.ScoringSystem;
 		var gamesToRate = RatingsTabControl.SelectedIndex
 										   .As<GamesToRate>();
 		var groupPlayers = Group.Players
 								.Where(static player => player.IsHuman)
 								.Select(player => Group.RatePlayer(player, gamesToRate: gamesToRate))
-								.OfType<RatingInfo>()
+								.OfType<RatingRecord>()
 								.OrderByDescending(static player => player.Rating)
+								.Select(static player => new RatingInfo(player.Player, player.Rating, player.Games))
 								.ToList();
-		groupPlayers.ForEach(player => player.Rank = groupPlayers.Count(ratingInfo => ratingInfo.Rating > player.Rating) + 1);
+		groupPlayers.ForEach(player => player.Ranking = groupPlayers.Count(ratingInfo => ratingInfo.RatingPoints > player.RatingPoints) + 1);
 		RatingsDataGridView.FillWith(groupPlayers);
 		RatedGamesLabel.Text = gamesToRate switch
 							   {

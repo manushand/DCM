@@ -1,9 +1,7 @@
 ﻿namespace Data;
 
-public sealed class Player : IdentityRecord
+public sealed class Player : IdentityRecord<Player>
 {
-	internal static readonly Player None = new ();
-
 	public string EmailAddress = Empty;
 	public string FirstName = Empty;
 	public string LastName = Empty;

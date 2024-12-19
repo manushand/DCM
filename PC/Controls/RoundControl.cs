@@ -161,8 +161,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 					tournamentPlayerIds = null;
 
 				var unregisteredPlayers = ReadMany<Player>(player => (tournamentPlayerIds?.Contains(player.Id) ?? true)
-																	 && !gamePlayerIds.Contains(player.Id)
-																	 && !roundPlayerIds.Contains(player.Id))
+																  && !gamePlayerIds.Contains(player.Id)
+																  && !roundPlayerIds.Contains(player.Id))
 										  .Select(player => new SeedablePlayer(Tournament,
 																			   player,
 																			   tournamentPlayerIds is null
@@ -493,7 +493,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		var roundPlayers = Round.RoundPlayers
 								.Where(roundPlayer => roundPlayerIds.Contains(roundPlayer.PlayerId))
 								.ToList();
-		if (roundPlayers.Count % 7 > 0)
+		if (roundPlayers.Count % 7 is not 0)
 			throw new InvalidOperationException(); //	TODO
 		var seededGameCount = roundPlayers.Count / 7;
 		var preseededGameCount = Round.SeededGames
@@ -617,7 +617,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 				var emailBody = template.Replace("{GameNumber}", $"{game.Number}")
 										.Replace("{Assignments}", assignments);
 				messages.AddRange(game.GamePlayers
-									  .Where(static gamePlayer => gamePlayer.Player.EmailAddress.Length > 0)
+									  .Where(static gamePlayer => gamePlayer.Player.EmailAddress.Length is not 0)
 									  .Select(gamePlayer => WriteEmail($"Round {Round} Board Assignment",
 																	   emailBody.Replace("{PlayerName}", gamePlayer.Player.Name)
 																				.Replace("{PowerName}", gamePlayer.Power is TBD
@@ -629,7 +629,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			//	TODO: maybe put up a "Waiting..." modal here?
 			var errors = SendEmail([..messages]);
 			//	TODO: ...and take it down here?
-			var hasErrors = errors.Length > 0;
+			var hasErrors = errors.Length is not 0;
 			MessageBox.Show(hasErrors
 								? $"Errors sending email:{errors.BulletList()}"
 								: "Emails sent successfully.",
@@ -667,7 +667,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		view.FillColumn(0);
 		view.AlignColumn(MiddleRight, 1);
 		view.Columns[1].Visible = SortByScoreCheckBox.Visible
-								  && SortByScoreCheckBox.Checked;
+							   && SortByScoreCheckBox.Checked;
 		view.AlternatingRowsDefaultCellStyle.BackColor = view.Columns[1].Visible
 															 ? SystemColors.ControlLight
 															 : view.DefaultCellStyle
@@ -749,9 +749,9 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		//	This if isn't really necessary, since filtering the finishedGames (below) will answer
 		//	the same question, but in a tournament with a lot of games, this could be faster.
 		if ((currentScoringSystem.UsesGameResult || !proposedScoringSystem.UsesGameResult)
-			&& (currentScoringSystem.UsesCenterCount || !proposedScoringSystem.UsesCenterCount)
-			&& (currentScoringSystem.UsesYearsPlayed || !proposedScoringSystem.UsesYearsPlayed)
-			&& (currentScoringSystem.UsesOtherScore || !proposedScoringSystem.UsesOtherScore))
+		&& (currentScoringSystem.UsesCenterCount || !proposedScoringSystem.UsesCenterCount)
+		&& (currentScoringSystem.UsesYearsPlayed || !proposedScoringSystem.UsesYearsPlayed)
+		&& (currentScoringSystem.UsesOtherScore || !proposedScoringSystem.UsesOtherScore))
 			return DialogResult.Yes;
 		finishedGames =
 		[

@@ -189,7 +189,7 @@ internal sealed partial class PlayerListForm : Form
 		SetEnabled(nowEnabled, EmailLabel, EmailAddressTextBox);
 		if (!nowEnabled)
 		{
-			if (EmailAddressTextBox.TextLength > 0)
+			if (EmailAddressTextBox.TextLength is not 0)
 				SavedEmail = EmailAddressTextBox.Text;
 			EmailAddressTextBox.Clear();
 		}

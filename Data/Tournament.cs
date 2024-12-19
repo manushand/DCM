@@ -2,32 +2,32 @@
 
 namespace Data;
 
-public sealed class Tournament : IdentityRecord
+public sealed class Tournament : IdentityRecord<Tournament>, IdInfoRecord.IEvent
 {
-	public static readonly Tournament None = new ();
-
-	public enum PowerGroups : byte
+	[AttributeUsage(AttributeTargets.Field)]
+	internal sealed class PowerGroupingsAttribute(params string[] groups) : Attribute
 	{
-		None,      //	F-R-I-G-A-T-E
-		EastWest,  //	AGI-EF-RT
-		Corners,   //	AGI-ET-FT
-		Naval,     //	AG-EIT-FR
-		LandSea,   //	AI-EFG-RT
-		FleetNear, //	AI-EF-GRT
-		Lepanto    //	AIT-EG-FR
+		public string[] Groups { get; } = groups;
 	}
 
-	private static readonly SortedDictionary<PowerGroups, string[]> PowerInitialGroups =
-		new ()
-		{
-			[PowerGroups.None] = ["F", "R", "I", "G", "A", "T", "E"],
-			[EastWest] = ["AGI", "EF", "RT"],
-			[Corners] = ["AGI", "ET", "FR"],
-			[Naval] = ["AG", "EIT", "FR"],
-			[LandSea] = ["AI", "EFG", "RT"],
-			[FleetNear] = ["AI", "EF", "GRT"],
-			[Lepanto] = ["AIT", "EG", "FR"]
-		};
+	[PublicAPI] // to prevent R# complaints of unused enum values
+	public enum PowerGroups : byte
+	{
+		[PowerGroupings("F", "R", "I", "G", "A", "T", "E")]
+		None,
+		[PowerGroupings("AGI", "EF", "RT")]
+		EastWest,
+		[PowerGroupings("AGI", "ET", "FR")]
+		Corners,
+		[PowerGroupings("AG", "EIT", "FR")]
+		Naval,
+		[PowerGroupings("AI", "EFG", "RT")]
+		LandSea,
+		[PowerGroupings("AI", "EF", "GRT")]
+		FleetNear,
+		[PowerGroupings("AIT", "EG", "FR")]
+		Lepanto
+	}
 
 	public DateTime Date;
 	public PowerGroups GroupPowers;
@@ -55,24 +55,26 @@ public sealed class Tournament : IdentityRecord
 
 	public ScoringSystem ScoringSystem
 	{
-		get => field == ScoringSystem.None
+		get => field == ScoringSystem.None && ScoringSystemId > 0
 				   ? field = ReadById<ScoringSystem>(ScoringSystemId).OrThrow()
 				   : field;
 		set
 		{
 			field = value;
-			ScoringSystemId = value.Id;
 			Rounds.ForSome(round => round.ScoringSystemId == ScoringSystemId, round => round.ScoringSystem = value);
+			ScoringSystemId = value.Id;
 		}
 	} = ScoringSystem.None;
 
-	public Group? Group
+	public Group Group
 	{
 		get => GroupId is null
-				   ? null
-				   : field ??= ReadById<Group>(GroupId.Value).OrThrow();
-		init => (field, GroupId) = (value, value?.Id);
-	}
+				   ? Group.None
+				   : field;
+		init => (field, GroupId) = (value, value.Id);
+	} = Group.None;
+
+	public bool IsEvent => Group != Group.None;
 
 	public bool HasTeamTournament => TeamSize > 0;
 
@@ -91,17 +93,6 @@ public sealed class Tournament : IdentityRecord
 
 	public void AddPlayer(Player player)
 		=> CreateOne(new TournamentPlayer { Tournament = this, Player = player });
-
-	//	TODO: is this the best location for this method?
-	internal bool SharePowerGroup(PowerNames power1,
-								  PowerNames power2)
-	{
-		var powerGroupings = PowerInitialGroups[GroupPowers];
-		return GroupContaining(power1) == GroupContaining(power2);
-
-		string GroupContaining(PowerNames power)
-			=> powerGroupings.Single(group => group.Contains(power.Abbreviation()));
-	}
 
 	#region IInfoRecord interface implementation
 

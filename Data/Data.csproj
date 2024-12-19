@@ -11,16 +11,13 @@
             <DependentUpon>Scoring.cs</DependentUpon>
         </Compile>
         <Compile Update="Data.Cache.cs">
-            <DependentUpon>Database.cs</DependentUpon>
+            <DependentUpon>Data.cs</DependentUpon>
         </Compile>
         <Compile Update="GamePlayer.cs">
             <DependentUpon>LinkRecord.cs</DependentUpon>
         </Compile>
         <Compile Update="LinkRecord.cs">
             <DependentUpon>IRecord.cs</DependentUpon>
-        </Compile>
-        <Compile Update="Group.RatingInfo.cs">
-            <DependentUpon>Group.cs</DependentUpon>
         </Compile>
         <Compile Update="GroupPlayer.cs">
             <DependentUpon>LinkRecord.cs</DependentUpon>
@@ -49,7 +46,7 @@
             <DependentUpon>ScoringSystem.cs</DependentUpon>
         </Compile>
         <Compile Update="IdentityRecord.cs">
-            <DependentUpon>IInfoRecord.cs</DependentUpon>
+            <DependentUpon>IdInfoRecord.cs</DependentUpon>
         </Compile>
         <Compile Update="Game.cs">
             <DependentUpon>IdentityRecord.cs</DependentUpon>
@@ -71,6 +68,9 @@
         </Compile>
         <Compile Update="Tournament.cs">
             <DependentUpon>IdentityRecord.cs</DependentUpon>
+        </Compile>
+        <Compile Update="IdInfoRecord.cs">
+          <DependentUpon>IInfoRecord.cs</DependentUpon>
         </Compile>
     </ItemGroup>
     <ItemGroup>
