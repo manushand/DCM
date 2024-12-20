@@ -4,7 +4,9 @@ internal sealed partial class RegistrationControl : UserControl
 {
 	private RoundInfoForm RoundInfoForm
 	{
-		get => field == RoundInfoForm.None ? throw new NullReferenceException(nameof (RoundInfoForm)) : field;
+		get => field.Tournament.IsNone
+				   ? throw new NullReferenceException(nameof (RoundInfoForm))
+				   : field;
 		set;
 	} = RoundInfoForm.None;
 

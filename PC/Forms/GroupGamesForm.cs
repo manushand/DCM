@@ -25,16 +25,8 @@ internal sealed partial class GroupGamesForm : Form
 		GameControl.GameDataChangedCallback = GameDataUpdated;
 		var scoringSystem =
 			GameControl.ScoringSystem =
-				Group.ScoringSystem
-					 .OrThrow();
-		var hostTournament = Group.Tournament == Tournament.None
-								 ? CreateOne(new Tournament
-									   {
-										   Name = $"{Group} Group Games",
-										   Group = Group
-									   })
-								 : Group.Tournament;
-		HostRound = hostTournament.HostRound;
+				Group.ScoringSystem;
+		HostRound = Group.HostRound;
 		PlayerComboBoxes = PlayersPanel.PowerControls<ComboBox>();
 		ScoreLabels = ScoresPanel.PowerControls<Label>();
 		DeleteGameButton.Enabled = false;
@@ -57,8 +49,8 @@ internal sealed partial class GroupGamesForm : Form
 		GroupGamesDataGridView.FillWith(Group.Games
 											 .Select(static game => new GroupGame(game))
 											 .Reverse());
-		ShowControls(Game != Game.None);
-		if (Game == Game.None)
+		ShowControls(!Game.IsNone);
+		if (Game.IsNone)
 		{
 			GroupGamesDataGridView.Deselect();
 			NewGameButton.Text = "New Game";
@@ -116,7 +108,7 @@ internal sealed partial class GroupGamesForm : Form
 		SetVisible(visible,
 				   GameControl, GameStatusComboBox, GameDateTimePicker, GameNameTextBox,
 				   PlayerColumnHeaderLabel, GameStatusLabel, GameNameLabel, GameDateLabel);
-		SetEnabled(Game == Game.None, [..PlayerComboBoxes]);
+		SetEnabled(Game.IsNone, [..PlayerComboBoxes]);
 		var scored = Game.Status is Finished;
 		SetVisible(scored, [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
 		OrderByNamePanel.Visible = GameStatusComboBox.SelectedIndex < 1;
@@ -164,7 +156,7 @@ internal sealed partial class GroupGamesForm : Form
 			return;
 		switch (GameStatusComboBox.SelectedIndex.As<Statuses>())
 		{
-		case Seeded when Game != Game.None:
+		case Seeded when !Game.IsNone:
 			if (MessageBox.Show("Do you really want to re-seed this group game?",
 								"Confirm Game Re-Seeding",
 								YesNo,
@@ -173,12 +165,12 @@ internal sealed partial class GroupGamesForm : Form
 			DeleteGame();
 			NewGameButton_Click();
 			break;
-		case Finished when Game == Game.None || !AllFilledIn:
+		case Finished when Game.IsNone || !AllFilledIn:
 			SkipHandlers(() => GameStatusComboBox.SelectedIndex = 1);
-			if (Game == Game.None)
+			if (Game.IsNone)
 				goto CreateGame;
 			break;
-		case Underway when Game == Game.None:
+		case Underway when Game.IsNone:
 		CreateGame:
 			Game = CreateOne(new Game
 							 {
@@ -259,7 +251,7 @@ internal sealed partial class GroupGamesForm : Form
 	private void DeleteGameButton_Click(object sender,
 										EventArgs e)
 	{
-		if (Game == Game.None)
+		if (Game.IsNone)
 		{
 			//	Cancel New Game
 			ShowControls(false);
@@ -279,7 +271,7 @@ internal sealed partial class GroupGamesForm : Form
 	private void GameDateTimePicker_ValueChanged(object sender,
 												 EventArgs e)
 	{
-		if (SkippingHandlers || Game == Game.None)
+		if (SkippingHandlers || Game.IsNone)
 			return;
 		var newDate = GameDateTimePicker.Value;
 		var earlier = Game.Date < newDate
@@ -299,7 +291,7 @@ internal sealed partial class GroupGamesForm : Form
 	private void GameNameTextBox_Leave(object sender,
 									   EventArgs e)
 	{
-		if (SkippingHandlers || Game == Game.None)
+		if (SkippingHandlers || Game.IsNone)
 			return;
 		Game.Name = GameNameTextBox.Text;
 		UpdateOne(Game);
@@ -309,7 +301,7 @@ internal sealed partial class GroupGamesForm : Form
 	private void GameDataUpdated(bool allFilledIn)
 	{
 		AllFilledIn = allFilledIn;
-		if (SkippingHandlers || Game == Game.None)
+		if (SkippingHandlers || Game.IsNone)
 			return;
 		UpdateMany(GamePlayers);
 		//	If all GamePlayers are Completely filled in, but we were told NOT allFilledIn,

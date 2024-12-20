@@ -14,13 +14,13 @@ public sealed partial class ScoringSystem
 	{
 		internal static Scoring Scoring
 		{
-			get => field == Scoring.None
+			get => field.IsNone
 					   ? throw new NullReferenceException(nameof (Scoring))
 					   : field;
 			set;
 		} = Scoring.None;
 
-		private readonly PowerData _inContextPowerData;
+		private readonly PowerData _powerData;
 		private string _formula;
 		private double _term;
 
@@ -59,9 +59,8 @@ public sealed partial class ScoringSystem
 				//	Note that there are also these unary operators (parsed in GetTerm):
 				//	- (mathematical negative of)	!  (logical negative of)
 				//	+ (absolute value of)			\| (square root of)
-				//	# (center rank could be)		~  (elimination order could be)
-				//	$ (survivor rank could be)
-				//	@ (won and numWinners is) with @# producing 0 if the player did not win, or Winners if he did
+				//	# (center rank could be)		~  (elimination order could be)		$ (survivor rank could be)
+				//	@ (won and numWinners is) with @# giving 0 if the player did not win, or Winners if he did
 				[$"{Semicolon}"] = Operators.Reset,
 				["{"] = Operators.If,
 				["->"] = Operators.Becomes,
@@ -256,7 +255,7 @@ public sealed partial class ScoringSystem
 						   PowerData contextPlayer)
 		{
 			_formula = formula.Trim();
-			_inContextPowerData = contextPlayer;
+			_powerData = contextPlayer;
 			var @operator = Operators.Reset;
 			while (_formula.Length is not 0)
 			{
@@ -353,7 +352,7 @@ public sealed partial class ScoringSystem
 					DropCount(position);
 					_term = formulaToRun is null
 								? 0
-								: new Calculator(formulaToRun, _inContextPowerData).Result;
+								: new Calculator(formulaToRun, _powerData).Result;
 					return;
 				//	If getting a Term for the Becomes operator, the next "Term" is an alias name; set it.
 				case Operators.Becomes when GetAlias(out var alias):
@@ -417,7 +416,7 @@ public sealed partial class ScoringSystem
 						parenCount += AdjustEmbedCount(_formula[position], '(', ')');
 					if (parenCount > 0)
 						throw new InvalidOperationException("Unclosed parenthesis.");
-					_term = new Calculator(_formula[1..position], _inContextPowerData).Result;
+					_term = new Calculator(_formula[1..position], _powerData).Result;
 					DropCount(++position);
 					return;
 				//	Numbers
@@ -435,26 +434,26 @@ public sealed partial class ScoringSystem
 					return;
 				case '@' when _formula.Starts("@#"):
 					DropCount(2);
-					_term = _inContextPowerData.Won
+					_term = _powerData.Won
 								? Scoring.Winners
 								: 0;
 					return;
 				case '@':
 					//	Don't reverse the order of the && or the GetUnaryTerm may not get parsed past!
 					_term = (Scoring.Winners == (int)GetUnaryTerm()
-						 &&  _inContextPowerData.Won).AsInteger();
+						 &&  _powerData.Won).AsInteger();
 					return;
 				case '#':
-					_term = (_inContextPowerData.BestCenterRank <= GetUnaryTerm()
-						 &&  _inContextPowerData.WorstCenterRank >= _term).AsInteger();
+					_term = GetUnaryTerm().IsBetween(_powerData.BestCenterRank, _powerData.WorstCenterRank)
+										  .AsInteger();
 					return;
 				case '$':
-					_term = (_inContextPowerData.BestSurvivorRank <= GetUnaryTerm()
-						 &&  _inContextPowerData.WorstSurvivorRank >= _term).AsInteger();
+					_term = GetUnaryTerm().IsBetween(_powerData.BestSurvivorRank, _powerData.WorstSurvivorRank)
+										  .AsInteger();
 					return;
 				case '~':
-					_term = (_inContextPowerData.WorstEliminationOrder <= GetUnaryTerm()
-						 &&  _inContextPowerData.BestEliminationOrder >= _term).AsInteger();
+					_term = GetUnaryTerm().IsBetween(_powerData.WorstEliminationOrder, _powerData.BestEliminationOrder)
+										  .AsInteger();
 					return;
 				case '\\' when _formula.Starts(@"\|"):
 					DropCount(); //	Since this is a two-character unary operator, we need to drop one of the two ourselves.
@@ -475,7 +474,7 @@ public sealed partial class ScoringSystem
 					var isPowerAlias = PowerNames.Contains(alias);
 					var powerContext = isPowerAlias
 										   ? Scoring.Powers[alias.As<PowerNames>()]
-										   : _inContextPowerData;
+										   : _powerData;
 					if (isPowerAlias)
 						switch (_formula.FirstOrDefault())
 						{
@@ -538,7 +537,7 @@ public sealed partial class ScoringSystem
 					if (quote is not RepeatQuote)
 						return;
 					//	The @operator has already been changed to Operators.Plus; figure out the addend.
-					if (_inContextPowerData.Lost)
+					if (_powerData.Lost)
 						_term = -Result;
 					else
 					{
@@ -550,7 +549,7 @@ public sealed partial class ScoringSystem
 							var equation = $"{Result}";
 							while (--drawSize > 0)
 								equation += routineText;
-							_term = new Calculator(equation, _inContextPowerData).Result - Result;
+							_term = new Calculator(equation, _powerData).Result - Result;
 						}
 					}
 #if Routines

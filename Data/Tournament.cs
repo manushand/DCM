@@ -1,31 +1,36 @@
-﻿using static System.Math;
+﻿using System.Text.RegularExpressions;
+using static System.Math;
 
 namespace Data;
 
-public sealed class Tournament : IdentityRecord<Tournament>, IdInfoRecord.IEvent
+public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecord.IEvent
 {
 	[AttributeUsage(AttributeTargets.Field)]
-	internal sealed class PowerGroupingsAttribute(params string[] groups) : Attribute
+	public sealed partial class PowerGroupingsAttribute(PowerGroups name, string groups) : Attribute
 	{
-		public string[] Groups { get; } = groups;
+		internal string[] Groups { get; } = groups.Split('-');
+		public readonly string Text = $"{GroupName().Replace($"{name}", "$1-$2").ToUpper(),-11}({groups})";
+
+		[GeneratedRegex("(.)([A-Z])")]
+		private static partial Regex GroupName();
 	}
 
-	[PublicAPI] // to prevent R# complaints of unused enum values
+	[PublicAPI] // to prevent R# complaining of unused enum values
 	public enum PowerGroups : byte
 	{
-		[PowerGroupings("F", "R", "I", "G", "A", "T", "E")]
+		[PowerGroupings(None, "F-R-I-G-A-T-E")]
 		None,
-		[PowerGroupings("AGI", "EF", "RT")]
-		EastWest,
-		[PowerGroupings("AGI", "ET", "FR")]
+		[PowerGroupings(Corners, "FR-IGA-TE")]
 		Corners,
-		[PowerGroupings("AG", "EIT", "FR")]
+		[PowerGroupings(EastWest, "AGI-EF-RT")]
+		EastWest,
+		[PowerGroupings(Naval, "AG-EIT-FR")]
 		Naval,
-		[PowerGroupings("AI", "EFG", "RT")]
+		[PowerGroupings(LandSea, "AI-EFG-RT")]
 		LandSea,
-		[PowerGroupings("AI", "EF", "GRT")]
+		[PowerGroupings(FleetNear, "AI-EF-GRT")]
 		FleetNear,
-		[PowerGroupings("AIT", "EG", "FR")]
+		[PowerGroupings(Lepanto, "AIT-EG-FR")]
 		Lepanto
 	}
 
@@ -55,7 +60,7 @@ public sealed class Tournament : IdentityRecord<Tournament>, IdInfoRecord.IEvent
 
 	public ScoringSystem ScoringSystem
 	{
-		get => field == ScoringSystem.None && ScoringSystemId > 0
+		get => field.IsNone && ScoringSystemId > 0
 				   ? field = ReadById<ScoringSystem>(ScoringSystemId).OrThrow()
 				   : field;
 		set
@@ -71,10 +76,10 @@ public sealed class Tournament : IdentityRecord<Tournament>, IdInfoRecord.IEvent
 		get => GroupId is null
 				   ? Group.None
 				   : field;
-		init => (field, GroupId) = (value, value.Id);
+		internal init => (field, GroupId) = (value, value.Id);
 	} = Group.None;
 
-	public bool IsEvent => Group != Group.None;
+	public bool IsEvent => !Group.IsNone;
 
 	public bool HasTeamTournament => TeamSize > 0;
 
@@ -87,9 +92,6 @@ public sealed class Tournament : IdentityRecord<Tournament>, IdInfoRecord.IEvent
 	public TournamentPlayer[] TournamentPlayers => [..ReadMany<TournamentPlayer>(tournamentPlayer => tournamentPlayer.TournamentId == Id)];
 
 	public Team[] Teams => [..ReadMany<Team>(team => team.TournamentId == Id)];
-
-	//  HostRound for Group games (which are modeled as a single-round Tournament)
-	public Round HostRound => Rounds.SingleOrDefault() ?? CreateOne(new Round { Tournament = this });
 
 	public void AddPlayer(Player player)
 		=> CreateOne(new TournamentPlayer { Tournament = this, Player = player });

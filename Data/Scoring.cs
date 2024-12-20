@@ -1,10 +1,13 @@
 ﻿namespace Data;
 
+using static GamePlayer;
+
 //	This class is public (as are most of its members) so that C# formulas have access to it
 [PublicAPI]
 public sealed partial class Scoring
 {
 	internal static readonly Scoring None = new (ScoringSystem.None, []);
+	internal bool IsNone => ScoringSystem.IsNone;
 
 	private PowerData? _player;
 

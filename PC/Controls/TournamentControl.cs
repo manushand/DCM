@@ -2,6 +2,8 @@
 
 namespace PC.Controls;
 
+using static Tournament;
+
 internal sealed partial class TournamentControl : UserControl
 {
 	private TournamentInfoForm? _tournamentInfoForm;
@@ -11,7 +13,15 @@ internal sealed partial class TournamentControl : UserControl
 	private Tournament Tournament => TournamentInfoForm.Tournament;
 
 	internal TournamentControl()
-		=> InitializeComponent();
+	{
+		InitializeComponent();
+		PowerGroupComboBox.Items.AddRange(Enum.GetNames<PowerGroups>()
+											  .Select(static object (name) => ((typeof (PowerGroups).GetField(name)
+																									?.GetCustomAttribute(typeof (PowerGroupingsAttribute))
+																					as PowerGroupingsAttribute)
+																				  ?.Text).OrThrow())
+											  .ToArray());
+	}
 
 	private void TournamentControl_Load(object sender,
 										EventArgs e)
@@ -137,9 +147,8 @@ internal sealed partial class TournamentControl : UserControl
 	private void PowerGroupComboBox_SelectedIndexChanged(object sender,
 														 EventArgs e)
 	{
-		Tournament.GroupPowers = PowerGroupComboBox.SelectedIndex
-												   .As<Tournament.PowerGroups>();
-		RepeatingPowerLabel.Text = $"Conflict for playing {(PowerGroupComboBox.SelectedIndex is 0
+		Tournament.GroupPowers = (PowerGroups)PowerGroupComboBox.SelectedIndex;
+		RepeatingPowerLabel.Text = $"Conflict for playing {(Tournament.GroupPowers is PowerGroups.None
 																? "the same power"
 																: "in a power group")} more than once:";
 		ToolTip.SetToolTip(RepeatingPowerLabel,

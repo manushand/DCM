@@ -2,6 +2,19 @@
 
 public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer>
 {
+	public enum PowerNames : sbyte
+	{
+		//	IMPORTANT: Values must be -1 through 6
+		TBD = -1,
+		Austria = 0,
+		England = 1,
+		France = 2,
+		Germany = 3,
+		Italy = 4,
+		Russia = 5,
+		Turkey = 6
+	}
+
 	public enum Results : sbyte
 	{
 		//	IMPORTANT: Must be -1, 0, 1 to match ComboBox item order
@@ -38,7 +51,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	public Game Game
 	{
-		get => field == Game.None && GameId > 0
+		get => field.IsNone && GameId > 0
 				   ? ReadById<Game>(GameId).OrThrow()
 				   : field;
 		set => (field, GameId) = (value, value.Id);
@@ -56,7 +69,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		internal set
 		{
 			_finalScore = value;
-			if (Game != Game.None) // Test Games will be Game.None here
+			if (!Game.IsNone) // Test Games will be Game.None here
 				Game.Tournament
 					.Rounds
 					.Skip(Game.Round.Number)

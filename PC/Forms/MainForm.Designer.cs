@@ -272,6 +272,7 @@
 			//
 			// SqlServerToolStripMenuItem
 			//
+			SqlServerToolStripMenuItem.ImageScaling = ToolStripItemImageScaling.None;
 			SqlServerToolStripMenuItem.Name = "SqlServerToolStripMenuItem";
 			SqlServerToolStripMenuItem.Size = new Size(180, 22);
 			SqlServerToolStripMenuItem.Text = "&SQL Server…";
@@ -280,6 +281,7 @@
 			// DatabaseConfigurationToolStripMenuItem
 			//
 			AccessToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { AccessOpenToolStripMenuItem, SaveAsDatabaseToolStripMenuItem, CheckDatabaseToolStripMenuItem });
+			AccessToolStripMenuItem.ImageScaling = ToolStripItemImageScaling.None;
 			AccessToolStripMenuItem.Name = "AccessToolStripMenuItem";
 			AccessToolStripMenuItem.Size = new Size(180, 22);
 			AccessToolStripMenuItem.Text = "&Access";

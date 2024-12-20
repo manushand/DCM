@@ -16,11 +16,11 @@ global using Data;
 global using PC.Forms;
 global using static PC.PC;
 global using static DCM.DCM;
-global using static DCM.DCM.PowerNames;
 global using static Data.Data;
 global using static Data.Game;
 global using static Data.Game.Statuses;
 global using static Data.GamePlayer;
+global using static Data.GamePlayer.PowerNames;
 global using static Data.GamePlayer.Results;
 global using Group = Data.Group;
 //
@@ -118,9 +118,10 @@ internal static class PC
 
 	#region Data connection and CRUD methods
 
-	public static void OpenDatabase()
+	public static DatabaseTypes OpenDatabase()
 	{
-		switch (Settings.DatabaseType.As<DatabaseTypes>())
+		var dbType = Settings.DatabaseType.As<DatabaseTypes>();
+		switch (dbType)
 		{
 		case DatabaseTypes.Access:
 			//  Be sure the proper database driver is installed on this host computer.
@@ -130,7 +131,7 @@ internal static class PC
 				//	Get the db file name from saved settings if possible.
 				var dbFileName = GetAccessDatabaseFile();
 				if (OpenAccessDatabase(dbFileName))
-					return;
+					return dbType;
 			}
 			catch (Exception ex)
 			{
@@ -140,15 +141,16 @@ internal static class PC
 		case DatabaseTypes.SqlServer:
 			var connectionString = Settings.DatabaseConnectionString;
 			if (OpenSqlServerDatabase(connectionString))
-				return;
+				return dbType;
 			break;
 		case DatabaseTypes.None:
-			return;
+			return dbType;
 		default:
 			throw new NotImplementedException($"Invalid Database Type ({Settings.DatabaseType}");
 		}
 		Settings.DatabaseType = default;
 		Settings.Save();
+		return default;
 	}
 
 	internal static bool OpenAccessDatabase(string? dbFileName = null)
@@ -166,7 +168,6 @@ internal static class PC
 				return false;
 			dbFileName = dialog.FileName;
 		}
-
 		if (Settings.DatabaseType.As<DatabaseTypes>() is DatabaseTypes.Access && dbFileName == Settings.DatabaseFile)
 			return true;
 		FlushCache();

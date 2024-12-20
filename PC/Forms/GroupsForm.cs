@@ -44,14 +44,14 @@ internal sealed partial class GroupsForm : Form
 							YesNo,
 							Question) is DialogResult.No)
 			return;
-		var tournament = group.Tournament;
-		if (tournament != Tournament.None)
+		var hostRound = group.HostRound;
+		if (!hostRound.IsNone)
 		{
 			var games = group.Games;
 			Delete(games.SelectMany(static game => game.GamePlayers));
 			Delete(games);
-			Delete(tournament.Rounds);
-			Delete(tournament);
+			Delete(hostRound);
+			Delete(hostRound.Tournament);
 		}
 		GroupMembershipControl.ClearMemberList();
 		Delete(group.Players);

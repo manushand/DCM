@@ -13,9 +13,9 @@ internal sealed partial class GamesForm : Form
 
 	private Game Game
 	{
-		get => field != Game.None
-			   ? field
-			   : throw new InvalidOperationException();
+		get => field.IsNone
+			   ? throw new InvalidOperationException()
+			   : field;
 		set;
 	} = Game.None;
 

@@ -5,9 +5,10 @@ global using static System.String;
 //
 global using DCM;
 global using static DCM.DCM;
-global using static DCM.DCM.PowerNames;
 global using static Data.Data;
 global using static Data.Game.Statuses;
+global using static Data.GamePlayer;
+global using static Data.GamePlayer.PowerNames;
 global using static Data.GamePlayer.Results;
 global using static Data.Tournament.PowerGroups;
 //
@@ -265,7 +266,7 @@ public static partial class Data
 				.Order();
 
 	public static IEnumerable<int> Ids<T>(this IEnumerable<IdentityRecord<T>> records)
-		where T : class, new()
+		where T : IdInfoRecord, new()
 		=> records.Select(static record => record.Id);
 
 	internal static IEnumerable<T> WithPlayerId<T>(this IEnumerable<T> linkRecords,

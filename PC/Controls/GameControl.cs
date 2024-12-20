@@ -23,7 +23,7 @@ internal sealed partial class GameControl : UserControl
 	[DesignerSerializationVisibility(Hidden)]
 	internal ScoringSystem ScoringSystem
 	{
-		private get => field == ScoringSystem.None
+		private get => field.IsNone
 						   ? throw new NullReferenceException(nameof (ScoringSystem))
 						   : field;
 		set
@@ -33,7 +33,7 @@ internal sealed partial class GameControl : UserControl
 			SetEnabled(value.UsesCenterCount || TournamentScoringSystem?.UsesCenterCount is true, [..CentersComboBoxes]);
 			SetEnabled(value.UsesYearsPlayed || TournamentScoringSystem?.UsesYearsPlayed is true, [..YearsComboBoxes]);
 			AllComboBoxes.ForSome(static box => !box.Enabled, static box => box.Deselect());
-			SetOtherScoreLabel(ScoringSystem.OtherScoreAlias);
+			SetOtherScoreLabel(value.OtherScoreAlias);
 			OtherTextBoxes.ForEach(box =>
 								   {
 									   box.Enabled = value.UsesOtherScore || TournamentScoringSystem?.UsesOtherScore is true;

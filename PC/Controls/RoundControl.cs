@@ -4,13 +4,15 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 {
 	private RoundInfoForm RoundInfoForm
 	{
-		get => field == RoundInfoForm.None ? throw new NullReferenceException(nameof (RoundInfoForm)) : field;
+		get => field.Tournament.IsNone
+				   ? throw new NullReferenceException(nameof (RoundInfoForm))
+				   : field;
 		set;
 	} = RoundInfoForm.None;
 
 	private Round Round
 	{
-		get => field == Round.None ? throw new NullReferenceException(nameof (Round)) : field;
+		get => field.IsNone ? throw new NullReferenceException(nameof (Round)) : field;
 		set;
 	} = Round.None;
 

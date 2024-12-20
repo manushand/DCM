@@ -32,7 +32,9 @@ internal sealed partial class MainForm : Form
 		InitializeComponent();
 		ConfigurationMenuItem.DropDown.Closing += static (_, e) => e.Cancel = e.CloseReason is ToolStripDropDownCloseReason.ItemClicked;
 		StartPosition = FormStartPosition.CenterScreen;
-		OpenDatabase();
+		var dbType = OpenDatabase();
+		AccessToolStripMenuItem.Checked = dbType is Access;
+		SqlServerToolStripMenuItem.Checked = dbType is SqlServer;
 	}
 
 	private void MainForm_Load(object? sender = null,
@@ -250,13 +252,21 @@ internal sealed partial class MainForm : Form
 		=> Show<EmailSettingsForm>();
 
 	private void SqlServerToolStripMenuItem_Click(object sender, EventArgs e)
-		=> Show<SqlServerSettingsForm>();
+		=> Show<SqlServerSettingsForm>(form =>
+									   {
+										   if (form.DialogResult is not DialogResult.OK)
+											   return;
+										   AccessToolStripMenuItem.Checked = false;
+										   SqlServerToolStripMenuItem.Checked = true;
+									   });
 
 	private void DatabaseOpenToolStripMenuItem_Click(object sender,
 													 EventArgs e)
 	{
 		if (!OpenAccessDatabase())
 			return;
+		AccessToolStripMenuItem.Checked = true;
+		SqlServerToolStripMenuItem.Checked = false;
 		Event = null;
 	}
 

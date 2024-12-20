@@ -9,7 +9,7 @@ public abstract class LinkRecord : IRecord
 {
 	public Player Player
 	{
-		get => field == Player.None
+		get => field.IsNone
 				   ? field = ReadById<Player>(PlayerId).OrThrow()
 				   : field;
 		set => (field, PlayerId) = (value, value.Id);

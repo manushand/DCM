@@ -18,47 +18,54 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 
 	public string Description = Empty;
 
-	public int? ScoringSystemId => Tournament.ScoringSystemId;
+	public int? ScoringSystemId => HostRound.IsNone ? 0 : HostRound.ScoringSystemId;
 
 	public IEnumerable<Player> Players => ReadMany<GroupPlayer>(groupPlayer => groupPlayer.GroupId == Id).Select(static groupPlayer => groupPlayer.Player);
 
-	public Tournament Tournament => ReadOne<Tournament>(tournament => tournament.GroupId == Id) ?? Tournament.None;
+	//  HostRound for Group games (which are modeled as a single-round Tournament)
+	public Round HostRound
+	{
+		get => field.IsNone
+				   ? ReadOne<Round>(round => round.Tournament.GroupId == Id) ?? field
+				   : field;
+		private set;
+	} = Round.None;
 
 	public ScoringSystem ScoringSystem
 	{
-		get => Tournament.ScoringSystem;
+		get => HostRound.ScoringSystem;
 		set
 		{
-			if (value == ScoringSystem.None)
+			if (value.IsNone)
 			{
-				if (Tournament == Tournament.None)
+				if (HostRound.IsNone)
 					return;
-				var games = Tournament.Games;
+				var games = Games;
 				Delete(games.SelectMany(static game => game.GamePlayers));
 				Delete(games);
-				Delete(Tournament.Rounds);
-				Delete(Tournament);
+				Delete(HostRound);
+				Delete(HostRound.Tournament);
 			}
-			else if (Tournament == Tournament.None)
-				CreateOne(new Round
-						  {
-							  Tournament = CreateOne(new Tournament { Group = this, ScoringSystem = value })
-						  });
+			else if (HostRound.IsNone)
+				HostRound = CreateOne(new Round
+									  {
+										  ScoringSystem = value,
+										  Tournament = CreateOne(new Tournament
+																 {
+																	 Name = $"{this} Group Games",
+																	 Group = this
+																 })
+									  });
 			else
 			{
-				Tournament.ScoringSystem = value;
-				UpdateOne(Tournament);
+				HostRound.ScoringSystem = value;
+				UpdateOne(HostRound);
 			}
 		}
 	}
 
-	public Game[] Games => Tournament == Tournament.None
-							   ? []
-							   : Tournament.Rounds
-										   .Single()
-										   .Games
-										   .OrderBy(static game => game.Date)
-										   .ToArray();
+	public Game[] Games => [..HostRound.Games
+									   .OrderBy(static game => game.Date)];
 
 	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 

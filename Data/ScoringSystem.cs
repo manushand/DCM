@@ -79,7 +79,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 																   Power = data[0].As<PowerNames>(),
 																   Result = data[1].Length is 0
 																				? Unknown
-																				: data[1].As<GamePlayer.Results>(),
+																				: data[1].As<Results>(),
 																   Centers = data[2].AsNullableInteger(),
 																   Years = data[3].AsNullableInteger(),
 																   Other = data[4].AsDouble()
@@ -141,7 +141,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		//	and do NOT auto-subtract it from the FinalScore.
 		var game = gamePlayers.First()
 							  .Game;
-		var calculateAnte = UsesPlayerAnte && (game == Game.None || !game.Tournament.IsEvent);
+		var calculateAnte = UsesPlayerAnte && (game.IsNone || !game.Tournament.IsEvent);
 		if (UsesPlayerAnte)
 		{
 			//	Set only each of the GamePlayer objects' .PlayerAnte at first
@@ -476,16 +476,14 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		const string cSharpRegex = $"{rawString}|{simpleString}|{verbatimString}|{formulaRegex}";
 		const string underbar = "_";
 
-		//	NOTE: In the cSharpRegex, the comments regex must be AFTER the strings, so that comment-like text in strings are protected
+		//	NOTE: In the cSharpRegex, the comments regex must be AFTER the strings, so that comment-like text in strings is protected
 		formula = Regex.Replace(formula.Trim(CompiledFormulaSuffix) + NewLine, //	Add NewLine to catch text-final line comments
 								UsesCompiledFormulas
 									? cSharpRegex
 									: formulaRegex,
-								static match => match.Value.Starts("/*")
-													? Empty
-													: match.Value.Starts(lineCommentStart)
-														? NewLine
-														: match.Value,
+								static match => match.Value.Starts("/")
+													? NewLine
+													: match.Value,
 								RegexOptions.Singleline);
 		if (!UsesCompiledFormulas)
 			//	Important: remove non-document comments before document comment

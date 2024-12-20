@@ -8,7 +8,7 @@ public sealed class TournamentPlayer : LinkRecord, IInfoRecord
 
 	internal Tournament Tournament
 	{
-		private get  => field == Tournament.None
+		private get  => field.IsNone
 							? field = ReadById<Tournament>(TournamentId).OrThrow()
 							: field;
 		init => (field, TournamentId) = (value, value.Id);

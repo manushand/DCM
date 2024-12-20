@@ -34,6 +34,7 @@ internal sealed partial class SqlServerSettingsForm : Form
 			var connectionString = stringBuilder.ToString();
 			if (!OpenSqlServerDatabase(connectionString))
 				throw new ("Could not connect to SQL Server.");
+			DialogResult = DialogResult.OK;
 			Close();
 		}
 		catch (Exception exception)

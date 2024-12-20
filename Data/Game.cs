@@ -36,7 +36,7 @@ public sealed class Game : IdentityRecord<Game>
 
 	public Round Round
 	{
-		get => field == Round.None
+		get => field.IsNone
 				   ? field = ReadById<Round>(RoundId).OrThrow()
 				   : field;
 		init => (field, RoundId) = (value, value.Id);
@@ -44,7 +44,7 @@ public sealed class Game : IdentityRecord<Game>
 
 	public ScoringSystem ScoringSystem
 	{
-		get => field == ScoringSystem.None
+		get => field.IsNone
 				   ? field = ReadById<ScoringSystem>(ScoringSystemId).OrThrow()
 				   : field;
 		set => (field, _scoringSystemId) = (value, value.Id == Round.ScoringSystemId ? null : value.Id);
