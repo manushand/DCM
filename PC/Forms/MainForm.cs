@@ -4,7 +4,7 @@ using static DatabaseTypes;
 
 internal sealed partial class MainForm : Form
 {
-	private static bool Connected => Settings.DatabaseType.As<DatabaseTypes>() is Access or SqlServer;
+	private static bool Connected => DatabaseType is Access or SqlServer;
 
 	private IdInfoRecord? Event
 	{
@@ -277,8 +277,7 @@ internal sealed partial class MainForm : Form
 	private void DatabaseClearToolStripMenuItem_Click(object sender,
 													  EventArgs e)
 	{
-		var connection = Settings.DatabaseType.As<DatabaseTypes>();
-		var host = connection switch
+		var host = DatabaseType switch
 				   {
 					   Access    => $"Access file {Settings.DatabaseFile}",
 					   SqlServer => "connected SQL Server database",

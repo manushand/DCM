@@ -112,7 +112,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 	{
 		var formatted = score.ToString(ScoreFormat);
 		if (trim)
-			formatted = InsignificantDigits().Replace(formatted, Empty);
+			formatted = InsignificantDigits.Replace(formatted, Empty);
 		return formatted;
 	}
 
@@ -456,13 +456,16 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 	private static readonly SortedDictionary<string, Script<double>> Scripts = [];
 
 	[GeneratedRegex(@"[\s_]")]
-	private static partial Regex Stripper();
+	private static partial Regex StripperRegex();
+	private static readonly Regex Stripper = StripperRegex();
 
 	[GeneratedRegex("OtherScores?")]
-	private static partial Regex OtherScores();
+	private static partial Regex OtherScoresRegex();
+	private static readonly Regex OtherScores = OtherScoresRegex();
 
 	[GeneratedRegex("[.]0*$")]
-	private static partial Regex InsignificantDigits();
+	private static partial Regex InsignificantDigitsRegex();
+	private static readonly Regex InsignificantDigits = InsignificantDigitsRegex();
 
 	private string RemoveComments(string formula)
 	{
@@ -505,14 +508,14 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		void ReplaceOtherScoreAlias()
 		{
 			//	Set "alias" to the OtherScoreAlias without spaces or underbars.
-			var alias = Stripper().Replace(OtherScoreAlias, Empty);
+			var alias = Stripper.Replace(OtherScoreAlias, Empty);
 			var options = UsesCompiledFormulas
 							  ? RegexOptions.None
 							  : RegexOptions.IgnoreCase;
 			//	TODO: This changes the identifier everywhere, even in error text (DCM) and quoted strings (C#)
 			formula = OtherScoreAliases.Aggregate($" {formula} ",
 												  (current, other) => Regex.Replace(current,
-																					$@"([^\w]){OtherScores().Replace(other, alias)}([^\w])",
+																					$@"([^\w]){OtherScores.Replace(other, alias)}([^\w])",
 																					$"$1{other}$2",
 																					options));
 			//	The spaces we added on either end of "{formula}" should be removed; the caller will do it

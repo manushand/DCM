@@ -191,12 +191,13 @@ internal sealed partial class GameControl : UserControl
 	}
 
 	[GeneratedRegex(@"\s+")]
-	private static partial Regex Spaces();
+	private static partial Regex SpacesRegex();
+	private static readonly Regex Spaces = SpacesRegex();
 
 	internal void SetOtherScoreLabel(string otherScoreAlias)
 		=> OtherScoreLabel.Text = otherScoreAlias.Length is 0
 									  ? "──"
-									  : Spaces().Replace(otherScoreAlias, NewLine).ToUpper();
+									  : Spaces.Replace(otherScoreAlias, NewLine).ToUpper();
 
 	internal List<GamePlayer>? GetPlayerData()
 		=> AllComboBoxes.All(static comboBox => comboBox.SelectedItem is null)

@@ -25,7 +25,6 @@ public abstract class IdInfoRecord : IInfoRecord, IComparable<IdInfoRecord>
 
 	#region IComparable interface implementation
 
-	//	TODO: In C# 11 (maybe), the parameter can be "other!!" and the null check/throw removed
 	public int CompareTo(IdInfoRecord? other)
 		=> Compare(Name, (other?.Name).OrThrow(), StringComparison.InvariantCultureIgnoreCase);
 

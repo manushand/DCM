@@ -175,7 +175,6 @@ public static partial class DCM
 					@"@(([\dA-Z][-\w]*[\dA-Z]*\.)+[\dA-Z]{2,17})$",
 					RegexOptions.IgnoreCase)]
 	private static partial Regex EmailAddressRegex();
-
 	private static readonly Regex EmailAddressFormat = EmailAddressRegex();
 
 	#endregion

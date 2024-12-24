@@ -117,10 +117,12 @@ public sealed partial class ScoringSystem
 			};
 
 		[GeneratedRegex(@"^[a-z][a-z\d]*", RegexOptions.IgnoreCase)]
-		private static partial Regex Alias();
+		private static partial Regex AliasRegex();
+		private static readonly Regex Alias = AliasRegex();
 
 		[GeneratedRegex(@"^(?=-?\.?\d)-?\d*\.?\d*")]
-		private static partial Regex Number();
+		private static partial Regex NumberRegex();
+		private static readonly Regex Number = NumberRegex();
 
 		//	The Operator*hands collections must be ordered arrays, due to things like = vs. == and Is vs. IsNot.
 		//	These are detected using .FirstOrDefault(Formula.Starts()), which provides the case-insensitivity.
@@ -591,8 +593,8 @@ public sealed partial class ScoringSystem
 
 				bool GetAlias(out string alias)
 				{
-					alias = Alias().Match(_formula)
-								   .Value;
+					alias = Alias.Match(_formula)
+								 .Value;
 					if (alias.Length is 0)
 						return false;
 					DropText(alias);
@@ -601,8 +603,8 @@ public sealed partial class ScoringSystem
 
 				bool GetNumericTerm()
 				{
-					var stringTerm = Number().Match(_formula)
-											 .Value;
+					var stringTerm = Number.Match(_formula)
+										   .Value;
 					if (stringTerm.Length is 0)
 						return false;
 					_term = stringTerm.AsDouble();

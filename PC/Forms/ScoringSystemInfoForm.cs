@@ -117,7 +117,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 	}
 
 	[GeneratedRegex("^[A-Z_][\\w\\s]*$", RegexOptions.IgnoreCase)]
-	private static partial Regex AliasFormat();
+	private static partial Regex AliasRegex();
+	private static readonly Regex AliasFormat = AliasRegex();
 
 	private bool ValidateSystem(out string? error)
 	{
@@ -134,7 +135,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		else if (TotalPointsFixedCheckBox.Checked && ScoringSystem.PointsPerGame is null)
 			error = "Points per game must be supplied as an integer.";
 		else if (OtherScoringCheckBox.Checked
-			 && !AliasFormat().IsMatch(OtherAliasTextBox.Text))
+			 && !AliasFormat.IsMatch(OtherAliasTextBox.Text))
 			error = "Formula alias for Other Score must be a legal alias (after spaces are removed).";
 		else if (ScoringSystem.TestGamePlayers is not null)
 			return GameControl.FinalGameDataValidation(out error);

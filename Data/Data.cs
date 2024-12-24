@@ -405,9 +405,9 @@ public static partial class Data
 	private static DbCommand Command(string? sql = null)
 		=> Connection switch
 		   {
+			   SqlConnection sqlConnection   => new SqlCommand(sql, sqlConnection, _transaction as SqlTransaction),
 			   OdbcConnection odbcConnection => new OdbcCommand(sql, odbcConnection, _transaction as OdbcTransaction),
 			   OleDbConnection oleConnection => new OleDbCommand(sql, oleConnection, _transaction as OleDbTransaction),
-			   SqlConnection sqlConnection   => new SqlCommand(sql, sqlConnection, _transaction as SqlTransaction),
 			   _                             => throw new ()
 		   };
 

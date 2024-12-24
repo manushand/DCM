@@ -35,6 +35,7 @@ namespace PC;
 
 using Properties;
 using static Data.Data;
+using static DatabaseTypes;
 
 internal static class PC
 {
@@ -48,6 +49,11 @@ internal static class PC
 	internal static readonly Settings Settings = Settings.Default;
 	internal static readonly Dictionary<Font, Font> BoldFonts = [];
 
+	internal static DatabaseTypes DatabaseType
+	{
+		get => Settings.DatabaseType.As<DatabaseTypes>();
+		private set => Settings.DatabaseType = value.AsInteger();
+	}
 	internal static bool SkippingHandlers { get; private set; }
 	internal static int[] Seven => [..Range(0, 7).OrderBy(static _ => RandomNumber())];
 
@@ -120,10 +126,9 @@ internal static class PC
 
 	public static DatabaseTypes OpenDatabase()
 	{
-		var dbType = Settings.DatabaseType.As<DatabaseTypes>();
-		switch (dbType)
+		switch (DatabaseType)
 		{
-		case DatabaseTypes.Access:
+		case Access:
 			//  Be sure the proper database driver is installed on this host computer.
 			try
 			{
@@ -131,24 +136,24 @@ internal static class PC
 				//	Get the db file name from saved settings if possible.
 				var dbFileName = GetAccessDatabaseFile();
 				if (OpenAccessDatabase(dbFileName))
-					return dbType;
+					return DatabaseType;
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.Message, "Data Driver Error", OK, Error);
 			}
 			break;
-		case DatabaseTypes.SqlServer:
+		case SqlServer:
 			var connectionString = Settings.DatabaseConnectionString;
 			if (OpenSqlServerDatabase(connectionString))
-				return dbType;
+				return DatabaseType;
 			break;
-		case DatabaseTypes.None:
-			return dbType;
+		case None:
+			return DatabaseType;
 		default:
-			throw new NotImplementedException($"Invalid Database Type ({Settings.DatabaseType}");
+			throw new NotImplementedException($"Invalid Database Type ({DatabaseType}");
 		}
-		Settings.DatabaseType = default;
+		DatabaseType = default;
 		Settings.Save();
 		return default;
 	}
@@ -168,10 +173,10 @@ internal static class PC
 				return false;
 			dbFileName = dialog.FileName;
 		}
-		if (Settings.DatabaseType.As<DatabaseTypes>() is DatabaseTypes.Access && dbFileName == Settings.DatabaseFile)
+		if (DatabaseType is Access && dbFileName == Settings.DatabaseFile)
 			return true;
 		FlushCache();
-		Settings.DatabaseType = DatabaseTypes.Access.AsInteger();
+		DatabaseType = Access;
 		Settings.DatabaseFile = dbFileName;
 		SetEvent();
 		return true;
@@ -217,10 +222,10 @@ internal static class PC
 			MessageBox.Show($"Could not connect to SQL Server: {ex.Message}", "Data Connection Failed", OK, Error);
 			return false;
 		}
-		if (Settings.DatabaseType.As<DatabaseTypes>() is DatabaseTypes.SqlServer && Settings.DatabaseConnectionString == connectionString)
+		if (DatabaseType is SqlServer && Settings.DatabaseConnectionString == connectionString)
 			return true;
 		FlushCache();
-		Settings.DatabaseType = DatabaseTypes.SqlServer.AsInteger();
+		DatabaseType = SqlServer;
 		Settings.DatabaseConnectionString = connectionString;
 		SetEvent();
 		return true;

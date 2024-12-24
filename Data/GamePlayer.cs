@@ -24,11 +24,11 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 	}
 
 	public int? Centers;
+	public int? Years;
 	public double Other;
 	public double PlayerAnte;
 	public PowerNames Power;
 	public Results Result;
-	public int? Years;
 
 	private double? _finalScore;
 

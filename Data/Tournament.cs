@@ -8,11 +8,12 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 	[AttributeUsage(AttributeTargets.Field)]
 	public sealed partial class PowerGroupingsAttribute(PowerGroups name, string groups) : Attribute
 	{
-		internal string[] Groups { get; } = groups.Split('-');
-		public readonly string Text = $"{GroupName().Replace($"{name}", "$1-$2").ToUpper(),-11}({groups})";
+		public readonly string Text = $"{GroupName.Replace($"{name}", "$1-$2").ToUpper(),-11}({groups})";
+		internal readonly string[] Groups = groups.Split('-');
 
 		[GeneratedRegex("(.)([A-Z])")]
-		private static partial Regex GroupName();
+		private static partial Regex GroupNameRegex();
+		private static readonly Regex GroupName = GroupNameRegex();
 	}
 
 	[PublicAPI] // to prevent R# complaining of unused enum values
