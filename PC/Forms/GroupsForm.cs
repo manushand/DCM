@@ -2,25 +2,26 @@
 
 internal sealed partial class GroupsForm : Form
 {
-	private Group? Group
+	private Group Group
 	{
 		get;
 		set
 		{
 			field = value;
 			FillGroupList();
-			if (value is not null)
+			var enabled = value != Group.None;
+			if (enabled)
 				GroupMembershipControl.Group = value;
-			SetEnabled(value is not null, EditButton, DissolveButton);
+			SetEnabled(enabled, EditButton, DissolveButton);
 		}
-	}
+	} = Group.None;
 
 	public GroupsForm()
 		=> InitializeComponent();
 
 	private void GroupsForm_Load(object sender,
 								 EventArgs e)
-		=> Group = null;
+		=> Group = Group.None;
 
 	private void FillGroupList()
 	{
@@ -56,7 +57,7 @@ internal sealed partial class GroupsForm : Form
 		GroupMembershipControl.ClearMemberList();
 		Delete(group.Players);
 		Delete(group);
-		Group = null;
+		Group = Group.None;
 	}
 
 	private void EditButton_Click(object sender,
@@ -64,7 +65,7 @@ internal sealed partial class GroupsForm : Form
 	{
 		var group = Group.OrThrow();
 		Show<GroupInfoForm>(() => new (group, true));
-		Group = ReadOne(group, false);
+		Group = ReadOne(group, false).OrThrow();
 	}
 
 	private void NewGroupButton_Click(object sender,
