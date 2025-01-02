@@ -9,8 +9,8 @@ public abstract class LinkRecord : IRecord
 {
 	public Player Player
 	{
-		get => field.IsNone
-				   ? field = ReadById<Player>(PlayerId).OrThrow()
+		get => field.Id != PlayerId
+				   ? field = ReadById<Player>(PlayerId)
 				   : field;
 		set => (field, PlayerId) = (value, value.Id);
 	} = Player.None;

@@ -6,7 +6,7 @@ public sealed class GroupPlayer : LinkRecord
 
 	public Group Group
 	{
-		get => ReadById<Group>(GroupId).OrThrow();
+		get => ReadById<Group>(GroupId);
 		init => GroupId = value.Id;
 	}
 

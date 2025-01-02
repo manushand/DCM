@@ -25,8 +25,8 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 	//  HostRound for Group games (which are modeled as a single-round Tournament)
 	public Round HostRound
 	{
-		get => field.IsNone
-				   ? ReadOne<Round>(round => round.Tournament.GroupId == Id) ?? field
+		get => field.IsNone && Id is not 0
+				   ? field = ReadOne<Round>(round => round.Tournament.GroupId == Id) ?? field
 				   : field;
 		private set;
 	} = Round.None;

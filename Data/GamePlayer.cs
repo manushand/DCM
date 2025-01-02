@@ -51,8 +51,8 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	public Game Game
 	{
-		get => field.IsNone && GameId > 0
-				   ? ReadById<Game>(GameId).OrThrow()
+		get => field.Id != GameId
+				   ? field = ReadById<Game>(GameId)
 				   : field;
 		set => (field, GameId) = (value, value.Id);
 	} = Game.None;
@@ -77,7 +77,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		}
 	}
 
-	internal double ProvisionalScore;
+	public double ProvisionalScore { get; internal set; }
 
 	public bool PlayComplete => !PlayIncomplete;
 
@@ -94,7 +94,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 	public int CompareTo(GamePlayer? other)
 		=> other is null
 			   ? throw new ()
-			   : (GameId | other.OrThrow().GameId) is 0
+			   : (GameId | other.GameId) is 0
 				   ? Power.CompareTo(other.Power)
 				   : (GameNumber, Power, Player.Name).CompareTo((other.GameNumber, other.Power, other.Player.Name));
 

@@ -6,23 +6,22 @@ internal sealed partial class MainForm : Form
 {
 	private static bool Connected => DatabaseType is Access or SqlServer;
 
-	private IdInfoRecord? Event
+	private IdInfoRecord Event
 	{
 		get
 		{
 			var eventId = Connected
 				? Settings.EventId
 				: 0;
-			return field is not null || eventId is 0
-					   ? field
-					   : field = Settings.EventIsGroup
-									 ? ReadById<Group>(eventId)
-									 : ReadById<Tournament>(eventId);
+			return eventId is 0
+					   ? Tournament.None
+					   : Settings.EventIsGroup
+						   ? ReadById<Group>(eventId)
+						   : ReadById<Tournament>(eventId);
 		}
 		set
 		{
 			SetEvent(value);
-			field = value;
 			MainForm_Load();
 		}
 	}
@@ -58,7 +57,7 @@ internal sealed partial class MainForm : Form
 		ButtonPanel.Visible = connected && Settings.EventId > 0;
 		switch (Event)
 		{
-		case null:
+		case Tournament { IsNone: true } or Group { IsNone: true }:
 			TournamentNameLabel.Text = $"DCM version {PC.Version}{NewLine}Stab You Soon!";
 			break;
 		case Group group:
@@ -202,7 +201,7 @@ internal sealed partial class MainForm : Form
 		Show<GroupsForm>();
 		//	In case the currently open Group was deleted
 		if (Event is Group group)
-			Event = ReadOne(group);
+			Event = ReadOne(group) ?? Group.None;
 	}
 
 	#endregion
@@ -230,7 +229,7 @@ internal sealed partial class MainForm : Form
 	{
 		Show<TournamentListForm>(static () => new (true));
 		if (Event is Tournament tournament)
-			Event = ReadOne(tournament);
+			Event = ReadOne(tournament) ?? Tournament.None;
 	}
 
 	#endregion
@@ -267,7 +266,7 @@ internal sealed partial class MainForm : Form
 			return;
 		AccessToolStripMenuItem.Checked = true;
 		SqlServerToolStripMenuItem.Checked = false;
-		Event = null;
+		Event = Tournament.None;
 	}
 
 	private void DatabaseSaveAsToolStripMenuItem_Click(object sender,
@@ -294,7 +293,7 @@ internal sealed partial class MainForm : Form
 							Exclamation) is DialogResult.No)
 			return;
 		ClearDatabase();
-		Event = null;
+		Event = Tournament.None;
 	}
 
 	private void DatabaseCheckToolStripMenuItem_Click(object sender,

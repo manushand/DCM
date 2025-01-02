@@ -35,8 +35,8 @@ public sealed class Round : IdentityRecord<Round>
 
 	public ScoringSystem ScoringSystem
 	{
-		get => field.IsNone && ScoringSystemId > 0
-				   ? field = ReadById<ScoringSystem>(ScoringSystemId).OrThrow()
+		get => field.Id != ScoringSystemId
+				   ? field = ReadById<ScoringSystem>(ScoringSystemId)
 				   : field;
 		set
 		{
@@ -53,8 +53,8 @@ public sealed class Round : IdentityRecord<Round>
 
 	public Tournament Tournament
 	{
-		get => field.IsNone && TournamentId > 0
-				   ? field = ReadById<Tournament>(TournamentId).OrThrow()
+		get => field.Id != TournamentId
+				   ? field = ReadById<Tournament>(TournamentId)
 				   : field;
 		init => (field, TournamentId) = (value, value.Id);
 	} = Tournament.None;

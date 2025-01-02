@@ -61,8 +61,8 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 
 	public ScoringSystem ScoringSystem
 	{
-		get => field.IsNone && ScoringSystemId > 0
-				   ? field = ReadById<ScoringSystem>(ScoringSystemId).OrThrow()
+		get => field.Id != ScoringSystemId
+				   ? field = ReadById<ScoringSystem>(ScoringSystemId)
 				   : field;
 		set
 		{
@@ -74,13 +74,15 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 
 	public Group Group
 	{
-		get => GroupId is null
+		get => GroupId is null or 0
 				   ? Group.None
-				   : field;
+				   : field.Id != GroupId
+					   ? field = ReadById<Group>(GroupId.Value)
+					   : field;
 		internal init => (field, GroupId) = (value, value.Id);
 	} = Group.None;
 
-	public bool IsEvent => !Group.IsNone;
+	public bool IsEvent => Group.IsNone;
 
 	public bool HasTeamTournament => TeamSize > 0;
 

@@ -8,17 +8,19 @@ public sealed class TournamentPlayer : LinkRecord, IInfoRecord
 
 	internal Tournament Tournament
 	{
-		private get  => field.IsNone
-							? field = ReadById<Tournament>(TournamentId).OrThrow()
+		private get  => field.Id != TournamentId
+							? field = ReadById<Tournament>(TournamentId)
 							: field;
 		init => (field, TournamentId) = (value, value.Id);
 	} = Tournament.None;
+
+	public int[] Rounds => [..Range(1, Tournament.TotalRounds).Where(RegisteredForRound)];
 
 	public string RoundsRegistered
 	{
 		get
 		{
-			int[] roundNumbers = [..Range(1, Tournament.TotalRounds).Where(RegisteredForRound)];
+			var roundNumbers = Rounds;
 			var roundsRegistered = roundNumbers.Length;
 			return roundsRegistered == Tournament.TotalRounds
 					   ? "All Rounds"
