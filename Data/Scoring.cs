@@ -9,15 +9,27 @@ public sealed partial class Scoring
 	internal static readonly Scoring None = new (ScoringSystem.None, []);
 	internal bool IsNone => ScoringSystem.IsNone;
 
-	private PowerData? _player;
-
 	private ScoringSystem ScoringSystem { get; }
 	private Dictionary<PowerNames, GamePlayer> GamePlayers { get; }
 
 	internal PowerNames PlayerPower
 	{
-		set => _player = Powers[value];
-	}
+		private get;
+		set;
+	} = TBD;
+
+	//	For hacking the aliasing into C# scoring formulae by replacing each of the aliases with these.
+	internal static readonly string[] OtherScoreAliases =
+	[
+		//	Ordered by descending length
+		nameof (OtherScoreNotValidated),
+		nameof (SumOfEveryOtherScore),
+		nameof (AverageOtherScore),
+		nameof (HighestOtherScore),
+		nameof (LowestOtherScore),
+		nameof (SumOfOtherScores),
+		nameof (OtherScore)
+	];
 
 	private Scoring() : this(ScoringSystem.None, []) { }
 
@@ -45,13 +57,13 @@ public sealed partial class Scoring
 
 	#region Scoring properties shared by all players
 
-	public bool ScoresValidated { get; set; }
+	public bool OtherScoreNotValidated => PlayerPower is PowerNames.Austria;
 
 	//  C# Formula use case: foreach (var (name, data) in Powers) ...
 	public Dictionary<PowerNames, PowerData> Powers { get; }
 
 	//	C# Formula use case: if (Player == Austria) ...
-	public PowerData Player => _player.OrThrow();
+	public PowerData Player => Powers[PlayerPower];
 
 	//	C# Formula use case: Austria.Centers, England.Scoring, etc.
 	public PowerData Austria => Powers[PowerNames.Austria];

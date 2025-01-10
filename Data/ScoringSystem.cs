@@ -1,14 +1,22 @@
-﻿using System.Reflection;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.Scripting;
 using static System.Diagnostics.Stopwatch;
 using static System.Environment;
+using static System.Reflection.Assembly;
 using static Microsoft.CodeAnalysis.CSharp.Scripting.CSharpScript;
 
 namespace Data;
 
 public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 {
+	public enum DrawRules : byte
+	{
+		//	IMPORTANT: Must be 0, 1, 2 to match SQL storage
+		None = 0,
+		All = 1,
+		DIAS = 2
+	}
+
 	public static bool ShowTimingData { private get; set; }
 
 	public DrawRules DrawPermissions;
@@ -36,6 +44,20 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 	public bool DrawsIncludeAllSurvivors => DrawPermissions is DrawRules.DIAS;
 	public bool UsesOtherScore => OtherScoreAlias.Length is not 0;
 	public bool UsesCompiledFormulas => _finalScoreFormula.LastOrDefault() is CompiledFormulaSuffix;
+
+	public List<Tournament> Tournaments => [..ReadMany<Tournament>(tournament => tournament.ScoringSystemId == Id
+																			  || tournament.Rounds.Any(round => round.ScoringSystemId == Id)
+																			  || tournament.Games.Any(game => game.ScoringSystemId == Id))];
+
+	public IEnumerable<Game> Games => [..ReadMany<Game>(game => game.ScoringSystemId == Id)];
+	public string ScoreFormat => $"F{SignificantDigits}";
+
+	private enum FormulaType : byte
+	{
+		FinalScore,
+		ProvisionalScore,
+		PlayerAnte
+	}
 
 	private const char Bar = '|';
 
@@ -99,13 +121,6 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 				throw new InvalidOperationException(); // TODO
 		}
 	}
-
-	public List<Tournament> Tournaments => [..ReadMany<Tournament>(tournament => tournament.ScoringSystemId == Id
-																			  || tournament.Rounds.Any(round => round.ScoringSystemId == Id)
-																			  || tournament.Games.Any(game => game.ScoringSystemId == Id))];
-
-	public IEnumerable<Game> Games => [..ReadMany<Game>(game => game.ScoringSystemId == Id)];
-	public string ScoreFormat => $"F{SignificantDigits}";
 
 	public string FormattedScore(double score,
 								 bool trim = false)
@@ -347,21 +362,6 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		}
 	}
 
-	public enum DrawRules : byte
-	{
-		//	IMPORTANT: Must be 0, 1, 2 to match SQL storage
-		None = default,
-		All = 1,
-		DIAS = 2
-	}
-
-	private enum FormulaType
-	{
-		FinalScore,
-		ProvisionalScore,
-		PlayerAnte
-	}
-
 	#region IInfoRecord interface implementation
 
 	#region IRecord interface implementation
@@ -426,20 +426,9 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 	private const string DocumentCommentSplitter = "**";
 	private const char CompiledFormulaSuffix = '\a'; //	Cannot be 0, as this truncates the SQL insert
 
-	//	For hacking the aliasing into C# scoring formulae by replacing each of the aliases with these.
-	private static readonly string[] OtherScoreAliases =
-	[
-		//	Ordered by descending length
-		nameof (Scoring.SumOfEveryOtherScore),
-		nameof (Scoring.AverageOtherScore),
-		nameof (Scoring.HighestOtherScore),
-		nameof (Scoring.LowestOtherScore),
-		nameof (Scoring.SumOfOtherScores),
-		nameof (Scoring.OtherScore)
-	];
 	private static readonly ScriptOptions Options = ScriptOptions.Default
-																 .WithReferences(Assembly.GetAssembly(typeof (Enumerable)),
-																				 Assembly.GetExecutingAssembly())
+																 .WithReferences(GetAssembly(typeof (Enumerable)),
+																				 GetExecutingAssembly())
 																 .WithImports(nameof (System),
 																			  typeof (List<int>).Namespace,
 																			  typeof (Enumerable).Namespace,
@@ -469,15 +458,15 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 
 	private string RemoveComments(string formula)
 	{
-		const string lineCommentStart = "//";
-		const string blockComment = "/[*].*?[*]/";
-		const string lineComment = $@"{lineCommentStart}.*?\n";
-		const string rawString = """[$]*("{3,}).*?\1""";
-		const string simpleString = """[$]*"(\\(.|\r?\n)|[^\n\\"])*["]""";
-		const string verbatimString = """(@[$]*|[$]+@)("[^"]*")+""";
-		const string formulaRegex = $"{blockComment}|{lineComment}";
-		const string cSharpRegex = $"{rawString}|{simpleString}|{verbatimString}|{formulaRegex}";
-		const string underbar = "_";
+		const string lineCommentStart = "//",
+					 blockComment = "/[*].*?[*]/",
+					 lineComment = $@"{lineCommentStart}.*?\n",
+					 rawString = """[$]*("{3,}).*?\1""",
+					 simpleString = """[$]*"(\\(.|\r?\n)|[^\n\\"])*["]""",
+					 verbatimString = """(@[$]*|[$]+@)("[^"]*")+""",
+					 formulaRegex = $"{blockComment}|{lineComment}",
+					 cSharpRegex = $"{rawString}|{simpleString}|{verbatimString}|{formulaRegex}",
+					 underbar = "_";
 
 		//	NOTE: In the cSharpRegex, the comments regex must be AFTER the strings, so that comment-like text in strings is protected
 		formula = Regex.Replace(formula.Trim(CompiledFormulaSuffix) + NewLine, //	Add NewLine to catch text-final line comments
@@ -493,7 +482,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 			formula = formula.Split(DocumentCommentSplitter)
 							 .First()
 							 .Replace(underbar, null);
-		if (OtherScoreAlias.Length is not 0)
+		if (UsesOtherScore)
 			ReplaceOtherScoreAlias();
 		return formula.Trim();
 
@@ -513,11 +502,12 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 							  ? RegexOptions.None
 							  : RegexOptions.IgnoreCase;
 			//	TODO: This changes the identifier everywhere, even in error text (DCM) and quoted strings (C#)
-			formula = OtherScoreAliases.Aggregate($" {formula} ",
-												  (current, other) => Regex.Replace(current,
-																					$@"([^\w]){OtherScores.Replace(other, alias)}([^\w])",
-																					$"$1{other}$2",
-																					options));
+			formula = Scoring.OtherScoreAliases
+							 .Aggregate($" {formula} ",
+										(current, other) => Regex.Replace(current,
+																		  $@"([^\w]){OtherScores.Replace(other, alias)}([^\w])",
+																		  $"$1{other}$2",
+																		  options));
 			//	The spaces we added on either end of "{formula}" should be removed; the caller will do it
 		}
 	}

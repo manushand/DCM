@@ -9,9 +9,7 @@ internal sealed partial class PlayerListForm : Form
 	private static readonly string FirstNameLabelToolTipText = $"If player First Name does not begin with a letter,{NewLine}" +
 															    "tournament and group rankings will be hidden.";
 
-	private Player? _player;
-
-	private Player Player => _player.OrThrow();
+	private Player Player { get; set; } = Player.None;
 
 	private string? SavedEmail { get; set; }
 
@@ -33,7 +31,7 @@ internal sealed partial class PlayerListForm : Form
 						EventArgs? e = null)
 	{
 		PlayerListBox.FillWithSortedPlayers(LastNameRadioButton.Checked);
-		PlayerListBox.SelectedItem = PlayerListBox.Find(_player);
+		PlayerListBox.SelectedItem = PlayerListBox.Find(Player);
 		SetEnabled(false, EmailLabel, EmailAddressTextBox);
 	}
 
@@ -47,13 +45,13 @@ internal sealed partial class PlayerListForm : Form
 	private void PlayerListBox_SelectedIndexChanged(object? sender = null,
 													EventArgs? e = null)
 	{
-		_player = PlayerListBox.GetSelected<Player>();
-		SetEnabled(_player is not null, EditButton, GroupsButton, RemoveButton);
-		ConflictsButton.Enabled = _player is not null && PlayerListBox.Items.Count > 1;
-		RemoveButton.Text = _player?.Games.Any() is false
+		Player = PlayerListBox.GetSelected<Player>() ?? Player.None;
+		SetEnabled(!Player.IsNone, EditButton, GroupsButton, RemoveButton);
+		ConflictsButton.Enabled = !Player.IsNone && PlayerListBox.Items.Count > 1;
+		RemoveButton.Text = Player.Games.Any() is false
 								? "Remove"
 								: GamesText;
-		if (_player is null)
+		if (Player.IsNone)
 			return;
 		FirstNameTextBox.Text =
 			LastNameTextBox.Text =
@@ -112,12 +110,12 @@ internal sealed partial class PlayerListForm : Form
 				 select true).Any())
 				return;
 		}
-		_player = CreateOne(new Player
-							{
-								FirstName = firstName,
-								LastName = lastName,
-								EmailAddress = Join(';', addresses)
-							});
+		Player = CreateOne(new Player
+						   {
+							   FirstName = firstName,
+							   LastName = lastName,
+							   EmailAddress = Join(';', addresses)
+						   });
 		SavedEmail = null;
 		Refill();
 	}
@@ -137,7 +135,7 @@ internal sealed partial class PlayerListForm : Form
 							Question) is DialogResult.No)
 			return;
 		Delete(Player.LinksOfType<RoundPlayer>());
-		foreach (var teamPlayer in Player.TeamPlayers)
+		foreach (var teamPlayer in Player.LinksOfType<TeamPlayer>())
 		{
 			Delete(teamPlayer);
 			//	TODO: Here we are deleting emptied teams.  Good?  I think so.
@@ -154,7 +152,7 @@ internal sealed partial class PlayerListForm : Form
 		}
 		Delete(Player.PlayerConflicts);
 		Delete(Player);
-		_player = null;
+		Player = Player.None;
 		Refill();
 	}
 

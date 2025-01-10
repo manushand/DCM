@@ -2,9 +2,7 @@
 
 internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 {
-	private Tournament? _tournament;
-
-	private Tournament Tournament => _tournament.OrThrow();
+	private Tournament Tournament { get; set; } = Tournament.None;
 
 	public ScoreByRoundControl()
 		=> InitializeComponent();
@@ -12,9 +10,9 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 	public void LoadControl(Tournament tournament)
 	{
 		//	Nothing to do if we're already loaded
-		if (_tournament is not null)
+		if (!Tournament.IsNone)
 			return;
-		_tournament = tournament;
+		Tournament = tournament;
 		RoundScoresTabControl.TabPages
 							 .Clear();
 		var roundNumbers = Tournament.FinishedGames

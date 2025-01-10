@@ -4,14 +4,11 @@ namespace PC.Controls;
 
 internal sealed partial class TeamsControl : UserControl
 {
-	private Team? _team;
-	private TournamentInfoForm? _tournamentInfoForm;
-
-	private TournamentInfoForm TournamentInfoForm => _tournamentInfoForm.OrThrow();
+	private TournamentInfoForm TournamentInfoForm { get; set; } = TournamentInfoForm.None;
 
 	private Tournament Tournament => TournamentInfoForm.Tournament;
 
-	private Team Team => _team.OrThrow();
+	private Team Team { get; set; } = Team.None;
 
 	internal TeamsControl()
 		=> InitializeComponent();
@@ -21,7 +18,7 @@ internal sealed partial class TeamsControl : UserControl
 
 	internal void LoadControl(TournamentInfoForm tournamentInfoForm)
 	{
-		_tournamentInfoForm = tournamentInfoForm;
+		TournamentInfoForm = tournamentInfoForm;
 		LastNameRadioButton.Checked = true;
 		SetEnabled(false, JoinButton, FormTeamButton);
 		FillTeamList();
@@ -31,10 +28,10 @@ internal sealed partial class TeamsControl : UserControl
 	private void FillTeamList()
 	{
 		TeamListBox.FillWithRecords(Tournament.Teams.Order());
-		if (_team is not null)
+		if (!Team.IsNone)
 			TeamListBox.SelectedItem = TeamListBox.Find(Team);
 		FillMembershipLists();
-		if (_team is null)
+		if (Team.IsNone)
 			SelectNoTeam();
 	}
 
@@ -42,7 +39,7 @@ internal sealed partial class TeamsControl : UserControl
 									 EventArgs? e = null)
 	{
 		MemberListBox.Items.Clear();
-		if (_team is null)
+		if (Team.IsNone)
 			SelectNoTeam();
 		else
 		{
@@ -64,7 +61,7 @@ internal sealed partial class TeamsControl : UserControl
 		var candidatePlayers = WhichPlayersTabControl.SelectedIndex is 0
 								   ? ReadMany<TournamentPlayer>(tp => tp.TournamentId == Tournament.Id).Select(static tp => tp.Player)
 								   : ReadAll<Player>();
-		var nonMembers = candidatePlayers.Where(player => (Tournament.PlayerCanJoinManyTeams || !player.Teams(Tournament.Id).Any())
+		var nonMembers = candidatePlayers.Where(player => (Tournament.PlayerCanJoinManyTeams || !player.Teams(Tournament).Any())
 													   && !memberIds.Contains(player.Id))
 										 .Sorted(LastNameRadioButton.Checked);
 		NonMemberListBox.FillWith(nonMembers);
@@ -76,7 +73,7 @@ internal sealed partial class TeamsControl : UserControl
 										  EventArgs e)
 	{
 		TeamListBox.ClearSelected();
-		_team = null;
+		Team = Team.None;
 		SelectNoTeam();
 		FormTeamButton.Enabled = true;
 	}
@@ -111,7 +108,7 @@ internal sealed partial class TeamsControl : UserControl
 	private void NonMemberListBox_SelectedIndexChanged(object sender,
 													   EventArgs e)
 	{
-		if (SkippingHandlers || _team is null)
+		if (SkippingHandlers || Team.IsNone)
 			return;
 		SkipHandlers(MemberListBox.ClearSelected);
 		JoinButton.Enabled = MemberListBox.Items.Count < Tournament.TeamSize
@@ -136,7 +133,7 @@ internal sealed partial class TeamsControl : UserControl
 			return;
 		NewTeamNameTextBox.Text = null;
 		FormTeamButton.Enabled = false;
-		_team = team;
+		Team = team;
 		SkipHandlers(() =>
 					 {
 						 MemberListBox.ClearSelected();
@@ -162,7 +159,7 @@ internal sealed partial class TeamsControl : UserControl
 							Error);
 			return;
 		}
-		_team = CreateOne(new Team
+		Team = CreateOne(new Team
 						  {
 							  TournamentId = Tournament.Id,
 							  Name = teamName
@@ -180,7 +177,7 @@ internal sealed partial class TeamsControl : UserControl
 			return;
 		Delete(Team.TeamPlayers);
 		Delete(Team);
-		_team = null;
+		Team = Team.None;
 		FillTeamList();
 	}
 

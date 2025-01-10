@@ -6,9 +6,7 @@ using static Tournament;
 
 internal sealed partial class TournamentControl : UserControl
 {
-	private TournamentInfoForm? _tournamentInfoForm;
-
-	private TournamentInfoForm TournamentInfoForm => _tournamentInfoForm.OrThrow();
+	private TournamentInfoForm TournamentInfoForm { get; set; } = TournamentInfoForm.None;
 
 	private Tournament Tournament => TournamentInfoForm.Tournament;
 
@@ -31,7 +29,7 @@ internal sealed partial class TournamentControl : UserControl
 	{
 		SkipHandlers(() =>
         {
-			_tournamentInfoForm = tournamentInfoForm;
+			TournamentInfoForm = tournamentInfoForm;
 			ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
 			MinimumRoundsComboBox.FillRange(1, 9);
 			if (Tournament.Id is 0)
@@ -45,7 +43,7 @@ internal sealed partial class TournamentControl : UserControl
 						PowerAssignmentComboBox.SelectedIndex =
 							PowerGroupComboBox.SelectedIndex =
 								TeamSizeComboBox.SelectedIndex =
-									0;
+									default;
 				UnplayedScoreTextBox.Text = "0";
 				PlayerConflictTextBox.Text =
 					PowerConflictTextBox.Text =
@@ -177,7 +175,7 @@ internal sealed partial class TournamentControl : UserControl
 			if (teamSize < minimumTeamSize)
 			{
 				MessageBox.Show($"Teams exist for this tournament which have as many as {minimumTeamSize} members.{NewLine}{NewLine}" +
-								"All such teams will need to be modified to be able to set the team size to {teamSize}.",
+								$"All such teams will need to be modified to be able to set the team size to {teamSize}.",
 								$"Cannot Set Team Size to {teamSize}",
 								OK,
 								Stop);

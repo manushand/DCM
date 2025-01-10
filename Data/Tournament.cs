@@ -61,9 +61,9 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 
 	public ScoringSystem ScoringSystem
 	{
-		get => field.Id != ScoringSystemId
-				   ? field = ReadById<ScoringSystem>(ScoringSystemId)
-				   : field;
+		get => field.Id == ScoringSystemId
+				   ? field
+				   : field = ReadById<ScoringSystem>(ScoringSystemId);
 		set
 		{
 			field = value;

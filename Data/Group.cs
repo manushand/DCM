@@ -18,16 +18,16 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 
 	public string Description = Empty;
 
-	public int? ScoringSystemId => HostRound.IsNone ? 0 : HostRound.ScoringSystemId;
+	public int ScoringSystemId => HostRound.IsNone ? default : HostRound.ScoringSystemId;
 
 	public IEnumerable<Player> Players => ReadMany<GroupPlayer>(groupPlayer => groupPlayer.GroupId == Id).Select(static groupPlayer => groupPlayer.Player);
 
 	//  HostRound for Group games (which are modeled as a single-round Tournament)
 	public Round HostRound
 	{
-		get => field.IsNone && Id is not 0
-				   ? field = ReadOne<Round>(round => round.Tournament.GroupId == Id) ?? field
-				   : field;
+		get => field.Tournament.GroupId == Id
+				   ? field
+				   : field = ReadOne<Round>(round => round.Tournament.GroupId == Id) ?? field;
 		private set;
 	} = Round.None;
 

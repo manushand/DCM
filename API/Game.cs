@@ -5,30 +5,30 @@ namespace API;
 [PublicAPI]
 internal sealed class Game : Rest<Game, Data.Game>
 {
-	public override string Name => Record.Name.NullIfEmpty()
-						  ?? (Record.Tournament.IsEvent
-								  ? $"{Record.Tournament} - Round {Record.Round.Number} - Game {Record.Number}"
-								  : $"{Record.Tournament.Group} - Game {Record.Number}");
-	public Data.Game.Statuses Status => Record.Status;
-	public int Number => Record.Number;
+	public override string Name => Data.Name.NullIfEmpty()
+						  ?? (Data.Tournament.IsEvent
+								  ? $"{Data.Tournament} - Round {Data.Round.Number} - Game {Data.Number}"
+								  : $"{Data.Tournament.Group} - Game {Data.Number}");
+	public Data.Game.Statuses Status => Data.Status;
+	public int Number => Data.Number;
 
 	protected override dynamic Detail => new
 										 {
-											 TournamentId = Record.Tournament.IsEvent
-																? Record.Tournament.Id
+											 TournamentId = Data.Tournament.IsEvent
+																? Data.Tournament.Id
 																: (int?)null,
-											 RoundId = Record.Tournament.IsEvent
-														   ? Record.RoundId
+											 RoundId = Data.Tournament.IsEvent
+														   ? Data.RoundId
 														   : (int?)null,
-											 Record.Tournament.GroupId,
-											 Players = Record.GamePlayers.Select(static gamePlayer => new GamePlayer(gamePlayer))
+											 Data.Tournament.GroupId,
+											 Players = Data.GamePlayers.Select(static gamePlayer => new GamePlayer(gamePlayer))
 										 };
 
 	[PublicAPI]
 	internal sealed class GamePlayer
 	{
 		private readonly Data.GamePlayer _gamePlayer;
-		public Player Player => new () { Record = _gamePlayer.Player };
+		public Player Player => new () { Data = _gamePlayer.Player };
 		public Data.GamePlayer.PowerNames Power => _gamePlayer.Power;
 		public Data.GamePlayer.Results Result => _gamePlayer.Result;
 		public int? Years => _gamePlayer.Game is { Scored: true, ScoringSystem.UsesYearsPlayed: true }
@@ -53,11 +53,11 @@ internal sealed class Game : Rest<Game, Data.Game>
 		public GamePlayer(Data.GamePlayer gamePlayer)
 		{
 			_gamePlayer = gamePlayer;
-			if (gamePlayer.Game.Status is Data.Game.Statuses.Finished && !gamePlayer.Game.Scored)
+			if (gamePlayer.Game.Status is global::Data.Game.Statuses.Finished && !gamePlayer.Game.Scored)
 				gamePlayer.Game.CalculateScores();
 		}
 	}
 
-	new internal static IEnumerable<Game> GetAll()
+	new public static IEnumerable<Game> GetAll()
 		=> throw new FileNotFoundException();
 }

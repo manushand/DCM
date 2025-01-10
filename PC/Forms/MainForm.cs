@@ -65,8 +65,7 @@ internal sealed partial class MainForm : Form
 			LeftButton.Text = $"Group Details{NewLine}and Members";
 			MiddleButton.Text = "Group Games";
 			RightButton.Text = "Member Ratings";
-			MiddleButton.Enabled = group.ScoringSystemId
-										.HasValue;
+			MiddleButton.Enabled = !group.ScoringSystem.IsNone;
 			RightButton.Enabled = group.FinishedGames.Length is not 0;
 			if (MiddleButton.Enabled)
 				return;

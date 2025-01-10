@@ -2,56 +2,58 @@
 
 namespace API;
 
+using static Data.Data;
+
 [PublicAPI]
 internal class Tournament : Rest<Tournament, Data.Tournament>
 {
 	protected override dynamic Detail => new
 										 {
-											 Date = $"{Record.Date:d}",
-											 Description = Record.Description.NullIfEmpty(),
-											 Record.TotalRounds,
+											 Date = $"{Data.Date:d}",
+											 Description = Data.Description.NullIfEmpty(),
+											 Data.TotalRounds,
 											 Seeding = new
 													   {
-														   Record.AssignPowers,
-														   Record.GroupPowers,
-														   Record.PlayerConflict,
-														   Record.PowerConflict,
-														   Record.ProgressiveScoreConflict,
-														   TeamConflict = Record.TeamSize is 0
+														   Data.AssignPowers,
+														   Data.GroupPowers,
+														   Data.PlayerConflict,
+														   Data.PowerConflict,
+														   Data.ProgressiveScoreConflict,
+														   TeamConflict = Data.TeamSize is 0
 																			  ? (int?)null
-																			  : Record.TeamConflict
+																			  : Data.TeamConflict
 													   },
 											 Scoring = new
 													   {
-														   Record.ScoringSystemId,
-														   Record.UnplayedScore,
-														   Record.MinimumRounds,
-														   Record.RoundsToDrop,
-														   DropBeforeFinalRound = Record.RoundsToDrop is 0
+														   Data.ScoringSystemId,
+														   Data.UnplayedScore,
+														   Data.MinimumRounds,
+														   Data.RoundsToDrop,
+														   DropBeforeFinalRound = Data.RoundsToDrop is 0
 																					  ? (bool?)null
-																					  : Record.DropBeforeFinalRound,
-														   Record.RoundsToScale,
-														   ScalePercentage = Record.RoundsToScale is 0
+																					  : Data.DropBeforeFinalRound,
+														   Data.RoundsToScale,
+														   ScalePercentage = Data.RoundsToScale is 0
 																				 ? (int?)null
-																				 : Record.ScalePercentage
+																				 : Data.ScalePercentage
 													   },
-											 TeamTournament = Record.TeamSize is 0
+											 TeamTournament = Data.TeamSize is 0
 																  ? null
 																  : new
 																	{
-																		Record.TeamSize,
-																		Record.TeamConflict,
-																		Record.TeamsPlayMultipleRounds,
-																		TeamRound = Record.TeamsPlayMultipleRounds
+																		Data.TeamSize,
+																		Data.TeamConflict,
+																		Data.TeamsPlayMultipleRounds,
+																		TeamRound = Data.TeamsPlayMultipleRounds
 																						? (int?)null
-																						: Record.TeamRound,
-																		Record.PlayerCanJoinManyTeams
+																						: Data.TeamRound,
+																		Data.PlayerCanJoinManyTeams
 																	}
 										 };
 
-	private bool IsEvent => Record.IsEvent;
+	private bool IsEvent => Data.IsEvent;
 
-	new internal static IEnumerable<Tournament> GetAll()
+	new public static IEnumerable<Tournament> GetAll()
 		=> Rest<Tournament, Data.Tournament>.GetAll()
 											.Where(static tournament => tournament.IsEvent);
 
@@ -60,9 +62,9 @@ internal class Tournament : Rest<Tournament, Data.Tournament>
 		var record = Lookup(id);
 		return record is null
 				   ? Results.NotFound()
-				   : Results.Ok(record.Record
+				   : Results.Ok(record.Data
 									  .TournamentPlayers
-									  .Select(static tp => new TournamentPlayer { Record = tp.Player, Rounds = tp.Rounds }));
+									  .Select(static tp => new TournamentPlayer { Data = tp.Player, Rounds = tp.Rounds }));
 	}
 
 	public static IResult GetUnregistered(int id)
@@ -70,9 +72,39 @@ internal class Tournament : Rest<Tournament, Data.Tournament>
 		var record = Lookup(id);
 		if (record is null)
 			return Results.NotFound();
-		var registered = record.Record.TournamentPlayers.Select(static tp => tp.PlayerId).ToArray();
+		var registered = record.Data.TournamentPlayers.Select(static tp => tp.PlayerId).ToArray();
 		return Results.Ok(Player.GetAll()
 								.Where(player => !registered.Contains(player.Id)));
+	}
+
+	protected override void Update(dynamic record)
+	{
+		Data.Date = record.Date;
+		Data.Description = record.Description;
+		Data.TotalRounds = record.TotalRounds;
+
+		Data.TeamSize = record.TeamTournament.TeamSize;
+		if (record.Seeding.TeamSize is not 0)
+		{
+			Data.TeamSize = record.TeamTournament.TeamSize;
+			Data.TeamsPlayMultipleRounds = record.TeamTournament.TeamsPlayMultipleRounds;
+			Data.PlayerCanJoinManyTeams = record.TeamTournament.PlayerCanJoinManyTeams;
+			Data.TeamRound = record.TeamTournament.TeamRound;
+		}
+
+		Data.AssignPowers = record.Seeding.AssignPowers;
+		Data.GroupPowers = record.Seeding.GroupPowers;
+		Data.PlayerConflict = record.Seeding.PlayerConflict;
+		Data.PowerConflict = record.Seeding.PowerConflict;
+		Data.ProgressiveScoreConflict = record.Seeding.ProgressiveScoreConflict;
+
+		Data.ScoringSystem = ReadById<Data.ScoringSystem>(record.Scoring.ScoringSystemId);
+		Data.UnplayedScore = record.Scoring.UnplayedScore;
+		Data.MinimumRounds = record.Scoring.MinimumRounds;
+		Data.RoundsToDrop = record.Scoring.RoundsToDrop;
+		Data.DropBeforeFinalRound = record.Scoring.DropBeforeFinalRound;
+		Data.RoundsToScale = record.Scoring.RoundsToScale;
+		Data.ScalePercentage = record.Scoring.RoundsToScale;
 	}
 
 	[PublicAPI]

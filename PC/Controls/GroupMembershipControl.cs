@@ -2,19 +2,17 @@
 
 internal sealed partial class GroupMembershipControl : UserControl
 {
-	private Group? _group;
-
 	[DesignerSerializationVisibility(Hidden)]
 	internal Group Group
 	{
-		private get => _group.OrThrow();
+		private get;
 		set
 		{
-			_group = value;
+			field = value;
 			SetEnabled(false, JoinButton, MembershipsButton);
 			FillMembershipLists();
 		}
-	}
+	} = Group.None;
 
 	internal GroupMembershipControl()
 		=> InitializeComponent();
@@ -48,7 +46,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 	private void FillMembershipLists(object? sender = null,
 									 EventArgs? e = null)
 	{
-		if (_group is null)
+		if (Group.IsNone)
 		{
 			MemberListBox.Items
 						 .Clear();

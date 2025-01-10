@@ -7,24 +7,24 @@ internal class Player : Rest<Player, Data.Player>
 {
 	public string FirstName
 	{
-		get => Record.FirstName;
-		private set => Record.FirstName = value;
+		get => Data.FirstName;
+		private set => Data.FirstName = value;
 	}
 	public string LastName
 	{
-		get => Record.LastName;
-		private set => Record.LastName = value;
+		get => Data.LastName;
+		private set => Data.LastName = value;
 	}
 
 	protected override dynamic Detail => new
 										 {
-											 EmailAddresses = Record.EmailAddresses.NullIfEmpty()
+											 EmailAddresses = Data.EmailAddresses.NullIfEmpty()
 										 };
 
 	protected override void Update(dynamic record)
 	{
-		Record.FirstName = record.FirstName;
-		Record.LastName = record.LastName;
-		Record.EmailAddress = string.Join(",", record.Details.EmailAddresses);
+		Data.FirstName = record.FirstName;
+		Data.LastName = record.LastName;
+		Data.EmailAddress = string.Join(",", record.Details.EmailAddresses);
 	}
 }

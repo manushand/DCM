@@ -1,22 +1,29 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Numerics;
+using System.Text.RegularExpressions;
 using JetBrains.Annotations;
+using static System.Convert;
 using static System.Environment;
 using static System.String;
+using static System.StringComparison;
 
 namespace DCM;
 
 public static partial class DCM
 {
+	#region Constant values
+
 	public const int LatestFinalGameYear = 1918;
 	public const char Comma = ',';
 	public const char Colon = ':';
 	public const char Semicolon = ';';
 
+	#endregion
+
+	#region Extension methods
+
 	private static readonly string Bullet = $"{NewLine}    • ";
 	private static readonly char[] EmailSplitter = [Comma, Semicolon];
 	private static readonly Random Random = new ();
-
-	#region Extension methods
 
 	public static T OrThrow<T>(this T? @this,
 							   string? message = null)
@@ -37,7 +44,7 @@ public static partial class DCM
 
 	public static bool Matches(this string @this,
 							   string other)
-		=> @this.Equals(other, StringComparison.InvariantCultureIgnoreCase);
+		=> @this.Equals(other, InvariantCultureIgnoreCase);
 
 	public static void ForEach<T>([InstantHandle] this IEnumerable<T> @this,
 								  Action<T> action)
@@ -79,27 +86,26 @@ public static partial class DCM
 			   : @this.AsInteger();
 
 	public static int AsInteger(this bool @this)
-		=> Convert.ToInt32(@this);
+		=> ToInt32(@this);
 
 	public static int AsInteger(this string @this)
 		=> int.Parse(@this);
 
-	public static int AsInteger<T>(this T @this)
-		where T : Enum
-		=> (int)Convert.ChangeType(@this, typeof (int));
+	public static int AsInteger(this Enum @this)
+		=> (int)ChangeType(@this, typeof (int));
 
 	public static string Dotted(this int @this)
 		=> $"{@this}.";
 
 	public static int NegatedIf(this int @this,
 								bool negator)
-		=> negator ? -@this : @this;
+		=> negator
+			   ? -@this
+			   : @this;
 
-	public static string Points(this double @this)
-		=> ((int)@this).Points();
-
-	public static string Points(this int @this)
-		=> $"{"pt".Pluralize(@this, true)}.";
+	public static string Points<T>(this T @this)
+		where T : INumber<T>
+		=> $"{"pt".Pluralize(ToInt32(@this), true)}.";
 
 	public static bool NotEquals(this double @this,
 								 double other)
@@ -138,7 +144,7 @@ public static partial class DCM
 	public static bool Starts(this string @this,
 							  string start,
 							  bool symbol = false)
-		=> @this.StartsWith(start, StringComparison.InvariantCultureIgnoreCase)
+		=> @this.StartsWith(start, InvariantCultureIgnoreCase)
 		&& (symbol || @this.Length == start.Length || !char.IsLetterOrDigit(@this[start.Length]));
 
 	public static string[] SplitEmailAddresses(this string @this)

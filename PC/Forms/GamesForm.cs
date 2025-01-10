@@ -2,19 +2,16 @@
 
 internal sealed partial class GamesForm : Form
 {
-	private readonly Player? _player;
-	private readonly Round? _round;
-
 	private Game[] Games { get; }
 
-	private Round Round => _round.OrThrow();
+	private Round Round { get; } = Round.None;
 
-	private Player Player => _player.OrThrow();
+	private Player Player { get; } = Player.None;
 
 	private Game Game
 	{
 		get => field.IsNone
-			   ? throw new InvalidOperationException()
+			   ? throw new NullReferenceException()
 			   : field;
 		set;
 	} = Game.None;
@@ -42,19 +39,16 @@ internal sealed partial class GamesForm : Form
 
 	internal GamesForm(Round round,
 					   int? gameNumber = null) : this(round.Games)
-	{
-		_round = round;
-		GameNumber = gameNumber;
-	}
+		=> (Round, GameNumber) = (round, gameNumber);
 
 	internal GamesForm(Player player,
 					   params Game[] games) : this(games.Length is not 0 ? games : player.Games)
-		=> _player = player;
+		=> Player = player;
 
 	private void GamesForm_Load(object sender,
 								EventArgs e)
 	{
-		Text = _round is null
+		Text = Round.IsNone
 				   ? $"{Player} ─ Games"
 				   : $"{Round.Tournament} ─ Round {Round} Games";
 		SkipHandlers(() =>
@@ -63,13 +57,13 @@ internal sealed partial class GamesForm : Form
 			GamesTabControl.TabPages
 						   .Clear();
 			Games.ForEach(game => GamesTabControl.TabPages
-												 .Add(_round is null
+												 .Add(Round.IsNone
 														  ? game.FullName
 														  : $"Game {game.Number}"));
         });
 		GameControl.GameDataChangedCallback = GameDataUpdated;
 		//	Set the active tab, which will fire an event setting "Game".
-		GamesTabControl.ActivateTab(_player is null
+		GamesTabControl.ActivateTab(Player.IsNone
 										? GameNumber ?? (Games.FirstOrDefault(static game => game.Status < Finished) ?? Games[0]).Number - 1
 										: 0);
 	}

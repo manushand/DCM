@@ -12,7 +12,9 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 	private Round Round
 	{
-		get => field.IsNone ? throw new NullReferenceException(nameof (Round)) : field;
+		get => field.IsNone
+				   ? throw new NullReferenceException(nameof (Round))
+				   : field;
 		set;
 	} = Round.None;
 

@@ -5,7 +5,9 @@ internal sealed partial class TournamentInfoForm : Form
 	[DesignerSerializationVisibility(Hidden)]
 	internal Tournament Tournament { get; private set; }
 
-	public TournamentInfoForm() : this(new ()) { }
+	internal static readonly TournamentInfoForm None = new ();
+
+	public TournamentInfoForm() : this(Tournament.None) { }
 
 	internal TournamentInfoForm(Tournament tournament)
 	{

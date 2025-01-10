@@ -36,17 +36,17 @@ public sealed class Game : IdentityRecord<Game>
 
 	public Round Round
 	{
-		get => field.Id != RoundId
-				   ? field = ReadById<Round>(RoundId)
-				   : field;
+		get => field.Id == RoundId
+				   ? field
+				   : field = ReadById<Round>(RoundId);
 		init => (field, RoundId) = (value, value.Id);
 	} = Round.None;
 
 	public ScoringSystem ScoringSystem
 	{
-		get => field.Id != ScoringSystemId
-				   ? field = ReadById<ScoringSystem>(ScoringSystemId)
-				   : field;
+		get => field.Id == ScoringSystemId
+				   ? field
+				   : field = ReadById<ScoringSystem>(ScoringSystemId);
 		set => (field, _scoringSystemId) = (value, value.Id == Round.ScoringSystemId ? null : value.Id);
 	} = ScoringSystem.None;
 
@@ -70,7 +70,7 @@ public sealed class Game : IdentityRecord<Game>
 			   ? Round.PreRoundScore(gamePlayer)
 			   : Tournament.Group
 						   .RatePlayer(gamePlayer.Player, this)?
-						   .Rating ?? 0;
+						   .Rating ?? default;
 
 	/// <summary>
 	///     Calculates the FinalScore for all GamePlayers in the game, according to the

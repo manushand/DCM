@@ -5,15 +5,15 @@ namespace API;
 [PublicAPI]
 internal sealed class Round : Rest<Round, Data.Round>
 {
-	public int Number => Record.Number;
+	public int Number => Data.Number;
 
 	protected override dynamic Detail => new
 										 {
-											 TournamentId = Record.Tournament.IsEvent
-																? Record.Tournament.Id
+											 TournamentId = Data.Tournament.IsEvent
+																? Data.Tournament.Id
 																: (int?)null,
-											 Games = Record.Tournament.IsEvent
-														 ? Record.Games.Select(static game => new Game { Record = game })
+											 Games = Data.Tournament.IsEvent
+														 ? Data.Games.Select(static game => new Game { Data = game })
 														 : null
 										 };
 

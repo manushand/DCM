@@ -14,9 +14,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 																			 [Scaled] = "score scaled"
 																		 };
 
-	private Tournament? _tournament;
-
-	private Tournament Tournament => _tournament.OrThrow();
+	private Tournament Tournament { get; set; } = Tournament.None;
 
 	private List<TournamentScore> TournamentScores { get; } = [];
 
@@ -30,9 +28,9 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 	public void LoadControl(Tournament tournament)
 	{
 		//	Nothing to do if we're already loaded
-		if (_tournament is not null)
+		if (!Tournament.IsNone)
 			return;
-		_tournament =
+		Tournament =
 			TournamentScore.Tournament =
 				tournament;
 		ScoreTournament();

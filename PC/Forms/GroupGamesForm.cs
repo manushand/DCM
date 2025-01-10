@@ -95,7 +95,7 @@ internal sealed partial class GroupGamesForm : Form
 		SetVisible(AllPlayersAssigned, GameStatusLabel, GameStatusComboBox);
 		//  TODO - Is there some reason this cannot be "if (AllPlayersAssigned)"?
 		if (GameStatusLabel.Visible)
-			GameStatusComboBox.SelectedIndex = 0;
+			GameStatusComboBox.SelectedIndex = default;
 	}
 
 	private void ShowControls(bool visible)

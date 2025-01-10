@@ -3,7 +3,6 @@ using static Newtonsoft.Json.Linq.JObject;
 
 namespace API;
 
-using DCM;
 using Data;
 using static Data.Data;
 
@@ -11,30 +10,24 @@ internal abstract class Rest<T1, T2> : IRest
 	where T1 : Rest<T1, T2>, new()
 	where T2 : IdInfoRecord, new()
 {
-	public int Id => Record.Id;
-	public virtual string Name => Record.Name;
+	public int Id => Data.Id;
+	public virtual string Name => Data.Name;
 	public dynamic? Details => Detailed ? Detail : null;
 
-	private bool Detailed { get; set; }
+	private bool Detailed { get; init; }
 	protected abstract dynamic Detail { get; }
 
-	private readonly T2? _record;
-	protected internal T2 Record
-	{
-		get => _record.OrThrow();
-		init => _record = value;
-	}
+	protected internal T2 Data { get; init; } = new ();
 
-	internal static IEnumerable<T1> GetAll()
-		=> ReadAll<T2>().Select(static iRecord => new T1 { Record = iRecord });
+	public static IEnumerable<T1> GetAll()
+		=> ReadAll<T2>().Select(static idInfoRecord => new T1 { Data = idInfoRecord });
 
-	public static IResult GetOne(int recordId, bool detailed)
+	public static IResult GetOne(int recordId)
 	{
 		var record = Lookup(recordId);
-		if (record is null)
-			return Results.NotFound();
-		record.Detailed = detailed;
-		return Results.Ok(record);
+		return record is null
+				   ? Results.NotFound()
+				   : Results.Ok(record);
 	}
 
 	public static IResult PutOne(int recordId, object updated)
@@ -47,7 +40,7 @@ internal abstract class Rest<T1, T2> : IRest
 		if (dynamo.Id != recordId)
 			return Results.BadRequest("Ids do not match");
 		record.Update(dynamo);
-		UpdateOne(record.Record);
+		UpdateOne(record.Data);
 		return Results.NoContent();
 	}
 
@@ -59,6 +52,6 @@ internal abstract class Rest<T1, T2> : IRest
 		var record = ReadByIdOrNull<T2>(recordId);
 		return record is null
 				   ? null
-				   : new T1 { Record = record, Detailed = true };
+				   : new T1 { Data = record, Detailed = true };
 	}
 }

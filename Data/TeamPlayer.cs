@@ -6,9 +6,9 @@ public sealed class TeamPlayer : LinkRecord
 
 	public Team Team
 	{
-		get => field.Id != TeamId
-				   ? field = ReadById<Team>(TeamId)
-				   : field;
+		get => field.Id == TeamId
+				   ? field
+				   : field = ReadById<Team>(TeamId);
 		internal init => (field, TeamId) = (value, value.Id);
 	} = Team.None;
 

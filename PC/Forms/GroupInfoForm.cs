@@ -32,7 +32,7 @@ internal sealed partial class GroupInfoForm : Form
 			if (Group.IsNone)
 			{
 				ConflictTextBox.Text = "0";
-				ScoringSystemComboBox.SelectedIndex = 0;
+				ScoringSystemComboBox.SelectedIndex = default;
 				ScoringSystemComboBox_SelectedIndexChanged();
 				return;
 			}

@@ -51,9 +51,9 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	public Game Game
 	{
-		get => field.Id != GameId
-				   ? field = ReadById<Game>(GameId)
-				   : field;
+		get => field.Id == GameId
+				   ? field
+				   : field = ReadById<Game>(GameId);
 		set => (field, GameId) = (value, value.Id);
 	} = Game.None;
 
@@ -157,13 +157,9 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 	public List<string> ConflictDetails { get; } = [];
 
 	private List<PlayerConflict> PlayerConflicts { get; } = [];
-
 	private List<PowerNames> PowersPlayedInTournament { get; } = [];
-
 	private List<int> PlayerIdsPlayedInTournament { get; } = [];
-
 	private List<int> TournamentTeamPlayerIds { get; } = [];
-
 	private Dictionary<Group, int[]> PlayerGroups { get; } = [];
 
 	//	It is VERY important to pre-set all these things before seeding since they
@@ -186,7 +182,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 																	  .Where(static power => power is not TBD));
 		PlayerIdsPlayedInTournament.FillWith(gamePlayersInTournamentGames.Select(static gamePlayer => gamePlayer.PlayerId)
 																		 .Where(id => id != PlayerId)); //  Not strictly needed
-		TournamentTeamPlayerIds.FillWith(Player.TournamentTeamPlayers(tournamentId)
+		TournamentTeamPlayerIds.FillWith(Player.TournamentTeamPlayers(Tournament)
 											   .Ids());
 		PlayerGroups.Clear();
 		Player.Groups.ForEach(group => PlayerGroups.Add(group, [..group.Players

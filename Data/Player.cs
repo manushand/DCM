@@ -19,8 +19,6 @@ public sealed class Player : IdentityRecord<Player>
 
 	public PlayerConflict[] PlayerConflicts => [..ReadMany<PlayerConflict>(playerConflict => playerConflict.Involves(Id))];
 
-	public IEnumerable<TeamPlayer> TeamPlayers => LinksOfType<TeamPlayer>();
-
 	internal Group[] Groups => [..LinksOfType<GroupPlayer>().Select(static groupPlayer => groupPlayer.Group)];
 
 	public string GroupMemberships
@@ -35,17 +33,17 @@ public sealed class Player : IdentityRecord<Player>
 		}
 	}
 
-	public IEnumerable<T> LinksOfType<T>()
+	public T[] LinksOfType<T>()
 		where T : LinkRecord, new()
-		=> ReadMany<T>(linkRecord => linkRecord.PlayerId == Id);
+		=> [..ReadMany<T>(linkRecord => linkRecord.PlayerId == Id)];
 
-	public IEnumerable<Team> Teams(int? tournamentId = null)
-		=> TeamPlayers.Select(static teamPlayer => teamPlayer.Team)
-					  .Where(team => tournamentId is null || team.TournamentId == tournamentId);
+	public IEnumerable<Team> Teams(Tournament tournament)
+		=> LinksOfType<TeamPlayer>().Select(static teamPlayer => teamPlayer.Team)
+									.Where(team => tournament.IsNone || team.TournamentId == tournament.Id);
 
-	internal IEnumerable<Player> TournamentTeamPlayers(int? tournamentId = null)
-		=> Teams(tournamentId).SelectMany(static team => team.Players)
-							  .Where(IsNot);
+	internal IEnumerable<Player> TournamentTeamPlayers(Tournament tournament)
+		=> Teams(tournament).SelectMany(static team => team.Players)
+							.Where(IsNot);
 
 	public void AddPlayerConflict(Player player)
 		=> CreateOne(new PlayerConflict(Id, player.Id));

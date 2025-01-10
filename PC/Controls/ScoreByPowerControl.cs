@@ -2,9 +2,7 @@
 
 internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 {
-	private Tournament? _tournament;
-
-	private Tournament Tournament => _tournament.OrThrow();
+	private Tournament Tournament { get; set; } = Tournament.None;
 
 	private List<BestGame> BestGames { get; } = [];
 
@@ -26,9 +24,9 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 	public void LoadControl(Tournament tournament)
 	{
 		//	Nothing to do if we're already loaded
-		if (_tournament is not null)
+		if (!Tournament.IsNone)
 			return;
-		_tournament = tournament;
+		Tournament = tournament;
 		var tournamentSystem = tournament.ScoringSystem;
 		var gamePlayers = new List<GamePlayer>();
 		foreach (var game in Tournament.FinishedGames)
