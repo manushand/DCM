@@ -6,7 +6,6 @@ using static System.Text.Json.Serialization.JsonIgnoreCondition;
 using JsonOptions = Microsoft.AspNetCore.Http.Json.JsonOptions;
 //
 using API;
-using Swashbuckle.AspNetCore.Filters;
 using static DCM.DCM;
 using static Data.Data;
 using static Data.Data.DatabaseTypes;
@@ -42,7 +41,6 @@ builder.Services.Configure<JsonOptions>(static options =>
 										});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(static config => config.SwaggerDoc("v1", new () { Title = "DCM API", Version = "v1" }));
-builder.Services.AddSwaggerExamplesFromAssemblies(GetExecutingAssembly());
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
