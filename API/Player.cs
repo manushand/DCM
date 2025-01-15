@@ -2,6 +2,8 @@
 
 namespace API;
 
+using static Data.Data;
+
 [PublicAPI]
 internal class Player : Rest<Player, Data.Player>
 {
@@ -26,5 +28,17 @@ internal class Player : Rest<Player, Data.Player>
 		Data.FirstName = record.FirstName;
 		Data.LastName = record.LastName;
 		Data.EmailAddress = string.Join(",", record.Details.EmailAddresses);
+	}
+
+	public override bool Unlink()
+	{
+		var hasPlayedGames = Data.LinksOfType<Data.GamePlayer>().Length is not 0;
+		if (hasPlayedGames)
+			return false;
+		Delete(Data.LinksOfType<Data.GroupPlayer>());
+		Delete(Data.LinksOfType<Data.TeamPlayer>());
+		Delete(Data.LinksOfType<Data.RoundPlayer>());
+		Delete(Data.LinksOfType<Data.TournamentPlayer>());
+		return true;
 	}
 }

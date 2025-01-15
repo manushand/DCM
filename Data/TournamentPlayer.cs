@@ -6,11 +6,11 @@ public sealed class TournamentPlayer : LinkRecord, IInfoRecord
 	public int TournamentId { get; private set; }
 	private int RoundNumbers { get; set; } //	...you mean, like zero?  LOL
 
-	internal Tournament Tournament
+	public Tournament Tournament
 	{
-		private get  => field.Id != TournamentId
-							? field = ReadById<Tournament>(TournamentId)
-							: field;
+		private get => field.Id != TournamentId
+						   ? field = ReadById<Tournament>(TournamentId)
+						   : field;
 		init => (field, TournamentId) = (value, value.Id);
 	} = Tournament.None;
 

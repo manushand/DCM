@@ -18,5 +18,5 @@ internal sealed class Round : Rest<Round, Data.Round>
 										 };
 
 	new internal static IEnumerable<Round> GetAll()
-		=> throw new FileNotFoundException();
+		=> throw new NotImplementedException();
 }

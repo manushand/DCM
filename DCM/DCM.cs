@@ -42,10 +42,6 @@ public static partial class DCM
 		@this.AddRange(items);
 	}
 
-	public static bool Matches(this string @this,
-							   string other)
-		=> @this.Equals(other, InvariantCultureIgnoreCase);
-
 	public static void ForEach<T>([InstantHandle] this IEnumerable<T> @this,
 								  Action<T> action)
 		=> @this.ToList()
@@ -123,6 +119,10 @@ public static partial class DCM
 		where T : class
 		=> @this.Select(static (item, index) => (item, index))
 				.ForEach(tuple => func(tuple.item, tuple.index));
+
+	public static bool Matches(this string @this,
+							   string other)
+		=> @this.Equals(other, InvariantCultureIgnoreCase);
 
 	public static string Pluralize<T>(this string @this,
 									  IEnumerable<T> items,

@@ -44,8 +44,25 @@ internal abstract class Rest<T1, T2> : IRest
 		return Results.NoContent();
 	}
 
-	protected virtual void Update(dynamic record)
-		=> throw new NotImplementedException();
+	public static IResult PostOne(object updated)
+	{
+		var record = new T1();
+		//	TODO: Somehow (?) check that updated is T1
+		dynamic dynamo = Parse(JsonSerializer.Serialize(updated));
+		record.Update(dynamo);
+		CreateOne(record.Data);
+		return Results.Created($"/{typeof (T1).Name}/{record.Data.Id}", null);
+	}
+
+	public static IResult DeleteOne(int recordId)
+	{
+		var record = Lookup(recordId);
+		if (record is null)
+			return Results.NotFound();
+		record.Unlink();
+		Delete(record.Data);
+		return Results.NoContent();
+	}
 
 	internal static T1? Lookup(int recordId)
 	{
@@ -54,4 +71,10 @@ internal abstract class Rest<T1, T2> : IRest
 				   ? null
 				   : new T1 { Data = record, Detailed = true };
 	}
+
+	protected virtual void Update(dynamic record)
+		=> throw new NotImplementedException();
+
+	public virtual bool Unlink()
+		=> true;
 }

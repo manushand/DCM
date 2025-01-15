@@ -13,5 +13,5 @@ internal class Team : Rest<Team, Data.Team>
 										 };
 
 	new public static IEnumerable<Team> GetAll()
-		=> throw new FileNotFoundException();
+		=> throw new NotImplementedException();
 }

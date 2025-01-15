@@ -59,22 +59,66 @@ internal class Tournament : Rest<Tournament, Data.Tournament>
 
 	public static IResult GetRegistered(int id)
 	{
-		var record = Lookup(id);
-		return record is null
+		var tournament = Lookup(id)?.Data;
+		return tournament is null
 				   ? Results.NotFound()
-				   : Results.Ok(record.Data
-									  .TournamentPlayers
-									  .Select(static tp => new TournamentPlayer { Data = tp.Player, Rounds = tp.Rounds }));
+				   : Results.Ok(tournament.TournamentPlayers
+										  .Select(static tp => new TournamentPlayer { Data = tp.Player, Rounds = tp.Rounds }));
 	}
 
 	public static IResult GetUnregistered(int id)
 	{
-		var record = Lookup(id);
-		if (record is null)
+		var tournament = Lookup(id)?.Data;
+		if (tournament is null)
 			return Results.NotFound();
-		var registered = record.Data.TournamentPlayers.Select(static tp => tp.PlayerId).ToArray();
+		var registered = tournament.TournamentPlayers.Select(static tp => tp.PlayerId)
+								   .ToArray();
 		return Results.Ok(Player.GetAll()
 								.Where(player => !registered.Contains(player.Id)));
+	}
+
+	public static IResult RegisterPlayer(int id, int playerId, int[] rounds)
+	{
+		var tournament = Lookup(id)?.Data;
+		var player = ReadById<Data.Player>(playerId);
+		if (tournament is null || player.IsNone)
+			return Results.NotFound();
+		if (rounds.Any(round => round < 1 || round > tournament.TotalRounds))
+			return Results.BadRequest();
+		var tournamentPlayer = tournament.TournamentPlayers
+										 .SingleOrDefault(tournamentPlayer => tournamentPlayer.PlayerId == playerId);
+		var roundList = Enumerable.Range(1, tournament.TotalRounds)
+								  .ToArray();
+		if (tournamentPlayer is null)
+			tournamentPlayer = CreateOne(new Data.TournamentPlayer { Tournament = tournament, Player = player });
+		else if (roundList.Any(roundNumber => !rounds.Contains(roundNumber)
+										   && tournament.Games
+														.Any(game => game.Round.Number == roundNumber
+																  && game.GamePlayers.Any(gamePlayer => gamePlayer.PlayerId == playerId))))
+			return Results.Conflict();
+		foreach (var roundNumber in roundList)
+			if (rounds.Contains(roundNumber))
+				tournamentPlayer.RegisterForRound(roundNumber);
+			else
+				tournamentPlayer.UnregisterForRound(roundNumber);
+		UpdateOne(tournamentPlayer);
+		return Results.Ok(tournamentPlayer);
+	}
+
+	public static IResult UnregisterPlayer(int id, int playerId)
+	{
+		var tournament = Lookup(id)?.Data;
+		var player = ReadById<Data.Player>(playerId);
+		if (tournament is null || player.IsNone)
+			return Results.NotFound();
+		var tournamentPlayer = tournament.TournamentPlayers.SingleOrDefault(tournamentPlayer => tournamentPlayer.PlayerId == playerId);
+		if (tournamentPlayer is null)
+			return Results.NoContent();
+		if (tournament.Games.Any(game => game.GamePlayers.Any(gamePlayer => gamePlayer.PlayerId == playerId)))
+			return Results.Conflict();
+		Delete(tournament.Rounds.SelectMany(round => round.RoundPlayers.Where(roundPlayer => roundPlayer.PlayerId == playerId)));
+		Delete(tournamentPlayer);
+		return Results.Ok();
 	}
 
 	protected override void Update(dynamic record)

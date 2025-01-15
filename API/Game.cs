@@ -59,5 +59,5 @@ internal sealed class Game : Rest<Game, Data.Game>
 	}
 
 	new public static IEnumerable<Game> GetAll()
-		=> throw new FileNotFoundException();
+		=> throw new NotImplementedException();
 }

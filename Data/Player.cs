@@ -19,7 +19,7 @@ public sealed class Player : IdentityRecord<Player>
 
 	public PlayerConflict[] PlayerConflicts => [..ReadMany<PlayerConflict>(playerConflict => playerConflict.Involves(Id))];
 
-	internal Group[] Groups => [..LinksOfType<GroupPlayer>().Select(static groupPlayer => groupPlayer.Group)];
+	public Group[] Groups => [..LinksOfType<GroupPlayer>().Select(static groupPlayer => groupPlayer.Group)];
 
 	public string GroupMemberships
 	{
