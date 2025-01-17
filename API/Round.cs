@@ -3,20 +3,24 @@
 namespace API;
 
 [PublicAPI]
-internal sealed class Round : Rest<Round, Data.Round>
+internal sealed class Round : Rest<Round, Data.Round, Round.RoundDetails>
 {
-	public int Number => Data.Number;
+	public int Number => Record.Number;
+	public bool Workable => Record.Workable;
+	public Data.Game.Statuses Status => Record.Status;
 
-	protected override dynamic Detail => new
-										 {
-											 TournamentId = Data.Tournament.IsEvent
-																? Data.Tournament.Id
-																: (int?)null,
-											 Games = Data.Tournament.IsEvent
-														 ? Data.Games.Select(static game => new Game { Data = game })
-														 : null
-										 };
+	[PublicAPI]
+	public sealed class RoundDetails : DetailClass
+	{
+		public int TournamentId { get; set; }
+		public int? SystemId { get; set; }
+	}
 
-	new internal static IEnumerable<Round> GetAll()
-		=> throw new NotImplementedException();
+	protected override RoundDetails Detail => new ()
+											  {
+												  TournamentId = Record.Tournament.Id,
+												  SystemId = Record.ScoringSystemId
+											  };
+
+	private IEnumerable<Game> Games => Record.Games.Select(static game => new Game { Record = game });
 }

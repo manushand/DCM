@@ -267,16 +267,17 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 				issues.Add("All powers must be assigned.");
 			if (powers.Distinct().Count() is not 7)
 				issues.Add("Power multiply assigned.");
+			var unknownResults = gamePlayers.Count(static gamePlayer => gamePlayer.Result is Unknown);
 			if (UsesGameResult)
 			{
-				if (gamePlayers.Any(static gamePlayer => gamePlayer.Result is Unknown))
+				if (unknownResults is not 0)
 					issues.Add("Power found without win/loss result.");
 				if (gamePlayers.All(static gamePlayer => gamePlayer.Result is Loss))
 					issues.Add("No winning player(s) found.");
 				else if (!DrawsAllowed && gamePlayers.Count(static gamePlayer => gamePlayer.Result is Win) is not 1)
 					issues.Add("No solo victor found.");
 			}
-			else if (gamePlayers.Any(static gamePlayer => gamePlayer.Result is not Unknown))
+			else if (unknownResults is not 7)
 				issues.Add("Win/Loss info found but not used in scoring system.");
 			if (UsesCenterCount)
 			{

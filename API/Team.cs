@@ -3,15 +3,23 @@
 namespace API;
 
 [PublicAPI]
-internal class Team : Rest<Team, Data.Team>
+internal class Team : Rest<Team, Data.Team, Team.TeamDetails>
 {
-	protected override dynamic Detail => new
-										 {
-											 Data.TournamentId,
-											 Players = Data.Players.Select(static player => new Player { Data = player })
-											 //	Score, Games, et al.?
-										 };
+	public int Id => Identity;
+	public string Name => RecordedName;
 
-	new public static IEnumerable<Team> GetAll()
-		=> throw new NotImplementedException();
+	[PublicAPI]
+	public sealed class TeamDetails : DetailClass
+	{
+		public int TournamentId { get; set; }
+		//	Score, et al.?
+	}
+
+	private IEnumerable<Player> Players => Record.Players.Select(static player => new Player { Record = player });
+
+	protected override TeamDetails Detail => new ()
+											 {
+												 TournamentId = Record.TournamentId
+												 //	Score, Games, et al.?
+											 };
 }

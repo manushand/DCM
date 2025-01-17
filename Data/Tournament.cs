@@ -96,7 +96,7 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 
 	public Team[] Teams => [..ReadMany<Team>(team => team.TournamentId == Id)];
 
-	public void AddPlayer(Player player)
+	public TournamentPlayer AddPlayer(Player player)
 		=> CreateOne(new TournamentPlayer { Tournament = this, Player = player });
 
 	#region IInfoRecord interface implementation

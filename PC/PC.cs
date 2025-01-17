@@ -282,6 +282,8 @@ internal static class PC
 	{
 		if (listControl is not (object @object and (ListBox or ComboBox)))
 			return;
+		//	This is just a neat little trick taking advantage of the fact that although the two types
+		//	don't share an interface, they have identical method signatures for what we want to do.
 		dynamic both = @object;
 		both.Items
 			.Clear();

@@ -25,6 +25,11 @@ public sealed class Round : IdentityRecord<Round>
 
 	public bool GamesSeeded => SeededGames.Length is not 0;
 	public bool GamesStarted => StartedGames.Length is not 0;
+	public Game.Statuses Status => GamesSeeded
+									   ? Seeded
+									   : Games.Any(static game => game.Status is Underway)
+										   ? Underway
+										   : Finished;
 
 	//	TODO - It may be useful to have Workable return true if a specific Setting is set,
 	//	TODO - allowing ALL rounds to be workable, even when finished

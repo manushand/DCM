@@ -29,7 +29,7 @@
       <Compile Update="Team.cs">
         <DependentUpon>Rest.cs</DependentUpon>
       </Compile>
-      <Compile Update="ScoringSystem.cs">
+      <Compile Update="System.cs">
         <DependentUpon>Rest.cs</DependentUpon>
       </Compile>
       <Compile Update="Group.cs">

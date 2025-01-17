@@ -124,7 +124,9 @@ internal sealed partial class ScoringSystemInfoForm : Form
 	{
 		error = null;
 		LoadSystemFromForm();
-		if (!WinLossCheckBox.Checked && !CenterCountCheckBox.Checked && !YearsPlayedCheckBox.Checked)
+		if ((ReadByName(ScoringSystem)?.Id ?? ScoringSystem.Id) != ScoringSystem.Id)
+			error = "Scoring system name already in use.";
+		else if (!WinLossCheckBox.Checked && !CenterCountCheckBox.Checked && !YearsPlayedCheckBox.Checked)
 			error = "At least one scoring method must be used.";
 		else if (ScoringSystem.FinalScoreFormulaMissing)
 			error = "A final score formula is required.";

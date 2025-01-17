@@ -2,43 +2,98 @@
 
 namespace API;
 
+using static DCM.DCM;
 using static Data.Data;
 
 [PublicAPI]
-internal class Player : Rest<Player, Data.Player>
+internal class Player : Rest<Player, Data.Player, Player.PlayerDetails>
 {
+	public int Id => Identity;
+
 	public string FirstName
 	{
-		get => Data.FirstName;
-		private set => Data.FirstName = value;
+		get => Record.FirstName;
+		private set => Record.FirstName = value;
 	}
 	public string LastName
 	{
-		get => Data.LastName;
-		private set => Data.LastName = value;
+		get => Record.LastName;
+		private set => Record.LastName = value;
 	}
 
-	protected override dynamic Detail => new
-										 {
-											 EmailAddresses = Data.EmailAddresses.NullIfEmpty()
-										 };
-
-	protected override void Update(dynamic record)
+	[PublicAPI]
+	internal sealed class PlayerDetails : DetailClass
 	{
-		Data.FirstName = record.FirstName;
-		Data.LastName = record.LastName;
-		Data.EmailAddress = string.Join(",", record.Details.EmailAddresses);
+		public ICollection<string>? EmailAddresses { get; set; }
+	}
+
+	protected override PlayerDetails Detail => new ()
+											   {
+												   EmailAddresses = Record.EmailAddresses.NullIfEmpty()
+											   };
+
+	private IEnumerable<Game> Games => Record.Games.Select(static game => new Game { Record = game });
+
+	new protected internal static void CreateNonCrudEndpoints(WebApplication app, string tag)
+	{
+		app.MapGet("player/{id:int}/games", GetGames)
+		   .WithName("GetPlayerGames")
+		   .WithDescription("List all games in which a player was involved.")
+		   .Produces<IEnumerable<Game>>()
+		   .Produces(Status404NotFound)
+		   .WithTags(tag);
+
+		app.MapGet("player/{id:int}/groups", GetGroups)
+		   .WithName("GetPlayerGroups")
+		   .WithDescription("List all groups to which a player belongs.")
+		   .Produces<IEnumerable<Group>>()
+		   .Produces(Status404NotFound)
+		   .WithTags(tag);
+
+		//	TODO
+	}
+
+	public static IResult GetGames(int id)
+	{
+		var player = RestForId(id)?.Record;
+		return player is null
+				   ? NotFound()
+				   : Ok(Game.RestFrom(player.Games));
+	}
+
+	public static IResult GetGroups(int id)
+	{
+		var player = RestForId(id)?.Record;
+		return player is null
+				   ? NotFound()
+				   : Ok(player.Groups.Select(static group => new Group { Record = group }));
+	}
+
+	protected internal override string[] Update(Player player)
+	{
+		var first = player.FirstName.Trim();
+		var last = player.LastName.Trim();
+		if (first.Length is 0 || last.Length is 0)
+			return ["Player first and last names are required."];
+
+		Record.FirstName = first;
+		Record.LastName = last;
+		var addresses = player.Details?.EmailAddresses ?? [];
+		if (addresses.Any(static address => !address.IsValidEmail()))
+			return ["Invalid player email address."];
+		Record.EmailAddress = string.Join(",", addresses);
+		return [];
 	}
 
 	public override bool Unlink()
 	{
-		var hasPlayedGames = Data.LinksOfType<Data.GamePlayer>().Length is not 0;
+		var hasPlayedGames = Record.LinksOfType<Data.GamePlayer>().Length is not 0;
 		if (hasPlayedGames)
 			return false;
-		Delete(Data.LinksOfType<Data.GroupPlayer>());
-		Delete(Data.LinksOfType<Data.TeamPlayer>());
-		Delete(Data.LinksOfType<Data.RoundPlayer>());
-		Delete(Data.LinksOfType<Data.TournamentPlayer>());
+		Delete(Record.LinksOfType<Data.GroupPlayer>());
+		Delete(Record.LinksOfType<Data.TeamPlayer>());
+		Delete(Record.LinksOfType<Data.RoundPlayer>());
+		Delete(Record.LinksOfType<Data.TournamentPlayer>());
 		return true;
 	}
 }

@@ -1,4 +1,5 @@
-﻿using DCM;
+﻿using Data;
+using DCM;
 using JetBrains.Annotations;
 
 namespace API;
@@ -6,64 +7,118 @@ namespace API;
 using static Data.Data;
 
 [PublicAPI]
-internal class Group : Rest<Group, Data.Group>
+internal class Group : Rest<Group, Data.Group, Group.GroupDetails>
 {
-	protected override dynamic Detail => new
-										 {
-											 Description = Data.Description.NullIfEmpty(),
-											 Data.ScoringSystemId,
-											 Data.Conflict,
-											 Players = Data.Players.Select(static player => new Player { Data = player }),
-											 Games = Data.Games.Select(static game => new Game { Data = game })
-										 };
+	public int Id => Identity;
+	public string Name => RecordedName;
 
-	private bool HasPlayer(int playerId)
-		=> Data.Players.Any(player => player.Id == playerId);
-
-	public static IResult GetMembers(int id)
+	[PublicAPI]
+	internal sealed class GroupDetails : DetailClass
 	{
-		var group = Lookup(id);
-		return group is null
-				   ? Results.NotFound()
-				   : Results.Ok(group.Detail.Players);
+		public string? Description { get; set; }
+		public int SystemId { get; set; }
+		public int Conflict { get; set; }
 	}
 
-	public static IResult GetNonMembers(int id)
+	protected override GroupDetails Detail => new ()
+											  {
+												  Description = Record.Description.NullIfEmpty(),
+												  SystemId = Record.ScoringSystemId,
+												  Conflict = Record.Conflict
+											  };
+
+	private IEnumerable<Player> Players => Record.Players.Select(static player => new Player { Record = player });
+	private IEnumerable<Game> Games => Record.Games.Select(static game => new Game { Record = game });
+
+	new protected internal static void CreateNonCrudEndpoints(WebApplication app, string tag)
 	{
-		var record = Lookup(id);
+		app.MapGet("group/{id:int}/games", GetGames)
+		   .WithName("GetGroupGames")
+		   .WithDescription("List all games played by the group.")
+		   .Produces<Game[]>()
+		   .WithTags(tag);
+		app.MapGet("group/{id:int}/game/{gameNumber:int}", GetGame)
+		   .WithName("GetGroupGame")
+		   .WithDescription("Get details on a game played by the group.")
+		   .Produces<Game>()
+		   .WithTags(tag);
+		app.MapGet("group/{id:int}/players", /* ?members=true */ GetMembers)
+		   .WithName("GetGroupPlayers")
+		   .WithDescription("List all players who are members or non-members of the group.")
+		   .Produces<Player[]>()
+		   .WithTags(tag);
+		app.MapPatch("group/{id:int}/player/{playerId:int}", ChangeMembership)
+		   .WithName("ChangeGroupPlayerMembership")
+		   .WithDescription("Add or remove a player from the group.")
+		   .Produces(Status200OK)
+		   .Produces(Status404NotFound)
+		   .WithTags(tag);
+	}
+
+	public static IResult GetGames(int id)
+	{
+		var record = RestForId(id);
 		return record is null
-				   ? Results.NotFound()
-				   : Results.Ok(ReadAll<Data.Player>().Where(player => !player.Groups.Select(static group => group.Id).Contains(id))
-													  .Select(static player => new Player { Data = player }));
+				   ? NotFound()
+				   : Ok(record.Games.OrderBy(static game => game.Number));
 	}
 
-	public static IResult AddMember(int id, int playerId)
+	public static IResult GetGame(int id, int gameNumber)
 	{
-		var group = Lookup(id);
-		var player = Player.Lookup(playerId)?.Data;
-		if (group is null || player is null)
-			return Results.NotFound();
-		if (group.HasPlayer(playerId))
-			return Results.Conflict();
-		CreateOne(new Data.GroupPlayer { Group = group.Data, Player = player });
-		return Results.Created();
+		var game = RestForId(id)?.Games.SingleOrDefault(game => game.Number == gameNumber);
+		game?.AddDetail();
+		return game is null
+				   ? NotFound()
+				   : Ok(game);
 	}
 
-	public static IResult DropMember(int id, int playerId)
+	public static IResult GetMembers(int id, bool members = true)
 	{
-		var group = Lookup(id);
-		var player = Player.Lookup(playerId)?.Data;
+		var record = RestForId(id);
+		if (record is null)
+			return NotFound();
+		if (members)
+			return Ok(record.Players);
+		var memberIds = record.Players
+							  .Select(static player => player.Identity)
+							  .ToList();
+		return Ok(Player.RestFrom(Player.GetMany(player => !memberIds.Contains(player.Id))));
+	}
+
+	public static IResult ChangeMembership(int id, int playerId, bool member)
+	{
+		var group = RestForId(id);
+		var player = Player.RestForId(playerId);
 		if (group is null || player is null)
-			return Results.NotFound();
-		if (!group.HasPlayer(playerId))
-			return Results.NoContent();
-		Delete(ReadOne<Data.GroupPlayer>(groupPlayer => groupPlayer.GroupId == id && groupPlayer.PlayerId == playerId).OrThrow());
-		return Results.Ok();
+			return NotFound();
+		if (member == group.HasPlayer(playerId))
+			return NoContent();
+		if (member)
+			CreateOne(new GroupPlayer { Group = group.Record, Player = player.Record });
+		else
+			//	TODO - Hmm.  Can a player be dropped even if they've played games that are group games?
+			Delete(ReadOne<GroupPlayer>(groupPlayer => groupPlayer.GroupId == id && groupPlayer.PlayerId == playerId).OrThrow());
+		return Ok();
 	}
 
 	public override bool Unlink()
 	{
-		Delete(ReadMany<Data.GroupPlayer>(groupPlayer => groupPlayer.GroupId == Id));
+		Delete(ReadMany<GroupPlayer>(groupPlayer => groupPlayer.GroupId == Id));
 		return true;
 	}
+
+	protected internal override string[] Update(Group group)
+	{
+		if (group.Details is null)
+			return ["Details are required"];
+		// TODO
+		Record.Name = group.Name;
+		Record.Description = group.Details.Description?.Trim() ?? string.Empty;
+		Record.ScoringSystem = ReadById<ScoringSystem>(group.Details.SystemId);
+		Record.Conflict = group.Details.Conflict;
+		return [];
+	}
+
+	private bool HasPlayer(int playerId)
+		=> Players.Any(player => player.Identity == playerId);
 }

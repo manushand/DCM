@@ -1,17 +1,13 @@
-﻿using JetBrains.Annotations;
+﻿using System.Reflection;
+using JetBrains.Annotations;
+using static System.Reflection.BindingFlags;
+
 namespace API;
 
 [PublicAPI]
 internal interface IRest
 {
-	int Id { get; }
-	string Name { get; }
-	dynamic? Details { get; }
+	const BindingFlags BindingFlags = Static | NonPublic | FlattenHierarchy | InvokeMethod;
 
-	static virtual string Endpoint { get; } = string.Empty;
-
-	static abstract IResult GetOne(int recordId);
-	static abstract IResult PutOne(int recordId, object updated);
-
-	bool Unlink();
+	static void CreateEndpoints() { }
 }
