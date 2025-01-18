@@ -83,18 +83,12 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 	} = Group.None;
 
 	public bool IsEvent => Group.IsNone;
-
 	public bool HasTeamTournament => TeamSize > 0;
-
-	public Round[] Rounds => [..ReadMany<Round>(round => round.TournamentId == Id).OrderBy(static round => round.Number)];
-
-	public Game[] Games => [..Rounds.SelectMany(static round => round.Games)];
-
-	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
-
 	public TournamentPlayer[] TournamentPlayers => [..ReadMany<TournamentPlayer>(tournamentPlayer => tournamentPlayer.TournamentId == Id)];
-
 	public Team[] Teams => [..ReadMany<Team>(team => team.TournamentId == Id)];
+	public Round[] Rounds => [..ReadMany<Round>(round => round.TournamentId == Id).OrderBy(static round => round.Number)];
+	public Game[] Games => [..Rounds.SelectMany(static round => round.Games)];
+	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 
 	public TournamentPlayer AddPlayer(Player player)
 		=> CreateOne(new TournamentPlayer { Tournament = this, Player = player });

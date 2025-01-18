@@ -1,4 +1,4 @@
-﻿using JetBrains.Annotations;
+﻿using Data;
 
 namespace API;
 
@@ -24,7 +24,7 @@ internal class Player : Rest<Player, Data.Player, Player.PlayerDetails>
 	[PublicAPI]
 	internal sealed class PlayerDetails : DetailClass
 	{
-		public ICollection<string>? EmailAddresses { get; set; }
+		required public ICollection<string>? EmailAddresses { get; set; }
 	}
 
 	protected override PlayerDetails Detail => new ()
@@ -32,9 +32,9 @@ internal class Player : Rest<Player, Data.Player, Player.PlayerDetails>
 												   EmailAddresses = Record.EmailAddresses.NullIfEmpty()
 											   };
 
-	private IEnumerable<Game> Games => Record.Games.Select(static game => new Game { Record = game });
+	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 
-	new protected internal static void CreateNonCrudEndpoints(WebApplication app, string tag)
+	new private protected static void CreateNonCrudEndpoints(WebApplication app, string tag)
 	{
 		app.MapGet("player/{id:int}/games", GetGames)
 		   .WithName("GetPlayerGames")
@@ -66,10 +66,10 @@ internal class Player : Rest<Player, Data.Player, Player.PlayerDetails>
 		var player = RestForId(id)?.Record;
 		return player is null
 				   ? NotFound()
-				   : Ok(player.Groups.Select(static group => new Group { Record = group }));
+				   : Ok(Group.RestFrom(player.Groups));
 	}
 
-	protected internal override string[] Update(Player player)
+	private protected override string[] Update(Player player)
 	{
 		var first = player.FirstName.Trim();
 		var last = player.LastName.Trim();
@@ -87,13 +87,13 @@ internal class Player : Rest<Player, Data.Player, Player.PlayerDetails>
 
 	public override bool Unlink()
 	{
-		var hasPlayedGames = Record.LinksOfType<Data.GamePlayer>().Length is not 0;
+		var hasPlayedGames = Record.LinksOfType<GamePlayer>().Length is not 0;
 		if (hasPlayedGames)
 			return false;
-		Delete(Record.LinksOfType<Data.GroupPlayer>());
-		Delete(Record.LinksOfType<Data.TeamPlayer>());
-		Delete(Record.LinksOfType<Data.RoundPlayer>());
-		Delete(Record.LinksOfType<Data.TournamentPlayer>());
+		Delete(Record.LinksOfType<GroupPlayer>());
+		Delete(Record.LinksOfType<TeamPlayer>());
+		Delete(Record.LinksOfType<RoundPlayer>());
+		Delete(Record.LinksOfType<TournamentPlayer>());
 		return true;
 	}
 }

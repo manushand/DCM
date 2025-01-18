@@ -1,26 +1,16 @@
-﻿using JetBrains.Annotations;
-
-namespace API;
+﻿namespace API;
 
 [PublicAPI]
 internal sealed class Round : Rest<Round, Data.Round, Round.RoundDetails>
 {
 	public int Number => Record.Number;
 	public bool Workable => Record.Workable;
-	public Data.Game.Statuses Status => Record.Status;
+	public Statuses Status => Record.Status;
+	public int? SystemId { get; set; }
 
-	[PublicAPI]
-	public sealed class RoundDetails : DetailClass
-	{
-		public int TournamentId { get; set; }
-		public int? SystemId { get; set; }
-	}
+	internal sealed class RoundDetails : DetailClass;
 
-	protected override RoundDetails Detail => new ()
-											  {
-												  TournamentId = Record.Tournament.Id,
-												  SystemId = Record.ScoringSystemId
-											  };
+	protected override RoundDetails Detail => new ();
 
-	private IEnumerable<Game> Games => Record.Games.Select(static game => new Game { Record = game });
+	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 }

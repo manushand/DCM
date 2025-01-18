@@ -1,6 +1,4 @@
-﻿using JetBrains.Annotations;
-
-namespace API;
+﻿namespace API;
 
 using Data;
 using static Data.Data;
@@ -30,52 +28,47 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		var type = typeof (T1);
 		var tag = type.Name;
 		var name = type.Name.ToLower();
-		app.MapGet($"{name}s",
-				   () => type.InvokeMember(nameof (GetAll), IRest.BindingFlags, null, null, null))
+		app.MapGet($"{name}s", GetAll)
 		   .WithName($"List{tag}s")
 		   .WithDescription($"List all {name}s.")
 		   .Produces(Status200OK, type.MakeArrayType())
 		   .WithTags(tag);
-		app.MapGet($"{name}/{{id:int}}",
-				   (int id) => type.InvokeMember(nameof (GetOne), IRest.BindingFlags, null, null, [id]))
+		app.MapGet($"{name}/{{id:int}}", static (int id) => GetOne(id))
 		   .WithName($"Get{tag}Details")
 		   .WithDescription($"Get details for a {name}.")
 		   .Produces(Status200OK, type)
 		   .Produces(Status404NotFound)
 		   .WithTags(tag);
-		app.MapPost(name,
-					(HttpRequest request, T1 @object) => type.InvokeMember(nameof (PostOne), IRest.BindingFlags, null, null, [request, @object]))
+		app.MapPost(name, PostOne)
 		   .WithName($"Add{tag}")
 		   .WithDescription($"Add a new {name}.")
 		   .Produces(Status201Created)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
 		   .WithTags(tag);
-		app.MapPut($"{name}/{{id:int}}",
-				   (int id, T1 @object) => type.InvokeMember(nameof (PutOne), IRest.BindingFlags, null, null, [id, @object]))
+		app.MapPut($"{name}/{{id:int}}", static (int id, T1 @object) => PutOne(id, @object))
 		   .WithName($"Update{tag}")
 		   .WithDescription($"Update details for a {name}.")
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
 		   .WithTags(tag);
-		app.MapDelete($"{name}/{{id:int}}",
-					  (int id) => type.InvokeMember(nameof (DeleteOne), IRest.BindingFlags, null, null, [id]))
+		app.MapDelete($"{name}/{{id:int}}", static (int id) => DeleteOne(id))
 		   .WithName($"Delete{tag}")
 		   .WithDescription($"Delete a {name}.")
 		   .Produces(Status204NoContent)
 		   .Produces(Status404NotFound)
 		   .WithTags(tag);
 
-		type.InvokeMember(nameof (CreateNonCrudEndpoints), IRest.BindingFlags, null, null, [app, tag]);
+		CreateNonCrudEndpoints(app, tag);
 	}
 
-	protected internal static void CreateNonCrudEndpoints(WebApplication app, string tag) { }
+	private protected static void CreateNonCrudEndpoints(WebApplication app, string tag) { }
 
-	protected internal static IResult GetAll()
+	private protected static IResult GetAll()
 		=> Ok(RestFrom(GetMany(static _ => true)));
 
-	protected internal static IResult GetOne(int recordId)
+	private protected static IResult GetOne(int recordId)
 	{
 		var record = RestForId(recordId);
 		return record is null
@@ -83,7 +76,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 				   : Ok(record);
 	}
 
-	protected internal static IResult PutOne(int recordId, T1 updated)
+	private protected static IResult PutOne(int recordId, T1 updated)
 	{
 		var record = RestForId(recordId);
 		if (record is null)
@@ -102,7 +95,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		return NoContent();
 	}
 
-	protected internal static IResult PostOne(HttpRequest request, T1 candidate)
+	private protected static IResult PostOne(HttpRequest request, T1 candidate)
 	{
 		if (ReadOne<T2>(@object => @object.Name == candidate.RecordedName) is not null)
 			return Conflict("Name already in use.");
@@ -118,7 +111,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		return Created($"{request.Path}/{record.Record.Id}", null);
 	}
 
-	protected internal static IResult DeleteOne(int recordId)
+	private protected static IResult DeleteOne(int recordId)
 	{
 		var record = RestForId(recordId);
 		if (record is null)
@@ -128,21 +121,27 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		return NoContent();
 	}
 
-	protected internal static T1? RestForId(int recordId, bool details = true)
+	private protected static T1? RestForId(int recordId, bool details = true)
 	{
 		var record = ReadByIdOrNull<T2>(recordId);
 		return record is null
 				   ? null
-				   : new T1 { Record = record, Detailed = details };
+				   : RestFrom(record, details);
 	}
 
-	protected internal static IEnumerable<T1> RestFrom(IEnumerable<T2> objects, bool details = false)
-		=> objects.Select(@object => new T1 { Record = @object, Detailed = details });
+	private protected static T2 GetById(int recordId)
+		=> ReadById<T2>(recordId);
 
-	protected internal static IEnumerable<T2> GetMany(Func<T2, bool> predicate)
+	private protected static T1 RestFrom(T2 @object, bool details)
+		=> new () { Record = @object, Detailed = details };
+
+	private protected static IEnumerable<T1> RestFrom(IEnumerable<T2> objects, bool details = false)
+		=> objects.Select(@object => RestFrom(@object, details));
+
+	private protected static IEnumerable<T2> GetMany(Func<T2, bool> predicate)
 		=> ReadMany(predicate);
 
-	protected internal virtual string[] Update(T1 record)
+	private protected virtual string[] Update(T1 record)
 		=> throw new NotImplementedException();
 
 	public virtual bool Unlink()

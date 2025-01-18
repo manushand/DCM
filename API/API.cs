@@ -1,14 +1,17 @@
-﻿global using static Microsoft.AspNetCore.Http.StatusCodes;
+﻿global using JetBrains.Annotations;
+global using static Microsoft.AspNetCore.Http.StatusCodes;
 global using static Microsoft.AspNetCore.Http.Results;
+global using static Data.Game;
+global using static Data.Game.Statuses;
+global using static Data.GamePlayer;
+global using static Data.Tournament;
 //
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
-using JetBrains.Annotations;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using static System.Reflection.Assembly;
 using static System.Text.Json.Serialization.JsonIgnoreCondition;
 
 namespace API;
@@ -73,19 +76,10 @@ internal static class API
 			app.UseHttpsRedirection()
 			   .UseHsts();
 
-		var restTypes = GetExecutingAssembly().GetTypes()
-											  .Where(static type => typeof (IRest).IsAssignableFrom(type)
-																 && type is
-																	{
-																		IsClass: true,
-																		IsAbstract: false,
-																		Name: nameof (Group)
-																		  or  nameof (Player)
-																		  or  nameof (System)
-																		  or  nameof (Tournament)
-																	});
-		foreach (var type in restTypes)
-			type.InvokeMember(nameof (IRest.CreateEndpoints), IRest.BindingFlags, null, null, [app]);
+		Group.CreateEndpoints(app);
+		Player.CreateEndpoints(app);
+		System.CreateEndpoints(app);
+		Tournament.CreateEndpoints(app);
 
 		app.Run();
 	}

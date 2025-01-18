@@ -1,7 +1,4 @@
-﻿using Data;
-using JetBrains.Annotations;
-
-namespace API;
+﻿namespace API;
 
 using static Data.Data;
 
@@ -17,42 +14,42 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 		[PublicAPI]
 		public sealed class SeedingDetails
 		{
-			public bool AssignPowers { get; set; }
-			public Data.Tournament.PowerGroups GroupPowers { get; set; }
-			public int PlayerConflict { get; set; }
-			public int PowerConflict { get; set; }
-			public bool ProgressiveScoreConflict { get; set; }
-			public int? TeamConflict { get; set; }
+			required public bool AssignPowers { get; set; }
+			required public PowerGroups GroupPowers { get; set; }
+			required public int PlayerConflict { get; set; }
+			required public int PowerConflict { get; set; }
+			required public bool ProgressiveScoreConflict { get; set; }
+			required public int? TeamConflict { get; set; }
 		}
 
 		[PublicAPI]
 		public sealed class ScoringDetails
 		{
-			public int SystemId { get; set; }
-			public int UnplayedScore { get; set; }
-			public int MinimumRounds { get; set; }
-			public int RoundsToDrop { get; set; }
-			public bool DropBeforeFinalRound { get; set; }
-			public int RoundsToScale { get; set; }
-			public int? ScalePercentage { get; set; }
+			required public int SystemId { get; set; }
+			required public int UnplayedScore { get; set; }
+			required public int MinimumRounds { get; set; }
+			required public int RoundsToDrop { get; set; }
+			required public bool DropBeforeFinalRound { get; set; }
+			required public int RoundsToScale { get; set; }
+			required public int? ScalePercentage { get; set; }
 		}
 
 		[PublicAPI]
 		public sealed class TeamDetails
 		{
-			public int TeamSize { get; set; }
-			public int TeamConflict { get; set; }
-			public bool TeamsPlayMultipleRounds { get; set; }
-			public int? TeamRound { get; set; }
-			public bool PlayerCanJoinManyTeams { get; set; }
+			required public int TeamSize { get; set; }
+			required public int TeamConflict { get; set; }
+			required public bool TeamsPlayMultipleRounds { get; set; }
+			required public int? TeamRound { get; set; }
+			required public bool PlayerCanJoinManyTeams { get; set; }
 		}
 
 		required public string Date { get; set; }
-		public string? Description { get; set; }
-		public int TotalRounds { get; set; }
+		required public string? Description { get; set; }
+		required public int TotalRounds { get; set; }
 		required public SeedingDetails Seeding { get; set; }
 		required public ScoringDetails Scoring { get; set; }
-		public TeamDetails? TeamTournament { get; set; }
+		required public TeamDetails? TeamTournament { get; set; }
 	}
 
 	protected override TournamentDetails Detail => new ()
@@ -97,19 +94,24 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 																			  }
 												   };
 
-	new protected internal static void CreateNonCrudEndpoints(WebApplication app, string tag)
+	private static readonly string[] InvalidRoundNumber = ["Invalid round number(s)."];
+	private static readonly string[] RoundNumbersDisllowed = ["Round number(s) disallowed when unregistering from a tournament."];
+
+	new private protected static void CreateNonCrudEndpoints(WebApplication app, string tag)
 	{
 		//	Players
-		app.MapGet("tournament/{id:int}/players", GetPlayerRegistration)
+		app.MapGet("tournament/{id:int}/players",
+				   GetPlayerRegistration)
 		   .WithDescription("List all players registered or unregistered for the tournament, with the rounds for which each player is registered.")
-		   .Produces<TournamentPlayer[]>()
+		   .Produces<RoundPlayer[]>()
 		   .Produces(Status404NotFound)
 		   .WithTags(tag);
-		app.MapPatch("tournament/{id:int}/player/{playerId:int}" /* ?register=true&round=1&round=2... */, UpdateRegistration)
+		app.MapPatch("tournament/{id:int}/player/{playerId:int}" /* ?register=true&round=1&round=2... */,
+					 UpdateRegistration)
 		   .WithDescription("Register a player for the tournament while setting, updating, or clearing the player's round registration.")
 		   .Produces(Status200OK)
 		   .Produces(Status204NoContent)
-		   .Produces<string>(Status400BadRequest)
+		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
 		   .WithTags(tag);
 
@@ -123,7 +125,7 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 				   static (int id, int roundNumber, bool registered = true) => GetPlayerRegistration(id, [roundNumber], registered))
 		   .WithDescription("Get the registered players for a registered tournament player.")
 		   .Produces(Status200OK)
-		   .Produces<string>(Status400BadRequest)
+		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
 		   .WithTags(tag);
 		app.MapPatch("tournament/{id:int}/round/{roundNumber:int}/player/{playerId:int}" /* ?register=true */,
@@ -131,7 +133,7 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 		   .WithDescription("Set the round registration for a registered tournament player.")
 		   .Produces(Status200OK)
 		   .Produces(Status204NoContent)
-		   .Produces<string>(Status400BadRequest)
+		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
 		   .Produces(Status404NotFound)
 		   .WithTags(tag);
@@ -147,7 +149,7 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 		   .WithTags(tag);
 	}
 
-	new protected internal static IResult GetAll()
+	new private protected static IResult GetAll()
 		=> Ok(RestFrom(GetMany(static tournament => tournament.IsEvent)));
 
 	private static IResult GetPlayerRegistration(int id, int[] round, bool registered = true)
@@ -156,29 +158,28 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 		if (tournament is null || !tournament.IsEvent)
 			return NotFound();
 		if (round.Any(number => number < 1 || number > tournament.TotalRounds))
-			return BadRequest("Invalid round number(s).");
+			return BadRequest(InvalidRoundNumber);
 		if (registered || round.Length is not 0)
 		{
 			var players = round.Aggregate(tournament.TournamentPlayers
-													.Select(static tp => new TournamentPlayer { Record = tp.Player, Rounds = tp.Rounds }),
+													.Select(static tp => new RoundPlayer { Record = tp.Player, Rounds = tp.Rounds }),
 										  (current, number) => current.Where(tp => tp.Rounds is not null && tp.Rounds.Contains(number) == registered));
 			return Ok(players);
 		}
 		var playerIds = tournament.TournamentPlayers.Select(static player => player.PlayerId);
-		return Ok(Player.GetMany(player => !playerIds.Contains(player.Id))
-						.Select(static tp => new TournamentPlayer { Record = tp }));
+		return Ok(RoundPlayer.RestFrom(Player.GetMany(player => !playerIds.Contains(player.Id))));
 	}
 
 	private static IResult UpdateRegistration(int id, int playerId, int[] round, bool register, bool forSingleRound = false)
 	{
 		var tournament = RestForId(id)?.Record;
-		var player = ReadById<Data.Player>(playerId);
+		var player = Player.GetById(playerId);
 		if (tournament is null || player.IsNone || !tournament.IsEvent)
 			return NotFound();
 		if (!register || round.Length is not 0)
-			return BadRequest("Round number(s) are incompatible when unregistering from a tournament.");
+			return BadRequest(RoundNumbersDisllowed);
 		if (round.Any(number => number < 1 || number > tournament.TotalRounds))
-			return BadRequest("Invalid round number(s).");
+			return BadRequest(InvalidRoundNumber);
 		var roundList = forSingleRound
 							? round
 							: Enumerable.Range(1, tournament.TotalRounds)
@@ -230,7 +231,7 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 				   : Ok(RestForId(game.Id));
 	}
 
-	protected internal override string[] Update(Tournament tournament)
+	private protected override string[] Update(Tournament tournament)
 	{
 		//	TODO - Add more validation - name collision, ridiculous date, etc., etc.
 		var details = tournament.Details;
@@ -259,7 +260,7 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 		Record.PowerConflict = details.Seeding.PowerConflict;
 		Record.ProgressiveScoreConflict = details.Seeding.ProgressiveScoreConflict;
 
-		Record.ScoringSystem = ReadById<ScoringSystem>(details.Scoring.SystemId);
+		Record.ScoringSystem = System.GetById(details.Scoring.SystemId);
 		Record.UnplayedScore = details.Scoring.UnplayedScore;
 		Record.MinimumRounds = details.Scoring.MinimumRounds;
 		Record.RoundsToDrop = details.Scoring.RoundsToDrop;
@@ -270,7 +271,7 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 	}
 
 	[PublicAPI]
-	internal sealed class TournamentPlayer : Player
+	internal sealed class RoundPlayer : Player
 	{
 		public int[]? Rounds { get; init; }
 	}

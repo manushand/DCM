@@ -1,9 +1,8 @@
 ﻿using Data;
-using DCM;
-using JetBrains.Annotations;
 
 namespace API;
 
+using DCM;
 using static Data.Data;
 
 [PublicAPI]
@@ -15,9 +14,9 @@ internal class Group : Rest<Group, Data.Group, Group.GroupDetails>
 	[PublicAPI]
 	internal sealed class GroupDetails : DetailClass
 	{
-		public string? Description { get; set; }
-		public int SystemId { get; set; }
-		public int Conflict { get; set; }
+		required public string? Description { get; set; }
+		required public int SystemId { get; set; }
+		required public int Conflict { get; set; }
 	}
 
 	protected override GroupDetails Detail => new ()
@@ -27,10 +26,10 @@ internal class Group : Rest<Group, Data.Group, Group.GroupDetails>
 												  Conflict = Record.Conflict
 											  };
 
-	private IEnumerable<Player> Players => Record.Players.Select(static player => new Player { Record = player });
-	private IEnumerable<Game> Games => Record.Games.Select(static game => new Game { Record = game });
+	private IEnumerable<Player> Players => Player.RestFrom(Record.Players);
+	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 
-	new protected internal static void CreateNonCrudEndpoints(WebApplication app, string tag)
+	new private protected static void CreateNonCrudEndpoints(WebApplication app, string tag)
 	{
 		app.MapGet("group/{id:int}/games", GetGames)
 		   .WithName("GetGroupGames")
@@ -107,14 +106,14 @@ internal class Group : Rest<Group, Data.Group, Group.GroupDetails>
 		return true;
 	}
 
-	protected internal override string[] Update(Group group)
+	private protected override string[] Update(Group group)
 	{
 		if (group.Details is null)
 			return ["Details are required"];
 		// TODO
 		Record.Name = group.Name;
 		Record.Description = group.Details.Description?.Trim() ?? string.Empty;
-		Record.ScoringSystem = ReadById<ScoringSystem>(group.Details.SystemId);
+		Record.ScoringSystem = System.GetById(group.Details.SystemId);
 		Record.Conflict = group.Details.Conflict;
 		return [];
 	}

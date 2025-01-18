@@ -1,22 +1,21 @@
-﻿using JetBrains.Annotations;
-
-namespace API;
+﻿namespace API;
 
 [PublicAPI]
 internal class Game : Rest<Game, Data.Game, Game.GameDetails>
 {
+	public int Id => Record.Id;
 	public string? Name => Record.Name.NullIfEmpty();
 
-	public Data.Game.Statuses Status => Record.Status;
+	public Statuses Status => Record.Status;
 	public int Number => Record.Number;
 
 	[PublicAPI]
 	public sealed class GameDetails : DetailClass
 	{
-		public string? Description { get; set; }
-		public int? TournamentId { get; set; }
-		public int? RoundNumber { get; set; }
-		public int? GroupId { get; set; }
+		required public string? Description { get; init; }
+		required public int? TournamentId { get; init; }
+		required public int? RoundNumber { get; init; }
+		required public int? GroupId { get; init; }
 	}
 
 	private IEnumerable<GamePlayer> Players => Record.GamePlayers.Select(static gamePlayer => new GamePlayer(gamePlayer));
@@ -42,7 +41,7 @@ internal class Game : Rest<Game, Data.Game, Game.GameDetails>
 		public Player? Player => _gamePlayer.Player.IsNone
 									 ? null
 									 : Player.RestForId(_gamePlayer.PlayerId, false);
-		public Data.GamePlayer.PowerNames Power => _gamePlayer.Power;
+		public PowerNames Power => _gamePlayer.Power;
 		public Data.GamePlayer.Results Result => _gamePlayer.Result;
 		public int? Years => _gameScored && _scoringSystem.UsesYearsPlayed
 								 ? _gamePlayer.Years
@@ -70,12 +69,12 @@ internal class Game : Rest<Game, Data.Game, Game.GameDetails>
 		{
 			_gamePlayer = gamePlayer;
 			_scoringSystem = scoringSystem ?? gamePlayer.Game.ScoringSystem;
-			if (gamePlayer.Game is { IsNone: false, Status: Data.Game.Statuses.Finished, Scored: false })
+			if (gamePlayer.Game is { Status: Finished, Scored: false })
 				gamePlayer.Game.CalculateScores();
 			_gameScored = gamePlayer.Game.IsNone || gamePlayer.Game.Scored;
 		}
 
-		internal GamePlayer(Data.GamePlayer.PowerNames power,
+		internal GamePlayer(PowerNames power,
 							Data.GamePlayer.Results result,
 							int? centers,
 							int? years,
