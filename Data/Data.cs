@@ -8,7 +8,7 @@ global using static DCM.DCM;
 global using static Data.Data;
 global using static Data.Game.Statuses;
 global using static Data.GamePlayer;
-global using static Data.GamePlayer.PowerNames;
+global using static Data.GamePlayer.Powers;
 global using static Data.GamePlayer.Results;
 global using static Data.Tournament.PowerGroups;
 //
@@ -369,7 +369,7 @@ public static partial class Data
 				   : record.GetDateTime(ordinal);
 	}
 
-	internal static bool GroupSharedBy(this PowerGroups groups, PowerNames power1, PowerNames power2)
+	internal static bool GroupSharedBy(this PowerGroups groups, Powers power1, Powers power2)
 	{
 		var groupings = (typeof (PowerGroups).GetField(groups.ToString())
 											 ?.GetCustomAttribute(typeof (PowerGroupingsAttribute)) as PowerGroupingsAttribute)

@@ -1,16 +1,16 @@
 ﻿namespace API;
 
 [PublicAPI]
-internal sealed class Round : Rest<Round, Data.Round, Round.RoundDetails>
+internal sealed class Round : Rest<Round, Data.Round, Round.Detail>
 {
 	public int Number => Record.Number;
 	public bool Workable => Record.Workable;
 	public Statuses Status => Record.Status;
 	public int? SystemId { get; set; }
 
-	internal sealed class RoundDetails : DetailClass;
+	internal sealed class Detail : DetailClass;
 
-	protected override RoundDetails Detail => new ();
+	protected override Detail Info => new ();
 
 	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 }

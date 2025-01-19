@@ -3,16 +3,16 @@
 using static Data.Data;
 
 [PublicAPI]
-internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.TournamentDetails>
+internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Detail>
 {
 	public int Id => Identity;
 	public string Name => RecordedName;
 
 	[PublicAPI]
-	internal sealed class TournamentDetails : DetailClass
+	internal sealed class Detail : DetailClass
 	{
 		[PublicAPI]
-		public sealed class SeedingDetails
+		public sealed class SeedingDetail
 		{
 			required public bool AssignPowers { get; set; }
 			required public PowerGroups GroupPowers { get; set; }
@@ -23,7 +23,7 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 		}
 
 		[PublicAPI]
-		public sealed class ScoringDetails
+		public sealed class ScoringDetail
 		{
 			required public int SystemId { get; set; }
 			required public int UnplayedScore { get; set; }
@@ -35,7 +35,7 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 		}
 
 		[PublicAPI]
-		public sealed class TeamDetails
+		public sealed class TeamDetail
 		{
 			required public int TeamSize { get; set; }
 			required public int TeamConflict { get; set; }
@@ -47,12 +47,12 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Tournam
 		required public string Date { get; set; }
 		required public string? Description { get; set; }
 		required public int TotalRounds { get; set; }
-		required public SeedingDetails Seeding { get; set; }
-		required public ScoringDetails Scoring { get; set; }
-		required public TeamDetails? TeamTournament { get; set; }
+		required public SeedingDetail Seeding { get; set; }
+		required public ScoringDetail Scoring { get; set; }
+		required public TeamDetail? TeamTournament { get; set; }
 	}
 
-	protected override TournamentDetails Detail => new ()
+	protected override Detail Info => new ()
 												   {
 													   Date = $"{Record.Date:d}",
 													   Description = Record.Description.NullIfEmpty(),

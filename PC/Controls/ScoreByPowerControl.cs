@@ -65,7 +65,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 	private void BestGamesTabControl_DrawItem(object sender,
 											  DrawItemEventArgs e)
 	{
-		var style = (e.Index.As<PowerNames>() - 1).CellStyle();
+		var style = (e.Index.As<Powers>() - 1).CellStyle();
 		e.Graphics.FillRectangle(new SolidBrush(style.BackColor), e.Bounds);
 		e.Bounds.Offset(1, e.State is DrawItemState.Selected
 							   ? -2
@@ -158,7 +158,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		[DisplayName("Round─Game")]
 		public string Round => $"{Game.Round}─{Game.Number}";
 
-		internal PowerNames Power => GamePlayer.Power;
+		internal Powers Power => GamePlayer.Power;
 		internal double GameScore => GamePlayer.FinalScore;
 
 		private GamePlayer GamePlayer { get; }

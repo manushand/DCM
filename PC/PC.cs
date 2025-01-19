@@ -20,7 +20,7 @@ global using static Data.Data;
 global using static Data.Game;
 global using static Data.Game.Statuses;
 global using static Data.GamePlayer;
-global using static Data.GamePlayer.PowerNames;
+global using static Data.GamePlayer.Powers;
 global using static Data.GamePlayer.Results;
 global using Group = Data.Group;
 //
@@ -57,7 +57,7 @@ internal static class PC
 	internal static bool SkippingHandlers { get; private set; }
 	internal static int[] Seven => [..Range(0, 7).OrderBy(static _ => RandomNumber())];
 
-	private static readonly SortedDictionary<PowerNames, DataGridViewCellStyle> PowerColors
+	private static readonly SortedDictionary<Powers, DataGridViewCellStyle> PowerColors
 		= new ()
 		  {
 			  [Austria] = new ()
@@ -404,7 +404,7 @@ internal static class PC
 	{
 		dataGridView.Columns[column].HeaderCell.Style.Alignment = MiddleCenter;
 		foreach (DataGridViewRow row in dataGridView.Rows)
-			row.Cells[column].Style = $"{row.Cells[column].Value}".As<PowerNames>().CellStyle();
+			row.Cells[column].Style = $"{row.Cells[column].Value}".As<Powers>().CellStyle();
 	}
 
 	internal static T GetFromRow<T>(this DataGridViewRow dataGridViewRow)
@@ -531,7 +531,7 @@ internal static class PC
             ? page => tabControl.TabPages.Insert(position ?? tabControl.TabCount, page)
             : (Action<TabPage>)tabControl.TabPages.Remove)(tabPage);
 
-	public static DataGridViewCellStyle CellStyle(this PowerNames power)
+	public static DataGridViewCellStyle CellStyle(this Powers power)
 		=> PowerColors[power];
 
 	internal static string Tag(this DataGridViewCellStyle style)

@@ -4,9 +4,9 @@ using Data;
 namespace API;
 
 [PublicAPI]
-internal sealed class System : Rest<System, ScoringSystem, System.SystemDetails>
+internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 {
-	public enum FormulaLanguages : byte
+	public enum Languages : byte
 	{
 		DCM,
 		[EnumMember(Value = "C#")]
@@ -17,7 +17,7 @@ internal sealed class System : Rest<System, ScoringSystem, System.SystemDetails>
 	public string Name => RecordedName;
 
 	[PublicAPI]
-	internal sealed class SystemDetails : DetailClass
+	internal sealed class Detail : DetailClass
 	{
 		required public int? PointsPerGame { get; set; }
 		required public int SignificantDigits { get; set; }
@@ -31,38 +31,38 @@ internal sealed class System : Rest<System, ScoringSystem, System.SystemDetails>
 		required public string? PlayerAnteFormula { get; set; }
 		required public string? ProvisionalScoreFormula { get; set; }
 		required public string FinalScoreFormula { get; set; }
-		required public FormulaLanguages FormulaLanguage { get; set; }
-		required public IEnumerable<TestGamePlayer> TestGame { get; set; }
+		required public Languages Language { get; set; }
+		required public IEnumerable<Tester> TestGame { get; set; }
 	}
 
-	protected override SystemDetails Detail => new ()
-											   {
-												   PointsPerGame = Record.PointsPerGame,
-												   SignificantDigits = Record.SignificantDigits,
-												   DrawPermissions = Record.DrawPermissions,
-												   FinalGameYear = Record.FinalGameYear,
-												   UsesGameResult = Record.UsesGameResult,
-												   UsesCenterCount = Record.UsesCenterCount,
-												   UsesYearsPlayed = Record.UsesYearsPlayed,
-												   UsesOtherScore = Record.UsesOtherScore,
-												   OtherScoreAlias = Record.OtherScoreAlias.NullIfEmpty(),
-												   FormulaLanguage = Record.UsesCompiledFormulas
-																		 ? FormulaLanguages.CSharp
-																		 : FormulaLanguages.DCM,
-												   PlayerAnteFormula = Record.UsesPlayerAnte
-																		   ? Record.PlayerAnteFormula.NullIfEmpty()
-																		   : null,
-												   ProvisionalScoreFormula = Record.UsesProvisionalScore
-																				 ? Record.ProvisionalScoreFormula.NullIfEmpty()
-																				 : null,
-												   FinalScoreFormula = Record.FinalScoreFormula,
-												   TestGame = TestData()
-											   };
+	protected override Detail Info => new ()
+									  {
+										  PointsPerGame = Record.PointsPerGame,
+										  SignificantDigits = Record.SignificantDigits,
+										  DrawPermissions = Record.DrawPermissions,
+										  FinalGameYear = Record.FinalGameYear,
+										  UsesGameResult = Record.UsesGameResult,
+										  UsesCenterCount = Record.UsesCenterCount,
+										  UsesYearsPlayed = Record.UsesYearsPlayed,
+										  UsesOtherScore = Record.UsesOtherScore,
+										  OtherScoreAlias = Record.OtherScoreAlias.NullIfEmpty(),
+										  Language = Record.UsesCompiledFormulas
+														 ? Languages.CSharp
+														 : Languages.DCM,
+										  PlayerAnteFormula = Record.UsesPlayerAnte
+																  ? Record.PlayerAnteFormula.NullIfEmpty()
+																  : null,
+										  ProvisionalScoreFormula = Record.UsesProvisionalScore
+																		? Record.ProvisionalScoreFormula.NullIfEmpty()
+																		: null,
+										  FinalScoreFormula = Record.FinalScoreFormula,
+										  TestGame = TestData()
+									  };
 
 	[PublicAPI]
-	public sealed class TestGamePlayer(Game.GamePlayer gamePlayer)
+	public sealed class Tester(Game.GamePlayer gamePlayer)
 	{
-		public PowerNames Power { get; init; } = gamePlayer.Power;
+		public Powers Power { get; init; } = gamePlayer.Power;
 		public GamePlayer.Results Result { get; init; } = gamePlayer.Result;
 		public int? Years { get; init; } = gamePlayer.Years;
 		public int? Centers { get; init; } = gamePlayer.Centers;
@@ -76,7 +76,7 @@ internal sealed class System : Rest<System, ScoringSystem, System.SystemDetails>
 
 		private static Data.Game _testGame = new ();
 
-		public GamePlayer Record
+		internal GamePlayer Record
 			=> new ()
 			   {
 				   Power = Power,
@@ -88,13 +88,13 @@ internal sealed class System : Rest<System, ScoringSystem, System.SystemDetails>
 			   };
 	}
 
-	private IEnumerable<TestGamePlayer> TestData()
+	private IEnumerable<Tester> TestData()
 	{
 		if (Record.TestGamePlayers is null)
 			return [];
 		if (!Record.ScoreWithResults(Record.TestGamePlayers, out _))
 			throw new ();
-		return Record.TestGamePlayers.Select(gamePlayer => new TestGamePlayer(new (gamePlayer, Record)));
+		return Record.TestGamePlayers.Select(gamePlayer => new Tester(new (gamePlayer, Record)));
 	}
 
 	private protected override string[] Update(System system)
@@ -116,13 +116,13 @@ internal sealed class System : Rest<System, ScoringSystem, System.SystemDetails>
 		Record.PlayerAnteFormula = system.Details.PlayerAnteFormula ?? string.Empty;
 		Record.ProvisionalScoreFormula = system.Details.ProvisionalScoreFormula ?? string.Empty;
 		Record.FinalScoreFormula = system.Details.FinalScoreFormula;
-		Record.SetCompiledFormulae(system.Details.FormulaLanguage is FormulaLanguages.CSharp);
+		Record.SetCompiledFormulae(system.Details.Language is Languages.CSharp);
 		try
 		{
-			TestGamePlayer.SetTestGameSystem(this);
+			Tester.SetTestGameSystem(this);
 			var testData = system.Details.TestGame.Select(static player => player.Record).ToList();
 			if (testData.Count is not 7
-			|| testData.Any(power => power.Power is PowerNames.TBD
+			|| testData.Any(power => power.Power is Powers.TBD
 								  || Record.UsesYearsPlayed && (power.Years < 1 || power.Years > Record.FinalGameYear - 1900)
 								  || Record.UsesCenterCount && power.Centers > 34)
 			|| testData.Select(static power => power.Power).Distinct().Count() is not 7

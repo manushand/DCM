@@ -6,7 +6,7 @@ using static DCM.DCM;
 using static Data.Data;
 
 [PublicAPI]
-internal class Player : Rest<Player, Data.Player, Player.PlayerDetails>
+internal class Player : Rest<Player, Data.Player, Player.Detail>
 {
 	public int Id => Identity;
 
@@ -22,12 +22,12 @@ internal class Player : Rest<Player, Data.Player, Player.PlayerDetails>
 	}
 
 	[PublicAPI]
-	internal sealed class PlayerDetails : DetailClass
+	internal sealed class Detail : DetailClass
 	{
 		required public ICollection<string>? EmailAddresses { get; set; }
 	}
 
-	protected override PlayerDetails Detail => new ()
+	protected override Detail Info => new ()
 											   {
 												   EmailAddresses = Record.EmailAddresses.NullIfEmpty()
 											   };

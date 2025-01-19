@@ -10,9 +10,9 @@ public sealed partial class Scoring
 	internal bool IsNone => ScoringSystem.IsNone;
 
 	private ScoringSystem ScoringSystem { get; }
-	private Dictionary<PowerNames, GamePlayer> GamePlayers { get; }
+	private Dictionary<Powers, GamePlayer> GamePlayers { get; }
 
-	internal PowerNames PlayerPower
+	internal Powers PlayerPower
 	{
 		private get;
 		set;
@@ -57,22 +57,22 @@ public sealed partial class Scoring
 
 	#region Scoring properties shared by all players
 
-	public bool OtherScoreNotValidated => PlayerPower is PowerNames.Austria;
+	public bool OtherScoreNotValidated => PlayerPower is GamePlayer.Powers.Austria;
 
 	//  C# Formula use case: foreach (var (name, data) in Powers) ...
-	public Dictionary<PowerNames, PowerData> Powers { get; }
+	public Dictionary<Powers, PowerData> Powers { get; }
 
 	//	C# Formula use case: if (Player == Austria) ...
 	public PowerData Player => Powers[PlayerPower];
 
 	//	C# Formula use case: Austria.Centers, England.Scoring, etc.
-	public PowerData Austria => Powers[PowerNames.Austria];
-	public PowerData England => Powers[PowerNames.England];
-	public PowerData France => Powers[PowerNames.France];
-	public PowerData Germany => Powers[PowerNames.Germany];
-	public PowerData Italy => Powers[PowerNames.Italy];
-	public PowerData Russia => Powers[PowerNames.Russia];
-	public PowerData Turkey => Powers[PowerNames.Turkey];
+	public PowerData Austria => Powers[GamePlayer.Powers.Austria];
+	public PowerData England => Powers[GamePlayer.Powers.England];
+	public PowerData France => Powers[GamePlayer.Powers.France];
+	public PowerData Germany => Powers[GamePlayer.Powers.Germany];
+	public PowerData Italy => Powers[GamePlayer.Powers.Italy];
+	public PowerData Russia => Powers[GamePlayer.Powers.Russia];
+	public PowerData Turkey => Powers[GamePlayer.Powers.Turkey];
 
 	public bool SingleWinner => Winners is 1;
 

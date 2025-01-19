@@ -11,12 +11,12 @@ internal abstract class Rest<T1, T2, T3> : IRest
 {
 	internal int Identity => Record.Id;
 	internal virtual string RecordedName => Record.Name;
-	public T3? Details => Detailed ? Detail : null;
+	public T3? Details => Detailed ? Info : null;
 
 	internal abstract class DetailClass;
 
 	private bool Detailed { get; set; }
-	protected abstract T3 Detail { get; }
+	protected abstract T3 Info { get; }
 
 	protected internal T2 Record { get; init; } = new ();
 

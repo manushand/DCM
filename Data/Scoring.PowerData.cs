@@ -17,7 +17,7 @@ public sealed partial class Scoring
 
 		private Results Result => _result.OrThrow("Invalid reference to win/loss result.");
 
-		public PowerNames Power { get; }
+		public Powers Power { get; }
 
 		public int Centers => _centers.OrThrow("Invalid reference to center count.");
 		public int Years => _years.OrThrow("Invalid reference to years played.");

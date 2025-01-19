@@ -184,7 +184,7 @@ internal sealed partial class GroupGamesForm : Form
 											 {
 												 Game = Game,
 												 Player = PlayerComboBoxes[index].GetSelected<Player>(),
-												 Power = index.As<PowerNames>(),
+												 Power = index.As<Powers>(),
 												 Result = Unknown
 											 })
 							.ToArray());

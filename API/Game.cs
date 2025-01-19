@@ -1,7 +1,7 @@
 ﻿namespace API;
 
 [PublicAPI]
-internal class Game : Rest<Game, Data.Game, Game.GameDetails>
+internal class Game : Rest<Game, Data.Game, Game.Detail>
 {
 	public int Id => Record.Id;
 	public string? Name => Record.Name.NullIfEmpty();
@@ -10,7 +10,7 @@ internal class Game : Rest<Game, Data.Game, Game.GameDetails>
 	public int Number => Record.Number;
 
 	[PublicAPI]
-	public sealed class GameDetails : DetailClass
+	public sealed class Detail : DetailClass
 	{
 		required public string? Description { get; init; }
 		required public int? TournamentId { get; init; }
@@ -20,7 +20,7 @@ internal class Game : Rest<Game, Data.Game, Game.GameDetails>
 
 	private IEnumerable<GamePlayer> Players => Record.GamePlayers.Select(static gamePlayer => new GamePlayer(gamePlayer));
 
-	protected override GameDetails Detail => new ()
+	protected override Detail Info => new ()
 											 {
 												 Description = Record.Tournament.IsEvent
 																   ? $"{Record.Tournament} - Round {Record.Round.Number} - Game {Record.Number}"
@@ -41,7 +41,7 @@ internal class Game : Rest<Game, Data.Game, Game.GameDetails>
 		public Player? Player => _gamePlayer.Player.IsNone
 									 ? null
 									 : Player.RestForId(_gamePlayer.PlayerId, false);
-		public PowerNames Power => _gamePlayer.Power;
+		public Powers Power => _gamePlayer.Power;
 		public Data.GamePlayer.Results Result => _gamePlayer.Result;
 		public int? Years => _gameScored && _scoringSystem.UsesYearsPlayed
 								 ? _gamePlayer.Years
@@ -74,7 +74,7 @@ internal class Game : Rest<Game, Data.Game, Game.GameDetails>
 			_gameScored = gamePlayer.Game.IsNone || gamePlayer.Game.Scored;
 		}
 
-		internal GamePlayer(PowerNames power,
+		internal GamePlayer(Powers power,
 							Data.GamePlayer.Results result,
 							int? centers,
 							int? years,

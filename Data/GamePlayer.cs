@@ -2,7 +2,7 @@
 
 public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer>
 {
-	public enum PowerNames : sbyte
+	public enum Powers : sbyte
 	{
 		//	IMPORTANT: Values must be -1 through 6
 		TBD = -1,
@@ -27,7 +27,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 	public int? Years;
 	public double Other;
 	public double PlayerAnte;
-	public PowerNames Power;
+	public Powers Power;
 	public Results Result;
 
 	private double? _finalScore;
@@ -113,7 +113,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		record.CheckDataType<GamePlayer>();
 		GameId = record.Integer(nameof (GameId));
 		PlayerId = record.Integer(nameof (PlayerId));
-		Power = record.IntegerAs<PowerNames>(nameof (Power));
+		Power = record.IntegerAs<Powers>(nameof (Power));
 		Result = record.IntegerAs<Results>(nameof (Result));
 		Years = record.NullableInteger(nameof (Years));
 		Centers = record.NullableInteger(nameof (Centers));
@@ -157,7 +157,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 	public List<string> ConflictDetails { get; } = [];
 
 	private List<PlayerConflict> PlayerConflicts { get; } = [];
-	private List<PowerNames> PowersPlayedInTournament { get; } = [];
+	private List<Powers> PowersPlayedInTournament { get; } = [];
 	private List<int> PlayerIdsPlayedInTournament { get; } = [];
 	private List<int> TournamentTeamPlayerIds { get; } = [];
 	private Dictionary<Group, int[]> PlayerGroups { get; } = [];

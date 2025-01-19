@@ -63,6 +63,13 @@ internal static class API
 							  {
 								  config.SwaggerDoc(version, new () { Title = Title, Version = version });
 								  config.SchemaFilter<EnumSchemaFilter>();
+								  config.CustomSchemaIds(static type => type.FullName?
+																			.Replace("API.", string.Empty)
+																			.Replace("Data.Game", string.Empty)
+																			.Replace("Data.", string.Empty)
+																			.Replace("ScoringSystem", "System")
+																			.Replace("Detail+", string.Empty)
+																			.Replace("+", "."));
 							  });
 
 		var app = builder.Build();
@@ -70,12 +77,12 @@ internal static class API
 		{
 			app.MapOpenApi();
 			app.UseSwagger()
-			   .UseSwaggerUI(config => config.SwaggerEndpoint($"/swagger/{version}/swagger.json", $"{Title} {version}"));
+			   .UseSwaggerUI(config => config.SwaggerEndpoint($"./{version}/swagger.json", $"{Title} {version}"));
 		}
 		else
 			app.UseHttpsRedirection()
 			   .UseHsts();
-
+		app.UseDeveloperExceptionPage();
 		Group.CreateEndpoints(app);
 		Player.CreateEndpoints(app);
 		System.CreateEndpoints(app);
@@ -95,24 +102,20 @@ internal static class API
 	{
 		public void Apply(OpenApiSchema model, SchemaFilterContext context)
 		{
-			if (!context.Type.IsEnum)
-				return;
-			model.Enum =
-			[
-				..Enum.GetNames(context.Type)
-					  .Select(enumName =>
-							  {
-								  var enumMemberAttribute = context.Type
-																   .GetMember(enumName)
-																   .FirstOrDefault(m => m.DeclaringType == context.Type)
-																   ?.GetCustomAttributes(typeof (EnumMemberAttribute), false)
-																   .OfType<EnumMemberAttribute>()
-																   .FirstOrDefault();
-								  return new OpenApiString(string.IsNullOrWhiteSpace(enumMemberAttribute?.Value)
-															   ? enumName
-															   : enumMemberAttribute.Value);
-							  })
-			];
+			if (context.Type.IsEnum)
+				model.Enum =
+				[
+					..Enum.GetNames(context.Type)
+						  .Select(enumName => new OpenApiString(context.Type
+																	   .GetMember(enumName)
+																	   .FirstOrDefault(m => m.DeclaringType == context.Type)?
+																	   .GetCustomAttributes(typeof (EnumMemberAttribute), false)
+																	   .OfType<EnumMemberAttribute>()
+																	   .FirstOrDefault()?
+																	   .Value?
+																	   .Trim()
+																	   .NullIfEmpty() ?? enumName))
+				];
 		}
 	}
 }

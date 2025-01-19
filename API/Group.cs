@@ -6,20 +6,20 @@ using DCM;
 using static Data.Data;
 
 [PublicAPI]
-internal class Group : Rest<Group, Data.Group, Group.GroupDetails>
+internal class Group : Rest<Group, Data.Group, Group.Detail>
 {
 	public int Id => Identity;
 	public string Name => RecordedName;
 
 	[PublicAPI]
-	internal sealed class GroupDetails : DetailClass
+	internal sealed class Detail : DetailClass
 	{
 		required public string? Description { get; set; }
 		required public int SystemId { get; set; }
 		required public int Conflict { get; set; }
 	}
 
-	protected override GroupDetails Detail => new ()
+	protected override Detail Info => new ()
 											  {
 												  Description = Record.Description.NullIfEmpty(),
 												  SystemId = Record.ScoringSystemId,

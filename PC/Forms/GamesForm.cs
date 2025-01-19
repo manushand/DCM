@@ -86,7 +86,7 @@ internal sealed partial class GamesForm : Form
 			ScoringSystemComboBox.SetSelectedItem(Game.ScoringSystem);
 			var players = GamePlayers.SelectSorted(static gamePlayer => gamePlayer.Player) //	TODO: does this not have/need a by last name option?
 									 .ToArray();
-			foreach (var (box, power) in PlayerNameComboBoxes.Select(static (box, power) => (box, power.As<PowerNames>())))
+			foreach (var (box, power) in PlayerNameComboBoxes.Select(static (box, power) => (box, power.As<Powers>())))
 			{
 				box.FillWithRecords(players);
 				box.Enabled = AnyPowerUnassigned;
@@ -196,7 +196,7 @@ internal sealed partial class GamesForm : Form
         });
 		var gamePlayer = GamePlayers.ByPlayerId(playerComboBox.GetSelected<Player>().Id);
 		gamePlayer.Power = PlayerNameComboBoxes.IndexOf(playerComboBox)
-											   .As<PowerNames>();
+											   .As<Powers>();
 		UpdateOne(gamePlayer);
 		if (PlayerNameComboBoxes.All(static box => box.SelectedItem is not null))
 			SkipHandlers(() =>

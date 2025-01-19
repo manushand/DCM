@@ -137,7 +137,7 @@ public sealed partial class ScoringSystem
 		//	The PowerNames and *Aliases collections can be HashSets and Dictionaries
 		//	(with case-insensitive comparer), since a full (long-as-can-be) alias is
 		//	parsed from the Formula before a match for it is sought in these collections.
-		private static readonly HashSet<string> PowerNames = Enum.GetNames<PowerNames>()
+		private static readonly HashSet<string> PowerNames = Enum.GetNames<Powers>()
 																 .Where(static power => power != $"{TBD}")
 																 .ToHashSet(OrdinalIgnoreCase);
 
@@ -475,7 +475,7 @@ public sealed partial class ScoringSystem
 					//	Power reference lookup.
 					var isPowerAlias = PowerNames.Contains(alias);
 					var powerContext = isPowerAlias
-										   ? Scoring.Powers[alias.As<PowerNames>()]
+										   ? Scoring.Powers[alias.As<Powers>()]
 										   : _powerData;
 					if (isPowerAlias)
 						switch (_formula.FirstOrDefault())

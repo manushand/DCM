@@ -1,14 +1,14 @@
 ﻿namespace API;
 
 [PublicAPI]
-internal class Team : Rest<Team, Data.Team, Team.TeamDetails>
+internal class Team : Rest<Team, Data.Team, Team.Detail>
 {
 	public int Id => Identity;
 	public string Name => RecordedName;
 
-	internal sealed class TeamDetails : DetailClass;
+	internal sealed class Detail : DetailClass;
 
-	protected override TeamDetails Detail => new ();
+	protected override Detail Info => new ();
 
 	private IEnumerable<Player> Players => Player.RestFrom(Record.Players);
 }

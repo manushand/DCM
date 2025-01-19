@@ -112,7 +112,7 @@ internal sealed partial class GameControl : UserControl
 		//	a PowerName.
 		foreach (var label in Controls.OfType<Label>().Where(static label => label.Tag is not null))
 		{
-			var style = $"{label.Tag}".As<PowerNames>().CellStyle();
+			var style = $"{label.Tag}".As<Powers>().CellStyle();
 			(label.BackColor, label.ForeColor) = (style.BackColor, style.ForeColor);
 		}
 	}
@@ -202,20 +202,20 @@ internal sealed partial class GameControl : UserControl
 	internal List<GamePlayer>? GetPlayerData()
 		=> AllComboBoxes.All(static comboBox => comboBox.SelectedItem is null)
 			   ? null
-			   : [..Seven.Select(power => PlayerData(power.As<PowerNames>(),
+			   : [..Seven.Select(power => PlayerData(power.As<Powers>(),
 													 ResultComboBoxes[power],
 													 CentersComboBoxes[power],
 													 YearsComboBoxes[power],
 													 OtherTextBoxes[power]))];
 
-	private static GamePlayer PlayerData(PowerNames powerNames,
+	private static GamePlayer PlayerData(Powers power,
 										 ListControl winLossComboBox,
 										 ListControl centersComboBox,
 										 ListControl yearsComboBox,
 										 TextBoxBase otherTextBox)
 		=> new ()
 		   {
-			   Power = powerNames,
+			   Power = power,
 			   Result = winLossComboBox.Enabled
 							? winLossComboBox.SelectedIndex
 											 .As<Results>()

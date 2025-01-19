@@ -1,4 +1,2 @@
-﻿using static System.Windows.Forms.Application;
-
-EnableVisualStyles();
-Run(new MainForm());
+﻿Application.EnableVisualStyles();
+Application.Run(new MainForm());

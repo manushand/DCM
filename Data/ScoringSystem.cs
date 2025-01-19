@@ -98,7 +98,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 			TestGamePlayers = [
 								..powers.Select(static data => new GamePlayer
 															   {
-																   Power = data[0].As<PowerNames>(),
+																   Power = data[0].As<Powers>(),
 																   Result = data[1].Length is 0
 																				? Unknown
 																				: data[1].As<Results>(),
@@ -319,7 +319,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 			return issues.Count is 0;
 		}
 
-		double Calculate(PowerNames powerName,
+		double Calculate(Powers powerName,
 						 FormulaType formulaType)
 		{
 			var code = formulaType switch
