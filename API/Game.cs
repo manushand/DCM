@@ -1,7 +1,7 @@
 ﻿namespace API;
 
 [PublicAPI]
-internal class Game : Rest<Game, Data.Game, Game.Detail>
+internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 {
 	public int Id => Record.Id;
 	public string? Name => Record.Name.NullIfEmpty();
@@ -10,29 +10,20 @@ internal class Game : Rest<Game, Data.Game, Game.Detail>
 	public int Number => Record.Number;
 
 	[PublicAPI]
-	public sealed class Detail : DetailClass
-	{
-		required public string? Description { get; init; }
-		required public int? TournamentId { get; init; }
-		required public int? RoundNumber { get; init; }
-		required public int? GroupId { get; init; }
-	}
+	public sealed record Detail(string? EndpointDescriptionAttribute, int? TournamentId, int? RoundNumber, int? GroupId) : DetailClass;
 
 	private IEnumerable<GamePlayer> Players => Record.GamePlayers.Select(static gamePlayer => new GamePlayer(gamePlayer));
 
-	protected override Detail Info => new ()
-											 {
-												 Description = Record.Tournament.IsEvent
+	protected override Detail Info => new (Record.Tournament.IsEvent
 																   ? $"{Record.Tournament} - Round {Record.Round.Number} - Game {Record.Number}"
 																   : $"{Record.Tournament.Group} - Game {Record.Number}",
-												 TournamentId = Record.Tournament.IsEvent
+										   Record.Tournament.IsEvent
 																	? Record.Tournament.Id
 																	: null,
-												 RoundNumber = Record.Tournament.IsEvent
+										   Record.Tournament.IsEvent
 															   ? Record.Round.Number
 															   : null,
-												 GroupId = Record.Tournament.GroupId
-											 };
+										   Record.Tournament.GroupId);
 
 	[PublicAPI]
 	internal sealed class GamePlayer

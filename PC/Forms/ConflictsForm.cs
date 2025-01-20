@@ -29,7 +29,7 @@ internal sealed partial class ConflictsForm : Form
 							NewConflictNameComboBox.FillWithSortedPlayers(other => !conflictedIds.Contains(other.Id)
 																				&& other.Id != playerId);
 							ConflictsDataGridView.FillWith(conflicts.Select(conflict => new ConflictedPlayer(conflict, playerId))
-																	.OrderBy(static conflictedPlayer => conflictedPlayer.Player.Name));
+																	.OrderBy(static conflictedPlayer => $"{conflictedPlayer.Player}"));
 						});
 
 	#endregion
@@ -39,7 +39,9 @@ internal sealed partial class ConflictsForm : Form
 	//	NOTE: Don't put this in a separate file in another part of this partial class;
 	//	If you do, VS will think it has a visual Form and will set up a designer file.
 
-	private readonly record struct ConflictedPlayer
+	//	Also, do not make this a record struct; that causes it to fail
+	//	(and you won't know it till runtime) when sent to .FillWith().
+	private sealed record ConflictedPlayer
 	{
 		public Player Player { get; }
 
@@ -106,7 +108,10 @@ internal sealed partial class ConflictsForm : Form
 
 	private void PlayerNameComboBox_SelectedIndexChanged(object sender,
 														 EventArgs e)
-		=> Player = PlayerNameComboBox.GetSelected<Player>();
+	{
+		Player = PlayerNameComboBox.GetSelected<Player>();
+		UpdateConflictInfo();
+	}
 
 	private void ModifyConflictButton_Click(object sender,
 											EventArgs e)

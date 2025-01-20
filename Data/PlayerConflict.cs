@@ -15,8 +15,8 @@ public sealed class PlayerConflict : LinkRecord, IInfoRecord
 	[UsedImplicitly]
 	public PlayerConflict() { }
 
-	internal PlayerConflict(int playerId,
-							int conflictedPlayerId)
+	public PlayerConflict(int playerId,
+						  int conflictedPlayerId)
 	{
 		if (playerId <= 0)
 			throw new ArgumentException("Bad playerId", nameof (playerId));
@@ -29,7 +29,7 @@ public sealed class PlayerConflict : LinkRecord, IInfoRecord
 	public Player PlayerConflictedWith(int playerId)
 		=> Players.Single(player => player.Id != playerId);
 
-	internal bool Involves(int playerId)
+	public bool Involves(int playerId)
 		=> playerId == PlayerIds.playerId || OtherPlayerId == playerId;
 
 	#region IInfoRecord interface implementation

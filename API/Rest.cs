@@ -13,7 +13,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	internal virtual string RecordedName => Record.Name;
 	public T3? Details => Detailed ? Info : null;
 
-	internal abstract class DetailClass;
+	internal abstract record DetailClass;
 
 	private bool Detailed { get; set; }
 	protected abstract T3 Info { get; }
@@ -23,47 +23,44 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	internal void AddDetail()
 		=> Detailed = true;
 
-	internal static void CreateEndpoints(WebApplication app)
+	protected static readonly Type Type = typeof (T1);
+	protected static string Tag => Type.Name;
+	protected static string TypeName => Type.Name.ToLower();
+
+	internal static void CreateCrudEndpoints(WebApplication app)
 	{
-		var type = typeof (T1);
-		var tag = type.Name;
-		var name = type.Name.ToLower();
-		app.MapGet($"{name}s", GetAll)
-		   .WithName($"List{tag}s")
-		   .WithDescription($"List all {name}s.")
-		   .Produces(Status200OK, type.MakeArrayType())
-		   .WithTags(tag);
-		app.MapGet($"{name}/{{id:int}}", static (int id) => GetOne(id))
-		   .WithName($"Get{tag}Details")
-		   .WithDescription($"Get details for a {name}.")
-		   .Produces(Status200OK, type)
+		app.MapGet($"{TypeName}s", GetAll)
+		   .WithName($"List{Tag}s")
+		   .WithDescription($"List all {TypeName}s.")
+		   .Produces(Status200OK, Type.MakeArrayType())
+		   .WithTags(Tag);
+		app.MapGet($"{TypeName}/{{id:int}}", static (int id) => GetOne(id))
+		   .WithName($"Get{Tag}Details")
+		   .WithDescription($"Get details for a {TypeName}.")
+		   .Produces(Status200OK, Type)
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
-		app.MapPost(name, PostOne)
-		   .WithName($"Add{tag}")
-		   .WithDescription($"Add a new {name}.")
+		   .WithTags(Tag);
+		app.MapPost(TypeName, PostOne)
+		   .WithName($"Add{Tag}")
+		   .WithDescription($"Add a new {TypeName}.")
 		   .Produces(Status201Created)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
-		   .WithTags(tag);
-		app.MapPut($"{name}/{{id:int}}", static (int id, T1 @object) => PutOne(id, @object))
-		   .WithName($"Update{tag}")
-		   .WithDescription($"Update details for a {name}.")
+		   .WithTags(Tag);
+		app.MapPut($"{TypeName}/{{id:int}}", static (int id, T1 @object) => PutOne(id, @object))
+		   .WithName($"Update{Tag}")
+		   .WithDescription($"Update details for a {TypeName}.")
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
-		   .WithTags(tag);
-		app.MapDelete($"{name}/{{id:int}}", static (int id) => DeleteOne(id))
-		   .WithName($"Delete{tag}")
-		   .WithDescription($"Delete a {name}.")
+		   .WithTags(Tag);
+		app.MapDelete($"{TypeName}/{{id:int}}", static (int id) => DeleteOne(id))
+		   .WithName($"Delete{Tag}")
+		   .WithDescription($"Delete a {TypeName}.")
 		   .Produces(Status204NoContent)
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
-
-		CreateNonCrudEndpoints(app, tag);
+		   .WithTags(Tag);
 	}
-
-	private protected static void CreateNonCrudEndpoints(WebApplication app, string tag) { }
 
 	private protected static IResult GetAll()
 		=> Ok(RestFrom(GetMany(static _ => true)));
@@ -132,7 +129,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	private protected static T2 GetById(int recordId)
 		=> ReadById<T2>(recordId);
 
-	private protected static T1 RestFrom(T2 @object, bool details)
+	private protected static T1 RestFrom(T2 @object, bool details = false)
 		=> new () { Record = @object, Detailed = details };
 
 	private protected static IEnumerable<T1> RestFrom(IEnumerable<T2> objects, bool details = false)

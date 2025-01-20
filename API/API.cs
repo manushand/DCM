@@ -65,7 +65,7 @@ internal static class API
 								  config.SchemaFilter<EnumSchemaFilter>();
 								  config.CustomSchemaIds(static type => type.FullName?
 																			.Replace("API.", string.Empty)
-																			.Replace("Data.Game", string.Empty)
+																			.Replace("Data.GamePlayer", "Player")
 																			.Replace("Data.", string.Empty)
 																			.Replace("ScoringSystem", "System")
 																			.Replace("Detail+", string.Empty)
@@ -76,13 +76,14 @@ internal static class API
 		if (app.Environment.IsDevelopment())
 		{
 			app.MapOpenApi();
-			app.UseSwagger()
+			app.UseDeveloperExceptionPage()
+			   .UseSwagger()
 			   .UseSwaggerUI(config => config.SwaggerEndpoint($"./{version}/swagger.json", $"{Title} {version}"));
 		}
 		else
 			app.UseHttpsRedirection()
 			   .UseHsts();
-		app.UseDeveloperExceptionPage();
+
 		Group.CreateEndpoints(app);
 		Player.CreateEndpoints(app);
 		System.CreateEndpoints(app);

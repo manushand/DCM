@@ -22,34 +22,44 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 	}
 
 	[PublicAPI]
-	internal sealed class Detail : DetailClass
-	{
-		required public ICollection<string>? EmailAddresses { get; set; }
-	}
+	internal sealed record Detail(ICollection<string>? EmailAddresses) : DetailClass;
 
-	protected override Detail Info => new ()
-											   {
-												   EmailAddresses = Record.EmailAddresses.NullIfEmpty()
-											   };
+	protected override Detail Info => new (Record.EmailAddresses.NullIfEmpty());
 
 	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 
-	new private protected static void CreateNonCrudEndpoints(WebApplication app, string tag)
+	private static readonly string[] CannotBumpAndDrop = ["Cannot both bump and drop a player conflict"];
+
+	protected internal static void CreateEndpoints(WebApplication app)
 	{
+		CreateCrudEndpoints(app);
+
 		app.MapGet("player/{id:int}/games", GetGames)
 		   .WithName("GetPlayerGames")
 		   .WithDescription("List all games in which a player was involved.")
 		   .Produces<IEnumerable<Game>>()
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 
 		app.MapGet("player/{id:int}/groups", GetGroups)
 		   .WithName("GetPlayerGroups")
 		   .WithDescription("List all groups to which a player belongs.")
 		   .Produces<IEnumerable<Group>>()
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 
+		app.MapGet("player/{id:int}/conflicts", GetConflicts)
+		   .WithName("GetPlayerConflicts")
+		   .WithDescription("Get the list of all conflicts for a player.")
+		   .Produces<IEnumerable<Conflict>>()
+		   .Produces(Status404NotFound)
+		   .WithTags(Tag);
+
+		app.MapPatch("player/{id:int}/conflict/{playerId:int}", SetPlayerConflict)
+		   .WithName("GetOrSetPlayerConflict")
+		   .WithDescription("Get or update a player conflict.")
+		   .Produces(Status404NotFound)
+		   .WithTags(Tag);
 		//	TODO
 	}
 
@@ -95,5 +105,37 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		Delete(Record.LinksOfType<RoundPlayer>());
 		Delete(Record.LinksOfType<TournamentPlayer>());
 		return true;
+	}
+
+	[PublicAPI]
+	private sealed record Conflict(Player Player, int Value);
+
+	public static IResult GetConflicts(int id)
+		=> RestForId(id) is null
+			   ? NotFound()
+			   : Ok(ReadMany<PlayerConflict>(pc => pc.Involves(id))
+						.Select(pc => new Conflict(RestFrom(pc.PlayerConflictedWith(id)), pc.Value)));
+
+	public static IResult SetPlayerConflict(int id, int playerId, int? value)
+	{
+		var player = RestForId(id);
+		var other = RestForId(playerId, false);
+		if (player is null || other is null)
+			return NotFound();
+		var playerConflict = ReadOne<PlayerConflict>(conflict => conflict.Involves(id) && conflict.Involves(playerId));
+		var result = new Conflict(other, value ?? playerConflict?.Value ?? default);
+		if (value is null)
+			return Ok(result);
+		if (playerConflict is not null)
+			if (value is 0)
+				Delete(playerConflict);
+			else
+			{
+				playerConflict.Value = value.Value;
+				UpdateOne(playerConflict);
+			}
+		else if (value is not 0)
+			CreateOne(new PlayerConflict(id, playerId) { Value = value.Value });
+		return Ok(result);
 	}
 }

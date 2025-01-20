@@ -8,7 +8,7 @@ internal sealed class Round : Rest<Round, Data.Round, Round.Detail>
 	public Statuses Status => Record.Status;
 	public int? SystemId { get; set; }
 
-	internal sealed class Detail : DetailClass;
+	internal sealed record Detail : DetailClass;
 
 	protected override Detail Info => new ();
 

@@ -6,7 +6,7 @@ internal class Team : Rest<Team, Data.Team, Team.Detail>
 	public int Id => Identity;
 	public string Name => RecordedName;
 
-	internal sealed class Detail : DetailClass;
+	internal sealed record Detail : DetailClass;
 
 	protected override Detail Info => new ();
 

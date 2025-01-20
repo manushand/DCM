@@ -3,109 +3,91 @@
 using static Data.Data;
 
 [PublicAPI]
-internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Detail>
+internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.Detail>
 {
 	public int Id => Identity;
 	public string Name => RecordedName;
 
 	[PublicAPI]
-	internal sealed class Detail : DetailClass
-	{
-		[PublicAPI]
-		public sealed class SeedingDetail
-		{
-			required public bool AssignPowers { get; set; }
-			required public PowerGroups GroupPowers { get; set; }
-			required public int PlayerConflict { get; set; }
-			required public int PowerConflict { get; set; }
-			required public bool ProgressiveScoreConflict { get; set; }
-			required public int? TeamConflict { get; set; }
-		}
+	internal sealed record Detail(
+		string Date,
+		string? Description,
+		int TotalRounds,
+		SeedingDetail Seeding,
+		ScoringDetail Scoring,
+		TeamDetail? TeamTournament) : DetailClass;
 
-		[PublicAPI]
-		public sealed class ScoringDetail
-		{
-			required public int SystemId { get; set; }
-			required public int UnplayedScore { get; set; }
-			required public int MinimumRounds { get; set; }
-			required public int RoundsToDrop { get; set; }
-			required public bool DropBeforeFinalRound { get; set; }
-			required public int RoundsToScale { get; set; }
-			required public int? ScalePercentage { get; set; }
-		}
+	[PublicAPI]
+	internal sealed record SeedingDetail(
+		bool AssignPowers,
+		PowerGroups GroupPowers,
+		int PlayerConflict,
+		int PowerConflict,
+		bool ProgressiveScoreConflict,
+		int? TeamConflict);
 
-		[PublicAPI]
-		public sealed class TeamDetail
-		{
-			required public int TeamSize { get; set; }
-			required public int TeamConflict { get; set; }
-			required public bool TeamsPlayMultipleRounds { get; set; }
-			required public int? TeamRound { get; set; }
-			required public bool PlayerCanJoinManyTeams { get; set; }
-		}
+	[PublicAPI]
+	internal sealed record ScoringDetail(
+		int SystemId,
+		int UnplayedScore,
+		int MinimumRounds,
+		int RoundsToDrop,
+		bool DropBeforeFinalRound,
+		int RoundsToScale,
+		int? ScalePercentage);
 
-		required public string Date { get; set; }
-		required public string? Description { get; set; }
-		required public int TotalRounds { get; set; }
-		required public SeedingDetail Seeding { get; set; }
-		required public ScoringDetail Scoring { get; set; }
-		required public TeamDetail? TeamTournament { get; set; }
-	}
+	[PublicAPI]
+	internal sealed record TeamDetail(
+		int TeamSize,
+		int TeamConflict,
+		bool TeamsPlayMultipleRounds,
+		int? TeamRound,
+		bool PlayerCanJoinManyTeams);
 
-	protected override Detail Info => new ()
-												   {
-													   Date = $"{Record.Date:d}",
-													   Description = Record.Description.NullIfEmpty(),
-													   TotalRounds = Record.TotalRounds,
-													   Seeding = new ()
-																 {
-																	 AssignPowers = Record.AssignPowers,
-																	 GroupPowers = Record.GroupPowers,
-																	 PlayerConflict = Record.PlayerConflict,
-																	 PowerConflict = Record.PowerConflict,
-																	 ProgressiveScoreConflict = Record.ProgressiveScoreConflict,
-																	 TeamConflict = Record.TeamSize is 0
-																						? null
-																						: Record.TeamConflict
-																 },
-													   Scoring = new ()
-																 {
-																	 SystemId = Record.ScoringSystemId,
-																	 UnplayedScore = Record.UnplayedScore,
-																	 MinimumRounds = Record.MinimumRounds,
-																	 RoundsToDrop = Record.RoundsToDrop,
-																	 DropBeforeFinalRound = Record.RoundsToDrop is not 0 && Record.DropBeforeFinalRound,
-																	 RoundsToScale = Record.RoundsToScale,
-																	 ScalePercentage = Record.RoundsToScale is 0
-																						   ? null
-																						   : Record.ScalePercentage
-																 },
-													   TeamTournament = Record.TeamSize is 0
-																			? null
-																			: new ()
-																			  {
-																				  TeamSize = Record.TeamSize,
-																				  TeamConflict = Record.TeamConflict,
-																				  TeamsPlayMultipleRounds = Record.TeamsPlayMultipleRounds,
-																				  TeamRound = Record.TeamsPlayMultipleRounds
-																								  ? null
-																								  : Record.TeamRound,
-																				  PlayerCanJoinManyTeams = Record.PlayerCanJoinManyTeams
-																			  }
-												   };
+	protected override Detail Info => new ($"{Record.Date:d}",
+										   Record.Description.NullIfEmpty(),
+										   Record.TotalRounds,
+										   new (Record.AssignPowers,
+												Record.GroupPowers,
+												Record.PlayerConflict,
+												Record.PowerConflict,
+												Record.ProgressiveScoreConflict,
+												Record.TeamSize is 0
+													? null
+													: Record.TeamConflict),
+										   new (Record.ScoringSystemId,
+												Record.UnplayedScore,
+												Record.MinimumRounds,
+												Record.RoundsToDrop,
+												Record.RoundsToDrop is not 0 && Record.DropBeforeFinalRound,
+												Record.RoundsToScale,
+												Record.RoundsToScale is 0
+													? null
+													: Record.ScalePercentage),
+										   Record.TeamSize is 0
+											   ? null
+											   : new (Record.TeamSize,
+													  Record.TeamConflict,
+													  Record.TeamsPlayMultipleRounds,
+													  Record.TeamsPlayMultipleRounds
+														  ? null
+														  : Record.TeamRound,
+													  Record.PlayerCanJoinManyTeams));
 
 	private static readonly string[] InvalidRoundNumber = ["Invalid round number(s)."];
 	private static readonly string[] RoundNumbersDisllowed = ["Round number(s) disallowed when unregistering from a tournament."];
 
-	new private protected static void CreateNonCrudEndpoints(WebApplication app, string tag)
+	internal static void CreateEndpoints(WebApplication app)
 	{
+		CreateCrudEndpoints(app);
+
 		//	Players
 		app.MapGet("tournament/{id:int}/players",
 				   GetPlayerRegistration)
 		   .WithDescription("List all players registered or unregistered for the tournament, with the rounds for which each player is registered.")
 		   .Produces<RoundPlayer[]>()
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 		app.MapPatch("tournament/{id:int}/player/{playerId:int}" /* ?register=true&round=1&round=2... */,
 					 UpdateRegistration)
 		   .WithDescription("Register a player for the tournament while setting, updating, or clearing the player's round registration.")
@@ -113,21 +95,21 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Detail>
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 
 		//	Rounds
 		app.MapGet("tournament/{id:int}/rounds", GetRounds)
 		   .WithDescription("List the tournament rounds.")
 		   .Produces<Round[]>()
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 		app.MapGet("tournament/{id:int}/round/{roundNumber:int}/players",
 				   static (int id, int roundNumber, bool registered = true) => GetPlayerRegistration(id, [roundNumber], registered))
 		   .WithDescription("Get the registered players for a registered tournament player.")
 		   .Produces(Status200OK)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 		app.MapPatch("tournament/{id:int}/round/{roundNumber:int}/player/{playerId:int}" /* ?register=true */,
 					 static (int id, int playerId, int roundNumber, bool register) => UpdateRegistration(id, playerId, [roundNumber], register, true))
 		   .WithDescription("Set the round registration for a registered tournament player.")
@@ -136,20 +118,20 @@ internal class Tournament : Rest<Tournament, Data.Tournament, Tournament.Detail>
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 		app.MapGet("tournament/{id:int}/round/{roundNumber:int}/games", GetRoundGames)
 		   .WithDescription("List games in a tournament round.")
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 		app.MapGet("tournament/{id:int}/round/{roundNumber:int}/game/{gameNumber:int}", GetRoundGame)
 		   .WithDescription("Get details on a tournament game.")
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 	}
 
-	new private protected static IResult GetAll()
+	new private static IResult GetAll()
 		=> Ok(RestFrom(GetMany(static tournament => tournament.IsEvent)));
 
 	private static IResult GetPlayerRegistration(int id, int[] round, bool registered = true)

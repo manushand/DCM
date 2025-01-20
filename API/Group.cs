@@ -6,52 +6,46 @@ using DCM;
 using static Data.Data;
 
 [PublicAPI]
-internal class Group : Rest<Group, Data.Group, Group.Detail>
+internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 {
 	public int Id => Identity;
 	public string Name => RecordedName;
 
 	[PublicAPI]
-	internal sealed class Detail : DetailClass
-	{
-		required public string? Description { get; set; }
-		required public int SystemId { get; set; }
-		required public int Conflict { get; set; }
-	}
+	internal sealed record Detail(string? Description, int SystemId, int Conflict) : DetailClass;
 
-	protected override Detail Info => new ()
-											  {
-												  Description = Record.Description.NullIfEmpty(),
-												  SystemId = Record.ScoringSystemId,
-												  Conflict = Record.Conflict
-											  };
+	protected override Detail Info => new (Record.Description.NullIfEmpty(),
+										   Record.ScoringSystemId,
+										   Record.Conflict);
 
 	private IEnumerable<Player> Players => Player.RestFrom(Record.Players);
 	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 
-	new private protected static void CreateNonCrudEndpoints(WebApplication app, string tag)
+	internal static void CreateEndpoints(WebApplication app)
 	{
+		CreateCrudEndpoints(app);
+
 		app.MapGet("group/{id:int}/games", GetGames)
 		   .WithName("GetGroupGames")
 		   .WithDescription("List all games played by the group.")
 		   .Produces<Game[]>()
-		   .WithTags(tag);
+		   .WithTags(Tag);
 		app.MapGet("group/{id:int}/game/{gameNumber:int}", GetGame)
 		   .WithName("GetGroupGame")
 		   .WithDescription("Get details on a game played by the group.")
 		   .Produces<Game>()
-		   .WithTags(tag);
+		   .WithTags(Tag);
 		app.MapGet("group/{id:int}/players", /* ?members=true */ GetMembers)
 		   .WithName("GetGroupPlayers")
 		   .WithDescription("List all players who are members or non-members of the group.")
 		   .Produces<Player[]>()
-		   .WithTags(tag);
+		   .WithTags(Tag);
 		app.MapPatch("group/{id:int}/player/{playerId:int}", ChangeMembership)
 		   .WithName("ChangeGroupPlayerMembership")
 		   .WithDescription("Add or remove a player from the group.")
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
-		   .WithTags(tag);
+		   .WithTags(Tag);
 	}
 
 	public static IResult GetGames(int id)
