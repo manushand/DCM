@@ -8,9 +8,7 @@ internal sealed class Round : Rest<Round, Data.Round, Round.Detail>
 	public Statuses Status => Record.Status;
 	public int? SystemId { get; set; }
 
-	internal sealed record Detail : DetailClass;
-
-	protected override Detail Info => new ();
+	internal sealed class Detail : DetailClass;
 
 	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 }

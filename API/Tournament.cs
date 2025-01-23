@@ -5,77 +5,91 @@ using static Data.Data;
 [PublicAPI]
 internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.Detail>
 {
-	public int Id => Identity;
-	public string Name => RecordedName;
+	[PublicAPI]
+	internal sealed class Detail : DetailClass
+	{
+		required public string Date { get; set; }
+		required public string? Description { get; set; }
+		required public int TotalRounds { get; set; }
+		required public SeedingDetail Seeding { get; set; }
+		required public ScoringDetail Scoring { get; set; }
+		required public TeamDetail? TeamTournament { get; set; }
+	}
 
 	[PublicAPI]
-	internal sealed record Detail(
-		string Date,
-		string? Description,
-		int TotalRounds,
-		SeedingDetail Seeding,
-		ScoringDetail Scoring,
-		TeamDetail? TeamTournament) : DetailClass;
+	internal sealed class SeedingDetail
+	{
+		required public bool AssignPowers { get; set; }
+		required public PowerGroups GroupPowers { get; set; }
+		required public int PlayerConflict { get; set; }
+		required public int PowerConflict { get; set; }
+		required public bool ProgressiveScoreConflict { get; set; }
+	}
 
 	[PublicAPI]
-	internal sealed record SeedingDetail(
-		bool AssignPowers,
-		PowerGroups GroupPowers,
-		int PlayerConflict,
-		int PowerConflict,
-		bool ProgressiveScoreConflict,
-		int? TeamConflict);
+	internal sealed class ScoringDetail
+	{
+		required public int SystemId { get; set; }
+		required public int UnplayedScore { get; set; }
+		required public int MinimumRounds { get; set; }
+		required public int RoundsToDrop { get; set; }
+		required public bool DropBeforeFinalRound { get; set; }
+		required public int RoundsToScale { get; set; }
+		required public int? ScalePercentage { get; set; }
+	}
 
 	[PublicAPI]
-	internal sealed record ScoringDetail(
-		int SystemId,
-		int UnplayedScore,
-		int MinimumRounds,
-		int RoundsToDrop,
-		bool DropBeforeFinalRound,
-		int RoundsToScale,
-		int? ScalePercentage);
+	internal sealed class TeamDetail
+	{
+		required public int TeamSize { get; set; }
+		required public int TeamConflict { get; set; }
+		required public bool TeamsPlayMultipleRounds { get; set; }
+		required public int? TeamRound { get; set; }
+		required public bool PlayerCanJoinManyTeams { get; set; }
+	}
 
-	[PublicAPI]
-	internal sealed record TeamDetail(
-		int TeamSize,
-		int TeamConflict,
-		bool TeamsPlayMultipleRounds,
-		int? TeamRound,
-		bool PlayerCanJoinManyTeams);
-
-	protected override Detail Info => new ($"{Record.Date:d}",
-										   Record.Description.NullIfEmpty(),
-										   Record.TotalRounds,
-										   new (Record.AssignPowers,
-												Record.GroupPowers,
-												Record.PlayerConflict,
-												Record.PowerConflict,
-												Record.ProgressiveScoreConflict,
-												Record.TeamSize is 0
-													? null
-													: Record.TeamConflict),
-										   new (Record.ScoringSystemId,
-												Record.UnplayedScore,
-												Record.MinimumRounds,
-												Record.RoundsToDrop,
-												Record.RoundsToDrop is not 0 && Record.DropBeforeFinalRound,
-												Record.RoundsToScale,
-												Record.RoundsToScale is 0
-													? null
-													: Record.ScalePercentage),
-										   Record.TeamSize is 0
-											   ? null
-											   : new (Record.TeamSize,
-													  Record.TeamConflict,
-													  Record.TeamsPlayMultipleRounds,
-													  Record.TeamsPlayMultipleRounds
+	private protected override void LoadFromDataRecord(Data.Tournament record)
+		=> Info = new ()
+				  {
+					  Date = $"{Record.Date:d}",
+					  Description = Record.Description.NullIfEmpty(),
+					  TotalRounds = Record.TotalRounds,
+					  Seeding = new ()
+								{
+									AssignPowers = Record.AssignPowers,
+									GroupPowers = Record.GroupPowers,
+									PlayerConflict = Record.PlayerConflict,
+									PowerConflict = Record.PowerConflict,
+									ProgressiveScoreConflict = Record.ProgressiveScoreConflict
+								},
+					  Scoring = new ()
+								{
+									SystemId = Record.ScoringSystemId,
+									UnplayedScore = Record.UnplayedScore,
+									MinimumRounds = Record.MinimumRounds,
+									RoundsToDrop = Record.RoundsToDrop,
+									DropBeforeFinalRound = Record.RoundsToDrop is not 0 && Record.DropBeforeFinalRound,
+									RoundsToScale = Record.RoundsToScale,
+									ScalePercentage = Record.RoundsToScale is 0
 														  ? null
-														  : Record.TeamRound,
-													  Record.PlayerCanJoinManyTeams));
+														  : Record.ScalePercentage
+								},
+					  TeamTournament = Record.TeamSize is 0
+										   ? null
+										   : new ()
+											 {
+												 TeamSize = Record.TeamSize,
+												 TeamConflict = Record.TeamConflict,
+												 TeamsPlayMultipleRounds = Record.TeamsPlayMultipleRounds,
+												 TeamRound = Record.TeamsPlayMultipleRounds
+																 ? null
+																 : Record.TeamRound,
+												 PlayerCanJoinManyTeams = Record.PlayerCanJoinManyTeams
+											 }
+				  };
 
 	private static readonly string[] InvalidRoundNumber = ["Invalid round number(s)."];
-	private static readonly string[] RoundNumbersDisllowed = ["Round number(s) disallowed when unregistering from a tournament."];
+	private static readonly string[] RoundNumbersDisallowed = ["Round number(s) disallowed when unregistering from a tournament."];
 
 	internal static void CreateEndpoints(WebApplication app)
 	{
@@ -159,7 +173,7 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 		if (tournament is null || player.IsNone || !tournament.IsEvent)
 			return NotFound();
 		if (!register || round.Length is not 0)
-			return BadRequest(RoundNumbersDisllowed);
+			return BadRequest(RoundNumbersDisallowed);
 		if (round.Any(number => number < 1 || number > tournament.TotalRounds))
 			return BadRequest(InvalidRoundNumber);
 		var roundList = forSingleRound
@@ -213,7 +227,7 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 				   : Ok(RestForId(game.Id));
 	}
 
-	private protected override string[] Update(Tournament tournament)
+	private protected override string[] UpdateRecordForDatabase(Tournament tournament)
 	{
 		//	TODO - Add more validation - name collision, ridiculous date, etc., etc.
 		var details = tournament.Details;

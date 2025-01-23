@@ -8,29 +8,28 @@ using static Data.Data;
 [PublicAPI]
 internal class Player : Rest<Player, Data.Player, Player.Detail>
 {
-	public int Id => Identity;
-
-	public string FirstName
-	{
-		get => Record.FirstName;
-		private set => Record.FirstName = value;
-	}
-	public string LastName
-	{
-		get => Record.LastName;
-		private set => Record.LastName = value;
-	}
+	public string FirstName { get; set; } = string.Empty;
+	public string LastName { get; set; } = string.Empty;
 
 	[PublicAPI]
-	internal sealed record Detail(ICollection<string>? EmailAddresses) : DetailClass;
+	internal sealed class Detail : DetailClass
+	{
+		required public ICollection<string>? EmailAddresses { get; set; }
+	}
 
-	protected override Detail Info => new (Record.EmailAddresses.NullIfEmpty());
+	private protected override void LoadFromDataRecord(Data.Player record)
+	{
+		FirstName = record.FirstName;
+		LastName = record.LastName;
+		Info = new ()
+			   {
+				   EmailAddresses = Record.EmailAddresses.NullIfEmpty()
+			   };
+	}
 
 	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 
-	private static readonly string[] CannotBumpAndDrop = ["Cannot both bump and drop a player conflict"];
-
-	protected internal static void CreateEndpoints(WebApplication app)
+	internal static void CreateEndpoints(WebApplication app)
 	{
 		CreateCrudEndpoints(app);
 
@@ -60,7 +59,6 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		   .WithDescription("Get or update a player conflict.")
 		   .Produces(Status404NotFound)
 		   .WithTags(Tag);
-		//	TODO
 	}
 
 	public static IResult GetGames(int id)
@@ -79,7 +77,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 				   : Ok(Group.RestFrom(player.Groups));
 	}
 
-	private protected override string[] Update(Player player)
+	private protected override string[] UpdateRecordForDatabase(Player player)
 	{
 		var first = player.FirstName.Trim();
 		var last = player.LastName.Trim();

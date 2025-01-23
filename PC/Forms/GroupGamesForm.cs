@@ -94,8 +94,11 @@ internal sealed partial class GroupGamesForm : Form
 								 static box => box.Deselect());
 		SetVisible(AllPlayersAssigned, GameStatusLabel, GameStatusComboBox);
 		//  TODO - Is there some reason this cannot be "if (AllPlayersAssigned)"?
-		if (GameStatusLabel.Visible)
-			GameStatusComboBox.SelectedIndex = default;
+		if (!GameStatusLabel.Visible)
+			return;
+		GameStatusComboBox.SelectedIndex = default;
+		if (Game.IsNone && AllPlayersAssigned)
+			GameStatusComboBox_SelectedIndexChanged();
 	}
 
 	private void ShowControls(bool visible)
@@ -149,12 +152,13 @@ internal sealed partial class GroupGamesForm : Form
 		FillGameList();
 	}
 
-	private void GameStatusComboBox_SelectedIndexChanged(object sender,
-														 EventArgs e)
+	private void GameStatusComboBox_SelectedIndexChanged(object? sender = null,
+														 EventArgs? e = null)
 	{
 		if (SkippingHandlers)
 			return;
-		switch (GameStatusComboBox.SelectedIndex.As<Statuses>())
+		var status = GameStatusComboBox.SelectedIndex.As<Statuses>();
+		switch (status)
 		{
 		case Seeded when !Game.IsNone:
 			if (MessageBox.Show("Do you really want to re-seed this group game?",
@@ -170,7 +174,7 @@ internal sealed partial class GroupGamesForm : Form
 			if (Game.IsNone)
 				goto CreateGame;
 			break;
-		case Underway when Game.IsNone:
+		case Seeded or Underway when Game.IsNone:
 		CreateGame:
 			Game = CreateOne(new Game
 							 {
@@ -178,6 +182,7 @@ internal sealed partial class GroupGamesForm : Form
 								 Number = Group.Games.Length + 1,
 								 Name = GameNameTextBox.Text
 													   .Trim(),
+								 Status = status,
 								 Date = GameDateTimePicker.Value
 							 });
 			CreateMany(Seven.Select(index => new GamePlayer

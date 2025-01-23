@@ -8,17 +8,24 @@ using static Data.Data;
 [PublicAPI]
 internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 {
-	public int Id => Identity;
-	public string Name => RecordedName;
-
 	[PublicAPI]
-	internal sealed record Detail(string? Description, int SystemId, int Conflict) : DetailClass;
+	internal sealed class Detail : DetailClass
+	{
+		required public string? Description { get; set; }
+		required public int SystemId { get; set; }
+		required public int Conflict { get; set; }
+	}
 
-	protected override Detail Info => new (Record.Description.NullIfEmpty(),
-										   Record.ScoringSystemId,
-										   Record.Conflict);
+	private protected override void LoadFromDataRecord(Data.Group record)
+		=> Info = new ()
+				  {
+					  Description = Record.Description.NullIfEmpty(),
+					  SystemId = Record.ScoringSystemId,
+					  Conflict = Record.Conflict
+				  };
 
 	private IEnumerable<Player> Players => Player.RestFrom(Record.Players);
+	private int HostRoundId => Record.HostRound.Id;
 	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 
 	internal static void CreateEndpoints(WebApplication app)
@@ -46,24 +53,39 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
 		   .WithTags(Tag);
+
+		app.MapPost("group/{id:int}/game", AddGroupGame)
+		   .WithName("AddGroupGame")
+		   .WithDescription("Create a new game played by the group.")
+		   .Produces(Status201Created)
+		   .Produces(Status404NotFound)
+		   .WithTags(Tag);
+	}
+
+	public static IResult AddGroupGame(int id, Game game)
+	{
+		var group = RestForId(id);
+		if (group is null)
+			return NotFound();
+		var hostRound = group.Record.HostRound;
+		var issues = hostRound.IsNone
+			? ["Group is not a game-playing group."]
+			: game.Create(hostRound);
+		return issues.Length is 0
+			? Created($"game/{game.Id}", null)
+			: BadRequest(issues);
 	}
 
 	public static IResult GetGames(int id)
 	{
-		var record = RestForId(id);
-		return record is null
+		var group = RestForId(id);
+		return group is null
 				   ? NotFound()
-				   : Ok(record.Games.OrderBy(static game => game.Number));
+				   : Ok(group.Games.OrderBy(static game => game.Number));
 	}
 
 	public static IResult GetGame(int id, int gameNumber)
-	{
-		var game = RestForId(id)?.Games.SingleOrDefault(game => game.Number == gameNumber);
-		game?.AddDetail();
-		return game is null
-				   ? NotFound()
-				   : Ok(game);
-	}
+		=> Game.GetOne(RestForId(id)?.Games.SingleOrDefault(game => game.Number == gameNumber)?.Id ?? 0);
 
 	public static IResult GetMembers(int id, bool members = true)
 	{
@@ -73,7 +95,7 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		if (members)
 			return Ok(record.Players);
 		var memberIds = record.Players
-							  .Select(static player => player.Identity)
+							  .Select(static player => player.Id)
 							  .ToList();
 		return Ok(Player.RestFrom(Player.GetMany(player => !memberIds.Contains(player.Id))));
 	}
@@ -100,7 +122,7 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		return true;
 	}
 
-	private protected override string[] Update(Group group)
+	private protected override string[] UpdateRecordForDatabase(Group group)
 	{
 		if (group.Details is null)
 			return ["Details are required"];
@@ -113,5 +135,5 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 	}
 
 	private bool HasPlayer(int playerId)
-		=> Players.Any(player => player.Identity == playerId);
+		=> Players.Any(player => player.Id == playerId);
 }

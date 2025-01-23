@@ -5,6 +5,7 @@ global using static Data.Game;
 global using static Data.Game.Statuses;
 global using static Data.GamePlayer;
 global using static Data.Tournament;
+global using GameResults = Data.GamePlayer.Results;
 //
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
@@ -84,6 +85,7 @@ internal static class API
 			app.UseHttpsRedirection()
 			   .UseHsts();
 
+		Game.CreateEndpoints(app);
 		Group.CreateEndpoints(app);
 		Player.CreateEndpoints(app);
 		System.CreateEndpoints(app);
