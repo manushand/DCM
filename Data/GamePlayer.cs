@@ -32,8 +32,6 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	private double? _finalScore;
 
-	public int GameNumber => Game.Number;
-
 	public string PowerName => Power.InCaps();
 
 	[UsedImplicitly]
@@ -96,7 +94,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 			   ? throw new ()
 			   : (GameId | other.GameId) is 0
 				   ? Power.CompareTo(other.Power)
-				   : (GameNumber, Power, Player.Name).CompareTo((other.GameNumber, other.Power, other.Player.Name));
+				   : (Game.Number, Power, Player.Name).CompareTo((other.Game.Number, other.Power, other.Player.Name));
 
 	#endregion
 

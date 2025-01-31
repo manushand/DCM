@@ -111,7 +111,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 							 && seededSelected is 1;
 		UnseedButton.Enabled = Round.GamesSeeded;
 		UnseedGameButton.Visible = seededSelected is 1
-								&& SeededDataGridView.GetSelected<GamePlayer>().Game.Status is Seeded;
+								&& SeededDataGridView.GetSelected<SeededPlayer>().GamePlayer.Game.Status is Seeded;
 		MoveGameUpButton.Enabled = seededSelected is 1 //	TODO: or more than 1 in same game?
 								&& SeededDataGridView.SelectedRows[0].Index > 6;
 		MoveGameDownButton.Enabled = seededSelected is 1 //	TODO: or more than 1 in same game?
@@ -206,13 +206,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			if (!listsToFill.HasFlag(ListsToFill.Seeded))
 				return;
 			var seededPlayers = gamePlayers.Order()
-										   .Select(static gamePlayer => new
-																		{
-																			Game = gamePlayer.GameNumber,
-																			gamePlayer.Player,
-																			Power = gamePlayer.PowerName,
-																			gamePlayer.Status
-																		})
+										   .Select(static gamePlayer => new SeededPlayer { GamePlayer = gamePlayer })
 										   .ToList();
 			SeededDataGridView.FillWith(seededPlayers);
 			SeededPlayerCountLabel.Text = $"{seededPlayers.Count} Players in {games.Length} Games; Total Conflict {Round.Conflict.Points()}";
@@ -259,7 +253,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void SeededDataGridView_DataBindingComplete(object sender,
 														DataGridViewBindingCompleteEventArgs e)
 	{
-		SeededDataGridView.FillColumn(0);   //	Why this is 0 not 1, I don't know, but making it 1 will cut off names with ellipses
+		SeededDataGridView.FillColumn(1);
 		SeededDataGridView.AlignColumn(MiddleCenter, 0, 3); //	Game Number, Status
 		SeededDataGridView.AlignColumn(MiddleLeft, 1);      //	Player Name
 		SeededDataGridView.PowerCells(2);                   //	Power Name
@@ -424,7 +418,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 										 .Cast<DataGridViewRow>()
 										 .Select(static row => row.Index)
 										 .ToArray();
-		var gamePlayers = SeededDataGridView.GetMultiSelected<GamePlayer>()
+		var gamePlayers = SeededDataGridView.GetMultiSelected<SeededPlayer>()
+											.Select(static seeded => seeded.GamePlayer)
 											.ToArray();
 		//	TODO: No idea why, but if the swapping players are in different games, the swap must be a Delete+Create
 		var sameGame = SeededDataGridView.SelectedRows[0].Index / 7 == SeededDataGridView.SelectedRows[1].Index / 7;
@@ -460,9 +455,9 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 										 .Select(static row => row.Index)
 										 .Single();
 		var registeredPlayer = RegisteredDataGridView.GetSelected<SeedablePlayer>();
-		var gamePlayer = SeededDataGridView.GetAtIndex<GamePlayer>(whichRow);
+		var gamePlayer = SeededDataGridView.GetAtIndex<SeededPlayer>(whichRow).GamePlayer;
 		var formerPrimaryKey = gamePlayer.PrimaryKey;
-		var gamePlayerId = gamePlayer.PlayerId;
+		var gamePlayerId = gamePlayer.Player.Id;
 		gamePlayer.Player = registeredPlayer.Player;
 		//	If for some reason the seeded player has no RoundPlayer
 		//	record (legacy only!), create the RoundPlayer record.
@@ -695,7 +690,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			return;
 		var row = SeededDataGridView.Rows
 									.Cast<DataGridViewRow>()
-									.FirstOrDefault(record => Regex.IsMatch(record.GetFromRow<GamePlayer>().Player.Name,
+									.FirstOrDefault(record => Regex.IsMatch(record.GetFromRow<SeededPlayer>().Player.Name,
 																			text,
 																			RegexOptions.IgnoreCase));
 		if (row is null)
@@ -800,10 +795,11 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		All = Unseeded | Seeded
 	}
 
-	#region SeedablePlayer class
+	#region SeedablePlayer and SeededPlayer classes
 
-	//	NOTE: Don't put this in a separate file in another part of this partial class;
-	//	If you do, VS will think it has a visual Form and will set up a designer file.
+	//	NOTE: Don't put these in separate files in another part of this partial class;
+	//	If you do, VS thinks they each have a visual Form and will set up a designer file.
+	//	Maybe Rider is smarter, though; I don't know, and I suppose it doesn't matter.
 
 	[PublicAPI]
 	private sealed class SeedablePlayer : IRecord
@@ -845,6 +841,17 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		}
 	}
 
+	[PublicAPI]
+	private sealed class SeededPlayer : IRecord
+	{
+		public int Game => GamePlayer.Game.Number;
+		public Player Player => GamePlayer.Player;
+		public string Power => GamePlayer.Power.InCaps();
+		public string Status => GamePlayer.Status;
+
+		[Browsable(false)]
+		required public GamePlayer GamePlayer { get; init; }
+	}
 	#endregion
 
 	#region GameNumber struct
@@ -867,7 +874,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	{
 		if (SeededDataGridView.SelectedRows.Count is not 1)
 			throw new InvalidOperationException(); //	TODO
-		UnseedGames(SeededDataGridView.GetSelected<GamePlayer>().Game);
+		UnseedGames(SeededDataGridView.GetSelected<SeededPlayer>().GamePlayer.Game);
 	}
 
 	private void UnseedGames(params Game[] games)

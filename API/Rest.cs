@@ -30,28 +30,26 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	private protected static string Tag => Type.Name;
 	private protected static string TypeName => Type.Name.ToLower();
 
-	internal static void CreateCrudEndpoints(WebApplication app, bool allMethods = true)
+	internal static void CreateCrudEndpoints(WebApplication app)
 	{
-		if (allMethods)
-			app.MapGet($"{TypeName}s", GetAll)
-			   .WithName($"List{Tag}s")
-			   .WithDescription($"List all {TypeName}s.")
-			   .Produces(Status200OK, Type.MakeArrayType())
-			   .WithTags(Tag);
+		app.MapGet($"{TypeName}s", GetAll)
+		   .WithName($"List{Tag}s")
+		   .WithDescription($"List all {TypeName}s.")
+		   .Produces(Status200OK, Type.MakeArrayType())
+		   .WithTags(Tag);
 		app.MapGet($"{TypeName}/{{id:int}}", GetOne)
 		   .WithName($"Get{Tag}Details")
 		   .WithDescription($"Get details for a {TypeName}.")
 		   .Produces(Status200OK, Type)
 		   .Produces(Status404NotFound)
 		   .WithTags(Tag);
-		if (allMethods)
-			app.MapPost(TypeName, PostOne)
-			   .WithName($"Add{Tag}")
-			   .WithDescription($"Add a new {TypeName}.")
-			   .Produces(Status201Created)
-			   .Produces<string[]>(Status400BadRequest)
-			   .Produces<string>(Status409Conflict)
-			   .WithTags(Tag);
+		app.MapPost(TypeName, PostOne)
+		   .WithName($"Add{Tag}")
+		   .WithDescription($"Add a new {TypeName}.")
+		   .Produces(Status201Created)
+		   .Produces<string[]>(Status400BadRequest)
+		   .Produces<string>(Status409Conflict)
+		   .WithTags(Tag);
 		app.MapPut($"{TypeName}/{{id:int}}", PutOne)
 		   .WithName($"Update{Tag}")
 		   .WithDescription($"Update details for a {TypeName}.")
@@ -59,13 +57,12 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
 		   .WithTags(Tag);
-		if (allMethods)
-			app.MapDelete($"{TypeName}/{{id:int}}", DeleteOne)
-			   .WithName($"Delete{Tag}")
-			   .WithDescription($"Delete a {TypeName}.")
-			   .Produces(Status204NoContent)
-			   .Produces(Status404NotFound)
-			   .WithTags(Tag);
+		app.MapDelete($"{TypeName}/{{id:int}}", DeleteOne)
+		   .WithName($"Delete{Tag}")
+		   .WithDescription($"Delete a {TypeName}.")
+		   .Produces(Status204NoContent)
+		   .Produces(Status404NotFound)
+		   .WithTags(Tag);
 	}
 
 	private protected static IResult GetAll()

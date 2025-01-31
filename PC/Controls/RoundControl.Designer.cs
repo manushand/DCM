@@ -77,9 +77,9 @@
 			((System.ComponentModel.ISupportInitialize)(this.UnregisteredDataGridView)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.RegisteredDataGridView)).BeginInit();
 			this.SuspendLayout();
-			// 
+			//
 			// UnseedGameButton
-			// 
+			//
 			this.UnseedGameButton.Location = new System.Drawing.Point(491, 325);
 			this.UnseedGameButton.Name = "UnseedGameButton";
 			this.UnseedGameButton.Size = new System.Drawing.Size(106, 23);
@@ -87,9 +87,9 @@
 			this.UnseedGameButton.Text = "◀─ Unseed Game";
 			this.UnseedGameButton.UseVisualStyleBackColor = true;
 			this.UnseedGameButton.Click += new System.EventHandler(this.UnseedGameButton_Click);
-			// 
+			//
 			// SwapButton
-			// 
+			//
 			this.SwapButton.Location = new System.Drawing.Point(530, 231);
 			this.SwapButton.Name = "SwapButton";
 			this.SwapButton.Size = new System.Drawing.Size(67, 37);
@@ -97,9 +97,9 @@
 			this.SwapButton.Text = "Swap ┏━▶\r\nTwo   ┗━▶";
 			this.SwapButton.UseVisualStyleBackColor = true;
 			this.SwapButton.Click += new System.EventHandler(this.SwapButton_Click);
-			// 
+			//
 			// ReplaceButton
-			// 
+			//
 			this.ReplaceButton.Location = new System.Drawing.Point(492, 273);
 			this.ReplaceButton.Name = "ReplaceButton";
 			this.ReplaceButton.Size = new System.Drawing.Size(105, 23);
@@ -107,9 +107,9 @@
 			this.ReplaceButton.Text = "◀─ Replace ─▶";
 			this.ReplaceButton.UseVisualStyleBackColor = true;
 			this.ReplaceButton.Click += new System.EventHandler(this.ReplaceButton_Click);
-			// 
+			//
 			// ChangeRoundButton
-			// 
+			//
 			this.ChangeRoundButton.BackColor = System.Drawing.Color.LightGreen;
 			this.ChangeRoundButton.Location = new System.Drawing.Point(890, 3);
 			this.ChangeRoundButton.Name = "ChangeRoundButton";
@@ -119,9 +119,9 @@
 			this.ChangeRoundButton.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
 			this.ChangeRoundButton.UseVisualStyleBackColor = false;
 			this.ChangeRoundButton.Click += new System.EventHandler(this.ChangeRoundButton_Click);
-			// 
+			//
 			// OrderPlayersByPanel
-			// 
+			//
 			this.OrderPlayersByPanel.Controls.Add(this.LastNameRadioButton);
 			this.OrderPlayersByPanel.Controls.Add(this.FirstNameRadioButton);
 			this.OrderPlayersByPanel.Controls.Add(this.OrderByLabel);
@@ -129,9 +129,9 @@
 			this.OrderPlayersByPanel.Name = "OrderPlayersByPanel";
 			this.OrderPlayersByPanel.Size = new System.Drawing.Size(262, 25);
 			this.OrderPlayersByPanel.TabIndex = 86;
-			// 
+			//
 			// LastNameRadioButton
-			// 
+			//
 			this.LastNameRadioButton.AutoSize = true;
 			this.LastNameRadioButton.Location = new System.Drawing.Point(181, 4);
 			this.LastNameRadioButton.Name = "LastNameRadioButton";
@@ -141,9 +141,9 @@
 			this.LastNameRadioButton.Text = "Last Name";
 			this.LastNameRadioButton.UseVisualStyleBackColor = true;
 			this.LastNameRadioButton.CheckedChanged += new System.EventHandler(this.NameSortControl_CheckedChanged);
-			// 
+			//
 			// FirstNameRadioButton
-			// 
+			//
 			this.FirstNameRadioButton.AutoSize = true;
 			this.FirstNameRadioButton.Location = new System.Drawing.Point(104, 4);
 			this.FirstNameRadioButton.Name = "FirstNameRadioButton";
@@ -153,18 +153,18 @@
 			this.FirstNameRadioButton.Text = "First Name";
 			this.FirstNameRadioButton.UseVisualStyleBackColor = true;
 			this.FirstNameRadioButton.CheckedChanged += new System.EventHandler(this.NameSortControl_CheckedChanged);
-			// 
+			//
 			// OrderByLabel
-			// 
+			//
 			this.OrderByLabel.AutoSize = true;
 			this.OrderByLabel.Location = new System.Drawing.Point(10, 6);
 			this.OrderByLabel.Name = "OrderByLabel";
 			this.OrderByLabel.Size = new System.Drawing.Size(88, 13);
 			this.OrderByLabel.TabIndex = 15;
 			this.OrderByLabel.Text = "Order Players By:";
-			// 
+			//
 			// MoveGameDownButton
-			// 
+			//
 			this.MoveGameDownButton.Location = new System.Drawing.Point(889, 273);
 			this.MoveGameDownButton.Name = "MoveGameDownButton";
 			this.MoveGameDownButton.Size = new System.Drawing.Size(62, 35);
@@ -172,9 +172,9 @@
 			this.MoveGameDownButton.Text = "Game\r\n▼";
 			this.MoveGameDownButton.UseVisualStyleBackColor = true;
 			this.MoveGameDownButton.Click += new System.EventHandler(this.MoveGameButton_Click);
-			// 
+			//
 			// MoveGameUpButton
-			// 
+			//
 			this.MoveGameUpButton.Location = new System.Drawing.Point(889, 234);
 			this.MoveGameUpButton.Name = "MoveGameUpButton";
 			this.MoveGameUpButton.Size = new System.Drawing.Size(62, 35);
@@ -182,18 +182,18 @@
 			this.MoveGameUpButton.Text = "▲\r\nGame";
 			this.MoveGameUpButton.UseVisualStyleBackColor = true;
 			this.MoveGameUpButton.Click += new System.EventHandler(this.MoveGameButton_Click);
-			// 
+			//
 			// ScoringSystemDefaultLabel
-			// 
+			//
 			this.ScoringSystemDefaultLabel.AutoSize = true;
 			this.ScoringSystemDefaultLabel.Location = new System.Drawing.Point(332, 8);
 			this.ScoringSystemDefaultLabel.Name = "ScoringSystemDefaultLabel";
 			this.ScoringSystemDefaultLabel.Size = new System.Drawing.Size(45, 13);
 			this.ScoringSystemDefaultLabel.TabIndex = 83;
 			this.ScoringSystemDefaultLabel.Text = "(default)";
-			// 
+			//
 			// ScoringSystemComboBox
-			// 
+			//
 			this.ScoringSystemComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.ScoringSystemComboBox.FormattingEnabled = true;
 			this.ScoringSystemComboBox.Location = new System.Drawing.Point(134, 5);
@@ -202,18 +202,18 @@
 			this.ScoringSystemComboBox.TabIndex = 82;
 			this.ScoringSystemComboBox.SelectedIndexChanged += new System.EventHandler(this.ScoringSystemComboBox_SelectedIndexChanged);
 			this.ScoringSystemComboBox.EnabledChanged += new System.EventHandler(this.ComboBox_EnabledChanged);
-			// 
+			//
 			// ScoringSystemLabel
-			// 
+			//
 			this.ScoringSystemLabel.AutoSize = true;
 			this.ScoringSystemLabel.Location = new System.Drawing.Point(14, 8);
 			this.ScoringSystemLabel.Name = "ScoringSystemLabel";
 			this.ScoringSystemLabel.Size = new System.Drawing.Size(118, 13);
 			this.ScoringSystemLabel.TabIndex = 81;
 			this.ScoringSystemLabel.Text = "Round Scoring System:";
-			// 
+			//
 			// ViewGamesButton
-			// 
+			//
 			this.ViewGamesButton.Location = new System.Drawing.Point(606, 503);
 			this.ViewGamesButton.Name = "ViewGamesButton";
 			this.ViewGamesButton.Size = new System.Drawing.Size(277, 23);
@@ -221,9 +221,9 @@
 			this.ViewGamesButton.Text = "View Games…";
 			this.ViewGamesButton.UseVisualStyleBackColor = true;
 			this.ViewGamesButton.Click += new System.EventHandler(this.ViewGamesButton_Click);
-			// 
+			//
 			// StartGamesButton
-			// 
+			//
 			this.StartGamesButton.Location = new System.Drawing.Point(603, 3);
 			this.StartGamesButton.Name = "StartGamesButton";
 			this.StartGamesButton.Size = new System.Drawing.Size(280, 23);
@@ -231,9 +231,9 @@
 			this.StartGamesButton.Text = "Start Games…";
 			this.StartGamesButton.UseVisualStyleBackColor = true;
 			this.StartGamesButton.Click += new System.EventHandler(this.StartGamesButton_Click);
-			// 
+			//
 			// GamesAndPlayersLabel
-			// 
+			//
 			this.GamesAndPlayersLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.GamesAndPlayersLabel.Location = new System.Drawing.Point(600, 35);
 			this.GamesAndPlayersLabel.Name = "GamesAndPlayersLabel";
@@ -241,9 +241,9 @@
 			this.GamesAndPlayersLabel.TabIndex = 77;
 			this.GamesAndPlayersLabel.Text = "Games and Player Assignments for Round 1";
 			this.GamesAndPlayersLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			// 
+			//
 			// PlayersRegisteredLabel
-			// 
+			//
 			this.PlayersRegisteredLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.PlayersRegisteredLabel.Location = new System.Drawing.Point(294, 35);
 			this.PlayersRegisteredLabel.Name = "PlayersRegisteredLabel";
@@ -251,9 +251,9 @@
 			this.PlayersRegisteredLabel.TabIndex = 76;
 			this.PlayersRegisteredLabel.Text = "Players Registered for Round 1";
 			this.PlayersRegisteredLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			// 
+			//
 			// SeedingAssignsPowersCheckBox
-			// 
+			//
 			this.SeedingAssignsPowersCheckBox.AutoSize = true;
 			this.SeedingAssignsPowersCheckBox.CheckAlign = System.Drawing.ContentAlignment.TopLeft;
 			this.SeedingAssignsPowersCheckBox.Location = new System.Drawing.Point(510, 80);
@@ -262,36 +262,36 @@
 			this.SeedingAssignsPowersCheckBox.TabIndex = 75;
 			this.SeedingAssignsPowersCheckBox.Text = "Seeding\r\nAssigns\r\nPowers";
 			this.SeedingAssignsPowersCheckBox.UseVisualStyleBackColor = true;
-			// 
+			//
 			// SeededPlayerCountLabel
-			// 
+			//
 			this.SeededPlayerCountLabel.Location = new System.Drawing.Point(603, 473);
 			this.SeededPlayerCountLabel.Name = "SeededPlayerCountLabel";
 			this.SeededPlayerCountLabel.Size = new System.Drawing.Size(280, 23);
 			this.SeededPlayerCountLabel.TabIndex = 74;
 			this.SeededPlayerCountLabel.Text = "nnn Players in xx Games";
 			this.SeededPlayerCountLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			// 
+			//
 			// RegisteredCountLabel
-			// 
+			//
 			this.RegisteredCountLabel.Location = new System.Drawing.Point(294, 473);
 			this.RegisteredCountLabel.Name = "RegisteredCountLabel";
 			this.RegisteredCountLabel.Size = new System.Drawing.Size(191, 23);
 			this.RegisteredCountLabel.TabIndex = 73;
 			this.RegisteredCountLabel.Text = "nnn Players Listed";
 			this.RegisteredCountLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			// 
+			//
 			// UnregisteredCountLabel
-			// 
+			//
 			this.UnregisteredCountLabel.Location = new System.Drawing.Point(15, 473);
 			this.UnregisteredCountLabel.Name = "UnregisteredCountLabel";
 			this.UnregisteredCountLabel.Size = new System.Drawing.Size(191, 23);
 			this.UnregisteredCountLabel.TabIndex = 72;
 			this.UnregisteredCountLabel.Text = "nnn Players Listed";
 			this.UnregisteredCountLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-			// 
+			//
 			// UnseedButton
-			// 
+			//
 			this.UnseedButton.Location = new System.Drawing.Point(491, 354);
 			this.UnseedButton.Name = "UnseedButton";
 			this.UnseedButton.Size = new System.Drawing.Size(106, 23);
@@ -299,9 +299,9 @@
 			this.UnseedButton.Text = "◀─── Unseed All";
 			this.UnseedButton.UseVisualStyleBackColor = true;
 			this.UnseedButton.Click += new System.EventHandler(this.UnseedButton_Click);
-			// 
+			//
 			// SeedSomeButton
-			// 
+			//
 			this.SeedSomeButton.Location = new System.Drawing.Point(491, 185);
 			this.SeedSomeButton.Name = "SeedSomeButton";
 			this.SeedSomeButton.Size = new System.Drawing.Size(106, 23);
@@ -309,9 +309,9 @@
 			this.SeedSomeButton.Text = "Seed Some ───▶";
 			this.SeedSomeButton.UseVisualStyleBackColor = true;
 			this.SeedSomeButton.Click += new System.EventHandler(this.SeedButton_Click);
-			// 
+			//
 			// SeedAllButton
-			// 
+			//
 			this.SeedAllButton.Location = new System.Drawing.Point(491, 156);
 			this.SeedAllButton.Name = "SeedAllButton";
 			this.SeedAllButton.Size = new System.Drawing.Size(106, 23);
@@ -319,9 +319,9 @@
 			this.SeedAllButton.Text = "Seed All ─────▶";
 			this.SeedAllButton.UseVisualStyleBackColor = true;
 			this.SeedAllButton.Click += new System.EventHandler(this.SeedButton_Click);
-			// 
+			//
 			// UnregisterAllButton
-			// 
+			//
 			this.UnregisterAllButton.Location = new System.Drawing.Point(212, 354);
 			this.UnregisterAllButton.Name = "UnregisterAllButton";
 			this.UnregisterAllButton.Size = new System.Drawing.Size(76, 23);
@@ -329,9 +329,9 @@
 			this.UnregisterAllButton.Text = "◀── All";
 			this.UnregisterAllButton.UseVisualStyleBackColor = true;
 			this.UnregisterAllButton.Click += new System.EventHandler(this.UnregisterAllButton_Click);
-			// 
+			//
 			// RegisterAllButton
-			// 
+			//
 			this.RegisterAllButton.Location = new System.Drawing.Point(212, 325);
 			this.RegisterAllButton.Name = "RegisterAllButton";
 			this.RegisterAllButton.Size = new System.Drawing.Size(76, 23);
@@ -339,9 +339,9 @@
 			this.RegisterAllButton.Text = "All ──▶";
 			this.RegisterAllButton.UseVisualStyleBackColor = true;
 			this.RegisterAllButton.Click += new System.EventHandler(this.RegisterAllButton_Click);
-			// 
+			//
 			// RegisterForRoundButton
-			// 
+			//
 			this.RegisterForRoundButton.Location = new System.Drawing.Point(212, 185);
 			this.RegisterForRoundButton.Name = "RegisterForRoundButton";
 			this.RegisterForRoundButton.Size = new System.Drawing.Size(76, 23);
@@ -349,9 +349,9 @@
 			this.RegisterForRoundButton.Text = "Register ─▶";
 			this.RegisterForRoundButton.UseVisualStyleBackColor = true;
 			this.RegisterForRoundButton.Click += new System.EventHandler(this.RegisterButton_Click);
-			// 
+			//
 			// SeededDataGridView
-			// 
+			//
 			this.SeededDataGridView.AllowUserToAddRows = false;
 			this.SeededDataGridView.AllowUserToDeleteRows = false;
 			this.SeededDataGridView.AllowUserToResizeColumns = false;
@@ -382,9 +382,9 @@
 			this.SeededDataGridView.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.ViewGamesButton_Click);
 			this.SeededDataGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.SeededDataGridView_DataBindingComplete);
 			this.SeededDataGridView.SelectionChanged += new System.EventHandler(this.SeededDataGridView_SelectionChanged);
-			// 
+			//
 			// WhichPlayersTabControl
-			// 
+			//
 			this.WhichPlayersTabControl.Controls.Add(this.TournamentPlayersTabPage);
 			this.WhichPlayersTabControl.Controls.Add(this.AllPlayersTabPage);
 			this.WhichPlayersTabControl.Location = new System.Drawing.Point(10, 42);
@@ -394,9 +394,9 @@
 			this.WhichPlayersTabControl.Size = new System.Drawing.Size(199, 430);
 			this.WhichPlayersTabControl.TabIndex = 88;
 			this.WhichPlayersTabControl.SelectedIndexChanged += new System.EventHandler(this.WhichPlayersTabControl_SelectedIndexChanged);
-			// 
+			//
 			// TournamentPlayersTabPage
-			// 
+			//
 			this.TournamentPlayersTabPage.Location = new System.Drawing.Point(4, 22);
 			this.TournamentPlayersTabPage.Margin = new System.Windows.Forms.Padding(1);
 			this.TournamentPlayersTabPage.Name = "TournamentPlayersTabPage";
@@ -405,9 +405,9 @@
 			this.TournamentPlayersTabPage.TabIndex = 0;
 			this.TournamentPlayersTabPage.Text = "Tournament Players";
 			this.TournamentPlayersTabPage.UseVisualStyleBackColor = true;
-			// 
+			//
 			// AllPlayersTabPage
-			// 
+			//
 			this.AllPlayersTabPage.Location = new System.Drawing.Point(4, 22);
 			this.AllPlayersTabPage.Margin = new System.Windows.Forms.Padding(1);
 			this.AllPlayersTabPage.Name = "AllPlayersTabPage";
@@ -416,9 +416,9 @@
 			this.AllPlayersTabPage.TabIndex = 1;
 			this.AllPlayersTabPage.Text = "All Players";
 			this.AllPlayersTabPage.UseVisualStyleBackColor = true;
-			// 
+			//
 			// SortByScoreCheckBox
-			// 
+			//
 			this.SortByScoreCheckBox.AutoSize = true;
 			this.SortByScoreCheckBox.Checked = true;
 			this.SortByScoreCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -429,9 +429,9 @@
 			this.SortByScoreCheckBox.Text = "Score";
 			this.SortByScoreCheckBox.UseVisualStyleBackColor = true;
 			this.SortByScoreCheckBox.Click += new System.EventHandler(this.NameSortControl_CheckedChanged);
-			// 
+			//
 			// UnregisteredDataGridView
-			// 
+			//
 			this.UnregisteredDataGridView.AllowUserToAddRows = false;
 			this.UnregisteredDataGridView.AllowUserToDeleteRows = false;
 			this.UnregisteredDataGridView.AllowUserToResizeColumns = false;
@@ -456,9 +456,9 @@
 			this.UnregisteredDataGridView.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.RegisterButton_Click);
 			this.UnregisteredDataGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.SeedableDataGridView_DataBindingComplete);
 			this.UnregisteredDataGridView.SelectionChanged += new System.EventHandler(this.RegistrableDataGridView_SelectionChanged);
-			// 
+			//
 			// RegisteredDataGridView
-			// 
+			//
 			this.RegisteredDataGridView.AllowUserToAddRows = false;
 			this.RegisteredDataGridView.AllowUserToDeleteRows = false;
 			this.RegisteredDataGridView.AllowUserToResizeColumns = false;
@@ -482,9 +482,9 @@
 			this.RegisteredDataGridView.TabIndex = 93;
 			this.RegisteredDataGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.SeedableDataGridView_DataBindingComplete);
 			this.RegisteredDataGridView.SelectionChanged += new System.EventHandler(this.RegistrableDataGridView_SelectionChanged);
-			// 
+			//
 			// RoundLockedLabel
-			// 
+			//
 			this.RoundLockedLabel.AutoSize = true;
 			this.RoundLockedLabel.BackColor = System.Drawing.Color.LightGreen;
 			this.RoundLockedLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
@@ -494,9 +494,9 @@
 			this.RoundLockedLabel.Size = new System.Drawing.Size(180, 24);
 			this.RoundLockedLabel.TabIndex = 94;
 			this.RoundLockedLabel.Text = "Round is Finished";
-			// 
+			//
 			// PrintButton
-			// 
+			//
 			this.PrintButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.PrintButton.Location = new System.Drawing.Point(889, 432);
 			this.PrintButton.Name = "PrintButton";
@@ -505,9 +505,9 @@
 			this.PrintButton.Text = "Print…";
 			this.PrintButton.UseVisualStyleBackColor = true;
 			this.PrintButton.Click += new System.EventHandler(this.PrintButton_Click);
-			// 
+			//
 			// EmailButton
-			// 
+			//
 			this.EmailButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.EmailButton.Location = new System.Drawing.Point(889, 403);
 			this.EmailButton.Name = "EmailButton";
@@ -515,25 +515,25 @@
 			this.EmailButton.TabIndex = 96;
 			this.EmailButton.Text = "Email…";
 			this.EmailButton.UseVisualStyleBackColor = true;
-			// 
+			//
 			// FindPlayerTextBox
-			// 
-			this.FindPlayerTextBox.Location = new System.Drawing.Point(890, 135);
+			//
+			this.FindPlayerTextBox.Location = new System.Drawing.Point(890, 138);
 			this.FindPlayerTextBox.Name = "FindPlayerTextBox";
 			this.FindPlayerTextBox.Size = new System.Drawing.Size(61, 20);
 			this.FindPlayerTextBox.TabIndex = 97;
 			this.FindPlayerTextBox.TextChanged += new System.EventHandler(this.FindPlayerTextBox_TextChanged);
-			// 
+			//
 			// FindPlayerLabel
-			// 
+			//
 			this.FindPlayerLabel.Location = new System.Drawing.Point(888, 80);
 			this.FindPlayerLabel.Name = "FindPlayerLabel";
-			this.FindPlayerLabel.Size = new System.Drawing.Size(62, 52);
+			this.FindPlayerLabel.Size = new System.Drawing.Size(62, 56);
 			this.FindPlayerLabel.TabIndex = 98;
 			this.FindPlayerLabel.Text = "Find Assigned Player By Name:";
-			// 
+			//
 			// NewPlayerButton
-			// 
+			//
 			this.NewPlayerButton.Location = new System.Drawing.Point(212, 80);
 			this.NewPlayerButton.Name = "NewPlayerButton";
 			this.NewPlayerButton.Size = new System.Drawing.Size(75, 23);
@@ -541,9 +541,9 @@
 			this.NewPlayerButton.Text = "New Player";
 			this.NewPlayerButton.UseVisualStyleBackColor = true;
 			this.NewPlayerButton.Click += new System.EventHandler(this.NewPlayerButton_Click);
-			// 
+			//
 			// RoundControl
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.NewPlayerButton);

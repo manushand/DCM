@@ -93,19 +93,16 @@ internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 
 	private List<Data.GamePlayer> UpdatedGamePlayers { get; } = [];
 
-	internal static void CreateEndpoints(WebApplication app)
-		=> CreateCrudEndpoints(app, false);
-
 	internal string[] Create(Data.Round round)
 	{
 		if (Id is not 0 || Number is not 0)
-			return ["Game Id and Number may not be provided at creation."];
+			return ["Id and Number may not be provided at creation."];
 		Record = new () { Number = round.Games.Length + 1, Round = round };
 		var issues = Update();
 		if (issues.Length is not 0)
 			return issues;
-		Data.Data.CreateOne(Record);
-		Data.Data.CreateMany([..UpdatedGamePlayers]);
+		CreateOne(Record);
+		CreateMany([..UpdatedGamePlayers]);
 		return [];
 	}
 

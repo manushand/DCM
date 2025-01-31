@@ -1,6 +1,7 @@
 ﻿global using JetBrains.Annotations;
 global using static Microsoft.AspNetCore.Http.StatusCodes;
 global using static Microsoft.AspNetCore.Http.Results;
+global using static Data.Data;
 global using static Data.Game;
 global using static Data.Game.Statuses;
 global using static Data.GamePlayer;
@@ -18,8 +19,7 @@ using static System.Text.Json.Serialization.JsonIgnoreCondition;
 namespace API;
 
 using static DCM.DCM;
-using static Data.Data;
-using static Data.Data.DatabaseTypes;
+using static DatabaseTypes;
 
 internal static class API
 {
@@ -85,7 +85,6 @@ internal static class API
 			app.UseHttpsRedirection()
 			   .UseHsts();
 
-		Game.CreateEndpoints(app);
 		Group.CreateEndpoints(app);
 		Player.CreateEndpoints(app);
 		System.CreateEndpoints(app);
