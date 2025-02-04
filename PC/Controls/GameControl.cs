@@ -23,9 +23,7 @@ internal sealed partial class GameControl : UserControl
 	[DesignerSerializationVisibility(Hidden)]
 	internal ScoringSystem ScoringSystem
 	{
-		private get => field.IsNone
-						   ? throw new NullReferenceException(nameof (ScoringSystem))
-						   : field;
+		private get => field.NotNone;
 		set
 		{
 			field = value;

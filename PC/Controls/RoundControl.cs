@@ -12,9 +12,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 	private Round Round
 	{
-		get => field.IsNone
-				   ? throw new NullReferenceException(nameof (Round))
-				   : field;
+		get => field.NotNone;
 		set;
 	} = Round.None;
 
@@ -254,8 +252,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 														DataGridViewBindingCompleteEventArgs e)
 	{
 		SeededDataGridView.FillColumn(1);
-		SeededDataGridView.AlignColumn(MiddleCenter, 0, 3); //	Game Number, Status
 		SeededDataGridView.AlignColumn(MiddleLeft, 1);      //	Player Name
+		SeededDataGridView.AlignColumn(MiddleCenter, 0, 3); //	Game Number, Status
 		SeededDataGridView.PowerCells(2);                   //	Power Name
 		foreach (DataGridViewRow row in SeededDataGridView.Rows)
 			row.DefaultCellStyle.BackColor = (row.Index / 7 & 1) is 0
@@ -599,7 +597,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			foreach (var game in unstartedGames)
 			{
 				var assignments = """
-								  <table style="margin:auto; border: solid 1 black;">
+								  <table style="margin: auto; border: solid 1 black;">
 								  """;
 				foreach (var gamePlayer in game.GamePlayers)
 				{
@@ -805,11 +803,9 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private sealed class SeedablePlayer : IRecord
 	{
 		internal readonly Player Player;
-
 		internal readonly double ScoreBeforeRound;
 
 		public string PlayerName => $"{Player}{(Preregistered ? " ✅" : null)}"; // or ✔ or ✓
-
 		public string Score => ScoreBeforeRound.Points();
 
 		internal int Id => Player.Id;
@@ -832,7 +828,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			Player = player;
 			ScoreBeforeRound = roundNumber is 0 or null
 								   ? 0
-								   : tournament.Rounds[roundNumber.Value - 1].PreRoundScore(player);
+								   : tournament.Rounds[roundNumber.Value - 1]
+											   .PreRoundScore(player);
 			var tournamentPlayer = tournament.TournamentPlayers
 											 .SingleOrDefault(tp => tp.PlayerId == player.Id);
 			Preregistered = roundNumber is not null
@@ -849,9 +846,9 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		public string Power => GamePlayer.Power.InCaps();
 		public string Status => GamePlayer.Status;
 
-		[Browsable(false)]
-		required public GamePlayer GamePlayer { get; init; }
+		required internal GamePlayer GamePlayer { get; init; }
 	}
+
 	#endregion
 
 	#region GameNumber struct

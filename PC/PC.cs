@@ -72,8 +72,7 @@ internal static class PC
 						  },
 			  [France] = new ()
 						 {
-							 BackColor = Color.SkyBlue,
-							 ForeColor = Color.Black
+							 BackColor = Color.SkyBlue
 						 },
 			  [Germany] = new ()
 						  {
@@ -82,18 +81,12 @@ internal static class PC
 						  },
 			  [Italy] = new ()
 						{
-							BackColor = Color.Lime,
-							ForeColor = Color.Black
+							BackColor = Color.Lime
 						},
-			  [Russia] = new ()
-						 {
-							 BackColor = Color.White,
-							 ForeColor = Color.Black
-						 },
+			  [Russia] = new (),
 			  [Turkey] = new ()
 						 {
-							 BackColor = Color.Yellow,
-							 ForeColor = Color.Black
+							 BackColor = Color.Yellow
 						 },
 			  [TBD] = new ()
 					  {

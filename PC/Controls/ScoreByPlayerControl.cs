@@ -213,9 +213,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 
 		internal static Tournament Tournament
 		{
-			private get => field.IsNone
-							   ? throw new NullReferenceException(nameof (Tournament))
-							   : field;
+			private get => field.NotNone;
 			set
 			{
 				field = value;

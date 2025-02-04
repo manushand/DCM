@@ -10,9 +10,7 @@ internal sealed partial class GamesForm : Form
 
 	private Game Game
 	{
-		get => field.IsNone
-			   ? throw new NullReferenceException()
-			   : field;
+		get => field.NotNone;
 		set;
 	} = Game.None;
 
