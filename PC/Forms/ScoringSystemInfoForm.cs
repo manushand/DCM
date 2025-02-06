@@ -25,7 +25,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 					   .RemoveAt(1);
 		FinalGameYearComboBox.FillRange(EarliestFinalGameYear, LatestFinalGameYear);
 		FinalGameYearComboBox.Items
-							 .Insert(0, "NONE");
+							 .Insert(default, "NONE");
 		if (ScoringSystem.Id is 0)
 		{
 			FinalScoreFormulaTextBox.Text = "// (REQUIRED)";
@@ -34,7 +34,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 			SignificantDigitsComboBox.SelectedIndex =
 				FormulaTypeComboBox.SelectedIndex =
 					FinalGameYearComboBox.SelectedIndex =
-						0;
+						default;
 			//	Calhamer standard defaults
 			AllowDrawsCheckBox.Checked =
 				DiasCheckBox.Checked =
@@ -48,7 +48,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 			YearsPlayedCheckBox.Checked = ScoringSystem.UsesYearsPlayed;
 			AllowDrawsCheckBox.Checked = ScoringSystem.DrawsAllowed;
 			DiasCheckBox.Checked = ScoringSystem.DrawsIncludeAllSurvivors;
-			FinalGameYearComboBox.SelectedIndex = ScoringSystem.FinalGameYear - EarliestFinalGameYear + 1 ?? 0;
+			FinalGameYearComboBox.SelectedIndex = ScoringSystem.FinalGameYear - EarliestFinalGameYear + 1 ?? default;
 			FormulaTypeComboBox.SelectedIndex = ScoringSystem.UsesCompiledFormulas.AsInteger();
 			ProvisionalScoreFormulaTextBox.Text = ScoringSystem.ProvisionalScoreFormula;
 			FinalScoreFormulaTextBox.Text = ScoringSystem.FinalScoreFormula;
@@ -208,11 +208,10 @@ internal sealed partial class ScoringSystemInfoForm : Form
 	{
 		DiasCheckBox.Visible = AllowDrawsCheckBox.Checked;
 		DiasCheckBox.Checked = true;
-		var numWinners = GameControl.NumberOfWinners;
 		ScoringSystem.DrawPermissions = AllowDrawsCheckBox.Checked
 											? DIAS
 											: None;
-		GameControl.SetWinType(AllowDrawsCheckBox.Checked, numWinners);
+		GameControl.SetWinType(AllowDrawsCheckBox.Checked, GameControl.NumberOfWinners);
 	}
 
 	private void DiasCheckBox_CheckedChanged(object sender,
@@ -236,7 +235,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		NameTextBox.Text = $"COPY OF {ScoringSystem}";
 		ScoringSystem = new ()
 						{
-							Id = 0,
+							Id = default,
 							Name = NameTextBox.Text,
 							DrawPermissions = ScoringSystem.DrawPermissions,
 							FinalGameYear = ScoringSystem.FinalGameYear,
@@ -268,9 +267,9 @@ internal sealed partial class ScoringSystemInfoForm : Form
 
 	private void SetTestButtonUsability()
 		=> SetEnabled(ScoringSystem.UsesGameResult
-					  || ScoringSystem.UsesCenterCount
-					  || ScoringSystem.UsesYearsPlayed
-					  || ScoringSystem.UsesOtherScore, NewTestButton, RunTestButton);
+				   || ScoringSystem.UsesCenterCount
+				   || ScoringSystem.UsesYearsPlayed
+				   || ScoringSystem.UsesOtherScore, NewTestButton, RunTestButton);
 
 	private void NewTestButton_Click(object sender,
 									 EventArgs e)

@@ -1,5 +1,8 @@
 ﻿namespace API;
 
+using static GameResults;
+using static Powers;
+
 [PublicAPI]
 internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 {
@@ -39,7 +42,6 @@ internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 	[PublicAPI]
 	internal sealed class GamePlayer
 	{
-		private readonly Data.GamePlayer _gamePlayer;
 		public Player? Player => _gamePlayer.Player.IsNone
 									 ? null
 									 : Player.RestForId(_gamePlayer.PlayerId, false);
@@ -64,10 +66,12 @@ internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 										 ? _gamePlayer.FinalScore
 										 : null;
 
-		private bool _gameScored;
+		private readonly Data.GamePlayer _gamePlayer;
 		private readonly Data.ScoringSystem _scoringSystem = Data.ScoringSystem.None;
+		private bool _gameScored;
 
-		public GamePlayer(Data.GamePlayer gamePlayer, Data.ScoringSystem? scoringSystem = null)
+		public GamePlayer(Data.GamePlayer gamePlayer,
+						  Data.ScoringSystem? scoringSystem = null)
 		{
 			_gamePlayer = gamePlayer;
 			_scoringSystem = scoringSystem ?? gamePlayer.Game.ScoringSystem;
@@ -91,38 +95,37 @@ internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 							 };
 	}
 
-	private List<Data.GamePlayer> UpdatedGamePlayers { get; } = [];
-
 	internal string[] Create(Data.Round round)
 	{
 		if (Id is not 0 || Number is not 0)
 			return ["Id and Number may not be provided at creation."];
 		Record = new () { Number = round.Games.Length + 1, Round = round };
-		var issues = Update();
+		var issues = Update(out var updatedGamePlayers);
 		if (issues.Length is not 0)
 			return issues;
-		CreateOne(Record);
-		CreateMany([..UpdatedGamePlayers]);
+		Record.Create();
+		CreateMany([..updatedGamePlayers]);
 		return [];
 	}
 
-	internal string[] Update()
+	internal string[] Update(out List<Data.GamePlayer> updatedPlayers)
 	{
+		updatedPlayers = [];
 		var players = Details?.Players.ToList();
 		if (players is not null)
 		{
 			if (players.Count is not 7
 			|| players.Select(static player => player.Power)
-					  .Where(static power => power is not Powers.TBD)
+					  .Where(static power => power is not TBD)
 					  .Distinct()
 					  .Count() is not 7)
 				return ["Invalid player power assignments"];
 			if (Status is Seeded
-			&& players.Any(static player => (player.Result, player.Years, player.Centers, player.Other) is not (GameResults.Unknown, null, null, null)))
+			&& players.Any(static player => (player.Result, player.Years, player.Centers, player.Other) is not (Unknown, null, null, null)))
 				return ["Player game data not allowed for game in Seeded status"];
 			var system = Record.ScoringSystem;
 			if (Status is Finished
-			&& players.Any(player => system.UsesGameResult != player.Result is GameResults.Unknown
+			&& players.Any(player => system.UsesGameResult != player.Result is Unknown
 								  || system.UsesYearsPlayed != player.Years is null
 								  || system.UsesCenterCount != player.Centers is null
 								  || system.UsesOtherScore != player.Other is null))
@@ -130,30 +133,29 @@ internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 			var finalYear = players.Max(static player => player.Years ?? int.MaxValue);
 			if (players.Any(player => player.Years < 1 || player.Years > system.FinalGameYear
 								   || player.Centers < 0
-								   || (player.Result, player.Centers) is (GameResults.Win, 0))
+								   || (player.Result, player.Centers) is (Win, 0))
 			|| Status is Underway
-			&& players.Any(player => !system.UsesGameResult && player.Result is not GameResults.Unknown
+			&& players.Any(player => !system.UsesGameResult && player.Result is not Unknown
 								  || !system.UsesYearsPlayed && player.Years is not null
 								  || !system.UsesCenterCount && player.Centers is not null
 								  || !system.UsesOtherScore && player.Other is not null)
-			|| Status is Finished && (players.All(static player => player.Result is GameResults.Loss)
-								  || players.Any(player => player.Result is GameResults.Win && player.Years < finalYear)))
+			|| Status is Finished && (players.All(static player => player.Result is Loss)
+								  || players.Any(player => player.Result is Win && player.Years < finalYear)))
 				return ["Invalid player game data"];
-			UpdatedGamePlayers.Clear();
 			foreach (var player in players)
 			{
 				var playerFromId = Player.GetById(player.Player?.Id ?? default);
 				if (playerFromId.IsNone)
 					return ["Invalid Player Id {player.Player?.Id}"];
-				UpdatedGamePlayers.Add(new ()
-									   {
-										   Game = Record,
-										   Player = playerFromId,
-										   Result = player.Result,
-										   Centers = player.Centers,
-										   Years = player.Years,
-										   Other = player.Other ?? default
-									   });
+				updatedPlayers.Add(new ()
+								   {
+									   Game = Record,
+									   Player = playerFromId,
+									   Result = player.Result,
+									   Centers = player.Centers,
+									   Years = player.Years,
+									   Other = player.Other ?? default
+								   });
 			}
 		}
 		Record.Name = Name;

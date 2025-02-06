@@ -170,7 +170,7 @@ internal sealed partial class GroupGamesForm : Form
 			NewGameButton_Click();
 			break;
 		case Finished when Game.IsNone || !AllFilledIn:
-			SkipHandlers(() => GameStatusComboBox.SelectedIndex = 1);
+			SkipHandlers(() => GameStatusComboBox.SelectedIndex = Underway.AsInteger());
 			if (Game.IsNone)
 				goto CreateGame;
 			break;
@@ -205,29 +205,28 @@ internal sealed partial class GroupGamesForm : Form
 		default:
 			throw new (); //	TODO
 		}
-		SetVisible(GameStatusComboBox.SelectedIndex is 2,
+		status = GameStatusComboBox.SelectedIndex.As<Statuses>();
+		SetVisible(status is Finished,
 				   ScoresPanel, ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel);
-		GameControl.Active = GameStatusComboBox.SelectedIndex is 1;
-		var seeding = GameStatusComboBox.SelectedIndex is 0;
+		GameControl.Active = status is Underway;
+		var seeding = status is Seeded;
 		OrderByNamePanel.Visible = seeding;
 		SetEnabled(seeding, [..PlayerComboBoxes]);
-		if (GameStatusComboBox.SelectedIndex is 0)
+		//	Games in Seeded status aren't (yet) recorded in the database.
+		if (seeding)
 			return;
-		Game.Status = GameStatusComboBox.SelectedIndex
-										.As<Statuses>();
+		Game.Status = status;
 		UpdateOne(Game);
 		//  If the game just got changed to Finished and the scoring system
 		//  uses a player ante, then scores have not yet been calculated.
-		if (Game.Status is Finished && Group.ScoringSystem.UsesPlayerAnte)
+		if (status is Finished && Group.ScoringSystem.UsesPlayerAnte)
 			GameDataUpdated(true);
 	}
 
 	private void RescoreGamesFrom(DateTime gameDate)
-	{
-		foreach (var game in Group.Games
-								  .Where(scoreable => scoreable.Date >= gameDate))
-			game.Scored = false;
-	}
+		=> Group.Games
+				.Where(scoreable => scoreable.Date >= gameDate)
+				.ForEach(static game => game.Scored = false);
 
 	private void GroupGamesDataGridView_CellClick(object? sender = null,
 												  DataGridViewCellEventArgs? e = null)
@@ -245,7 +244,7 @@ internal sealed partial class GroupGamesForm : Form
 		ShowControls(true);
 		GameControl.ClearGame();
 		GameControl.LoadGame(GamePlayers);
-		GameControl.Active = GameStatusComboBox.SelectedIndex is 1;
+		GameControl.Active = GameStatusComboBox.SelectedIndex.As<Statuses>() is Underway;
 		DeleteGameButton.Enabled = true;
 	}
 
@@ -362,21 +361,21 @@ internal sealed partial class GroupGamesForm : Form
 								? "Rating"
 								: "Score";
 		var usesAnte = isGroup && game.ScoringSystem.UsesPlayerAnte;
-		var details = new List<string>();
 		scoreLabels.Apply((scoreLabel, i) =>
 						  {
 							  var gamePlayer = gamePlayers[i];
 							  var score = gamePlayer.FinalScore;
 							  scoreLabel.Text = score.ToString(format);
-							  var preGame = game.Round.PreRoundScore(gamePlayer);
+							  var preGame = game.Round
+												.PreRoundScore(gamePlayer);
 							  var postGame = isGroup
-												 ? game.Tournament.Group
+												 ? game.Tournament
+													   .Group
 													   .RatePlayer(gamePlayer.Player, game, includeTheBeforeGame: true)?
 													   .Rating ?? 0
 												 : preGame + score;
+							  List<string> details = [$"Pre-Game {scoreOrRating}: {preGame}"];
 							  var ante = gamePlayer.PlayerAnte;
-							  details.Clear();
-							  details.Add($"Pre-Game {scoreOrRating}: {preGame}");
 							  if (usesAnte)
 								  details.AddRange($"Player Ante: {ante}",
 												   $"Game Score: {ante + score}");
@@ -389,7 +388,7 @@ internal sealed partial class GroupGamesForm : Form
 										  .ToString(format);
 	}
 
-	#region GroupGame struct
+	#region GroupGame class
 
 	[PublicAPI]
 	private sealed class GroupGame : IRecord

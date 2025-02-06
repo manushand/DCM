@@ -18,6 +18,7 @@ using static System.Text.Json.Serialization.JsonIgnoreCondition;
 
 namespace API;
 
+using Data;
 using static DCM.DCM;
 using static DatabaseTypes;
 
@@ -41,7 +42,7 @@ internal static class API
 			ConnectToAccessDatabase(connectionString);
 			break;
 		case None:
-			throw new ArgumentException("No database in settings");
+			throw new ArgumentException("No database type in settings");
 		default:
 			throw new ArgumentException($"Invalid database type: {dbType}");
 		}
@@ -120,4 +121,12 @@ internal static class API
 				];
 		}
 	}
+
+	internal static void Create<T>(this T record)
+		where T : class, IRecord
+		=> CreateOne(record);
+
+	internal static void Delete<T>(this T record)
+		where T : class, IRecord
+		=> Data.Delete(record);
 }

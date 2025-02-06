@@ -150,14 +150,15 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			{
 				List<int>? tournamentPlayerIds;
 				if (WhichPlayersTabControl.SelectedIndex is 0)
-				{
-					//	Everyone pre-registered for any round in the tournament
-					tournamentPlayerIds = [..Tournament.TournamentPlayers.Select(static tp => tp.PlayerId)];
-					//	And everyone who has been a RoundPlayer in any round of the tournament
-					tournamentPlayerIds.AddRange(Tournament.Rounds
-														   .SelectMany(static round => round.RoundPlayers)
-														   .Select(static rp => rp.PlayerId));
-				}
+					tournamentPlayerIds =
+					[
+						//	Everyone pre-registered for any round in the tournament
+						..Tournament.TournamentPlayers.Select(static tp => tp.PlayerId),
+						//	And everyone who has been a RoundPlayer in any round of the tournament
+						..Tournament.Rounds
+									.SelectMany(static round => round.RoundPlayers)
+									.Select(static rp => rp.PlayerId)
+					];
 				else
 					//	Everyone at all
 					tournamentPlayerIds = null;
@@ -616,7 +617,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 				messages.AddRange(game.GamePlayers
 									  .Where(static gamePlayer => gamePlayer.Player.EmailAddress.Length is not 0)
 									  .Select(gamePlayer => WriteEmail($"Round {Round} Board Assignment",
-																	   emailBody.Replace("{PlayerName}", gamePlayer.Player.Name)
+																	   emailBody.Replace("{PlayerName}", $"{gamePlayer.Player}")
 																				.Replace("{PowerName}", gamePlayer.Power is TBD
 																											? null
 																											: $"{gamePlayer.Power}"),

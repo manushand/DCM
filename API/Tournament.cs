@@ -1,7 +1,5 @@
 ﻿namespace API;
 
-using static Data.Data;
-
 [PublicAPI]
 internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.Detail>
 {
@@ -48,6 +46,13 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 		required public bool PlayerCanJoinManyTeams { get; set; }
 	}
 
+	[PublicAPI]
+	internal sealed class RoundPlayer : Player
+	{
+		//	TODO: Does TournamentScore maybe ride here?
+		required public int[]? Rounds { get; init; }
+	}
+
 	private protected override void LoadFromDataRecord(Data.Tournament record)
 		=> Info = new ()
 				  {
@@ -90,20 +95,20 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 
 	private static readonly string[] InvalidRoundNumber = ["Invalid round number(s)."];
 	private static readonly string[] RoundNumbersDisallowed = ["Round number(s) disallowed when unregistering from a tournament."];
+	private static readonly string[] RegistrationClosed = ["Registration is closed for a finished round or tournament."];
+	private static readonly string[] AllRoundsCreated = ["All tournament rounds have been created."];
 
 	internal static void CreateEndpoints(WebApplication app)
 	{
 		CreateCrudEndpoints(app);
 
 		//	Players
-		app.MapGet("tournament/{id:int}/players",
-				   GetPlayerRegistration)
+		app.MapGet("tournament/{id:int}/players", GetPlayerRegistration)
 		   .WithDescription("List all players registered or unregistered for the tournament, with the rounds for which each player is registered.")
 		   .Produces<RoundPlayer[]>()
 		   .Produces(Status404NotFound)
 		   .WithTags(Tag);
-		app.MapPatch("tournament/{id:int}/player/{playerId:int}" /* ?register=true&round=1&round=2... */,
-					 UpdateRegistration)
+		app.MapPatch("tournament/{id:int}/player/{playerId:int}", UpdateRegistration)
 		   .WithDescription("Register a player for the tournament while setting, updating, or clearing the player's round registration.")
 		   .Produces(Status200OK)
 		   .Produces(Status204NoContent)
@@ -117,22 +122,36 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 		   .Produces<Round[]>()
 		   .Produces(Status404NotFound)
 		   .WithTags(Tag);
+		app.MapGet("tournament/{id:int}/round/{roundNumber:int}", GetRound)
+		   .WithDescription("Get details for a tournament round.")
+		   .Produces<Round>()
+		   .Produces<string[]>(Status400BadRequest)
+		   .Produces(Status404NotFound)
+		   .WithTags(Tag);
 		app.MapGet("tournament/{id:int}/round/{roundNumber:int}/players",
 				   static (int id, int roundNumber, bool registered = true) => GetPlayerRegistration(id, [roundNumber], registered))
-		   .WithDescription("Get the registered players for a registered tournament player.")
+		   .WithDescription("Get the registered players for a tournament round.")
 		   .Produces(Status200OK)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
 		   .WithTags(Tag);
-		app.MapPatch("tournament/{id:int}/round/{roundNumber:int}/player/{playerId:int}" /* ?register=true */,
+		app.MapPatch("tournament/{id:int}/round/{roundNumber:int}/player/{playerId:int}",
 					 static (int id, int playerId, int roundNumber, bool register) => UpdateRegistration(id, playerId, [roundNumber], register, true))
-		   .WithDescription("Set the round registration for a registered tournament player.")
+		   .WithDescription("Set registration for a specific round for a tournament player.")
 		   .Produces(Status200OK)
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
+		   .Produces(Status404NotFound)
 		   .Produces<string>(Status409Conflict)
+		   .WithTags(Tag);
+		app.MapPost("tournament/{id:int}/round", CreateRound)
+		   .WithDescription("Create the next tournament round.")
+		   .Produces<string>(Status201Created)
+		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
 		   .WithTags(Tag);
+
+		//	Games
 		app.MapGet("tournament/{id:int}/round/{roundNumber:int}/games", GetRoundGames)
 		   .WithDescription("List games in a tournament round.")
 		   .Produces(Status200OK)
@@ -143,35 +162,44 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
 		   .WithTags(Tag);
+
+		//	Teams
+		//	TODO
 	}
 
 	new private static IResult GetAll()
 		=> Ok(RestFrom(GetMany(static tournament => tournament.IsEvent)));
 
-	private static IResult GetPlayerRegistration(int id, int[] round, bool registered = true)
+	private static IResult GetPlayerRegistration(int id,
+												 int[] round,
+												 bool registered = true)
 	{
 		var tournament = RestForId(id)?.Record;
-		if (tournament is null || !tournament.IsEvent)
+		if (tournament is null)
 			return NotFound();
 		if (round.Any(number => number < 1 || number > tournament.TotalRounds))
 			return BadRequest(InvalidRoundNumber);
 		if (registered || round.Length is not 0)
-		{
-			var players = round.Aggregate(tournament.TournamentPlayers
-													.Select(static tp => new RoundPlayer { Record = tp.Player, Rounds = tp.Rounds }),
-										  (current, number) => current.Where(tp => tp.Rounds is not null && tp.Rounds.Contains(number) == registered));
-			return Ok(players);
-		}
-		var playerIds = tournament.TournamentPlayers.Select(static player => player.PlayerId);
+			return Ok(round.Aggregate(tournament.TournamentPlayers
+												.Select(static tp => new RoundPlayer { Record = tp.Player, Rounds = tp.Rounds }),
+									  (current, number) => current.Where(tp => tp.Rounds is not null && tp.Rounds.Contains(number) == registered)));
+		var playerIds = tournament.TournamentPlayers
+								  .Select(static player => player.PlayerId);
 		return Ok(RoundPlayer.RestFrom(Player.GetMany(player => !playerIds.Contains(player.Id))));
 	}
 
-	private static IResult UpdateRegistration(int id, int playerId, int[] round, bool register, bool forSingleRound = false)
+	private static IResult UpdateRegistration(int id,
+											  int playerId,
+											  int[] round,
+											  bool register,
+											  bool forSingleRound = false)
 	{
 		var tournament = RestForId(id)?.Record;
 		var player = Player.GetById(playerId);
-		if (tournament is null || player.IsNone || !tournament.IsEvent)
+		if (tournament is null || player.IsNone)
 			return NotFound();
+		if (tournament.Rounds.Count(static round => !round.Workable) == tournament.TotalRounds)
+			return BadRequest(RegistrationClosed);
 		if (!register || round.Length is not 0)
 			return BadRequest(RoundNumbersDisallowed);
 		if (round.Any(number => number < 1 || number > tournament.TotalRounds))
@@ -192,11 +220,25 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 				tournamentPlayer = tournament.AddPlayer(player);
 			else
 				return NoContent();
-		foreach (var roundNumber in roundList)
+		foreach (var roundNumber in roundList.Where(number => round.Contains(number) != tournamentPlayer.RegisteredForRound(number)))
+		{
+			var heat = tournament.Rounds
+								 .SingleOrDefault(heat => heat.Number == roundNumber);
+			if (heat?.Workable is false)
+				return BadRequest(RegistrationClosed);
+			//	If registering for a round that is underway, we must either add or delete a RoundPlayer record.
+			var roundPlayer = heat?.Workable is true
+								  ? new Data.RoundPlayer { Player = player, Round = heat }
+								  : null;
 			if (round.Contains(roundNumber))
+			{
 				tournamentPlayer.RegisterForRound(roundNumber);
-			else
-				tournamentPlayer.UnregisterForRound(roundNumber);
+				roundPlayer?.Create();
+				continue;
+			}
+			tournamentPlayer.UnregisterForRound(roundNumber);
+			roundPlayer?.Delete();
+		}
 		if (!register)
 			Delete(tournamentPlayer);
 		return Ok();
@@ -204,13 +246,23 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 
 	private static IResult GetRounds(int id)
 	{
-		var tournament = RestForId(id);
-		return tournament is null || !tournament.Record.IsEvent
+		var tournament = RestForId(id)?.Record;
+		return tournament is null
 			? NotFound()
-			: Ok(Round.RestFrom(tournament.Record.Rounds.OrderBy(static round => round.Number)));
+			: Ok(Round.RestFrom(tournament.Rounds.OrderBy(static round => round.Number)));
 	}
 
-	public static IResult GetRoundGames(int id, int roundNumber)
+	public static IResult GetRound(int id,
+								   int roundNumber)
+	{
+		var round = RestForId(id)?.Record.Rounds.SingleOrDefault(round => round.Number == roundNumber);
+		return round is null
+				   ? NotFound()
+				   : Ok(Round.RestFrom(round));
+	}
+
+	public static IResult GetRoundGames(int id,
+										int roundNumber)
 	{
 		var round = RestForId(id)?.Record.Rounds.SingleOrDefault(round => round.Number == roundNumber);
 		return round is null
@@ -218,13 +270,27 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 				   : Ok(Game.RestFrom(round.Games.OrderBy(static game => game.Number)));
 	}
 
-	public static IResult GetRoundGame(int id, int roundNumber, int gameNumber)
+	public static IResult GetRoundGame(int id,
+									   int roundNumber,
+									   int gameNumber)
 	{
-		var game = RestForId(id)?.Record.Rounds.SingleOrDefault(round => round.Number == roundNumber)
-								?.Games.SingleOrDefault(game => game.Number == gameNumber);
-		return game is null
+		var gameId = RestForId(id)?.Record.Rounds.SingleOrDefault(round => round.Number == roundNumber)
+								  ?.Games.SingleOrDefault(game => game.Number == gameNumber)
+								  ?.Id;
+		return gameId is null
 				   ? NotFound()
-				   : Ok(RestForId(game.Id));
+				   : Ok(RestForId(gameId.Value));
+	}
+
+	public static IResult CreateRound(int id)
+	{
+		var tournament = RestForId(id)?.Record;
+		if (tournament is null)
+			return NotFound();
+		if (tournament.Rounds.Length == tournament.TotalRounds)
+			return BadRequest(AllRoundsCreated);
+		var round = tournament.CreateRound();
+		return Created($"tournament/{id}/round/{round.Number}", null);
 	}
 
 	private protected override string[] UpdateRecordForDatabase(Tournament tournament)
@@ -264,11 +330,5 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 		Record.RoundsToScale = details.Scoring.RoundsToScale;
 		Record.ScalePercentage = details.Scoring.RoundsToScale;
 		return [];
-	}
-
-	[PublicAPI]
-	internal sealed class RoundPlayer : Player
-	{
-		public int[]? Rounds { get; init; }
 	}
 }

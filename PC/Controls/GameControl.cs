@@ -55,7 +55,7 @@ internal sealed partial class GameControl : UserControl
 							  && FinalGameDataValidation(out _);
 
 	[DesignerSerializationVisibility(Hidden)]
-	internal int NumberOfWinners => ResultComboBoxes.Count(static comboBox => comboBox.SelectedIndex is 1);
+	internal int NumberOfWinners => ResultComboBoxes.Count(static comboBox => comboBox.SelectedIndex.As<Results>() is Win);
 
 	[DesignerSerializationVisibility(Hidden)]
 	internal Callback? FormEnableCallback { private get; set; }
@@ -83,7 +83,7 @@ internal sealed partial class GameControl : UserControl
 
 	private List<TextBox> OtherTextBoxes { get; }
 
-	private List<ComboBox> AllComboBoxes { get; } = [];
+	private List<ComboBox> AllComboBoxes { get; }
 
 	internal GameControl()
 	{
@@ -92,8 +92,7 @@ internal sealed partial class GameControl : UserControl
 		ResultComboBoxes = ResultPanel.PowerControls<ComboBox>();
 		YearsComboBoxes = YearsPanel.PowerControls<ComboBox>();
 		//	IMPORTANT: Keep them loading into AllComboBoxes in THIS ORDER
-		AllComboBoxes.AddRange([..CentersComboBoxes, ..ResultComboBoxes, ..YearsComboBoxes]);
-		//	END IMPORTANT
+		AllComboBoxes = [..CentersComboBoxes, ..ResultComboBoxes, ..YearsComboBoxes];
 		OtherTextBoxes = OtherPanel.PowerControls<TextBox>();
 	}
 
@@ -173,9 +172,9 @@ internal sealed partial class GameControl : UserControl
 				CentersComboBoxes.ForEach(box => CentersComboBox_SelectedIndexChanged(box));
 			else
 			{
-				var numWinners = ResultComboBoxes.Count(static box => box.SelectedIndex is 1);
+				var numWinners = ResultComboBoxes.Count(static box => box.SelectedIndex.As<Results>() is Win);
 				//	Must use .Items[box.SelectedIndex] = x; because .SelectedItem = x; does not work
-				ResultComboBoxes.ForEach(box => box.Items[box.SelectedIndex] = box.SelectedIndex is 0
+				ResultComboBoxes.ForEach(box => box.Items[box.SelectedIndex] = box.SelectedIndex.As<Results>() is Loss
 																				   ? LossText
 																				   : numWinners is 1
 																					   ? SoloText
@@ -251,7 +250,7 @@ internal sealed partial class GameControl : UserControl
 			return;
 		++UpdateDepth;
 		//	If win/loss is win, make sure year is latest
-		if (resultComboBox.SelectedIndex is 1 && ScoringSystem.UsesYearsPlayed)
+		if (resultComboBox.SelectedIndex.As<Results>() is Win && ScoringSystem.UsesYearsPlayed)
 			YearsBoxFor(resultComboBox).SelectedIndex = YearsComboBoxes.Max(static comboBox => comboBox.SelectedIndex);
 		//	Set the Win text to either Solo or Draw for everyone.
 		var winners = NumberOfWinners;
@@ -262,7 +261,7 @@ internal sealed partial class GameControl : UserControl
 													  //	If draws are allowed, set multiple winners' text to Draw, else Solo
 													  if (ScoringSystem.DrawsAllowed)
 														  comboBox.Items[1] = winners is 0
-																			  || winners is 1 && comboBox.SelectedIndex is 1
+																		   || winners is 1 && comboBox.SelectedIndex.As<Results>() is Win
 																				  ? SoloText
 																				  : DrawText;
 													  //	If there's one winner and this isn't it, he's a loser.

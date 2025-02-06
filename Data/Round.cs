@@ -61,7 +61,7 @@ public sealed class Round : IdentityRecord<Round>
 		get => field.Id == TournamentId
 				   ? field
 				   : field = ReadById<Tournament>(TournamentId);
-		init => (field, TournamentId) = (value, value.Id);
+		internal init => (field, TournamentId) = (value, value.Id);
 	} = Tournament.None;
 
 	public Game[] Games => [..ReadMany<Game>(game => game.RoundId == Id).OrderBy(static game => game.Number)];
@@ -110,16 +110,15 @@ public sealed class Round : IdentityRecord<Round>
 					var roundPlayer = seedingPlayers.Current
 													.OrThrow();
 					roundPlayers.Remove(roundPlayer);
-					var gamePlayer = new GamePlayer
-									 {
-										 Game = game,
-										 Power = assignPowers
-													 ? power
-													 : TBD,
-										 Player = roundPlayer.Player,
-										 Result = Unknown
-									 };
-					gamePlayers.Add(gamePlayer);
+					gamePlayers.Add(new ()
+									{
+										Game = game,
+										Power = assignPowers
+													? power
+													: TBD,
+										Player = roundPlayer.Player,
+										Result = Unknown
+									});
 				}
 
 		/*  TODO: I see no reason why I was making a copy of the gamePlayers List and using it instead below.

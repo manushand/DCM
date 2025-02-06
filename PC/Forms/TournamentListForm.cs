@@ -42,7 +42,7 @@ internal sealed partial class TournamentListForm : Form
 			Delete(games);
 			Delete(rounds.SelectMany(static round => round.RoundPlayers));
 			Delete(rounds);
-			Delete(teams.SelectMany(static team => team.Players));
+			Delete(teams.SelectMany(static team => team.TeamPlayers));
 			Delete(teams);
 			Delete(tournament.TournamentPlayers);
 			Delete(tournament);

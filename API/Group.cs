@@ -62,17 +62,17 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		   .WithTags(Tag);
 	}
 
-	public static IResult AddGroupGame(int id, Game game)
+	public static IResult AddGroupGame(int id,
+									   Game game)
 	{
-		var group = RestForId(id);
-		if (group is null)
+		var hostRound = RestForId(id)?.Record.HostRound;
+		if (hostRound is null)
 			return NotFound();
-		var hostRound = group.Record.HostRound;
 		var issues = hostRound.IsNone
 			? ["Group is not a game-playing group."]
 			: game.Create(hostRound);
 		return issues.Length is 0
-			? Created($"game/{game.Id}", null)
+			? Created($"group/{id}/game/{game.Number}", null)
 			: BadRequest(issues);
 	}
 
@@ -84,10 +84,12 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 				   : Ok(group.Games.OrderBy(static game => game.Number));
 	}
 
-	public static IResult GetGame(int id, int gameNumber)
-		=> Game.GetOne(RestForId(id)?.Games.SingleOrDefault(game => game.Number == gameNumber)?.Id ?? 0);
+	public static IResult GetGame(int id,
+								  int gameNumber)
+		=> Game.GetOne(RestForId(id)?.Games.SingleOrDefault(game => game.Number == gameNumber)?.Id ?? default);
 
-	public static IResult GetMembers(int id, bool members = true)
+	public static IResult GetMembers(int id,
+									 bool members = true)
 	{
 		var record = RestForId(id);
 		if (record is null)
@@ -100,7 +102,9 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		return Ok(Player.RestFrom(Player.GetMany(player => !memberIds.Contains(player.Id))));
 	}
 
-	public static IResult ChangeMembership(int id, int playerId, bool member)
+	public static IResult ChangeMembership(int id,
+										   int playerId,
+										   bool member)
 	{
 		var group = RestForId(id);
 		var player = Player.RestForId(playerId);

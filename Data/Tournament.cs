@@ -93,6 +93,24 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 	public TournamentPlayer AddPlayer(Player player)
 		=> CreateOne(new TournamentPlayer { Tournament = this, Player = player });
 
+	public Round CreateRound()
+	{
+		var roundNumber = Rounds.Length + 1;
+		var round = CreateOne(new Round
+							  {
+								  Tournament = this,
+								  Number = roundNumber
+							  });
+		CreateMany(TournamentPlayers.Where(tournamentPlayer => tournamentPlayer.RegisteredForRound(roundNumber))
+									.Select(tournamentPlayer => new RoundPlayer
+																{
+																	Round = round,
+																	Player = tournamentPlayer.Player
+																})
+									.ToArray());
+		return round;
+	}
+
 	#region IInfoRecord interface implementation
 
 	#region IRecord interface implementation

@@ -11,6 +11,8 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 	public string FirstName { get; set; } = string.Empty;
 	public string LastName { get; set; } = string.Empty;
 
+	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
+
 	[PublicAPI]
 	internal sealed class Detail : DetailClass
 	{
@@ -26,8 +28,6 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 				   EmailAddresses = Record.EmailAddresses.NullIfEmpty()
 			   };
 	}
-
-	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 
 	internal static void CreateEndpoints(WebApplication app)
 	{
@@ -114,7 +114,9 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 			   : Ok(ReadMany<PlayerConflict>(pc => pc.Involves(id))
 						.Select(pc => new Conflict(RestFrom(pc.PlayerConflictedWith(id)), pc.Value)));
 
-	public static IResult SetPlayerConflict(int id, int playerId, int? value)
+	public static IResult SetPlayerConflict(int id,
+											int playerId,
+											int? value)
 	{
 		var player = RestForId(id);
 		var other = RestForId(playerId, false);

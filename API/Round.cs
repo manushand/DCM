@@ -9,6 +9,4 @@ internal sealed class Round : Rest<Round, Data.Round, Round.Detail>
 	public int? SystemId { get; set; }
 
 	internal sealed class Detail : DetailClass;
-
-	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 }

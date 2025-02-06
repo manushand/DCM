@@ -69,19 +69,7 @@ internal sealed partial class RoundInfoForm : Form
 							YesNo,
 							Question) is DialogResult.No)
 			return;
-		var round = CreateOne(new Round
-							  {
-								  Tournament = Tournament,
-								  Number = roundNumber
-							  });
-		CreateMany(Tournament.TournamentPlayers
-							 .Where(tournamentPlayer => tournamentPlayer.RegisteredForRound(roundNumber))
-							 .Select(tournamentPlayer => new RoundPlayer
-														 {
-															 Round = round,
-															 Player = tournamentPlayer.Player
-														 })
-							 .ToArray());
+		Tournament.CreateRound();
 		RoundsTabControl.TabPages
 						.Add($"Round {roundNumber}");
 		RegistrationControl.StartRound();

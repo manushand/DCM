@@ -4,6 +4,7 @@ namespace API;
 
 using Data;
 using static Data.Data;
+using Tourney = Data.Tournament;
 
 [PublicAPI]
 internal abstract class Rest<T1, T2, T3> : IRest
@@ -76,7 +77,8 @@ internal abstract class Rest<T1, T2, T3> : IRest
 				   : Ok(record);
 	}
 
-	private protected static IResult PutOne(int id, T1 updated)
+	private protected static IResult PutOne(int id,
+											T1 updated)
 	{
 		var rest = RestForId(id);
 		if (rest is null)
@@ -95,7 +97,8 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		return NoContent();
 	}
 
-	private protected static IResult PostOne(HttpRequest request, T1 candidate)
+	private protected static IResult PostOne(HttpRequest request,
+											 T1 candidate)
 	{
 		if (ReadOne<T2>(@object => @object.Name == candidate.Name) is not null)
 			return Conflict("Name already in use.");
@@ -121,10 +124,11 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		return NoContent();
 	}
 
-	private protected static T1? RestForId(int id, bool details = true)
+	private protected static T1? RestForId(int id,
+										   bool details = true)
 	{
 		var record = ReadByIdOrNull<T2>(id);
-		return record is null
+		return record is null or Tourney { IsEvent: false }
 				   ? null
 				   : RestFrom(record, details);
 	}
@@ -132,14 +136,16 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	private protected static T2 GetById(int id)
 		=> ReadById<T2>(id);
 
-	private protected static T1 RestFrom(T2 @object, bool details = false)
+	private protected static T1 RestFrom(T2 @object,
+										 bool details = false)
 	{
 		var result = new T1 { Id = @object.Id, Name = @object.Name, Record = @object, Detailed = details };
 		result.LoadFromDataRecord(@object);
 		return result;
 	}
 
-	private protected static IEnumerable<T1> RestFrom(IEnumerable<T2> objects, bool details = false)
+	private protected static IEnumerable<T1> RestFrom(IEnumerable<T2> objects,
+													  bool details = false)
 		=> objects.Select(@object => RestFrom(@object, details));
 
 	private protected static IEnumerable<T2> GetMany(Func<T2, bool> predicate)
