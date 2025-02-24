@@ -21,13 +21,13 @@
         <DependentUpon>Rest.cs</DependentUpon>
       </Compile>
       <Compile Update="Round.cs">
-        <DependentUpon>Tournament.cs</DependentUpon>
+        <DependentUpon>Event.cs</DependentUpon>
       </Compile>
-      <Compile Update="Tournament.cs">
+      <Compile Update="Event.cs">
         <DependentUpon>Rest.cs</DependentUpon>
       </Compile>
       <Compile Update="Team.cs">
-        <DependentUpon>Tournament.cs</DependentUpon>
+        <DependentUpon>Event.cs</DependentUpon>
       </Compile>
       <Compile Update="System.cs">
         <DependentUpon>Rest.cs</DependentUpon>

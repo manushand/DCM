@@ -3,7 +3,6 @@
 namespace API;
 
 using DCM;
-using static Data.Data;
 
 [PublicAPI]
 internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
@@ -36,30 +35,30 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		   .WithName("GetGroupGames")
 		   .WithDescription("List all games played by the group.")
 		   .Produces<Game[]>()
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 		app.MapGet("group/{id:int}/game/{gameNumber:int}", GetGame)
 		   .WithName("GetGroupGame")
 		   .WithDescription("Get details on a game played by the group.")
 		   .Produces<Game>()
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 		app.MapGet("group/{id:int}/players", /* ?members=true */ GetMembers)
 		   .WithName("GetGroupPlayers")
 		   .WithDescription("List all players who are members or non-members of the group.")
 		   .Produces<Player[]>()
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 		app.MapPatch("group/{id:int}/player/{playerId:int}", ChangeMembership)
 		   .WithName("ChangeGroupPlayerMembership")
 		   .WithDescription("Add or remove a player from the group.")
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 
 		app.MapPost("group/{id:int}/game", AddGroupGame)
 		   .WithName("AddGroupGame")
 		   .WithDescription("Create a new game played by the group.")
 		   .Produces(Status201Created)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 	}
 
 	public static IResult AddGroupGame(int id,
@@ -99,7 +98,7 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		var memberIds = record.Players
 							  .Select(static player => player.Id)
 							  .ToList();
-		return Ok(Player.RestFrom(Player.GetMany(player => !memberIds.Contains(player.Id))));
+		return Ok(Player.RestFrom(ReadMany<Data.Player>(player => !memberIds.Contains(player.Id))));
 	}
 
 	public static IResult ChangeMembership(int id,

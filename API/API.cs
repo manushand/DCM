@@ -89,7 +89,7 @@ internal static class API
 		Group.CreateEndpoints(app);
 		Player.CreateEndpoints(app);
 		System.CreateEndpoints(app);
-		Tournament.CreateEndpoints(app);
+		Event.CreateEndpoints(app);
 
 		app.Run();
 	}

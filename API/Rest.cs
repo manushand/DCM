@@ -1,10 +1,7 @@
-﻿using DCM;
+﻿namespace API;
 
-namespace API;
-
+using DCM;
 using Data;
-using static Data.Data;
-using Tourney = Data.Tournament;
 
 [PublicAPI]
 internal abstract class Rest<T1, T2, T3> : IRest
@@ -21,53 +18,55 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	}
 
 	internal abstract class DetailClass;
-
-	internal bool Detailed { private get; set; }
-	private protected T3? Info { get; set; }
-
 	internal T2 Record { get; set; } = new ();
 
-	private protected static readonly Type Type = typeof (T1);
-	private protected static string Tag => Type.Name;
-	private protected static string TypeName => Type.Name.ToLower();
+	private protected bool Detailed { private get; set; }
+	private protected T3? Info { get; set; }
+
+	private static readonly Type Type = typeof (T1);
+	private static string TypeName => SwaggerTag.ToLower();
+
+	private protected static string SwaggerTag => Type.Name;
 
 	internal static void CreateCrudEndpoints(WebApplication app)
 	{
+		var articled = $"a{(Type == typeof (Event) ? 'n' : null)} {TypeName}";
+
 		app.MapGet($"{TypeName}s", GetAll)
-		   .WithName($"List{Tag}s")
+		   .WithName($"List{SwaggerTag}s")
 		   .WithDescription($"List all {TypeName}s.")
 		   .Produces(Status200OK, Type.MakeArrayType())
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 		app.MapGet($"{TypeName}/{{id:int}}", GetOne)
-		   .WithName($"Get{Tag}Details")
-		   .WithDescription($"Get details for a {TypeName}.")
+		   .WithName($"Get{SwaggerTag}Details")
+		   .WithDescription($"Get details for {articled}.")
 		   .Produces(Status200OK, Type)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 		app.MapPost(TypeName, PostOne)
-		   .WithName($"Add{Tag}")
+		   .WithName($"Add{SwaggerTag}")
 		   .WithDescription($"Add a new {TypeName}.")
 		   .Produces(Status201Created)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 		app.MapPut($"{TypeName}/{{id:int}}", PutOne)
-		   .WithName($"Update{Tag}")
-		   .WithDescription($"Update details for a {TypeName}.")
+		   .WithName($"Update{SwaggerTag}")
+		   .WithDescription($"Update details for {articled}.")
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 		app.MapDelete($"{TypeName}/{{id:int}}", DeleteOne)
-		   .WithName($"Delete{Tag}")
-		   .WithDescription($"Delete a {TypeName}.")
+		   .WithName($"Delete{SwaggerTag}")
+		   .WithDescription($"Delete {articled}.")
 		   .Produces(Status204NoContent)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 	}
 
 	private protected static IResult GetAll()
-		=> Ok(RestFrom(GetMany(static _ => true)));
+		=> Ok(RestFrom(ReadAll<T2>().Where(static t2 => t2 is not Tournament { IsEvent: false })));
 
 	private protected static IResult GetOne(int id)
 	{
@@ -100,18 +99,19 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	private protected static IResult PostOne(HttpRequest request,
 											 T1 candidate)
 	{
-		if (ReadOne<T2>(@object => @object.Name == candidate.Name) is not null)
-			return Conflict("Name already in use.");
 		var record = new T1();
+		var named = candidate.Name.Length > 0;
+		if (named && ReadOne<T2>(@object => @object.Name == candidate.Name) is not null)
+			return Conflict("Name already in use.");
 		var issues = candidate.Id is not 0
 						 ? ["ID must be null or 0 for POST."]
-						 : candidate.Name.Length is 0
+						 : !named
 							 ? ["Name is required"]
 							 : record.UpdateRecordForDatabase(candidate);
 		if (issues.Length is not 0)
 			return BadRequest(issues);
 		CreateOne(record.Record);
-		return Created($"{request.Path}/{record.Record.Id}", null);
+		return Created($"{request.Path}/{record.Id}", null);
 	}
 
 	private protected static IResult DeleteOne(int id)
@@ -127,8 +127,8 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	private protected static T1? RestForId(int id,
 										   bool details = true)
 	{
-		var record = ReadByIdOrNull<T2>(id);
-		return record is null or Tourney { IsEvent: false }
+		var record = ReadOne<T2>(record => record.Id == id);
+		return record is null or Tournament { IsEvent: false }
 				   ? null
 				   : RestFrom(record, details);
 	}
@@ -147,9 +147,6 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	private protected static IEnumerable<T1> RestFrom(IEnumerable<T2> objects,
 													  bool details = false)
 		=> objects.Select(@object => RestFrom(@object, details));
-
-	private protected static IEnumerable<T2> GetMany(Func<T2, bool> predicate)
-		=> ReadMany(predicate);
 
 	private protected virtual void LoadFromDataRecord(T2 record) { }
 

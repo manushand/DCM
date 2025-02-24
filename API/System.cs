@@ -88,9 +88,9 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 									 : DCM,
 					  TestGame = Record.TestGamePlayers is null
 									 ? []
-									 : Record.ScoreWithResults(Record.TestGamePlayers, out _)
+									 : Record.ScoreWithResults(Record.TestGamePlayers, out var errors)
 										 ? Record.TestGamePlayers.Select(gamePlayer => new Tester(new (gamePlayer, Record)))
-										 : throw new ()
+										 : throw new (string.Join("\n", errors))
 				  };
 
 	internal static void CreateEndpoints(WebApplication app)

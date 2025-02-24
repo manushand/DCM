@@ -154,13 +154,9 @@ public static partial class Data
 		where T : IRecord
 		=> Cache.FetchOne(func);
 
-	public static T? ReadByIdOrNull<T>(int id)
-		where T : IdInfoRecord
-		=> ReadOne<T>(record => record.Id == id);
-
 	public static T ReadById<T>(int id)
 		where T : IdInfoRecord
-		=> ReadByIdOrNull<T>(id).OrThrow($"Record not found with ID {id}");
+		=> ReadOne<T>(record => record.Id == id).OrThrow($"{typeof (T).Name} not found with ID {id}");
 
 	public static T? ReadByName<T>(T record)
 		where T : IdInfoRecord

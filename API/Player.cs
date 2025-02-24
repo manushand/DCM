@@ -2,8 +2,7 @@
 
 namespace API;
 
-using static DCM.DCM;
-using static Data.Data;
+using DCM;
 
 [PublicAPI]
 internal class Player : Rest<Player, Data.Player, Player.Detail>
@@ -38,27 +37,27 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		   .WithDescription("List all games in which a player was involved.")
 		   .Produces<IEnumerable<Game>>()
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 
 		app.MapGet("player/{id:int}/groups", GetGroups)
 		   .WithName("GetPlayerGroups")
 		   .WithDescription("List all groups to which a player belongs.")
 		   .Produces<IEnumerable<Group>>()
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 
 		app.MapGet("player/{id:int}/conflicts", GetConflicts)
 		   .WithName("GetPlayerConflicts")
 		   .WithDescription("Get the list of all conflicts for a player.")
 		   .Produces<IEnumerable<Conflict>>()
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 
 		app.MapPatch("player/{id:int}/conflict/{playerId:int}", SetPlayerConflict)
 		   .WithName("GetOrSetPlayerConflict")
 		   .WithDescription("Get or update a player conflict.")
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 	}
 
 	public static IResult GetGames(int id)

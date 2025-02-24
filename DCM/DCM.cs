@@ -110,7 +110,7 @@ public static partial class DCM
 	public static bool IsBetween(this double @this,
 								 double lowerBound,
 								 double upperBound)
-		=> lowerBound < upperBound
+		=> lowerBound <= upperBound
 		&& @this >= lowerBound
 		&& @this <= upperBound;
 

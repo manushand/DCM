@@ -425,38 +425,47 @@ public sealed partial class ScoringSystem
 				case var _ when GetNumericTerm():
 					return;
 				//	UNARY OPERATOR CASES
+				//	-n == numerical negative of n
 				case '-':
 					_term = -GetUnaryTerm();
 					return;
+				//	!n == logical negative of n (0 or 1)
 				case '!':
 					_term = (GetUnaryTerm() is 0).AsInteger();
 					return;
+				//	+n == absolute value of n
 				case '+':
 					_term = Math.Abs(GetUnaryTerm());
 					return;
+				//	@# == draw-size if the player shared in it, else 0
 				case '@' when _formula.Starts("@#"):
 					DropCount(2);
 					_term = _powerData.Won
 								? Scoring.Winners
 								: 0;
 					return;
+				//	@n == true (1) if the player participated in an n-way draw, else false (0)
 				case '@':
 					//	Don't reverse the order of the && or the GetUnaryTerm may not get parsed past!
 					_term = (Scoring.Winners == (int)GetUnaryTerm()
 						 &&  _powerData.Won).AsInteger();
 					return;
+				//	#n == true (1) if the player's center rank might be n, else false (0)
 				case '#':
 					_term = GetUnaryTerm().IsBetween(_powerData.BestCenterRank, _powerData.WorstCenterRank)
 										  .AsInteger();
 					return;
+				//	$n == true (1) if the player's survivor rank might be n, else false (0)
 				case '$':
 					_term = GetUnaryTerm().IsBetween(_powerData.BestSurvivorRank, _powerData.WorstSurvivorRank)
 										  .AsInteger();
 					return;
+				//	~n == true (1) if the player's elimination order might be n, else false (0)
 				case '~':
 					_term = GetUnaryTerm().IsBetween(_powerData.WorstEliminationOrder, _powerData.BestEliminationOrder)
 										  .AsInteger();
 					return;
+				//	\|n == square root of n
 				case '\\' when _formula.Starts(@"\|"):
 					DropCount(); //	Since this is a two-character unary operator, we need to drop one of the two ourselves.
 					_term = GetUnaryTerm() < 0

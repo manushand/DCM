@@ -228,7 +228,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 							   : double.Round(total);
 		if (roundedTotal.Equals(double.NegativeZero))
 			roundedTotal = 0;
-		results.AddRange(bar, $"Total points awarded{(total.Equals(roundedTotal) ? null : rounded)} = {roundedTotal}");
+		results.AddRange(bar, $"Total points awarded{(total.Equals(roundedTotal) ? null : rounded)} = {FormattedScore(roundedTotal, true)}");
 		if (watch is not null)
 			results.AddRange(bar, $"Time to score: {watch.ElapsedMilliseconds / 1_000m} sec.");
 		if (PointsPerGame is null)

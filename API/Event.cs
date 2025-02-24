@@ -1,7 +1,7 @@
 ﻿namespace API;
 
 [PublicAPI]
-internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.Detail>
+internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 {
 	[PublicAPI]
 	internal sealed class Detail : DetailClass
@@ -94,81 +94,78 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 				  };
 
 	private static readonly string[] InvalidRoundNumber = ["Invalid round number(s)."];
-	private static readonly string[] RoundNumbersDisallowed = ["Round number(s) disallowed when unregistering from a tournament."];
-	private static readonly string[] RegistrationClosed = ["Registration is closed for a finished round or tournament."];
-	private static readonly string[] AllRoundsCreated = ["All tournament rounds have been created."];
+	private static readonly string[] RoundNumbersDisallowed = ["Round number(s) disallowed when unregistering from a event."];
+	private static readonly string[] RegistrationClosed = ["Registration is closed for a finished round or event."];
+	private static readonly string[] AllRoundsCreated = ["All event rounds have been created."];
 
 	internal static void CreateEndpoints(WebApplication app)
 	{
 		CreateCrudEndpoints(app);
 
 		//	Players
-		app.MapGet("tournament/{id:int}/players", GetPlayerRegistration)
-		   .WithDescription("List all players registered or unregistered for the tournament, with the rounds for which each player is registered.")
+		app.MapGet("event/{id:int}/players", GetPlayerRegistration)
+		   .WithDescription("List all players registered or unregistered for the event, with the rounds for which each player is registered.")
 		   .Produces<RoundPlayer[]>()
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
-		app.MapPatch("tournament/{id:int}/player/{playerId:int}", UpdateRegistration)
-		   .WithDescription("Register a player for the tournament while setting, updating, or clearing the player's round registration.")
+		   .WithTags(SwaggerTag);
+		app.MapPatch("event/{id:int}/player/{playerId:int}", UpdateRegistration)
+		   .WithDescription("Register a player for the event while setting, updating, or clearing the player's round registration.")
 		   .Produces(Status200OK)
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 
 		//	Rounds
-		app.MapGet("tournament/{id:int}/rounds", GetRounds)
-		   .WithDescription("List the tournament rounds.")
+		app.MapGet("event/{id:int}/rounds", GetRounds)
+		   .WithDescription("List the event rounds.")
 		   .Produces<Round[]>()
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
-		app.MapGet("tournament/{id:int}/round/{roundNumber:int}", GetRound)
-		   .WithDescription("Get details for a tournament round.")
+		   .WithTags(SwaggerTag);
+		app.MapGet("event/{id:int}/round/{roundNumber:int}", GetRound)
+		   .WithDescription("Get details for an event round.")
 		   .Produces<Round>()
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
-		app.MapGet("tournament/{id:int}/round/{roundNumber:int}/players",
+		   .WithTags(SwaggerTag);
+		app.MapGet("event/{id:int}/round/{roundNumber:int}/players",
 				   static (int id, int roundNumber, bool registered = true) => GetPlayerRegistration(id, [roundNumber], registered))
-		   .WithDescription("Get the registered players for a tournament round.")
+		   .WithDescription("Get the registered players for an event round.")
 		   .Produces(Status200OK)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
-		app.MapPatch("tournament/{id:int}/round/{roundNumber:int}/player/{playerId:int}",
+		   .WithTags(SwaggerTag);
+		app.MapPatch("event/{id:int}/round/{roundNumber:int}/player/{playerId:int}",
 					 static (int id, int playerId, int roundNumber, bool register) => UpdateRegistration(id, playerId, [roundNumber], register, true))
-		   .WithDescription("Set registration for a specific round for a tournament player.")
+		   .WithDescription("Set registration for a specific round for an event player.")
 		   .Produces(Status200OK)
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
 		   .Produces<string>(Status409Conflict)
-		   .WithTags(Tag);
-		app.MapPost("tournament/{id:int}/round", CreateRound)
-		   .WithDescription("Create the next tournament round.")
+		   .WithTags(SwaggerTag);
+		app.MapPost("event/{id:int}/round", CreateRound)
+		   .WithDescription("Create the next event round.")
 		   .Produces<string>(Status201Created)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 
 		//	Games
-		app.MapGet("tournament/{id:int}/round/{roundNumber:int}/games", GetRoundGames)
-		   .WithDescription("List games in a tournament round.")
+		app.MapGet("event/{id:int}/round/{roundNumber:int}/games", GetRoundGames)
+		   .WithDescription("List games in an event round.")
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
-		app.MapGet("tournament/{id:int}/round/{roundNumber:int}/game/{gameNumber:int}", GetRoundGame)
-		   .WithDescription("Get details on a tournament game.")
+		   .WithTags(SwaggerTag);
+		app.MapGet("event/{id:int}/round/{roundNumber:int}/game/{gameNumber:int}", GetGame)
+		   .WithDescription("Get details on an event game.")
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
-		   .WithTags(Tag);
+		   .WithTags(SwaggerTag);
 
 		//	Teams
 		//	TODO
 	}
-
-	new private static IResult GetAll()
-		=> Ok(RestFrom(GetMany(static tournament => tournament.IsEvent)));
 
 	private static IResult GetPlayerRegistration(int id,
 												 int[] round,
@@ -185,14 +182,14 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 									  (current, number) => current.Where(tp => tp.Rounds is not null && tp.Rounds.Contains(number) == registered)));
 		var playerIds = tournament.TournamentPlayers
 								  .Select(static player => player.PlayerId);
-		return Ok(RoundPlayer.RestFrom(Player.GetMany(player => !playerIds.Contains(player.Id))));
+		return Ok(RoundPlayer.RestFrom(ReadMany<Data.Player>(player => !playerIds.Contains(player.Id))));
 	}
 
 	private static IResult UpdateRegistration(int id,
 											  int playerId,
 											  int[] round,
 											  bool register,
-											  bool forSingleRound = false)
+											  bool singleRound = false)
 	{
 		var tournament = RestForId(id)?.Record;
 		var player = Player.GetById(playerId);
@@ -204,11 +201,11 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 			return BadRequest(RoundNumbersDisallowed);
 		if (round.Any(number => number < 1 || number > tournament.TotalRounds))
 			return BadRequest(InvalidRoundNumber);
-		var roundList = forSingleRound
+		var roundList = singleRound
 							? round
 							: Enumerable.Range(1, tournament.TotalRounds)
 										.ToArray();
-		if (roundList.Any(roundNumber => (forSingleRound && !register || !round.Contains(roundNumber))
+		if (roundList.Any(roundNumber => (singleRound && !register || !round.Contains(roundNumber))
 									  && tournament.Games
 												   .Any(game => game.Round.Number == roundNumber
 															 && game.GamePlayers.Any(gamePlayer => gamePlayer.PlayerId == playerId))))
@@ -270,7 +267,7 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 				   : Ok(Game.RestFrom(round.Games.OrderBy(static game => game.Number)));
 	}
 
-	public static IResult GetRoundGame(int id,
+	public static IResult GetGame(int id,
 									   int roundNumber,
 									   int gameNumber)
 	{
@@ -293,14 +290,14 @@ internal sealed class Tournament : Rest<Tournament, Data.Tournament, Tournament.
 		return Created($"tournament/{id}/round/{round.Number}", null);
 	}
 
-	private protected override string[] UpdateRecordForDatabase(Tournament tournament)
+	private protected override string[] UpdateRecordForDatabase(Event @event)
 	{
 		//	TODO - Add more validation - name collision, ridiculous date, etc., etc.
-		var details = tournament.Details;
+		var details = @event.Details;
 		if (details is null)
 			return [];
 
-		Record.Name = tournament.Name;
+		Record.Name = @event.Name;
 
 		Record.Date = DateTime.Parse(details.Date);
 		Record.Description = details.Description ?? string.Empty;
