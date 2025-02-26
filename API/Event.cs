@@ -146,7 +146,13 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		   .WithTags(SwaggerTag);
 		app.MapPost("event/{id:int}/round", CreateRound)
 		   .WithDescription("Create the next event round.")
-		   .Produces<string>(Status201Created)
+		   .Produces(Status201Created)
+		   .Produces<string[]>(Status400BadRequest)
+		   .Produces(Status404NotFound)
+		   .WithTags(SwaggerTag);
+		app.MapPost("event/{id:int}/round/seed", SeedRound)
+		   .WithDescription("Seed the current event round.")
+		   .Produces(Status201Created)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
 		   .WithTags(SwaggerTag);
@@ -288,6 +294,11 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 			return BadRequest(AllRoundsCreated);
 		var round = tournament.CreateRound();
 		return Created($"tournament/{id}/round/{round.Number}", null);
+	}
+
+	public static IResult SeedRound(int id)
+	{
+		throw new NotImplementedException();
 	}
 
 	private protected override string[] UpdateRecordForDatabase(Event @event)

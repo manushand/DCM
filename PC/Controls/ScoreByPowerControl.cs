@@ -11,7 +11,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		InitializeComponent();
 		BestGamesTabControl.TabPages
 						   .Clear();
-		// foreach (PowerNames power in Enum.GetValues(typeof (PowerNames))) puts TBD at the end!
+		// foreach (PowerNames power in Enum.GetValues<PowerNames>()) puts TBD at the end!
 		for (var power = TBD; power <= Turkey; ++power)
 			BestGamesTabControl.TabPages
 							   .Add(new TabPage

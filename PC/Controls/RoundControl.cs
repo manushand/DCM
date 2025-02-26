@@ -658,10 +658,12 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 							Delete(Round);
 						});
 
-	private void SeedableDataGridView_DataBindingComplete(object sender,
+	private void RegistrableDataGridView_DataBindingComplete(object sender,
 														  DataGridViewBindingCompleteEventArgs e)
 	{
 		var view = (DataGridView)sender;
+		if (view.Columns.Count is 0)
+			return;
 		view.FillColumn(0);
 		view.AlignColumn(MiddleRight, 1);
 		view.Columns[1].Visible = SortByScoreCheckBox.Visible

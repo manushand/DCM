@@ -40,9 +40,9 @@ namespace PC.Forms
 			this.TournamentControl = new TournamentControl();
 			this.TeamsControl = new TeamsControl();
 			this.SuspendLayout();
-			// 
+			//
 			// DetailsTabControl
-			// 
+			//
 			this.DetailsTabControl.Controls.Add(this.DetailsTabPage);
 			this.DetailsTabControl.Controls.Add(this.TeamsTabPage);
 			this.DetailsTabControl.Location = new System.Drawing.Point(10, 13);
@@ -51,9 +51,9 @@ namespace PC.Forms
 			this.DetailsTabControl.SelectedIndex = 0;
 			this.DetailsTabControl.Size = new System.Drawing.Size(712, 412);
 			this.DetailsTabControl.TabIndex = 46;
-			// 
+			//
 			// DetailsTabPage
-			// 
+			//
 			this.DetailsTabPage.BackColor = System.Drawing.SystemColors.Control;
 			this.DetailsTabPage.Controls.Add(this.TournamentControl);
 			this.DetailsTabPage.Location = new System.Drawing.Point(4, 22);
@@ -62,18 +62,18 @@ namespace PC.Forms
 			this.DetailsTabPage.Padding = new System.Windows.Forms.Padding(1, 1, 1, 1);
 			this.DetailsTabPage.Size = new System.Drawing.Size(704, 386);
 			this.DetailsTabPage.TabIndex = 0;
-			this.DetailsTabPage.Text = "Tournament Settings";
-			// 
+			this.DetailsTabPage.Text = "Event Settings";
+			//
 			// TournamentControl
-			// 
+			//
 			this.TournamentControl.Location = new System.Drawing.Point(5, 5);
 			this.TournamentControl.Margin = new System.Windows.Forms.Padding(0);
 			this.TournamentControl.Name = "TournamentControl";
 			this.TournamentControl.Size = new System.Drawing.Size(691, 383);
 			this.TournamentControl.TabIndex = 0;
-			// 
+			//
 			// TeamsTabPage
-			// 
+			//
 			this.TeamsTabPage.BackColor = System.Drawing.SystemColors.Control;
 			this.TeamsTabPage.Controls.Add(this.TeamsControl);
 			this.TeamsTabPage.Location = new System.Drawing.Point(4, 22);
@@ -83,17 +83,17 @@ namespace PC.Forms
 			this.TeamsTabPage.Size = new System.Drawing.Size(704, 386);
 			this.TeamsTabPage.TabIndex = 1;
 			this.TeamsTabPage.Text = "Tournament Teams";
-			// 
+			//
 			// TeamsControl
-			// 
+			//
 			this.TeamsControl.Location = new System.Drawing.Point(4, 14);
 			this.TeamsControl.Margin = new System.Windows.Forms.Padding(0);
 			this.TeamsControl.Name = "TeamsControl";
 			this.TeamsControl.Size = new System.Drawing.Size(696, 361);
 			this.TeamsControl.TabIndex = 0;
-			// 
+			//
 			// TournamentInfoForm
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(735, 436);
@@ -104,7 +104,7 @@ namespace PC.Forms
 			this.MinimizeBox = false;
 			this.Name = "TournamentInfoForm";
 			this.ShowIcon = false;
-			this.Text = "Tournament Settings";
+			this.Text = "Event Settings";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TournamentInfoForm_FormClosing);
 			this.Load += new System.EventHandler(this.TournamentInfoForm_Load);
 			this.DetailsTabControl.ResumeLayout(false);

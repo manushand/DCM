@@ -17,8 +17,8 @@ internal sealed partial class TournamentListForm : Form
 										 EventArgs e)
 	{
 		Text = Delete
-				   ? "Delete Tournament"
-				   : "Open Tournament";
+				   ? "Delete Event"
+				   : "Open Event";
 		TournamentComboBox.FillWith(ReadMany<Tournament>(static tournament => tournament.GroupId is null)
 										.OrderByDescending(static tournament => tournament.Date));
 	}
@@ -31,7 +31,7 @@ internal sealed partial class TournamentListForm : Form
 		if (Delete)
 		{
 			if (MessageBox.Show($"Are you absolutely sure you want to delete{NewLine}{tournament}?!?{NewLine}{NewLine}THERE IS NO UNDO!",
-								"Confirm Tournament Delete",
+								"Confirm Event Deletion",
 								YesNo,
 								Question) is DialogResult.No)
 				return;

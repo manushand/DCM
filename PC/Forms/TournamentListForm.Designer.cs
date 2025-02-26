@@ -32,28 +32,28 @@
 			this.TournamentNameLabel = new System.Windows.Forms.Label();
 			this.TournamentComboBox = new System.Windows.Forms.ComboBox();
 			this.SuspendLayout();
-			// 
+			//
 			// TournamentNameLabel
-			// 
+			//
 			this.TournamentNameLabel.AutoSize = true;
 			this.TournamentNameLabel.Location = new System.Drawing.Point(14, 16);
 			this.TournamentNameLabel.Name = "TournamentNameLabel";
 			this.TournamentNameLabel.Size = new System.Drawing.Size(67, 13);
 			this.TournamentNameLabel.TabIndex = 0;
-			this.TournamentNameLabel.Text = "Tournament:";
-			// 
+			this.TournamentNameLabel.Text = "Event:";
+			//
 			// TournamentComboBox
-			// 
+			//
 			this.TournamentComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.TournamentComboBox.FormattingEnabled = true;
-			this.TournamentComboBox.Location = new System.Drawing.Point(88, 13);
+			this.TournamentComboBox.Location = new System.Drawing.Point(60, 13);
 			this.TournamentComboBox.Name = "TournamentComboBox";
-			this.TournamentComboBox.Size = new System.Drawing.Size(289, 21);
+			this.TournamentComboBox.Size = new System.Drawing.Size(310, 21);
 			this.TournamentComboBox.TabIndex = 1;
 			this.TournamentComboBox.SelectedIndexChanged += new System.EventHandler(this.TournamentComboBox_SelectedIndexChanged);
-			// 
+			//
 			// TournamentListForm
-			// 
+			//
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(401, 46);
@@ -65,7 +65,7 @@
 			this.MinimizeBox = false;
 			this.Name = "TournamentListForm";
 			this.ShowIcon = false;
-			this.Text = "Open Tournament";
+			this.Text = "Open Event";
 			this.Load += new System.EventHandler(this.TournamentListForm_Load);
 			this.ResumeLayout(false);
 			this.PerformLayout();

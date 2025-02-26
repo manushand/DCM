@@ -454,7 +454,7 @@
 			this.UnregisteredDataGridView.Size = new System.Drawing.Size(191, 405);
 			this.UnregisteredDataGridView.TabIndex = 0;
 			this.UnregisteredDataGridView.CellDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.RegisterButton_Click);
-			this.UnregisteredDataGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.SeedableDataGridView_DataBindingComplete);
+			this.UnregisteredDataGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.RegistrableDataGridView_DataBindingComplete);
 			this.UnregisteredDataGridView.SelectionChanged += new System.EventHandler(this.RegistrableDataGridView_SelectionChanged);
 			//
 			// RegisteredDataGridView
@@ -480,7 +480,7 @@
 			this.RegisteredDataGridView.ShowCellToolTips = false;
 			this.RegisteredDataGridView.Size = new System.Drawing.Size(188, 405);
 			this.RegisteredDataGridView.TabIndex = 93;
-			this.RegisteredDataGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.SeedableDataGridView_DataBindingComplete);
+			this.RegisteredDataGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.RegistrableDataGridView_DataBindingComplete);
 			this.RegisteredDataGridView.SelectionChanged += new System.EventHandler(this.RegistrableDataGridView_SelectionChanged);
 			//
 			// RoundLockedLabel

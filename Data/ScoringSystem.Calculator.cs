@@ -130,7 +130,7 @@ public sealed partial class ScoringSystem
 																				 .OrderByDescending(static @operator => @operator.Length)];
 
 		//	No longhand for Reset or If (not until I can think of an "ENDIF" or "FI" that I like)
-		private static readonly string[] OperatorLonghands = [..Enum.GetNames(typeof (Operators))
+		private static readonly string[] OperatorLonghands = [..Enum.GetNames<Operators>()
 																	.Where(static longhand => longhand.As<Operators>() > Operators.If)
 																	.OrderByDescending(static @operator => @operator.Length)];
 
@@ -148,7 +148,7 @@ public sealed partial class ScoringSystem
 #if Routines
 		private static readonly SortedDictionary<string, string> Routines = new (OrdinalIgnoreCase);
 
-		private const string RoutineQuotes = "\"'`";
+		private const string RoutineQuotes = "\"'";
 #else
 		private const string RoutineQuotes = "";
 #endif
@@ -250,8 +250,15 @@ public sealed partial class ScoringSystem
 		internal static double Calculate(string formula)
 		{
 			Aliases.Clear();
-			return new Calculator(formula, Scoring.Player).Result;
+#if Routines
+			Routines.Clear();
+#endif
+			return Calculate(formula, Scoring.Player);
 		}
+
+		private static double Calculate(string formula,
+										PowerData contextPlayer)
+			=> new Calculator(formula, contextPlayer).Result;
 
 		private Calculator(string formula,
 						   PowerData contextPlayer)
@@ -354,7 +361,7 @@ public sealed partial class ScoringSystem
 					DropCount(position);
 					_term = formulaToRun is null
 								? 0
-								: new Calculator(formulaToRun, _powerData).Result;
+								: Calculate(formulaToRun, _powerData);
 					return;
 				//	If getting a Term for the Becomes operator, the next "Term" is an alias name; set it.
 				case Operators.Becomes when GetAlias(out var alias):
@@ -366,7 +373,8 @@ public sealed partial class ScoringSystem
 					return;
 				case Operators.Becomes:
 					throw new InvalidOperationException($"Invalid alias name: {_formula.Split().First()}");
-				//	Error check
+				//	Error check; all text after a ? until a semicolon or end of code is error text
+				//	to be reported, and the formula failed, if the current Result is non-zero.
 				case Operators.IsError:
 					var error = _formula.Split(Semicolon)
 										.First();
@@ -411,14 +419,14 @@ public sealed partial class ScoringSystem
 				//	in-context, or any of the above preceded by a unary operator.
 				switch (_formula[0])
 				{
-				//	Parenthesized expression.
+				//	Parenthesized expression
 				case '(':
 					var parenCount = 1;
 					while (parenCount > 0 && ++position < _formula.Length)
 						parenCount += AdjustEmbedCount(_formula[position], '(', ')');
 					if (parenCount > 0)
 						throw new InvalidOperationException("Unclosed parenthesis.");
-					_term = new Calculator(_formula[1..position], _powerData).Result;
+					_term = Calculate(_formula[1..position], _powerData);
 					DropCount(++position);
 					return;
 				//	Numbers
@@ -496,7 +504,7 @@ public sealed partial class ScoringSystem
 								bracketLevel += AdjustEmbedCount(_formula[position], '[', ']');
 							if (bracketLevel > 0)
 								throw new InvalidOperationException($"Unclosed power reference bracket after {alias}.");
-							_term = new Calculator(_formula[1..position], powerContext).Result;
+							_term = Calculate(_formula[1..position], powerContext);
 							DropCount(++position);
 							return;
 						case '.':
@@ -512,7 +520,7 @@ public sealed partial class ScoringSystem
 						_term = powerDataFunc(powerContext);
 #if Routines
 					else if (Routines.TryGetValue(alias, out var routine))
-						_term = new Calculator(routine, powerContext).Result;
+						_term = Calculate(routine, powerContext);
 #endif
 					//	In constructions like Austria.X and Italy.X the X
 					//	must have been one of the above, or it's an error
@@ -527,9 +535,7 @@ public sealed partial class ScoringSystem
 					return;
 				case var quote when AllQuotes.Contains(quote):
 					//	Parse to the matching end-quote (with embedded open/closes of the other types allowed, which
-					//	could, within them, embed this type) and then demand a Becomes operator and a name (and then
-					//	a semicolon maybe?).  Store the quoted text in the Routines Dictionary, so it has the provided
-					//	alias name.  One problem is what we would then return for Term (hence requiring a Semicolon?).
+					//	could, within them, embed this type).  This is for code repetitions and Routine definitions.
 					var (active, index, length) = ($"{quote}", 0, _formula.Length);
 					while (++index < length && active.Length is not 0)
 					{
@@ -543,29 +549,37 @@ public sealed partial class ScoringSystem
 					}
 					if (active.Length is not 0)
 						throw new InvalidOperationException($"Unclosed quotation mark: {quote}.");
-					var routineText = _formula[1..(index - 1)].Trim();
+					var codeText = _formula[1..(index - 1)].Trim();
 					DropCount(index);
-					if (quote is not RepeatQuote)
-						return;
-					//	The @operator has already been changed to Operators.Plus; figure out the addend.
-					if (_powerData.Lost)
-						_term = -Result;
-					else
+					switch (quote)
 					{
-						var drawSize = Scoring.Winners;
-						if (drawSize is 1)
-							_term = 0;
+					//	If the string is back-quoted, it is code that is to be repeated some number of times.
+					//	I honestly don't understand what I did here; it looks like if the player lost, it won't
+					//	run at all, and -Result is returned? And if there was a solo, it won't run and 0 is
+					//	returned?  Otherwise, it will run as many times as the draw-size?
+					case RepeatQuote:
+						//	The @operator has already been changed to Operators.Plus; figure out the addend.
+						if (_powerData.Lost)
+							_term = -Result;
 						else
 						{
-							var equation = $"{Result}";
-							while (--drawSize > 0)
-								equation += routineText;
-							_term = new Calculator(equation, _powerData).Result - Result;
+							var drawSize = Scoring.Winners;
+							if (drawSize is 1)
+								_term = 0;
+							else
+							{
+								var equation = $"{Result}";
+								while (--drawSize > 0)
+									equation += codeText;
+								_term = Calculate(equation, _powerData) - Result;
+							}
 						}
-					}
+						break;
 #if Routines
-					else
-					{
+					//	If the string is single- or double-quoted, it must be followed by a Becomes operator and an alias
+					//	(then a semicolon maybe?).  We store the string in the Routines Dictionary with the alias provided.
+					//	Requiring a terminal Semicolon forces the returned _term to be 0.
+					default:
 						GetOperator();
 						if (@operator is not Operators.Becomes)
 							throw new InvalidOperationException("Routine definition not followed by Becomes operator.");
@@ -579,8 +593,9 @@ public sealed partial class ScoringSystem
 						//	TODO: Throw exception if the Formula is empty after semicolons and whitespace removed.
 						@operator = Operators.Reset;
 						Routines[routineName] = routineText;
-					}
+						break;
 #endif
+					}
 					return;
 				default:
 					throw new InvalidOperationException($"Unrecognized formula term: {_formula.Split().First()}");

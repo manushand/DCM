@@ -7,7 +7,7 @@ internal sealed partial class PlayerListForm : Form
 	private const string EmailLabelToolTipText = "Separate multiple addresses using comma or semicolon.";
 
 	private static readonly string FirstNameLabelToolTipText = $"If player First Name does not begin with a letter,{NewLine}" +
-															    "tournament and group rankings will be hidden.";
+															    "event and group rankings will be hidden.";
 
 	private Player Player { get; set; } = Player.None;
 

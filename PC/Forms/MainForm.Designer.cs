@@ -69,7 +69,7 @@
 			TournamentToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { OpenTournamentMenuItem, NewTournamentToolStripMenuItem, DeleteTournamentMenuItem });
 			TournamentToolStripMenuItem.Name = "TournamentToolStripMenuItem";
 			TournamentToolStripMenuItem.Size = new Size(84, 20);
-			TournamentToolStripMenuItem.Text = "&Tournament";
+			TournamentToolStripMenuItem.Text = "&Event";
 			//
 			// OpenTournamentMenuItem
 			//

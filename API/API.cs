@@ -66,11 +66,11 @@ internal static class API
 								  config.SwaggerDoc(version, new () { Title = Title, Version = version });
 								  config.SchemaFilter<EnumSchemaFilter>();
 								  config.CustomSchemaIds(static type => type.FullName?
-																			.Replace("API.", string.Empty)
-																			.Replace("Data.GamePlayer", "Player")
-																			.Replace("Data.", string.Empty)
-																			.Replace("ScoringSystem", "System")
-																			.Replace("Detail+", string.Empty)
+																			.Replace($"{nameof (API)}.", string.Empty)
+																			.Replace($"{nameof (Data)}.{nameof (GamePlayer)}", nameof (Player))
+																			.Replace($"{nameof (Data)}.", string.Empty)
+																			.Replace(nameof (ScoringSystem), nameof (System))
+																			.Replace($"{nameof (Game.Detail)}+", string.Empty)
 																			.Replace("+", "."));
 							  });
 
@@ -95,15 +95,28 @@ internal static class API
 	}
 
 	internal static string? NullIfEmpty(this string? s)
-		=> string.IsNullOrWhiteSpace(s) ? null : s;
+		=> string.IsNullOrWhiteSpace(s)
+			   ? null
+			   : s;
 
 	internal static ICollection<T>? NullIfEmpty<T>(this ICollection<T> i)
-		=> i.Count is 0 ? null : i;
+		=> i.Count is 0
+			   ? null
+			   : i;
+
+	internal static void Create<T>(this T record)
+		where T : class, IRecord
+		=> CreateOne(record);
+
+	internal static void Delete<T>(this T record)
+		where T : class, IRecord
+		=> Data.Delete(record);
 
 	[PublicAPI]
 	private class EnumSchemaFilter : ISchemaFilter
 	{
-		public void Apply(OpenApiSchema model, SchemaFilterContext context)
+		public void Apply(OpenApiSchema model,
+						  SchemaFilterContext context)
 		{
 			if (context.Type.IsEnum)
 				model.Enum =
@@ -121,12 +134,4 @@ internal static class API
 				];
 		}
 	}
-
-	internal static void Create<T>(this T record)
-		where T : class, IRecord
-		=> CreateOne(record);
-
-	internal static void Delete<T>(this T record)
-		where T : class, IRecord
-		=> Data.Delete(record);
 }

@@ -76,15 +76,16 @@ internal sealed partial class MainForm : Form
 		case Tournament tournament:
 			TournamentNameLabel.Text = tournament.Name;
 			LeftButton.Text = tournament.HasTeamTournament
-								  ? $"Teams and{NewLine}Tournament Settings"
-								  : "Tournament Settings";
-			var startedRounds = tournament.Rounds
+								  ? $"Teams and{NewLine}Event Settings"
+								  : "Event Settings";
+			var createdRounds = tournament.Rounds
 										  .Length;
-			MiddleButton.Text = startedRounds is 0
+			MiddleButton.Text = createdRounds is 0
 									? "Registration"
-									: startedRounds == tournament.TotalRounds
+									: createdRounds == tournament.TotalRounds
 										? "Rounds"
 										: $"Rounds and{NewLine}Registration";
+			MiddleButton.Enabled = createdRounds is not 0;
 			RightButton.Text = "Scores";
 			RightButton.Enabled = tournament.Games //	This could be .FinishedGames but it wastes time doing .ToList()
 											.Any(static game => game.Status is Finished);
