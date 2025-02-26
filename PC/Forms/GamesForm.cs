@@ -236,7 +236,7 @@ internal sealed partial class GamesForm : Form
 			return;
 		case Seeded when GameControl.HasData:
 			if (MessageBox.Show($"Are you sure you wish to unstart this game?{NewLine}{NewLine}The game details recorded for players will be erased.",
-								"Confirm Loss of Game-Player Details",
+								"Confirm Erasure of Game-Player Details",
 								YesNo,
 								Warning) is DialogResult.No)
 				return;

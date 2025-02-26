@@ -273,15 +273,11 @@ internal static class PC
 	internal static void FillWith(this ListControl listControl,
 								  params object[] elements)
 	{
-		if (listControl is not (object @object and (ListBox or ComboBox)))
-			return;
 		//	This is just a neat little trick taking advantage of the fact that although the two types
 		//	don't share an interface, they have identical method signatures for what we want to do.
-		dynamic both = @object;
-		both.Items
-			.Clear();
-		both.Items
-			.AddRange(elements);
+		var both = ((dynamic)listControl).Items;
+		both.Clear();
+		both.AddRange(elements);
 	}
 
 	internal static void SetSelectedItem<T>(this ComboBox comboBox,

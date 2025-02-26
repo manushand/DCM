@@ -274,8 +274,8 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 	}
 
 	public static IResult GetGame(int id,
-									   int roundNumber,
-									   int gameNumber)
+								  int roundNumber,
+								  int gameNumber)
 	{
 		var gameId = RestForId(id)?.Record.Rounds.SingleOrDefault(round => round.Number == roundNumber)
 								  ?.Games.SingleOrDefault(game => game.Number == gameNumber)
@@ -298,17 +298,24 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 
 	public static IResult SeedRound(int id)
 	{
+		var tournament = RestForId(id)?.Record;
+		if (tournament is null)
+			return NotFound();
+		var round = tournament.Rounds.SingleOrDefault(static round => round.Workable);
+		if (round is null)
+			return Conflict("No seedable round");
 		throw new NotImplementedException();
 	}
 
 	private protected override string[] UpdateRecordForDatabase(Event @event)
 	{
-		//	TODO - Add more validation - name collision, ridiculous date, etc., etc.
+		Record.Name = @event.Name;
+
 		var details = @event.Details;
 		if (details is null)
 			return [];
 
-		Record.Name = @event.Name;
+		//	TODO - Add validation - name collision, ridiculous date, etc., etc.
 
 		Record.Date = DateTime.Parse(details.Date);
 		Record.Description = details.Description ?? string.Empty;

@@ -32,9 +32,8 @@ internal sealed partial class TournamentControl : UserControl
 			TournamentInfoForm = tournamentInfoForm;
 			ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
 			MinimumRoundsComboBox.FillRange(1, 9);
-			if (Tournament.Id is 0)
+			if (Tournament.IsNone)
 			{
-				Text = "New Tournament ─ Settings";
 				CopyButton.Hide();
 				Tournament.TotalRounds = 2;
 				Tournament.MinimumRounds = 1;

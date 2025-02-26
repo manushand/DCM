@@ -26,7 +26,7 @@ internal sealed partial class TournamentInfoForm : Form
 	}
 
 	internal void SetFormTitle()
-		=> Text = $"{Tournament} ─ {(Tournament.HasTeamTournament ? "Teams and " : null)}Details";
+		=> Text = $"{(Tournament.IsNone ? "New Event" : Tournament.Name)} ─ {(Tournament.HasTeamTournament ? "Teams and " : null)}Details";
 
 	internal void SetTeamsTabVisibility()
 	{
