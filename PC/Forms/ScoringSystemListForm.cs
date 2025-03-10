@@ -69,28 +69,23 @@ internal sealed partial class ScoringSystemListForm : Form
 		{
 			var tournaments = scoringSystem.Tournaments;
 			var groups = tournaments.Select(static tournament => tournament.Group)
+									.Where(static group => !group.IsNone)
 									.ToList();
-			var groupCount = groups.Count;
-			var usedInGroups = groupCount > 0;
 			tournaments = [..tournaments.Where(static tournament => tournament.IsEvent)];
-			var tournamentCount = tournaments.Count;
+			var usedInGroups = groups.Count > 0;
 			var message = $"The {scoringSystem} scoring system is used ";
-			if (tournamentCount > 0)
-			{
-				message += $"in {ThisOrThese(tournamentCount, "tournament")}:{tournaments.BulletList()}";
-				if (usedInGroups)
-					message += $"{NewLine}{NewLine}and ";
-			}
+			if (tournaments.Count > 0)
+				message += $"in {UsedInList(tournaments, "event")}{(usedInGroups ? $"{NewLine}{NewLine}and " : null)}";
 			if (usedInGroups)
-				message += $"by {ThisOrThese(groupCount, "group")}:{groups.BulletList()}";
+				message += $"by {UsedInList(groups, "group")}";
 			MessageBox.Show(message,
 							"Scoring System Uses",
 							OK,
 							Information);
 
-			static string ThisOrThese(int count,
-									  string what)
-				=> $"{(count is 1 ? "this" : "these")} {what.Pluralize(count)}";
+			static string UsedInList(IReadOnlyCollection<object> objects,
+									 string what)
+				=> $"{(objects.Count is 1 ? "this" : "these")} {what.Pluralize(objects)}:{objects.BulletList()}";
 		}
 		else if (MessageBox.Show($"Really delete the {scoringSystem} scoring system?",
 								 "Confirm Scoring System Deletion",

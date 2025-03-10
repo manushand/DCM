@@ -330,8 +330,7 @@ internal sealed partial class TournamentControl : UserControl
 		string? error = null;
 		Tournament.Name = NameTextBox.Text
 									 .Trim();
-		var existingTournament = ReadByName(Tournament);
-		if (existingTournament is not null && !existingTournament.Is(Tournament))
+		if (NameExists(Tournament))
 			error = "Another tournament with that name already exists.";
 		else if (Tournament.Name.Length is 0)
 			error = "Tournament must be named.";

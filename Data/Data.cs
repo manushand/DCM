@@ -158,9 +158,13 @@ public static partial class Data
 		where T : IdInfoRecord
 		=> ReadOne<T>(record => record.Id == id).OrThrow($"{typeof (T).Name} not found with ID {id}");
 
-	public static T? ReadByName<T>(T record)
+	public static T? ReadByName<T>(string name)
 		where T : IdInfoRecord
-		=> ReadOne<T>(t => t.Name.Matches(record.Name));
+		=> ReadOne<T>(t => t.Name.Matches(name));
+
+	public static bool NameExists<T>(T updating)
+		where T : IdInfoRecord
+		=> ReadByName<T>(updating.Name)?.IsNot(updating) ?? false;
 
 	//	Important (for some reason): note that in all cases where we open and close the
 	//	database connection, we wait until the connection is closed to update the cache.

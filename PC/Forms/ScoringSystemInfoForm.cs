@@ -124,7 +124,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 	{
 		error = null;
 		LoadSystemFromForm();
-		if ((ReadByName(ScoringSystem)?.Id ?? ScoringSystem.Id) != ScoringSystem.Id)
+		if (NameExists(ScoringSystem))
 			error = "Scoring system name already in use.";
 		else if (!WinLossCheckBox.Checked && !CenterCountCheckBox.Checked && !YearsPlayedCheckBox.Checked)
 			error = "At least one scoring method must be used.";
@@ -176,15 +176,12 @@ internal sealed partial class ScoringSystemInfoForm : Form
 								EventArgs e)
 	{
 		if (ValidateSystem(out var error))
-		{
-			var existingSystem = ReadByName(ScoringSystem);
-			if (existingSystem is not null && !existingSystem.Is(ScoringSystem))
-				error = "A scoring system with this same name exists.";
-			else if (ScoringSystem.Name.Length is 0)
+			if (ScoringSystem.Name.Length is 0)
 				error = "Scoring system must be named.";
+			else if (NameExists(ScoringSystem))
+				error = "A scoring system with this same name exists.";
 			else if (ScoringSystem.TestGamePlayers is not null && !RunTest(out _))
 				error = "Scoring system fails on test game data.";
-		}
 		if (error is null)
 		{
 			if (ScoringSystem.Id is 0)

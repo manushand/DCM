@@ -83,7 +83,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		if (rest is null)
 			return NotFound();
 		var recordId = updated.Id;
-		if (updated is not Game && (ReadOne<T2>(@object => @object.Name == updated.Name)?.Id ?? id) != id)
+		if (updated is not Game && (ReadByName<T2>(updated.Name)?.Id ?? id) != id)
 			return Conflict("Proposed new name already in use.");
 		var issues = id != recordId
 						 ? ["IDs do not match."]
@@ -101,7 +101,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	{
 		var record = new T1();
 		var named = candidate.Name.Length > 0;
-		if (named && ReadOne<T2>(@object => @object.Name == candidate.Name) is not null)
+		if (named && ReadByName<T2>(candidate.Name) is not null)
 			return Conflict("Name already in use.");
 		var issues = candidate.Id is not 0
 						 ? ["ID must be null or 0 for POST."]
