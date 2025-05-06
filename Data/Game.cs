@@ -62,7 +62,7 @@ public sealed class Game : IdentityRecord<Game>
 
 	/// <summary>
 	///     Returns the tournament score (sum of previous rounds' games) or group rating score (using prior
-	///     games according to the group's ratings rules) for this player as-of before this Game was played.
+	///     games according to the group's rating rules) for this player as-of before this Game was played.
 	/// </summary>
 	/// <returns></returns>
 	internal double PreGameScore(GamePlayer gamePlayer)

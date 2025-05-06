@@ -125,7 +125,7 @@ internal sealed partial class GameControl : UserControl
 
 	internal void LoadGame(List<GamePlayer>? gamePlayers)
 	{
-		//	If the list of game players is null (or empty), just clear the boxes and return.
+		//	If the list of game players is null (or empty), clear the boxes and return.
 		GamePlayers = gamePlayers;
 		if (GamePlayers?.Count is null or 0)
 		{
@@ -249,7 +249,7 @@ internal sealed partial class GameControl : UserControl
 		if (SkippingHandlers)
 			return;
 		++UpdateDepth;
-		//	If win/loss is win, make sure year is latest
+		//	If win/loss is win, make sure the year is latest
 		if (resultComboBox.SelectedIndex.As<Results>() is Win && ScoringSystem.UsesYearsPlayed)
 			YearsBoxFor(resultComboBox).SelectedIndex = YearsComboBoxes.Max(static comboBox => comboBox.SelectedIndex);
 		//	Set the Win text to either Solo or Draw for everyone.
@@ -397,7 +397,7 @@ internal sealed partial class GameControl : UserControl
 								 if (NumberOfWinners is 1 && resultComboBox.SelectedIndex is 1)
 									 resultComboBox.Items[1] = ConcText;
 								 else if (ScoringSystem.DrawsIncludeAllSurvivors)
-									 //	If DIAS and no other power claims a solo, set box to WIN
+									 //	If DIAS, and if no other power claims a solo, set box to WIN
 									 if (CentersComboBoxes.All(static comboBox => comboBox.SelectedIndex < 18)
 									 && (NumberOfWinners is not 1 || !SoloConcededCheckBox.Checked))
 									 {
@@ -511,8 +511,8 @@ internal sealed partial class GameControl : UserControl
 			else if (YearsComboBoxes.Count(box => box.SelectedIndex is 0
 											   && CentersBoxFor(box).SelectedIndex is 0) > 1)
 				error = "Impossibly too many powers eliminated in 1901.";
-			//	Two powers (minimum) must survive 1902, and if it's only
-			//	two then it has to be one of six specific power-pairs.
+			//	Two powers (minimum) must survive 1902, and if only two
+			//	do so, then it has to be one of six specific power-pairs.
 			else if (TooMany1902Eliminations())
 				error = "Impossibly too many powers eliminated in 1902.";
 			//	By the end of 1901, each power could have 3+3=6, except Russia, who could have 4+4=8.
@@ -684,7 +684,7 @@ internal sealed partial class GameControl : UserControl
 						continue;
 					if (ScoringSystem.UsesGameResult)
 						//	Choose a WIN or LOSS even if the box is already set.  Otherwise, the first
-						//	one to set to Solo will set all others to Loss and that's all we get
+						//	one to set to Solo will set all others to Loss, and that's all we get.
 						//	But ensure we have at least one winner at all times.
 						ResultComboBoxes[item].SelectedIndex = ResultComboBoxes.All(static box => box.SelectedIndex is 0)
 																   ? 1                // = win
@@ -697,10 +697,10 @@ internal sealed partial class GameControl : UserControl
 			{
 				//	The 10 below sets the latest game year for these random games to 1911.
 				var maxYears = Min(10, YearsComboBoxes[0].Items.Count);
-				//	First just set random years. But don't use 1901 (hence the +1 below).
+				//	First set random years. But don't use 1901 (hence the +1 below).
 				YearsComboBoxes.ForEach(box => box.SelectedIndex = RandomNumber(maxYears) + 1);
 				var finalYear = YearsComboBoxes.Max(static box => box.SelectedIndex);
-				//	Make sure all winners or survivors played to final year.
+				//	Make sure all winners or survivors played to the final year.
 				YearsComboBoxes.ForSome(comboBox => ScoringSystem.UsesGameResult && ResultBoxFor(comboBox).SelectedIndex is 1
 												 || ScoringSystem.UsesCenterCount && CentersBoxFor(comboBox).SelectedIndex > 0,
 										box => box.SelectedIndex = finalYear);
@@ -719,7 +719,7 @@ internal sealed partial class GameControl : UserControl
 				if (NumberOfWinners > 1)
 					ResultComboBoxes.ForEach(box => box.SelectedIndex = (CentersBoxFor(box).SelectedIndex >= minToWin).AsInteger());
 
-				//	This is separate from the above. Do not make it an else if -- the NumberOfWinners may have changed.
+				//	This is separate from the above. Do not make it an "else if" -- the NumberOfWinners may have changed.
 				//	This code, which just sets the ComboBox item text if there is a sole winner is (I think) only needed
 				//	here in the test game code; I'm less sure about that for the above code (hence the TODOs up there).
 				var concession = minToWin is 1 && RandomNumber(7) is 0;

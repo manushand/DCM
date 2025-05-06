@@ -51,7 +51,7 @@ internal sealed partial class GroupInfoForm : Form
 	{
 		var scoringSystem = ScoringSystemComboBox.GetSelected<ScoringSystem>();
 		//	This next "if" should never be true, since the No-Scoring-System option isn't shown if GroupHasGames.
-		//	But in case somehow (or someday if that option IS restored when a GroupHasGames) this is happening,
+		//	But in case somehow (or someday, if that option IS restored when a GroupHasGames) this is happening,
 		//	the user should know what will happen if they make the Group one that doesn't have a ScoringSystem.
 		//  (Actually, I believe this could happen even now after a setting the system for the first time ever,
 		//  which doesn't remove the None option, then creating a game all in the same run of this Form.)
@@ -105,7 +105,7 @@ internal sealed partial class GroupInfoForm : Form
 	{
 		if (DialogResult is not DialogResult.Cancel)
 			return;
-		//	Reload from database since any mucking with it changed it in the Cache
+		//	Reload from the database since any mucking with it changed it in the Cache
 		Group = ReadOne(Group, false) ?? Group.None;
 		var current = ScoringSystemComboBox.GetSelected<ScoringSystem>();
 		e.Cancel = (Group.ScoringSystemId != current.Id

@@ -97,17 +97,15 @@ internal sealed partial class PlayerListForm : Form
 				return;
 			}
 
-			if ((from email in addresses
-				 let playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses
-																			 .Any(email.Matches))
-                                                                             .ToArray()
-				 where playersWithThisEmail.Length is not 0
-                   && MessageBox.Show($"The email address {email} is already being used by:{playersWithThisEmail.BulletList()}" +
-									   "Add another player with this same address?",
-									   "Confirm Duplicate Player Email",
-									   YesNo,
-									   Question) is DialogResult.No
-				 select true).Any())
+			if (addresses.Select(static email =>
+								 {
+									 var playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses.Any(email.Matches)).ToArray();
+									 return playersWithThisEmail.Length is not 0
+											&& MessageBox.Show($"The email address {email} is already being used by:{playersWithThisEmail.BulletList()}" +
+															   "Add another player with this same address?",
+															   "Confirm Duplicate Player Email", YesNo, Question) is DialogResult.No;
+								 })
+						 .Any(static x => x))
 				return;
 		}
 		Player = CreateOne(new Player
@@ -123,7 +121,7 @@ internal sealed partial class PlayerListForm : Form
 	private void RemoveButton_Click(object sender,
 									EventArgs e)
 	{
-		//  Someone who is associated with Games cannot be removed; show which Games they are in.
+		//  Someone associated with Games cannot be removed; show which Games they are in.
 		if (Player.Games.Any())
 		{
 			Show<GamesForm>(() => new (Player));

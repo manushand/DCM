@@ -29,7 +29,7 @@ using static Tournament;
 public static partial class Data
 {
 	private const string Null = nameof (Null);
-	private static string _selectIdentityCommandText = Empty;
+	private static readonly DbCommand SelectIdentityCommand = Command();
 
 	public enum DatabaseTypes : sbyte
 	{
@@ -46,7 +46,7 @@ public static partial class Data
 				_connection = provider(databaseFile);
 				OpenConnection();
 				CloseConnection();
-				_selectIdentityCommandText = "SELECT @@IDENTITY";
+				SelectIdentityCommand.CommandText = "SELECT @@IDENTITY";
 				return true;
 			}
 			catch // (Exception exception)
@@ -58,17 +58,17 @@ public static partial class Data
 
 	public static void ConnectToSqlServerDatabase(string connectionString)
 	{
-		//	NOTE: This method may throw.  Don't worry; the exception is caught by the caller
+		//	NOTE: This method may throw.  Don't worry; the caller catches the exception
 		_connection = new SqlConnection(connectionString);
 		OpenConnection();
 		CloseConnection();
-		_selectIdentityCommandText = "SELECT SCOPE_IDENTITY()";
+		SelectIdentityCommand.CommandText = "SELECT SCOPE_IDENTITY()";
 	}
 
 	internal static void StartTransaction()
 	{
 		if (_transaction is not null)
-			throw new InvalidOperationException(); // TODO
+			return;
 		OpenConnection();
 		_transaction = Connection.BeginTransaction();
 	}
@@ -78,7 +78,6 @@ public static partial class Data
 		_transaction.OrThrow()
 					.Commit();
 		_transaction = null;
-		_localTransaction = false;
 		CloseConnection();
 	}
 
@@ -111,19 +110,18 @@ public static partial class Data
 	public static IEnumerable<T> CreateMany<T>(params T[] records)
 		where T : IRecord
 	{
-		BeginLocalTransaction();
-		using (var command = Command())
-			foreach (var record in records)
-			{
-				command.CommandText = InsertStatement(record);
-				if (command.ExecuteNonQuery() is 0)
-					throw new ($"Record insertion failed: {command.CommandText}");
-				if (record is not IdInfoRecord idInfoRecord)
-					continue;
-				command.CommandText = _selectIdentityCommandText;
-				idInfoRecord.Id = (int)command.ExecuteScalar().OrThrow();
-			}
-		CommitLocalTransaction();
+		RunAsTransaction(() =>
+						 {
+							 using var command = Command();
+							 foreach (var record in records)
+							 {
+								 command.CommandText = InsertStatement(record);
+								 if (command.ExecuteNonQuery() is 0)
+									 throw new ($"Record insertion failed: {command.CommandText}");
+								 if (record is IdInfoRecord idInfoRecord)
+									idInfoRecord.Id = (int)SelectIdentityCommand.ExecuteScalar().OrThrow();
+							 }
+						 });
 		Cache.AddRange(records);
 		return records;
 
@@ -132,16 +130,15 @@ public static partial class Data
 			var assignments = record is IInfoRecord infoRecord // 10 record types (7 that are not also IInfoRecord)
 								  ? infoRecord.FieldValues
 											  .Split(FieldValuesLineSplitter)
-											  .ToList()
+											  .ToHashSet()
 								  : [];
-			if (record is LinkRecord linkRecord) //	6 types, including 3 that are also IInfoRecord
-				assignments.AddRange(linkRecord.KeyFieldAssignments);
-			var list = assignments.Distinct()
-								  .Select(static assignment => assignment.Split('=', 2))
-								  .ToArray();
+			(record as LinkRecord)?.KeyFieldAssignments
+								  .ForEach(item => assignments.Add(item));
+			var list = assignments.Select(static assignment => assignment.Split('=', 2))
+								  .ToDictionary(static item => item[0], static item => item[1]);
 			return $"""
-			        INSERT INTO {TableName<T>()} ({Join(Comma, list.Select(static a => a[0]))})
-			        VALUES ({Join(Comma, list.Select(static a => a[1]))});
+			        INSERT INTO {TableName<T>()} ({Join(Comma, list.Keys)})
+			        VALUES ({Join(Comma, list.Values)});
 			        """;
 		}
 	}
@@ -204,25 +201,17 @@ public static partial class Data
 	}
 
 	//	This method cannot be used to change primary key fields on any of the records involved
-	public static void UpdateMany<T>(params T[] records)
+	public static void UpdateMany<T>(params IEnumerable<T> records)
 		where T : IInfoRecord
 	{
-		BeginLocalTransaction();
-		Execute(records.Select(UpdateStatement));
-		CommitLocalTransaction();
+		RunAsTransaction(() => records.Select(UpdateStatement).Execute());
 		Cache.AddRange(records);
 	}
-
-	public static void UpdateMany<T>(IEnumerable<T> records)
-		where T : IInfoRecord
-		=> UpdateMany([..records]);
 
 	public static void Delete<T>(params T[] records)
 		where T : IRecord
 	{
-		BeginLocalTransaction();
-		Execute(records.Select(static record => $"{DeleteStatement<T>()}{WhereClause(record)}"));
-		CommitLocalTransaction();
+		RunAsTransaction(() => records.Select(static record => $"{DeleteStatement<T>()}{record.WhereClause()}").Execute());
 		Cache.Remove(records);
 	}
 
@@ -382,7 +371,7 @@ public static partial class Data
 
 	private static readonly Func<string, DbConnection>[] Providers =
 	[
-		//	For ODBC either (32 or 64-bit) of the versions of the Access drivers must be
+		//	For ODBC, either (32 or 64-bit) of the Access driver versions must be
 		//	installed from https://www.microsoft.com/en-us/download/details.aspx?id=13255
 		//	and the solution's Build "Prefer 32-bit" must be set to match which driver was
 		//	installed. These drivers work for .accdb and .mdb.
@@ -392,7 +381,7 @@ public static partial class Data
 		//	success as the ODBC driver, so there's no point at all in using it.
 		file => new OleDbConnection("Provider=Microsoft.ACE.OLEDB.12.0;Persist Security Info=False;Data Source=" + file),
 		*/
-		//	For OLE JET neither Access driver is needed but the solution's Build "Prefer 32-bit"
+		//	For OLE JET, neither Access driver is needed, but the solution's Build "Prefer 32-bit"
 		//	property must be set to yes.  This driver works for .mdb only.
 		static file => new OleDbConnection($"Provider=Microsoft.Jet.OLEDB.4.0;User Id=admin;Data Source={file}")
 	];
@@ -402,7 +391,6 @@ public static partial class Data
 
 	private static DbConnection? _connection;
 	private static DbTransaction? _transaction;
-	private static bool _localTransaction;
 
 	private static DbConnection Connection => _connection.OrThrow();
 
@@ -427,24 +415,18 @@ public static partial class Data
 			Connection.Close();
 	}
 
-	private static void BeginLocalTransaction()
+	private static void RunAsTransaction(Action action)
 	{
-		_localTransaction = _transaction is null;
-		if (_localTransaction)
-			StartTransaction();
-		else
-			OpenConnection();
-	}
-
-	private static void CommitLocalTransaction()
-	{
-		if (_localTransaction)
+		var transactionIsAtomic = _transaction is null;
+		StartTransaction();
+		action();
+		if (transactionIsAtomic)
 			EndTransaction();
 		else
 			CloseConnection();
 	}
 
-	private static void Execute([InstantHandle] IEnumerable<string> statements)
+	private static void Execute([InstantHandle] this IEnumerable<string> statements)
 		=> Execute([..statements]);
 
 	private static void Execute(params string[] statements)
@@ -468,7 +450,7 @@ public static partial class Data
 	{
 		OpenConnection();
 		var records = new List<T>();
-		using (var command = Command($"SELECT * FROM {TableName<T>()}{(record is null ? null : WhereClause(record))}"))
+		using (var command = Command($"SELECT * FROM {TableName<T>()}{record?.WhereClause()}"))
 		{
 			using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
 			while (reader.Read())
@@ -491,7 +473,7 @@ public static partial class Data
 		where T : IRecord
 		=> $"DELETE FROM {TableName<T>()}";
 
-	private static string WhereClause(IRecord record)
+	private static string WhereClause(this IRecord record)
 		=> WhereClause(record.PrimaryKey);
 
 	private static string WhereClause(string primaryKey)

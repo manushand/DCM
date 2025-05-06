@@ -94,9 +94,9 @@ public sealed class Round : IdentityRecord<Round>
 		//	Create all the GamePlayer objects, seeding players into them from best
 		//	score to worst (if the Tournament uses a ScoreConflict) or randomly
 		//	(if it doesn't). Do not store them in the database yet, though.  Yes,
-		//	doing it by score really does improve performance, by about a third.
+		//	doing it by score really does improve performance (by about a third).
 		//	Note that doing it this way should, I think, mean that the "best" games
-		//	(having players with best score) should be the lower-numbered games.
+		//	(having players with the best scores) should be the lower-numbered games.
 		var gamePlayers = new List<GamePlayer>();
 		using (var seedingPlayers = roundPlayers.OrderByDescending(roundPlayer => Tournament.ScoreConflict is 0
 																					  ? RandomNumber()
@@ -151,16 +151,17 @@ public sealed class Round : IdentityRecord<Round>
 
 		static int Optimize(GamePlayer[] seeding)
 		{
-			//	All we REALLY know (without basically going through seeding)
-			//	is that IF there are no possible negative conflicts, then IF
-			//	the total conflict for a seeding attempt reaches zero, it is
-			//	the best possible -- we can stop trying to improve it.  Zero
-			//	may, even in this case, be impossible (if the positives just
-			//	cannot all be eliminated), so in that case, and in the cases
-			//	when there ARE possible negative conflicts, we cannot easily
-			//	predetermine the lowest possible total conflict score we can
-			//	get, so full seeding needs to take place. (Full-seeding more
-			//	than a dozen games seems to take only about eight seconds.)
+			//	All we REALLY know (without going through seeding) is
+			//	that if there are no possible negative conflicts, and
+			//	if the total conflict for a seeding attempt hits zero,
+			//	it's the best possible; we can stop trying to improve
+			//	it.  Even when there are possible negatives, zero may
+			//	be impossible (if all positives cannot be eliminated).
+			//	In that case, and in the cases when there ARE possible
+			//	negative conflicts, we cannot easily predetermine the
+			//	lowest possible total conflict score, so full seeding
+			//	needs to take place.  (Full-seeding more than a dozen
+			//	games seems to take only about eight seconds.)
 			var canBeatZero = seeding.SelectMany(static gamePlayer => gamePlayer.Player.PlayerConflicts)
 									 .Distinct()
 									 .Any(playerConflict => playerConflict.Value < 0 && playerConflict.ConflictedPlayerIds.All(SeedingIds))

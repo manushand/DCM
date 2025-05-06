@@ -113,7 +113,7 @@ internal sealed partial class GamesForm : Form
 			return;
 		UpdateMany(GamePlayers);
 		SetVisible(allFilledIn, [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
-		//	If all GamePlayers are Completely filled in, but we were told NOT allFilledIn,
+		//	If all GamePlayers are totally filled in, but we were told NOT allFilledIn,
 		//	this means that FinalGameDataValidation failed. Show the GameInErrorButton.
 		GameInErrorButton.Visible = !allFilledIn
 								 && GamePlayers.All(static gamePlayer => gamePlayer.PlayComplete);

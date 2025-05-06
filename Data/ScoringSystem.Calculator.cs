@@ -57,9 +57,13 @@ public sealed partial class ScoringSystem
 			new ()
 			{
 				//	Note that there are also these unary operators (parsed in GetTerm):
-				//	- (mathematical negative of)	!  (logical negative of)
-				//	+ (absolute value of)			\| (square root of)
-				//	# (center rank could be)		~  (elimination order could be)		$ (survivor rank could be)
+				//	- (mathematical negative of)
+				//	! (logical negative of)
+				//	+ (absolute value of)
+				//	\| (square root of)
+				//	# (center rank could be)
+				//	~  (elimination order could be)
+				//	$ (survivor rank could be)
 				//	@ (won and numWinners is) with @# giving 0 if the player did not win, or Winners if he did
 				[$"{Semicolon}"] = Operators.Reset,
 				["{"] = Operators.If,
@@ -88,7 +92,7 @@ public sealed partial class ScoringSystem
 		private static readonly SortedDictionary<Operators, Func<double, double, double>> Operate =
 			new ()
 			{
-				[Operators.Reset] = static (result, _) => result, //	Not 0 but terminal ; will always give 0
+				[Operators.Reset] = static (result, _) => result, //	Not 0 but terminal semicolon will always give 0
 				[Operators.If] = static (_, term) => term,        //	Pre-calculated (result of one of the clauses)
 				[Operators.Becomes] = static (_, term) => term,   //	Same lambda as Operators.If
 				[Operators.IsError] = static (_, _) => default,   //	Error check failed, proceeding to Reset
@@ -184,7 +188,7 @@ public sealed partial class ScoringSystem
 				[nameof (Scoring.LowestRunningScore)] = static () => Scoring.LowestRunningScore,
 				[nameof (Scoring.HighestRunningScore)] = static () => Scoring.HighestRunningScore,
 				[nameof (Scoring.AverageOfAverageGameScores)] = static () => Scoring.AverageOfAverageGameScores,
-				//	Uses of the OtherScoreAlias are converted to these but these names will work too.
+				//	Uses of the OtherScoreAlias are converted to these, but these names will work too.
 				[nameof (Scoring.SumOfOtherScores)] = static () => Scoring.SumOfOtherScores,
 				[nameof (Scoring.SumOfEveryOtherScore)] = static () => Scoring.SumOfEveryOtherScore,
 				[nameof (Scoring.AverageOtherScore)] = static () => Scoring.AverageOtherScore,
@@ -314,23 +318,23 @@ public sealed partial class ScoringSystem
 				=> _formula = _formula[length..].Trim();
 
 			//	Gets (and removes) the Term for the current @operator, from the beginning of
-			//	the Formula string. Formula is guaranteed to contain at least one character.
+			//	the Formula string. "Formula" is guaranteed to contain at least one character.
 			void GetTerm()
 			{
 				var position = 0;
-				//	Special handling for four operators:  Reset, If, Becomes, and IsError.
-				//	The first of these does not need a Term at all, and the other three all
-				//	must handle the right-hand side specially (that is, in a way a that an
+				//	Special handling for four operators: Reset, If, Becomes, and IsError.
+				//	The first of these does not need a Term at all; the other three all
+				//	must handle the right-hand side specially (that is, in a way that an
 				//	operation implemented using a Func<double, double, double> cannot).
 				switch (@operator)
 				{
-				//	Don't parse for a Term if we're doing a Reset. Just return.
+				//	Don't parse for a Term if we're doing a Reset.
 				case Operators.Reset:
 					return;
-				//	If we are getting a Term for the If operator, we scan to the ending
-				//	right brace, and then choose one of the two expressions within the
+				//	If we are getting a "Term" for the If operator, we scan to the ending
+				//	right brace. Then we choose one of the two expressions within the
 				//	braces (separated by a colon or "else") based on the current value
-				//	of Result, and run that expression to produce the requested Term,
+				//	of "Result". Then we run that expression to produce the requested Term,
 				//	which itself will become the final Result of the If operation.
 				case Operators.If:
 					var (braceLevel, start) = (1, 0);
@@ -411,12 +415,15 @@ public sealed partial class ScoringSystem
 				default:
 					throw new NotImplementedException($"Unrecognized {nameof (Operators)} value"); //	TODO
 				}
-				//	Otherwise the Term should be either a parenthesized expression
-				//	(which we run to produce the value of the requested Term), or
-				//	a number (which may be negative), an alias (which may be
-				//	prefaced by a power name and a dot), a power name with a
-				//	dotted or square-bracketed expression to run with that power
-				//	in-context, or any of the above preceded by a unary operator.
+				//	Otherwise, the "Term" should be either:
+				//	1)	a parenthesized expression (which we run to produce
+				//		the value of the requested Term), or
+				//	2)	a number (which may be negative),
+				//	3)	an alias (which may be prefaced by a power name and
+				//		a dot),
+				//	4)	a power name with a dotted or square-bracketed
+				//		expression to run with that power in-context, or
+				//	5) any of the above preceded by a unary operator.
 				switch (_formula[0])
 				{
 				//	Parenthesized expression
@@ -553,9 +560,9 @@ public sealed partial class ScoringSystem
 					DropCount(index);
 					switch (quote)
 					{
-					//	If the string is back-quoted, it is code that is to be repeated some number of times.
+					//	TODO: If the string is back-quoted, it is code that is to be repeated some number of times.
 					//	I honestly don't understand what I did here; it looks like if the player lost, it won't
-					//	run at all, and -Result is returned? And if there was a solo, it won't run and 0 is
+					//	run at all, and "-Result" is returned? And if there was a solo, it won't run and 0 is
 					//	returned?  Otherwise, it will run as many times as the draw-size?
 					case RepeatQuote:
 						//	The @operator has already been changed to Operators.Plus; figure out the addend.
@@ -577,7 +584,7 @@ public sealed partial class ScoringSystem
 						break;
 #if Routines
 					//	If the string is single- or double-quoted, it must be followed by a Becomes operator and an alias
-					//	(then a semicolon maybe?).  We store the string in the Routines Dictionary with the alias provided.
+					//	(then a semicolon maybe?).  We store the string in the "Routines" Dictionary with the alias provided.
 					//	Requiring a terminal Semicolon forces the returned _term to be 0.
 					default:
 						GetOperator();

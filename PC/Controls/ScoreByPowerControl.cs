@@ -45,7 +45,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 				&&  !gameSystem.OtherScoreAlias.Matches(tournamentSystem.OtherScoreAlias))
 					continue;
 			}
-			//	Best Game score calculation is always done using the Tournament's default scoring system.
+			//	Calculation of the Best Game score is always done using the Tournament's default scoring system.
 			if (systemDiffers || !game.Scored)
 				game.CalculateScores(tournamentSystem);
 			gamePlayers.AddRange(game.GamePlayers);

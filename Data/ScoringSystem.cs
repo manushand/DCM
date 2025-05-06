@@ -84,8 +84,8 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 				return;
 			}
 			//	The format of the TestGameData string is seven vertical-bar
-			//	separated "PowerName,GameResult,Centers,Years,Other" sets.
-			//	For example: Austria,Win,18,10,2.3|England,Loss,0,4,0.1|...
+			//	separated sets of "PowerName,GameResult,Centers,Years,Other".
+			//	For example, Austria,Win,18,10,2.3|England,Loss,0,4,0.1|...
 			//	Use absolute emptiness for null (when game result, centers,
 			//	years, or other score does not matter in the system).
 			var powers = value.Split(Bar)
@@ -176,7 +176,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 				}
 			results.Add(bar);
 			//	And only NOW update the scoring provider objects with the player antes.
-			//  This way the ante formula can't refer to any other power's .PlayerAnte.
+			//  This way, the ante formula can't refer to any other power's .PlayerAnte.
 			scoring.UpdatePlayerAntes();
 		}
 		if (UsesProvisionalScore)
@@ -195,7 +195,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 				}
 			results.Add(bar);
 			//	And only NOW update the scoring provider objects with the provisional scores.
-			//  This way the provisional formula can't refer to any other power's .ProvisionalScore.
+			//  This way, the provisional formula can't refer to any other power's .ProvisionalScore.
 			scoring.UpdateProvisionalScores();
 		}
 		foreach (var gamePlayer in gamePlayers)
@@ -469,7 +469,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 					 cSharpRegex = $"{rawString}|{simpleString}|{verbatimString}|{formulaRegex}",
 					 underbar = "_";
 
-		//	NOTE: In the cSharpRegex, the comments regex must be AFTER the strings, so that comment-like text in strings is protected
+		//	NOTE: In the cSharpRegex, the comments regex must be AFTER the strings, so that comment-like strings in literals are protected
 		formula = Regex.Replace(formula.Trim(CompiledFormulaSuffix) + NewLine, //	Add NewLine to catch text-final line comments
 								UsesCompiledFormulas
 									? cSharpRegex

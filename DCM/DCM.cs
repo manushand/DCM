@@ -175,8 +175,8 @@ public static partial class DCM
 	//	TODO: there's a lot of debate about what the best way to validate an email address is
 	//	TODO: I have usually used try { new MailAddress(text); } but it likes things I don't.
 	[GeneratedRegex("^(" +
-					@"[\dA-Z]" +              //	Start with a digit or alphabetic character
-					@"([\+\-_\.][\dA-Z]+)*" + //	No continuous or ending +-_. chars in email
+					@"[\dA-Z]" +              //	Start with a digit or alphabetic character.
+					@"([\+\-_\.][\dA-Z]+)*" + //	No continuous or ending +-_. chars in email.
 					")+" +
 					@"@(([\dA-Z][-\w]*[\dA-Z]*\.)+[\dA-Z]{2,17})$",
 					RegexOptions.IgnoreCase)]

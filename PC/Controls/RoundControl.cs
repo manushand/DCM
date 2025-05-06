@@ -58,7 +58,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	{
 		ChangeRoundButton.Hide();
 		if (Round.Workable)
-			//	Current round can only be discarded when there are no started games.
+			//	The current round can only be discarded when there are no started games.
 			if (!Round.GamesStarted)
 			{
 				ChangeRoundButton.Show();
@@ -233,7 +233,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 								  ? null
 								  : finishedGames.ToDictionary(static game => game.Id, static game => game.ScoringSystem);
 		//	Now make the update to the Round.  This should be done before updating the "lacking"
-		//	games so that when setting a game's ScoringSystem (if retained) it doesn't revert to
+		//	games, so that when setting a game's ScoringSystem (if retained), it doesn't revert to
 		//	null because it is the default for its Round (according to the un-updated Round).
 		Round.ScoringSystem = scoringSystem;
 		UpdateOne(Round);
@@ -242,7 +242,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		if (finishedGames.Length is 0)
 			return;
 		//	Now it is safe to do what must be done to any games affected by the change.
-		//	Either put them back to Underway status, or return their ScoringSystems to them.
+		//	Either put them back to Underway status or return their ScoringSystems to them.
 		finishedGames.ForEach(retainedSystems is null
 								  ? static game => game.Status = Underway
 								  : game => game.ScoringSystem = retainedSystems[game.Id]);
@@ -393,8 +393,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		var otherIndex = firstIndex + direction;
 		var movingGame = Round.Games[firstIndex];
 		var otherGame = Round.Games[otherIndex];
-		//	Yes, do this as three updates, NOT a delete/create because the
-		//	GamePlayers do not move with the Games if the Games get new Ids
+		//	Yes, do this as three updates, NOT as a deletion followed by re-creation,
+		//	because the GamePlayers do not move with the Games if the Games get new Ids
 		movingGame.Number = 0;
 		UpdateOne(movingGame);
 		movingGame.Number = otherGame.Number;
@@ -715,14 +715,14 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 	/// <summary>
 	///     Determines if this ScoringSystem (given a set of FinishedGames in a Tournament or Round
-	///     using this ScoringSystem) can be changed to another without leaving any of those games in
-	///     a "did not report all the things that the new scoring system will need" situation.  In the
-	///     case of a change to a main Tournament scoring system, all such games MUST be put back into
-	///     the Underway state if the change is made, since the main Tournament system is always used
-	///     for the calculation of Best Game (Best Austria, etc.) scores.  In the case of changing a
-	///     Round (not Tournament) system, any finished games COULD be left finished and retaining
-	///     their scoring system (rather than taking on the proposed new system) since they obviously
-	///     are okay for Best Game calculation the way they are.
+	///     using this ScoringSystem) can be changed to another. The determining factor is whether
+	///		any of those games would be in a "did not report all the things that the new scoring system
+	///		will need" situation.  In the case of a change to a main Tournament scoring system, all
+	///		such games MUST be put back into the Underway state if the change is made, since the main
+	///		Tournament system is always used for the calculation of Best Game (Best Austria, etc.)
+	///		scores.  In the case of changing a Round (not Tournament) system, finished games COULD
+	///		be left finished and keep their scoring system (not taking on the proposed
+	///		new system) since they are okay for Best Game calculation as they are.
 	/// </summary>
 	/// <param name="currentScoringSystem" />
 	/// <param name="proposedScoringSystem" />
@@ -799,7 +799,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	#region SeedablePlayer and SeededPlayer classes
 
 	//	NOTE: Don't put these in separate files in another part of this partial class;
-	//	If you do, VS thinks they each have a visual Form and will set up a designer file.
+	//	If you do, Visual Studio thinks they each have a visual Form and will set up a
+	//	designer file.
 	//	Maybe Rider is smarter, though; I don't know, and I suppose it doesn't matter.
 
 	[PublicAPI]
@@ -822,7 +823,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		/// <param name="roundNumber">
 		///     Show a check-mark next to the player name if the player is registered for this round.
 		///     0 means show the check-mark if the player is registered for ANY round.
-		///     null means do not show the check-mark at all.
+		///     Null means do not show the check-mark at all.
 		/// </param>
 		internal SeedablePlayer(Tournament tournament,
 								Player player,

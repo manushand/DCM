@@ -308,7 +308,7 @@ internal sealed partial class GroupGamesForm : Form
 		if (SkippingHandlers || Game.IsNone)
 			return;
 		UpdateMany(GamePlayers);
-		//	If all GamePlayers are Completely filled in, but we were told NOT allFilledIn,
+		//	If all GamePlayers are totally filled in, but we were told NOT allFilledIn,
 		//	this means that FinalGameDataValidation failed. Show the GameInErrorButton.
 		GameInErrorButton.Visible = !allFilledIn
 								 && GamePlayers.All(static gamePlayer => gamePlayer.PlayComplete);

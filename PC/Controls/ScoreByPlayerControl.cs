@@ -76,10 +76,10 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 						tier.Rank = ++rank;
 						continue;
 					}
-					//	Break ties and set rank accordingly
-					//	1. highest total score in games that EVERY TIED player played in together
-					//	2. highest single game score in any round of the tournament
-					//	3. give up and call any remaining player(s) tied
+					//	Break ties and set rank accordingly:
+					//	1. highest total score in games that EVERY TIED player played in together;
+					//	2. highest single game score in any round of the tournament;
+					//	3. give up and call any remaining player(s) tied.
 					var playerIds = tied.Select(static scorer => scorer.Player.Id)
 										.ToArray();
 					var commonGames = Tournament.FinishedGames
