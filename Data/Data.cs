@@ -29,7 +29,7 @@ using static Tournament;
 public static partial class Data
 {
 	private const string Null = nameof (Null);
-	private static readonly DbCommand SelectIdentityCommand = Command();
+	private static string _selectIdentitySql = Empty;
 
 	public enum DatabaseTypes : sbyte
 	{
@@ -46,7 +46,7 @@ public static partial class Data
 				_connection = provider(databaseFile);
 				OpenConnection();
 				CloseConnection();
-				SelectIdentityCommand.CommandText = "SELECT @@IDENTITY";
+				_selectIdentitySql = "SELECT @@IDENTITY";
 				return true;
 			}
 			catch // (Exception exception)
@@ -62,7 +62,7 @@ public static partial class Data
 		_connection = new SqlConnection(connectionString);
 		OpenConnection();
 		CloseConnection();
-		SelectIdentityCommand.CommandText = "SELECT SCOPE_IDENTITY()";
+		_selectIdentitySql = "SELECT SCOPE_IDENTITY()";
 	}
 
 	internal static void StartTransaction()
@@ -118,8 +118,10 @@ public static partial class Data
 								 command.CommandText = InsertStatement(record);
 								 if (command.ExecuteNonQuery() is 0)
 									 throw new ($"Record insertion failed: {command.CommandText}");
-								 if (record is IdInfoRecord idInfoRecord)
-									idInfoRecord.Id = (int)SelectIdentityCommand.ExecuteScalar().OrThrow();
+								 if (record is not IdInfoRecord idInfoRecord)
+									 continue;
+								 command.CommandText = _selectIdentitySql;
+								 idInfoRecord.Id = (int)command.ExecuteScalar().OrThrow();
 							 }
 						 });
 		Cache.AddRange(records);
