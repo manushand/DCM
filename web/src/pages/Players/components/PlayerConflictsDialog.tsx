@@ -17,7 +17,7 @@ import {
   Autocomplete,
   Slider,
   Grid,
-  Paper
+  Paper,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -30,7 +30,11 @@ interface PlayerConflictsDialogProps {
   player: Player | null;
 }
 
-const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({ open, onClose, player }) => {
+const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({
+  open,
+  onClose,
+  player,
+}) => {
   const [conflicts, setConflicts] = useState<PlayerConflict[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,9 +69,9 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({ open, onC
     try {
       const data = await playerService.getAll();
       // Filter out the current player and players that already have conflicts
-      const filteredPlayers = data.filter(p =>
-        p.id !== player?.id &&
-        !conflicts.some(c => c.player.id === p.id)
+      const filteredPlayers = data.filter(
+        (p) =>
+          p.id !== player?.id && !conflicts.some((c) => c.player.id === p.id)
       );
       setAvailablePlayers(filteredPlayers);
     } catch (err) {
@@ -93,16 +97,21 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({ open, onC
     }
   };
 
-  const handleUpdateConflict = async (conflictPlayer: Player, value: number) => {
+  const handleUpdateConflict = async (
+    conflictPlayer: Player,
+    value: number
+  ) => {
     if (!player) return;
 
     try {
-      await playerService.updatePlayerConflict(player.id, conflictPlayer.id, value);
+      await playerService.updatePlayerConflict(
+        player.id,
+        conflictPlayer.id,
+        value
+      );
       setConflicts(
-        conflicts.map(c =>
-          c.player.id === conflictPlayer.id
-            ? { ...c, value }
-            : c
+        conflicts.map((c) =>
+          c.player.id === conflictPlayer.id ? { ...c, value } : c
         )
       );
     } catch (err) {
@@ -115,7 +124,7 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({ open, onC
 
     try {
       await playerService.updatePlayerConflict(player.id, conflictPlayer.id, 0);
-      setConflicts(conflicts.filter(c => c.player.id !== conflictPlayer.id));
+      setConflicts(conflicts.filter((c) => c.player.id !== conflictPlayer.id));
       fetchPlayers(); // Refresh available players
     } catch (err) {
       console.error('Failed to remove conflict:', err);
@@ -136,13 +145,22 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({ open, onC
       </DialogTitle>
       <DialogContent dividers>
         {error && (
-          <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          <Paper
+            sx={{
+              p: 2,
+              mb: 2,
+              bgcolor: 'error.light',
+              color: 'error.contrastText',
+            }}
+          >
             <Typography>{error}</Typography>
           </Paper>
         )}
 
         <Box mb={3}>
-          <Typography variant="h6" gutterBottom>Add New Conflict</Typography>
+          <Typography variant="h6" gutterBottom>
+            Add New Conflict
+          </Typography>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={6}>
               <Autocomplete
@@ -156,7 +174,9 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({ open, onC
               />
             </Grid>
             <Grid item xs={4}>
-              <Typography gutterBottom>Conflict Value: {conflictValue}</Typography>
+              <Typography gutterBottom>
+                Conflict Value: {conflictValue}
+              </Typography>
               <Slider
                 value={conflictValue}
                 onChange={(_, newValue) => setConflictValue(newValue as number)}
@@ -184,16 +204,16 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({ open, onC
 
         <Divider sx={{ my: 2 }} />
 
-        <Typography variant="h6" gutterBottom>Current Conflicts</Typography>
+        <Typography variant="h6" gutterBottom>
+          Current Conflicts
+        </Typography>
         {conflicts.length === 0 ? (
           <Typography color="textSecondary">No conflicts found</Typography>
         ) : (
           <List>
             {conflicts.map((conflict) => (
               <ListItem key={conflict.player.id}>
-                <ListItemText
-                  primary={getPlayerName(conflict.player)}
-                />
+                <ListItemText primary={getPlayerName(conflict.player)} />
                 <Box sx={{ width: 200, mx: 2 }}>
                   <Slider
                     value={conflict.value}

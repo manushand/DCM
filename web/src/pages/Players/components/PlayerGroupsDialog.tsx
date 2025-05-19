@@ -15,7 +15,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Box,
-  Chip
+  Chip,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Player } from '../../../models/Player';
@@ -28,7 +28,11 @@ interface PlayerGroupsDialogProps {
   player: Player | null;
 }
 
-const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, player }) => {
+const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({
+  open,
+  onClose,
+  player,
+}) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +73,14 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
       </DialogTitle>
       <DialogContent dividers>
         {error && (
-          <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          <Paper
+            sx={{
+              p: 2,
+              mb: 2,
+              bgcolor: 'error.light',
+              color: 'error.contrastText',
+            }}
+          >
             <Typography>{error}</Typography>
           </Paper>
         )}
@@ -77,11 +88,14 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
         {loading ? (
           <Typography>Loading groups...</Typography>
         ) : groups.length === 0 ? (
-          <Typography color="textSecondary">No groups found for this player</Typography>
+          <Typography color="textSecondary">
+            No groups found for this player
+          </Typography>
         ) : (
           <div>
             <Typography variant="h6" gutterBottom>
-              {player?.firstName} {player?.lastName} is a member of {groups.length} group{groups.length !== 1 ? 's' : ''}
+              {player?.firstName} {player?.lastName} is a member of{' '}
+              {groups.length} group{groups.length !== 1 ? 's' : ''}
             </Typography>
 
             {groups.map((group) => (
@@ -90,7 +104,9 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
                   <Typography variant="subtitle1">{group.name}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography variant="subtitle2" gutterBottom>Members:</Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Members:
+                  </Typography>
                   {group.members && group.members.length > 0 ? (
                     <List>
                       {group.members.map((member) => (
@@ -99,9 +115,9 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
                             <ListItemText
                               primary={member.playerName}
                               secondary={
-                                member.rating !== undefined ?
-                                `Rating: ${member.rating}` :
-                                'No rating'
+                                member.rating !== undefined
+                                  ? `Rating: ${member.rating}`
+                                  : 'No rating'
                               }
                             />
                             {member.playerId === player?.id && (
@@ -119,7 +135,9 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
                       ))}
                     </List>
                   ) : (
-                    <Typography color="textSecondary">No members in this group</Typography>
+                    <Typography color="textSecondary">
+                      No members in this group
+                    </Typography>
                   )}
                 </AccordionDetails>
               </Accordion>

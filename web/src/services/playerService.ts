@@ -34,8 +34,15 @@ class PlayerService extends CrudService<Player> {
   }
 
   // Get or update a player conflict
-  async updatePlayerConflict(id: number, playerId: number, value?: number): Promise<PlayerConflict> {
-    const response = await api.patch<PlayerConflict>(`player/${id}/conflict/${playerId}`, { value });
+  async updatePlayerConflict(
+    id: number,
+    playerId: number,
+    value?: number
+  ): Promise<PlayerConflict> {
+    const response = await api.patch<PlayerConflict>(
+      `player/${id}/conflict/${playerId}`,
+      { value }
+    );
     return response.data;
   }
 }

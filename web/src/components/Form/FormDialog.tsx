@@ -7,7 +7,7 @@ import {
   Button,
   IconButton,
   Typography,
-  Box
+  Box,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -34,7 +34,7 @@ const FormDialog: React.FC<FormDialogProps> = ({
   fullWidth = true,
   submitLabel = 'Save',
   cancelLabel = 'Cancel',
-  disableSubmit = false
+  disableSubmit = false,
 }) => {
   const handleSubmit = () => {
     if (onSubmit) {
@@ -58,9 +58,7 @@ const FormDialog: React.FC<FormDialogProps> = ({
           </IconButton>
         </Box>
       </DialogTitle>
-      <DialogContent dividers>
-        {children}
-      </DialogContent>
+      <DialogContent dividers>{children}</DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
           {cancelLabel}
