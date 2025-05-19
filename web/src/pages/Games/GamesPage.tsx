@@ -85,12 +85,8 @@ const GamesPage: React.FC = () => {
       label: 'Status',
       minWidth: 120,
       format: (value: GameStatus) => (
-        <Chip
-          label={value}
-          color={getStatusColor(value)}
-          size="small"
-        />
-      )
+        <Chip label={value} color={getStatusColor(value)} size="small" />
+      ),
     },
     { id: 'tournamentName', label: 'Tournament', minWidth: 150 },
     { id: 'round', label: 'Round', minWidth: 80, align: 'center' as const },
@@ -99,13 +95,19 @@ const GamesPage: React.FC = () => {
       id: 'players',
       label: 'Players',
       minWidth: 100,
-      format: (value: any[]) => value ? `${value.length} players` : '0 players'
-    }
+      format: (value: any[]) =>
+        value ? `${value.length} players` : '0 players',
+    },
   ];
 
   return (
     <div>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4">Games</Typography>
         <Button
           variant="contained"
@@ -118,16 +120,19 @@ const GamesPage: React.FC = () => {
       </Box>
 
       {error && (
-        <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+        <Paper
+          sx={{
+            p: 2,
+            mb: 2,
+            bgcolor: 'error.light',
+            color: 'error.contrastText',
+          }}
+        >
           <Typography>{error}</Typography>
         </Paper>
       )}
 
-      <DataGrid
-        columns={columns}
-        rows={games}
-        onRowClick={handleEditGame}
-      />
+      <DataGrid columns={columns} rows={games} onRowClick={handleEditGame} />
 
       <GameForm
         open={openForm}

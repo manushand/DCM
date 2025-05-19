@@ -10,7 +10,7 @@ export enum Powers {
   Germany = 'Germany',
   Italy = 'Italy',
   Russia = 'Russia',
-  Turkey = 'Turkey'
+  Turkey = 'Turkey',
 }
 
 export enum GameStatus {
@@ -18,7 +18,7 @@ export enum GameStatus {
   Cancelled = 'Cancelled',
   Seeded = 'Seeded', // Changed to match WinForms
   Underway = 'Underway', // Changed to match WinForms
-  Finished = 'Finished' // Changed to match WinForms
+  Finished = 'Finished', // Changed to match WinForms
 }
 
 export enum GameResult {
@@ -26,7 +26,7 @@ export enum GameResult {
   Win = 'Win',
   Draw = 'Draw',
   Loss = 'Loss',
-  Eliminated = 'Eliminated'
+  Eliminated = 'Eliminated',
 }
 
 export interface PlayerConflict {
@@ -88,25 +88,26 @@ export interface GameDetails {
 // Helper function to check if all powers are assigned
 export const allPowersAssigned = (game: Game): boolean => {
   if (!game.players || game.players.length === 0) return false;
-  return !game.players.some(p => p.power === Powers.None);
+  return !game.players.some((p) => p.power === Powers.None);
 };
 
 // Helper function to check if game data is complete
 export const isGameDataComplete = (game: Game): boolean => {
   if (!game.players || game.players.length === 0) return false;
-  
+
   // All players must have powers assigned
   if (!allPowersAssigned(game)) return false;
-  
+
   // If the game is Finished, all players must have complete data
   if (game.status === GameStatus.Finished) {
-    return game.players.every(p => (
-      p.power !== Powers.None &&
-      p.result !== GameResult.Unknown &&
-      p.centers !== undefined &&
-      p.years !== undefined
-    ));
+    return game.players.every(
+      (p) =>
+        p.power !== Powers.None &&
+        p.result !== GameResult.Unknown &&
+        p.centers !== undefined &&
+        p.years !== undefined
+    );
   }
-  
+
   return true;
 };

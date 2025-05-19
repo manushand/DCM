@@ -9,7 +9,7 @@ import {
   IconButton,
   Autocomplete,
   Divider,
-  Typography
+  Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormDialog from '../../components/Form/FormDialog';
@@ -24,7 +24,12 @@ interface GroupFormProps {
   group: Group | null;
 }
 
-const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group }) => {
+const GroupForm: React.FC<GroupFormProps> = ({
+  open,
+  onClose,
+  onSubmit,
+  group,
+}) => {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [members, setMembers] = useState<GroupMember[]>([]);
@@ -77,10 +82,13 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
   };
 
   const handleAddMember = () => {
-    if (selectedPlayer && !members.some(m => m.playerId === selectedPlayer.id)) {
+    if (
+      selectedPlayer &&
+      !members.some((m) => m.playerId === selectedPlayer.id)
+    ) {
       const newMember: GroupMember = {
         playerId: selectedPlayer.id,
-        playerName: getPlayerName(selectedPlayer)
+        playerName: getPlayerName(selectedPlayer),
       };
       setMembers([...members, newMember]);
       setSelectedPlayer(null);
@@ -88,7 +96,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
   };
 
   const handleRemoveMember = (playerId: number) => {
-    setMembers(members.filter(m => m.playerId !== playerId));
+    setMembers(members.filter((m) => m.playerId !== playerId));
   };
 
   const handleSubmit = () => {
@@ -100,7 +108,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
     const updatedGroup: Group = {
       id: group?.id || 0,
       name,
-      members: members.length > 0 ? members : undefined
+      members: members.length > 0 ? members : undefined,
     };
 
     onSubmit(updatedGroup);
@@ -108,7 +116,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
 
   // Filter out players that are already members
   const availablePlayers = players.filter(
-    player => !members.some(member => member.playerId === player.id)
+    (player) => !members.some((member) => member.playerId === player.id)
   );
 
   return (

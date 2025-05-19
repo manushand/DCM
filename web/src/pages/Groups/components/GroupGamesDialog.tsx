@@ -13,7 +13,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip
+  Chip,
 } from '@mui/material';
 import { Group } from '../../../models/Group';
 import { Game, GameStatus, Powers, GameResult } from '../../../models/Game';
@@ -25,7 +25,11 @@ interface GroupGamesDialogProps {
   group: Group | null;
 }
 
-const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, group }) => {
+const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({
+  open,
+  onClose,
+  group,
+}) => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +79,14 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, grou
       </DialogTitle>
       <DialogContent dividers>
         {error && (
-          <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          <Paper
+            sx={{
+              p: 2,
+              mb: 2,
+              bgcolor: 'error.light',
+              color: 'error.contrastText',
+            }}
+          >
             <Typography>{error}</Typography>
           </Paper>
         )}
@@ -83,7 +94,9 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, grou
         {loading ? (
           <Typography>Loading games...</Typography>
         ) : games.length === 0 ? (
-          <Typography color="textSecondary">No games found for this group</Typography>
+          <Typography color="textSecondary">
+            No games found for this group
+          </Typography>
         ) : (
           <TableContainer component={Paper}>
             <Table>
@@ -112,7 +125,9 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, grou
                       />
                     </TableCell>
                     <TableCell>
-                      {game.players ? `${game.players.length} players` : '0 players'}
+                      {game.players
+                        ? `${game.players.length} players`
+                        : '0 players'}
                     </TableCell>
                   </TableRow>
                 ))}

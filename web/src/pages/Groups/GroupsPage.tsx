@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Typography, Box, Paper, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, DialogContentText } from '@mui/material';
+import {
+  Button,
+  Typography,
+  Box,
+  Paper,
+  IconButton,
+  Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -106,7 +118,8 @@ const GroupsPage: React.FC = () => {
       id: 'members',
       label: 'Members',
       minWidth: 170,
-      format: (value: any[]) => value ? `${value.length} members` : '0 members'
+      format: (value: any[]) =>
+        value ? `${value.length} members` : '0 members',
     },
     {
       id: 'actions',
@@ -149,13 +162,18 @@ const GroupsPage: React.FC = () => {
             </IconButton>
           </Tooltip>
         </Box>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4">Groups</Typography>
         <Button
           variant="contained"
@@ -168,16 +186,19 @@ const GroupsPage: React.FC = () => {
       </Box>
 
       {error && (
-        <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+        <Paper
+          sx={{
+            p: 2,
+            mb: 2,
+            bgcolor: 'error.light',
+            color: 'error.contrastText',
+          }}
+        >
           <Typography>{error}</Typography>
         </Paper>
       )}
 
-      <DataGrid
-        columns={columns}
-        rows={groups}
-        onRowClick={handleEditGroup}
-      />
+      <DataGrid columns={columns} rows={groups} onRowClick={handleEditGroup} />
 
       <GroupForm
         open={openForm}
@@ -198,7 +219,8 @@ const GroupsPage: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Are you sure you want to dissolve the group "{selectedGroup?.name}"? This action cannot be undone.
+            Are you sure you want to dissolve the group "{selectedGroup?.name}"?
+            This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

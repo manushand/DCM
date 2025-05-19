@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Typography, Box, Paper, IconButton, Tooltip } from '@mui/material';
+import {
+  Button,
+  Typography,
+  Box,
+  Paper,
+  IconButton,
+  Tooltip,
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
@@ -112,13 +119,13 @@ const PlayersPage: React.FC = () => {
         }
         // Otherwise fall back to name
         return value;
-      }
+      },
     },
     {
       id: 'emailAddresses',
       label: 'Email',
       minWidth: 170,
-      format: (value: string[]) => value ? value.join(', ') : ''
+      format: (value: string[]) => (value ? value.join(', ') : ''),
     },
     {
       id: 'actions',
@@ -161,13 +168,18 @@ const PlayersPage: React.FC = () => {
             </IconButton>
           </Tooltip>
         </Box>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4">Players</Typography>
         <Button
           variant="contained"
@@ -180,7 +192,14 @@ const PlayersPage: React.FC = () => {
       </Box>
 
       {error && (
-        <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+        <Paper
+          sx={{
+            p: 2,
+            mb: 2,
+            bgcolor: 'error.light',
+            color: 'error.contrastText',
+          }}
+        >
           <Typography>{error}</Typography>
         </Paper>
       )}

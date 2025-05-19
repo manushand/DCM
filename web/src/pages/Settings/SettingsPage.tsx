@@ -12,14 +12,14 @@ import {
   MenuItem,
   Divider,
   Alert,
-  Snackbar
+  Snackbar,
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 
 enum DatabaseType {
   None = 'None',
   Access = 'Access',
-  SqlServer = 'SqlServer'
+  SqlServer = 'SqlServer',
 }
 
 interface Settings {
@@ -39,11 +39,13 @@ interface Settings {
 
 const SettingsPage: React.FC = () => {
   const [settings, setSettings] = useState<Settings>({
-    databaseType: DatabaseType.None
+    databaseType: DatabaseType.None,
   });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>('success');
+  const [snackbarSeverity, setSnackbarSeverity] = useState<'success' | 'error'>(
+    'success'
+  );
 
   useEffect(() => {
     // Load settings from localStorage
@@ -58,9 +60,9 @@ const SettingsPage: React.FC = () => {
   }, []);
 
   const handleSettingChange = (key: keyof Settings, value: any) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
 
@@ -86,7 +88,12 @@ const SettingsPage: React.FC = () => {
 
   return (
     <div>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4">Settings</Typography>
         <Button
           variant="contained"
@@ -99,7 +106,9 @@ const SettingsPage: React.FC = () => {
       </Box>
 
       <Paper sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>Database Settings</Typography>
+        <Typography variant="h6" gutterBottom>
+          Database Settings
+        </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
@@ -107,7 +116,9 @@ const SettingsPage: React.FC = () => {
               <Select
                 value={settings.databaseType}
                 label="Database Type"
-                onChange={(e) => handleSettingChange('databaseType', e.target.value)}
+                onChange={(e) =>
+                  handleSettingChange('databaseType', e.target.value)
+                }
               >
                 {Object.values(DatabaseType).map((type) => (
                   <MenuItem key={type} value={type}>
@@ -124,7 +135,9 @@ const SettingsPage: React.FC = () => {
                 fullWidth
                 label="Database File"
                 value={settings.databaseFile || ''}
-                onChange={(e) => handleSettingChange('databaseFile', e.target.value)}
+                onChange={(e) =>
+                  handleSettingChange('databaseFile', e.target.value)
+                }
                 helperText="Full path to the Access database file"
               />
             </Grid>
@@ -136,7 +149,12 @@ const SettingsPage: React.FC = () => {
                 fullWidth
                 label="Connection String"
                 value={settings.databaseConnectionString || ''}
-                onChange={(e) => handleSettingChange('databaseConnectionString', e.target.value)}
+                onChange={(e) =>
+                  handleSettingChange(
+                    'databaseConnectionString',
+                    e.target.value
+                  )
+                }
                 helperText="SQL Server connection string"
               />
             </Grid>
@@ -145,7 +163,9 @@ const SettingsPage: React.FC = () => {
 
         <Divider sx={{ my: 3 }} />
 
-        <Typography variant="h6" gutterBottom>Email Settings</Typography>
+        <Typography variant="h6" gutterBottom>
+          Email Settings
+        </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={8}>
             <TextField
@@ -161,7 +181,12 @@ const SettingsPage: React.FC = () => {
               label="SMTP Port"
               type="number"
               value={settings.smtpPort || ''}
-              onChange={(e) => handleSettingChange('smtpPort', parseInt(e.target.value) || undefined)}
+              onChange={(e) =>
+                handleSettingChange(
+                  'smtpPort',
+                  parseInt(e.target.value) || undefined
+                )
+              }
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -169,7 +194,9 @@ const SettingsPage: React.FC = () => {
               fullWidth
               label="SMTP Username"
               value={settings.smtpUsername || ''}
-              onChange={(e) => handleSettingChange('smtpUsername', e.target.value)}
+              onChange={(e) =>
+                handleSettingChange('smtpUsername', e.target.value)
+              }
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -178,7 +205,9 @@ const SettingsPage: React.FC = () => {
               label="SMTP Password"
               type="password"
               value={settings.smtpPassword || ''}
-              onChange={(e) => handleSettingChange('smtpPassword', e.target.value)}
+              onChange={(e) =>
+                handleSettingChange('smtpPassword', e.target.value)
+              }
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -186,7 +215,9 @@ const SettingsPage: React.FC = () => {
               fullWidth
               label="From Email Address"
               value={settings.fromEmailAddress || ''}
-              onChange={(e) => handleSettingChange('fromEmailAddress', e.target.value)}
+              onChange={(e) =>
+                handleSettingChange('fromEmailAddress', e.target.value)
+              }
             />
           </Grid>
           <Grid item xs={12} sm={6}>
@@ -194,7 +225,9 @@ const SettingsPage: React.FC = () => {
               fullWidth
               label="From Email Name"
               value={settings.fromEmailName || ''}
-              onChange={(e) => handleSettingChange('fromEmailName', e.target.value)}
+              onChange={(e) =>
+                handleSettingChange('fromEmailName', e.target.value)
+              }
             />
           </Grid>
           <Grid item xs={12}>
@@ -202,7 +235,9 @@ const SettingsPage: React.FC = () => {
               fullWidth
               label="Test Email Address"
               value={settings.testEmailAddress || ''}
-              onChange={(e) => handleSettingChange('testEmailAddress', e.target.value)}
+              onChange={(e) =>
+                handleSettingChange('testEmailAddress', e.target.value)
+              }
               helperText="Email address for testing"
             />
           </Grid>

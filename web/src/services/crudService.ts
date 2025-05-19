@@ -29,10 +29,12 @@ export class CrudService<T extends BaseModel> {
   async delete(id: number): Promise<void> {
     await api.delete(`${this.endpoint}/${id}`);
   }
-  
+
   // Add a generic method to get related items
   async getRelated<R>(id: number, relatedEndpoint: string): Promise<R[]> {
-    const response = await api.get<R[]>(`${this.endpoint}/${id}/${relatedEndpoint}`);
+    const response = await api.get<R[]>(
+      `${this.endpoint}/${id}/${relatedEndpoint}`
+    );
     return response.data;
   }
 }

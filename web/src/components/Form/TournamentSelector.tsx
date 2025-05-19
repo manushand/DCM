@@ -11,7 +11,7 @@ import {
   Autocomplete,
   Alert,
   Tooltip,
-  Box
+  Box,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Tournament } from '../../models/Tournament';
@@ -24,7 +24,10 @@ interface TournamentSelectorProps {
   tournamentName: string | undefined;
   round: number | undefined;
   board: number | undefined;
-  onTournamentChange: (tournamentId: number | undefined, tournamentName: string | undefined) => void;
+  onTournamentChange: (
+    tournamentId: number | undefined,
+    tournamentName: string | undefined
+  ) => void;
   onRoundChange: (round: number | undefined) => void;
   onBoardChange: (board: number | undefined) => void;
 }
@@ -44,16 +47,21 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
   board,
   onTournamentChange,
   onRoundChange,
-  onBoardChange
+  onBoardChange,
 }) => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  const [selectedTournament, setSelectedTournament] =
+    useState<Tournament | null>(null);
   const [rounds, setRounds] = useState<RoundInfo[]>([]);
   const [availableBoards, setAvailableBoards] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [validationMessage, setValidationMessage] = useState<string | null>(null);
-  const [validationSeverity, setValidationSeverity] = useState<'error' | 'warning' | 'info' | 'success'>('info');
+  const [validationMessage, setValidationMessage] = useState<string | null>(
+    null
+  );
+  const [validationSeverity, setValidationSeverity] = useState<
+    'error' | 'warning' | 'info' | 'success'
+  >('info');
 
   // Fetch active tournaments when component mounts
   useEffect(() => {
@@ -87,10 +95,10 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
       setError(null);
       const data = await tournamentService.getActiveTournaments();
       setTournaments(data);
-      
+
       // If we have a tournamentId from props, select it
       if (tournamentId) {
-        const tournament = data.find(t => t.id === tournamentId);
+        const tournament = data.find((t) => t.id === tournamentId);
         if (tournament) {
           setSelectedTournament(tournament);
         }
@@ -107,11 +115,11 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
     try {
       setLoading(true);
       setError(null);
-      
+
       // Get tournament rounds
       const roundsInfo = await tournamentService.getRounds(id);
       setRounds(roundsInfo);
-      
+
       // If we have a round from props, fetch available boards
       if (round !== undefined) {
         fetchAvailableBoards(id, round);
@@ -128,9 +136,12 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
     try {
       setLoading(true);
       setError(null);
-      const boards = await tournamentService.getAvailableBoards(tournId, roundNum);
+      const boards = await tournamentService.getAvailableBoards(
+        tournId,
+        roundNum
+      );
       setAvailableBoards(boards);
-      
+
       // If we have a board from props, validate it
       if (board !== undefined) {
         validateBoardSelection(tournId, roundNum, board);
@@ -143,7 +154,11 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
     }
   };
 
-  const validateBoardSelection = async (tournId: number, roundNum: number, boardNum: number) => {
+  const validateBoardSelection = async (
+    tournId: number,
+    roundNum: number,
+    boardNum: number
+  ) => {
     // If this is an existing game, the board is already assigned so consider it valid
     if (game?.id) {
       setValidationMessage(null);
@@ -152,7 +167,9 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
 
     // Check if the board is in the available boards list
     if (availableBoards.length > 0 && !availableBoards.includes(boardNum)) {
-      setValidationMessage(`Board ${boardNum} is already in use or out of range for this round.`);
+      setValidationMessage(
+        `Board ${boardNum} is already in use or out of range for this round.`
+      );
       setValidationSeverity('warning');
     } else {
       setValidationMessage(null);
@@ -161,7 +178,7 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
 
   const handleTournamentChange = (tournament: Tournament | null) => {
     setSelectedTournament(tournament);
-    
+
     // Reset round and board when tournament changes
     if (tournament) {
       onTournamentChange(tournament.id, tournament.name);
@@ -169,7 +186,7 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
       setAvailableBoards([]);
       onRoundChange(undefined);
       onBoardChange(undefined);
-      
+
       // Fetch tournament details for the new selection
       fetchTournamentDetails(tournament.id);
     } else {
@@ -184,10 +201,10 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
   const handleRoundChange = (event: SelectChangeEvent<number>) => {
     const roundNum = Number(event.target.value);
     onRoundChange(roundNum);
-    
+
     // Reset board when round changes
     onBoardChange(undefined);
-    
+
     // Fetch available boards for the new round
     if (tournamentId && roundNum !== undefined) {
       fetchAvailableBoards(tournamentId, roundNum);
@@ -197,7 +214,7 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
   const handleBoardChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const boardNum = parseInt(event.target.value);
     onBoardChange(isNaN(boardNum) ? undefined : boardNum);
-    
+
     // Validate the board selection
     if (tournamentId && round !== undefined && !isNaN(boardNum)) {
       validateBoardSelection(tournamentId, round, boardNum);
@@ -208,7 +225,10 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
     if (tournamentId && round !== undefined) {
       try {
         setLoading(true);
-        const nextBoard = await tournamentService.getNextAvailableBoard(tournamentId, round);
+        const nextBoard = await tournamentService.getNextAvailableBoard(
+          tournamentId,
+          round
+        );
         if (nextBoard !== null) {
           onBoardChange(nextBoard);
         }
@@ -229,10 +249,10 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
           value={selectedTournament}
           onChange={(_, newValue) => handleTournamentChange(newValue)}
           renderInput={(params) => (
-            <TextField 
-              {...params} 
-              label="Tournament" 
-              fullWidth 
+            <TextField
+              {...params}
+              label="Tournament"
+              fullWidth
               error={!!error}
               helperText={error}
             />
@@ -246,7 +266,7 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
           </Box>
         )}
       </Grid>
-      
+
       <Grid item xs={12} sm={3}>
         <FormControl fullWidth>
           <InputLabel>Round</InputLabel>
@@ -267,7 +287,7 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
           )}
         </FormControl>
       </Grid>
-      
+
       <Grid item xs={12} sm={3}>
         <TextField
           fullWidth
@@ -278,9 +298,9 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
           disabled={!tournamentId || round === undefined || loading}
           error={!!validationMessage}
           helperText={
-            validationMessage || 
-            (availableBoards.length > 0 
-              ? `Available boards: ${availableBoards.join(', ')}` 
+            validationMessage ||
+            (availableBoards.length > 0
+              ? `Available boards: ${availableBoards.join(', ')}`
               : '')
           }
           InputProps={{
@@ -289,10 +309,10 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
                 <span>
                   <CircularProgress
                     size={20}
-                    style={{ 
-                      cursor: 'pointer', 
+                    style={{
+                      cursor: 'pointer',
                       opacity: loading ? 1 : 0,
-                      transition: 'opacity 0.3s'
+                      transition: 'opacity 0.3s',
                     }}
                     onClick={suggestNextAvailableBoard}
                   />
@@ -302,12 +322,10 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
           }}
         />
       </Grid>
-      
+
       {validationMessage && (
         <Grid item xs={12}>
-          <Alert severity={validationSeverity}>
-            {validationMessage}
-          </Alert>
+          <Alert severity={validationSeverity}>{validationMessage}</Alert>
         </Grid>
       )}
     </Grid>
@@ -315,4 +333,3 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
 };
 
 export default TournamentSelector;
-
