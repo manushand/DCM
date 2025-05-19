@@ -66,9 +66,9 @@ const GamesPage: React.FC = () => {
     switch (status) {
       case GameStatus.Scheduled:
         return 'primary';
-      case GameStatus.InProgress:
+      case GameStatus.Underway:
         return 'warning';
-      case GameStatus.Completed:
+      case GameStatus.Finished:
         return 'success';
       case GameStatus.Cancelled:
         return 'error';

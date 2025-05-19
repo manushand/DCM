@@ -1,3 +1,37 @@
+import React, {useState, useEffect} from 'react';
+import {
+  TextField,
+  Grid,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemSecondaryAction,
+  IconButton,
+  Autocomplete,
+  Divider,
+  Typography
+} from '@mui/material';
+import { SelectChangeEvent } from '@mui/material/Select';
+import FormDialog from '../../components/Form/FormDialog';
+import { ScoringSystem, Game, GameStatus, GamePlayer, GamePlayers, GameResult, Powers} from '../../models/Game';
+import { playerService } from '../../services/playerService';
+import { Player } from '../../models/Player';
+
+interface GameFormProps {
+    open: boolean;
+    onClose: () => void;
+    onSubmit: (game: Game) => void;
+    game: Game | null;
+}
+
+const GameForm: React.FC<GameFormProps> = ({ open, onClose, onSubmit, game }) => {
+  const [name, setName] = useState('');
+  const [status, setStatus] = useState<GameStatus>(GameStatus.Scheduled);
+  const [tournamentId, setTournamentId] = useState<number | undefined>(undefined);
+  const [tournamentName, setTournamentName] = useState<string | undefined>(undefined);
+  const [round, setRound] = useState<number | undefined>(undefined);
+  const [board, setBoard] = useState<number | undefined>(undefined);
+  const [players, setPlayers] = useState<GamePlayers>([]);
   const [availablePlayers, setAvailablePlayers] = useState<Player[]>([]);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [nameError, setNameError] = useState('');
@@ -39,7 +73,8 @@
         centers: player.centers || 0,
         years: player.years || 0,
         conflict: player.conflict || 0,
-        conflictDetails: player.conflictDetails || []
+        conflictDetails: player.conflictDetails || [],
+        score: player.score || 0,
       }));
       setPlayers(completePlayers);
       
@@ -108,7 +143,7 @@
   
   // Check if a player has complete data
   const isPlayerComplete = (player: GamePlayer): boolean => {
-    if (player.power === Powers.TBD) return false;
+    if (player.power === Powers.None) return false;
     if (player.result === GameResult.Unknown) return false;
     
     // For finished games, centers and years must be provided
@@ -123,7 +158,7 @@
   
   // Check if all powers are assigned in a game
   const allPowersAssigned = (game: Game): boolean => {
-    return game.players?.every(p => p.power !== Powers.TBD) ?? false;
+    return game.players?.every(p => p.power !== Powers.None) ?? false;
   };
   
   // Check if the game data is complete
@@ -131,7 +166,7 @@
     if (!game.players?.length) return false;
     
     return game.players.every(player => {
-      if (player.power === Powers.TBD) return false;
+      if (player.power === Powers.None) return false;
       if (player.result === GameResult.Unknown) return false;
       if (game.status === GameStatus.Finished) {
         if (player.centers === undefined || player.years === undefined) {
@@ -317,7 +352,7 @@
       const newPlayer: GamePlayer = {
         playerId: selectedPlayer.id,
         playerName: selectedPlayer.name,
-        power: Powers.TBD,
+        power: Powers.None,
         result: GameResult.Unknown,
         centers: 0,
         years: 0,
@@ -352,14 +387,20 @@
     
     let updatedPlayers = [...players];
     
-    if (otherPlayer && power !== Powers.TBD) {
+    if (otherPlayer && power !== Powers.None) {
       // Swap powers with the other player
       updatedPlayers = players.map(p => {
         if (p.playerId === playerId) {
-          return { ...p, power };
+          return {...p, power};
         } else if (p.playerId === otherPlayer.playerId) {
-          return { ...p, power: Powers.TBD };
+          return {...p, power: Powers.None};
         }
+        return p;
+      });
+    }
+    return updatedPlayers;
+  }
+
    const handleResultChange = (playerId: number, result: GameResult) => {
     setPlayers(players.map(p =>
       p.playerId === playerId ? { 
