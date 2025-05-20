@@ -10,7 +10,7 @@ export interface PlayerConflict {
   value: number;
 }
 
-class PlayerService extends CrudService<Player> {
+export class ApiPlayerService extends CrudService<Player> {
   constructor() {
     super('player');
   }
@@ -46,5 +46,3 @@ class PlayerService extends CrudService<Player> {
     return response.data;
   }
 }
-
-export const playerService = new PlayerService();

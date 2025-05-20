@@ -15,7 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormDialog from '../../components/Form/FormDialog';
 import { Group, GroupMember } from '../../models/Group';
 import { Player } from '../../models/Player';
-import { playerService } from '../../services/playerService';
+import { playerService } from '../../services';
 
 interface GroupFormProps {
   open: boolean;

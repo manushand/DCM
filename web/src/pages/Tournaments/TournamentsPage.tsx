@@ -3,7 +3,7 @@ import { Button, Typography, Box, Paper, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DataGrid from '../../components/DataGrid/DataGrid';
 import { Tournament } from '../../models/Tournament';
-import { tournamentService } from '../../services/tournamentService';
+import { tournamentService } from '../../services';
 import TournamentForm from './TournamentForm';
 
 const TournamentsPage: React.FC = () => {
@@ -54,7 +54,7 @@ const TournamentsPage: React.FC = () => {
       } else {
         await tournamentService.create(tournament);
       }
-      fetchTournaments();
+      await fetchTournaments();
       setOpenForm(false);
     } catch (err) {
       console.error('Failed to save tournament:', err);

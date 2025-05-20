@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { Tournament } from '../../models/Tournament';
-import { tournamentService } from '../../services/tournamentService';
+import { tournamentService } from '../../services';
 import { Game } from '../../models/Game';
 
 interface TournamentSelectorProps {

@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Button, Typography, Box, Paper, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DataGrid from '../../components/DataGrid/DataGrid';
-import { Game, GameStatus, Powers } from '../../models/Game';
-import { gameService } from '../../services/gameService';
+import { Game, GameStatus } from '../../models/Game';
+import { gameService } from '../../services';
 import GameForm from './GameForm';
 
 const GamesPage: React.FC = () => {

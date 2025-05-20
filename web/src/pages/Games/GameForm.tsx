@@ -32,7 +32,6 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormDialog from '../../components/Form/FormDialog';
 import {
-  ScoringSystem,
   Game,
   GameStatus,
   GamePlayer,
@@ -40,8 +39,9 @@ import {
   GameResult,
   Powers,
 } from '../../models/Game';
-import { playerService } from '../../services/playerService';
+import { ScoringSystem } from '../../models/ScoringSystem';
 import { Player } from '../../models/Player';
+import { playerService } from '../../services';
 
 interface GameFormProps {
   open: boolean;
@@ -163,9 +163,7 @@ const GameForm: React.FC<GameFormProps> = ({
 
   const fetchScoringSystems = async () => {
     try {
-      const scoringSystemService = (
-        await import('../../services/scoringSystemService')
-      ).scoringSystemService;
+      const { scoringSystemService } = await import('../../services');
       const systems = await scoringSystemService.getAll();
       setScoringSystems(systems);
 

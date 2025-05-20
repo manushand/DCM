@@ -18,7 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import DataGrid from '../../components/DataGrid/DataGrid';
 import { Group } from '../../models/Group';
-import { groupService } from '../../services/groupService';
+import { groupService } from '../../services';
 import GroupForm from './GroupForm';
 import GroupGamesDialog from './components/GroupGamesDialog';
 

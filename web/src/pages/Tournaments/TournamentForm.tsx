@@ -23,7 +23,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormDialog from '../../components/Form/FormDialog';
 import { Tournament, Round } from '../../models/Tournament';
 import { Game } from '../../models/Game';
-import { gameService } from '../../services/gameService';
+import { gameService } from '../../services';
 
 interface TournamentFormProps {
   open: boolean;

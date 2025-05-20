@@ -1,7 +1,7 @@
 import { CrudService } from './crudService';
 import { ScoringSystem } from '../models/Game';
 
-class ScoringSystemService extends CrudService<ScoringSystem> {
+export class ApiScoringSystemService extends CrudService<ScoringSystem> {
   constructor() {
     super('scoringSystem');
   }
@@ -29,5 +29,3 @@ class ScoringSystemService extends CrudService<ScoringSystem> {
     return defaultSystem;
   }
 }
-
-export const scoringSystemService = new ScoringSystemService();

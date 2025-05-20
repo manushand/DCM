@@ -1,4 +1,5 @@
 import { DetailedModel } from './BaseModel';
+import { ScoringSystem } from './ScoringSystem';
 
 export enum Powers {
   None = 'None',
@@ -26,7 +27,6 @@ export enum GameResult {
   Win = 'Win',
   Draw = 'Draw',
   Loss = 'Loss',
-  Eliminated = 'Eliminated',
 }
 
 export interface PlayerConflict {
@@ -58,19 +58,7 @@ export interface Game extends DetailedModel {
   board?: number;
   players?: GamePlayers;
   scoringSystemId?: number;
-  scoringSystem?: ScoringSystem;
   scoringSystemIsDefault?: boolean;
-}
-
-export interface ScoringSystem extends DetailedModel {
-  description?: string;
-  drawCalculation?: string;
-  eliminationValue?: number;
-  survivorValue?: number;
-  soloValue?: number;
-  centerValue?: number;
-  yearValue?: number;
-  isDefault?: boolean;
 }
 
 export interface GameDetails {

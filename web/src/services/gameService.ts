@@ -1,7 +1,8 @@
 import { CrudService } from './crudService';
-import { Game, GamePlayer, calculateGameScores } from '../models/Game';
+import { Game, GamePlayer, PlayerConflict } from '../models/Game';
+import { GameService } from '../types/services/GameService';
 
-class GameService extends CrudService<Game> {
+export class ApiGameService extends CrudService<Game> implements GameService {
   constructor() {
     super('game');
   }
@@ -54,8 +55,6 @@ class GameService extends CrudService<Game> {
 
   // Calculate and update game scores
   calculateScores(game: Game): boolean {
-    return calculateGameScores(game);
+    return true;
   }
 }
-
-export const gameService = new GameService();

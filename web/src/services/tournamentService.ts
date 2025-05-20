@@ -1,25 +1,17 @@
 import { CrudService } from './crudService';
-import { Tournament, Round } from '../models/Tournament';
+import { Tournament, TournamentStatus } from '../models/Tournament';
 import { Game } from '../models/Game';
 import api from './api';
+import {
+  GamePlacementValidation,
+  RoundInfo,
+  TournamentService,
+} from '../types/services/TournamentService';
 
-interface RoundInfo {
-  number: number;
-  name: string;
-  boardCount: number;
-  availableBoards: number[];
-}
-
-interface GamePlacementValidation {
-  isValid: boolean;
-  message?: string;
-  conflicts?: {
-    type: 'round' | 'board' | 'player';
-    message: string;
-  }[];
-}
-
-class TournamentService extends CrudService<Tournament> {
+export class ApiTournamentService
+  extends CrudService<Tournament>
+  implements TournamentService
+{
   constructor() {
     super('tournament');
   }
@@ -29,7 +21,7 @@ class TournamentService extends CrudService<Tournament> {
    */
   async getActiveTournaments(): Promise<Tournament[]> {
     try {
-      const response = await api.get(`${this.baseUrl}/active`);
+      const response = await api.get<Tournament[]>(`tournament/active`);
       return response.data;
     } catch (error) {
       console.error('Error fetching active tournaments:', error);
@@ -42,7 +34,9 @@ class TournamentService extends CrudService<Tournament> {
    */
   async getTournamentWithRounds(tournamentId: number): Promise<Tournament> {
     try {
-      const response = await api.get(`${this.baseUrl}/${tournamentId}/rounds`);
+      const response = await api.get<Tournament>(
+        `tournament/${tournamentId}/rounds`
+      );
       return response.data;
     } catch (error) {
       console.error(
@@ -58,9 +52,7 @@ class TournamentService extends CrudService<Tournament> {
    */
   async getRounds(tournamentId: number): Promise<RoundInfo[]> {
     try {
-      const response = await api.get(
-        `${this.baseUrl}/${tournamentId}/rounds/info`
-      );
+      const response = await api.get(`tournament/${tournamentId}/rounds/info`);
       return response.data;
     } catch (error) {
       console.error(
@@ -80,7 +72,7 @@ class TournamentService extends CrudService<Tournament> {
   ): Promise<number[]> {
     try {
       const response = await api.get(
-        `${this.baseUrl}/${tournamentId}/rounds/${roundNumber}/boards/available`
+        `tournament/${tournamentId}/rounds/${roundNumber}/boards/available`
       );
       return response.data;
     } catch (error) {
@@ -101,7 +93,7 @@ class TournamentService extends CrudService<Tournament> {
   ): Promise<Game[]> {
     try {
       const response = await api.get(
-        `${this.baseUrl}/${tournamentId}/rounds/${roundNumber}/games`
+        `tournament/${tournamentId}/rounds/${roundNumber}/games`
       );
       return response.data;
     } catch (error) {
@@ -124,7 +116,7 @@ class TournamentService extends CrudService<Tournament> {
   ): Promise<GamePlacementValidation> {
     try {
       const response = await api.post(
-        `${this.baseUrl}/${tournamentId}/rounds/${roundNumber}/boards/${boardNumber}/validate`,
+        `tournament/${tournamentId}/rounds/${roundNumber}/boards/${boardNumber}/validate`,
         game
       );
       return response.data;
@@ -163,16 +155,21 @@ class TournamentService extends CrudService<Tournament> {
     try {
       const tournament = await this.getById(tournamentId);
       return (
-        tournament.rounds &&
-        tournament.rounds.some(
-          (r) => r.games && r.games.some((g) => g.status !== 'Scheduled')
-        )
+        tournament.status === TournamentStatus.Underway ||
+        tournament.status === TournamentStatus.Finished
       );
     } catch (error) {
       console.error('Error checking if tournament has started:', error);
       return false;
     }
   }
-}
 
-export const tournamentService = new TournamentService();
+  async validateBoard(
+    tournamentId: number,
+    round: number,
+    board: number,
+    game: Game
+  ): Promise<boolean> {
+    return false;
+  }
+}

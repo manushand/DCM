@@ -13,7 +13,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import DataGrid from '../../components/DataGrid/DataGrid';
 import { Player } from '../../models/Player';
-import { playerService } from '../../services/playerService';
+import { playerService } from '../../services';
 import PlayerForm from './PlayerForm';
 import PlayerConflictsDialog from './components/PlayerConflictsDialog';
 import PlayerGamesDialog from './components/PlayerGamesDialog';
