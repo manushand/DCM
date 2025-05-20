@@ -173,7 +173,11 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
       maxWidth="md"
     >
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={8}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 8
+          }}>
           <TextField
             required
             fullWidth
@@ -184,7 +188,11 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
             helperText={nameError}
           />
         </Grid>
-        <Grid item xs={12} sm={4}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 4
+          }}>
           <FormControlLabel
             control={
               <Switch
@@ -197,7 +205,7 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
           />
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Divider sx={{ my: 2 }} />
           <Box
             display="flex"
@@ -251,7 +259,7 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
                   </AccordionSummary>
                   <AccordionDetails>
                     <Grid container spacing={2}>
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         <FormControl fullWidth size="small">
                           <InputLabel>Add Game</InputLabel>
                           <Select
@@ -276,7 +284,7 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
                           </Select>
                         </FormControl>
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         {round.games && round.games.length > 0 ? (
                           round.games.map((game) => (
                             <Box
