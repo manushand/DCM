@@ -16,8 +16,8 @@ import {
   Chip,
 } from '@mui/material';
 import { Group } from '../../../models/Group';
-import { Game, GameStatus, Powers, GameResult } from '../../../models/Game';
-import { groupService } from '../../../services/groupService';
+import { Game, GameStatus } from '../../../models/Game';
+import { groupService } from '../../../services';
 
 interface GroupGamesDialogProps {
   open: boolean;
@@ -61,9 +61,9 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({
     switch (status) {
       case GameStatus.Scheduled:
         return 'primary';
-      case GameStatus.InProgress:
+      case GameStatus.Underway:
         return 'warning';
-      case GameStatus.Completed:
+      case GameStatus.Finished:
         return 'success';
       case GameStatus.Cancelled:
         return 'error';

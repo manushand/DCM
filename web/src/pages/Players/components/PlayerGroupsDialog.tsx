@@ -20,7 +20,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Player } from '../../../models/Player';
 import { Group, GroupMember } from '../../../models/Group';
-import { playerService } from '../../../services/playerService';
+import { playerService } from '../../../services';
 
 interface PlayerGroupsDialogProps {
   open: boolean;

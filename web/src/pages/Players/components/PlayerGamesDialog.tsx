@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { Player } from '../../../models/Player';
 import { Game, GameStatus, Powers, GameResult } from '../../../models/Game';
-import { playerService } from '../../../services/playerService';
+import { playerService } from '../../../services';
 
 interface PlayerGamesDialogProps {
   open: boolean;

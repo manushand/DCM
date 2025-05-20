@@ -1,5 +1,11 @@
 import { Player } from '../../models/Player';
 
+// Interface for player conflict
+export interface PlayerConflict {
+  player: Player;
+  value: number;
+}
+
 export interface PlayerService {
   getAll(): Promise<Player[]>;
   getById(id: number): Promise<Player>;

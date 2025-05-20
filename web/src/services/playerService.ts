@@ -3,12 +3,9 @@ import { Player } from '../models/Player';
 import { Game } from '../models/Game';
 import { Group } from '../models/Group';
 import api from './api';
+import {PlayerConflict} from "../types/services/PlayerService";
 
-// Interface for player conflict
-export interface PlayerConflict {
-  player: Player;
-  value: number;
-}
+
 
 export class ApiPlayerService extends CrudService<Player> {
   constructor() {

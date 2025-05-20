@@ -22,7 +22,8 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { Player } from '../../../models/Player';
-import { playerService, PlayerConflict } from '../../../services/playerService';
+import { playerService } from '../../../services';
+import {PlayerConflict} from "../../../types/services/PlayerService";
 
 interface PlayerConflictsDialogProps {
   open: boolean;

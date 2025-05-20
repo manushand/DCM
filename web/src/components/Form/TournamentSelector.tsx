@@ -5,6 +5,7 @@ import {
   FormControl,
   InputLabel,
   Select,
+  SelectChangeEvent,
   MenuItem,
   FormHelperText,
   CircularProgress,
@@ -13,7 +14,6 @@ import {
   Tooltip,
   Box,
 } from '@mui/material';
-import { SelectChangeEvent } from '@mui/material/Select';
 import { Tournament } from '../../models/Tournament';
 import { tournamentService } from '../../services';
 import { Game } from '../../models/Game';

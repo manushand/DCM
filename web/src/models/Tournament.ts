@@ -7,6 +7,7 @@ export interface Round {
 }
 
 export enum TournamentStatus {
+  Unknown = 'Unknown',
   Scheduled = 'Scheduled',
   Cancelled = 'Cancelled',
   Underway = 'Underway', // Changed to match WinForms

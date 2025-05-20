@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-  TextField,
-  Grid,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Typography,
-  Divider,
   Accordion,
-  AccordionSummary,
   AccordionDetails,
-  Button,
-  IconButton,
+  AccordionSummary,
   Box,
-  Switch,
+  Button,
+  Divider,
+  FormControl,
   FormControlLabel,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  TextField,
+  Typography,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormDialog from '../../components/Form/FormDialog';
-import { Tournament, Round } from '../../models/Tournament';
-import { Game } from '../../models/Game';
-import { gameService } from '../../services';
+import {Round, Tournament, TournamentStatus} from '../../models/Tournament';
+import {Game} from '../../models/Game';
+import {gameService} from '../../services';
 
 interface TournamentFormProps {
   open: boolean;
@@ -142,6 +142,7 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
 
     const updatedTournament: Tournament = {
       id: tournament?.id || 0,
+      status: tournament?.status || TournamentStatus.Unknown,
       name,
       isEvent,
       rounds: rounds.length > 0 ? rounds : undefined,
