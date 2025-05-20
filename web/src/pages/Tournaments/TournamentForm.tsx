@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -21,9 +21,9 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormDialog from '../../components/Form/FormDialog';
-import {Round, Tournament, TournamentStatus} from '../../models/Tournament';
-import {Game} from '../../models/Game';
-import {gameService} from '../../services';
+import { Round, Tournament, TournamentStatus } from '../../models/Tournament';
+import { Game } from '../../models/Game';
+import { gameService } from '../../services';
 
 interface TournamentFormProps {
   open: boolean;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import {
   Table,
   TableBody,
@@ -17,7 +17,7 @@ interface Column {
   label: string;
   minWidth?: number;
   align?: 'right' | 'left' | 'center';
-  format?: (value: any) => string;
+  format?: (value: any) => string | JSX.Element;
 }
 
 interface DataGridProps {

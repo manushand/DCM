@@ -58,6 +58,7 @@ export interface Game extends DetailedModel {
   board?: number;
   players?: GamePlayers;
   scoringSystemId?: number;
+  scoringSystem?: ScoringSystem;
   scoringSystemIsDefault?: boolean;
 }
 

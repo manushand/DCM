@@ -1,5 +1,5 @@
 import { Group } from '../../models/Group';
-import {Game} from "../../models/Game";
+import { Game } from '../../models/Game';
 
 export interface GroupService {
   getAll(): Promise<Group[]>;

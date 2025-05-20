@@ -1,5 +1,5 @@
 import { CrudService } from './crudService';
-import {ScoringSystem} from "../models/ScoringSystem";
+import { ScoringSystem } from '../models/ScoringSystem';
 
 export class ApiScoringSystemService extends CrudService<ScoringSystem> {
   constructor() {

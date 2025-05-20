@@ -607,7 +607,12 @@ const GameForm: React.FC<GameFormProps> = ({
       maxWidth="md"
     >
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+          }}
+        >
           <TextField
             required
             fullWidth
@@ -618,7 +623,12 @@ const GameForm: React.FC<GameFormProps> = ({
             helperText={nameError}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+          }}
+        >
           <FormControl fullWidth>
             <InputLabel>Status</InputLabel>
             <Select value={status} onChange={handleStatusChange} label="Status">
@@ -630,7 +640,12 @@ const GameForm: React.FC<GameFormProps> = ({
             </Select>
           </FormControl>
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+          }}
+        >
           <TextField
             fullWidth
             label="Tournament"
@@ -639,7 +654,12 @@ const GameForm: React.FC<GameFormProps> = ({
             helperText="Tournament selection will be implemented later"
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 3,
+          }}
+        >
           <TextField
             fullWidth
             label="Round"
@@ -648,7 +668,12 @@ const GameForm: React.FC<GameFormProps> = ({
             onChange={handleRoundChange}
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 3,
+          }}
+        >
           <TextField
             fullWidth
             label="Board"
@@ -658,7 +683,12 @@ const GameForm: React.FC<GameFormProps> = ({
           />
         </Grid>
 
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+          }}
+        >
           <FormControl fullWidth>
             <InputLabel>Scoring System</InputLabel>
             <Select
@@ -679,7 +709,7 @@ const GameForm: React.FC<GameFormProps> = ({
           </FormControl>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Paper
             sx={{
               p: 2,
@@ -708,12 +738,12 @@ const GameForm: React.FC<GameFormProps> = ({
           </Paper>
         </Grid>
 
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Divider sx={{ my: 2 }} />
           <Typography variant="subtitle1">Game Players</Typography>
 
           <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={9}>
+            <Grid size={9}>
               <Autocomplete
                 options={filteredPlayers}
                 getOptionLabel={(option) => option.name}
@@ -724,7 +754,7 @@ const GameForm: React.FC<GameFormProps> = ({
                 )}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid size={3}>
               <IconButton
                 color="primary"
                 onClick={handleAddPlayer}
@@ -895,12 +925,18 @@ const GameForm: React.FC<GameFormProps> = ({
 
         {players.length > 0 && (
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Paper sx={{ p: 2, mt: 2 }}>
                 <Typography variant="h6">Conflicts</Typography>
                 <Grid container spacing={2}>
                   {players.map((player) => (
-                    <Grid item xs={12} sm={6} key={player.playerId}>
+                    <Grid
+                      key={player.playerId}
+                      size={{
+                        xs: 12,
+                        sm: 6,
+                      }}
+                    >
                       <Tooltip
                         title={
                           player.conflictDetails
@@ -914,7 +950,7 @@ const GameForm: React.FC<GameFormProps> = ({
                       </Tooltip>
                     </Grid>
                   ))}
-                  <Grid item xs={12}>
+                  <Grid size={12}>
                     <Typography variant="subtitle1">
                       Total Conflicts: {totalConflicts} points
                     </Typography>
@@ -923,7 +959,7 @@ const GameForm: React.FC<GameFormProps> = ({
               </Paper>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Paper sx={{ p: 2, mt: 2 }}>
                 <Typography variant="h6">
                   Total Score: {totalScore.toFixed(2)}
@@ -933,7 +969,6 @@ const GameForm: React.FC<GameFormProps> = ({
           </Grid>
         )}
       </Grid>
-
       <Dialog
         open={confirmationDialog.open}
         onClose={() =>

@@ -242,7 +242,12 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
 
   return (
     <Grid container spacing={3}>
-      <Grid item xs={12} sm={6}>
+      <Grid
+        size={{
+          xs: 12,
+          sm: 6,
+        }}
+      >
         <Autocomplete
           options={tournaments}
           getOptionLabel={(option) => option.name}
@@ -266,8 +271,12 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
           </Box>
         )}
       </Grid>
-
-      <Grid item xs={12} sm={3}>
+      <Grid
+        size={{
+          xs: 12,
+          sm: 3,
+        }}
+      >
         <FormControl fullWidth>
           <InputLabel>Round</InputLabel>
           <Select
@@ -287,8 +296,12 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
           )}
         </FormControl>
       </Grid>
-
-      <Grid item xs={12} sm={3}>
+      <Grid
+        size={{
+          xs: 12,
+          sm: 3,
+        }}
+      >
         <TextField
           fullWidth
           label="Board"
@@ -322,9 +335,8 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
           }}
         />
       </Grid>
-
       {validationMessage && (
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Alert severity={validationSeverity}>{validationMessage}</Alert>
         </Grid>
       )}

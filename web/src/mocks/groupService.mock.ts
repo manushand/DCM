@@ -1,6 +1,6 @@
 import type { GroupService } from '../types/services/GroupService';
 import type { Group } from '../models/Group';
-import {Game} from "../models/Game";
+import { Game } from '../models/Game';
 
 export class MockGroupService implements GroupService {
   private groups: Group[] = [
@@ -38,7 +38,7 @@ export class MockGroupService implements GroupService {
     return Promise.resolve();
   }
 
-  getGroupGames(id: number): Promise<Game[]>{
+  getGroupGames(id: number): Promise<Game[]> {
     return Promise.resolve([]);
   }
 }
