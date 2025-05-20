@@ -104,13 +104,16 @@ const SettingsPage: React.FC = () => {
           Save Settings
         </Button>
       </Box>
-
       <Paper sx={{ p: 3 }}>
         <Typography variant="h6" gutterBottom>
           Database Settings
         </Typography>
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={6}>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 6
+            }}>
             <FormControl fullWidth>
               <InputLabel>Database Type</InputLabel>
               <Select
@@ -130,7 +133,7 @@ const SettingsPage: React.FC = () => {
           </Grid>
 
           {settings.databaseType === DatabaseType.Access && (
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Database File"
@@ -144,7 +147,7 @@ const SettingsPage: React.FC = () => {
           )}
 
           {settings.databaseType === DatabaseType.SqlServer && (
-            <Grid item xs={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Connection String"
@@ -167,7 +170,11 @@ const SettingsPage: React.FC = () => {
           Email Settings
         </Typography>
         <Grid container spacing={3}>
-          <Grid item xs={12} sm={8}>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 8
+            }}>
             <TextField
               fullWidth
               label="SMTP Host"
@@ -175,7 +182,11 @@ const SettingsPage: React.FC = () => {
               onChange={(e) => handleSettingChange('smtpHost', e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 4
+            }}>
             <TextField
               fullWidth
               label="SMTP Port"
@@ -189,7 +200,11 @@ const SettingsPage: React.FC = () => {
               }
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 6
+            }}>
             <TextField
               fullWidth
               label="SMTP Username"
@@ -199,7 +214,11 @@ const SettingsPage: React.FC = () => {
               }
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 6
+            }}>
             <TextField
               fullWidth
               label="SMTP Password"
@@ -210,7 +229,11 @@ const SettingsPage: React.FC = () => {
               }
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 6
+            }}>
             <TextField
               fullWidth
               label="From Email Address"
@@ -220,7 +243,11 @@ const SettingsPage: React.FC = () => {
               }
             />
           </Grid>
-          <Grid item xs={12} sm={6}>
+          <Grid
+            size={{
+              xs: 12,
+              sm: 6
+            }}>
             <TextField
               fullWidth
               label="From Email Name"
@@ -230,7 +257,7 @@ const SettingsPage: React.FC = () => {
               }
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TextField
               fullWidth
               label="Test Email Address"
@@ -243,7 +270,6 @@ const SettingsPage: React.FC = () => {
           </Grid>
         </Grid>
       </Paper>
-
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}

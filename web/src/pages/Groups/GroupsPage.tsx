@@ -126,7 +126,7 @@ const GroupsPage: React.FC = () => {
       label: 'Actions',
       minWidth: 150,
       align: 'center' as const,
-      format: (_: any, row: Group) => (
+      format: (row: Group) => (
         <Box>
           <Tooltip title="Edit Group">
             <IconButton

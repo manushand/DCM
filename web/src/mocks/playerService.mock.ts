@@ -1,7 +1,22 @@
-import { Player } from '../models/Player';
-import type { PlayerService } from '../types/services/PlayerService';
+import { Game } from '../models/Game';
+import { Group } from '../models/Group';
+import {Player} from '../models/Player';
+import type {PlayerConflict, PlayerService} from '../types/services/PlayerService';
 
 export class MockPlayerService implements PlayerService {
+  getPlayerGames(id: number): Promise<Game[]> {
+      throw new Error('Method not implemented.');
+  }
+  getPlayerGroups(id: number): Promise<Group[]> {
+      throw new Error('Method not implemented.');
+  }
+  getPlayerConflicts(id: number): Promise<PlayerConflict[]> {
+      throw new Error('Method not implemented.');
+  }
+  updatePlayerConflict(id: number, playerId: number, value?: number | undefined): Promise<PlayerConflict> {
+      throw new Error('Method not implemented.');
+  }
+
   private players: Player[] = [
     { id: 1, name: 'Alice', rating: 1500 },
     { id: 2, name: 'Bob', rating: 1450 },

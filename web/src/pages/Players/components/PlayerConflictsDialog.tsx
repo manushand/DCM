@@ -163,7 +163,7 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({
             Add New Conflict
           </Typography>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={6}>
+            <Grid size={6}>
               <Autocomplete
                 options={availablePlayers}
                 getOptionLabel={getPlayerName}
@@ -174,7 +174,7 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({
                 )}
               />
             </Grid>
-            <Grid item xs={4}>
+            <Grid size={4}>
               <Typography gutterBottom>
                 Conflict Value: {conflictValue}
               </Typography>
@@ -188,7 +188,7 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({
                 valueLabelDisplay="auto"
               />
             </Grid>
-            <Grid item xs={2}>
+            <Grid size={2}>
               <Button
                 variant="contained"
                 color="primary"

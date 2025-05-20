@@ -59,11 +59,12 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({
     }
   };
 
+  // TODO: Fix get Player Name
   const getPlayerName = (p: Player | GroupMember) => {
     if ('firstName' in p && p.firstName && p.lastName) {
       return `${p.firstName} ${p.lastName}`;
     }
-    return p.name || p.playerName;
+    return 'TODO: FIX ME'; // p.name || p.playerName;
   };
 
   return (

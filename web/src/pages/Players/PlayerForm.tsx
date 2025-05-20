@@ -132,7 +132,11 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
       disableSubmit={!firstName || !lastName}
     >
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6
+          }}>
           <TextField
             required
             fullWidth
@@ -143,7 +147,11 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
             helperText={firstNameError}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6
+          }}>
           <TextField
             required
             fullWidth
@@ -154,7 +162,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
             helperText={lastNameError}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <TextField
             fullWidth
             label="Email"
@@ -181,7 +189,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {emails.map((email, index) => (
               <Chip

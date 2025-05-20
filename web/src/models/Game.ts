@@ -2,7 +2,7 @@ import { DetailedModel } from './BaseModel';
 import { ScoringSystem } from './ScoringSystem';
 
 export enum Powers {
-  None = 'None',
+  Unknown = 'Unknown',
   Admin = 'Admin',
   Observer = 'Observer',
   Austria = 'Austria',
@@ -77,7 +77,7 @@ export interface GameDetails {
 // Helper function to check if all powers are assigned
 export const allPowersAssigned = (game: Game): boolean => {
   if (!game.players || game.players.length === 0) return false;
-  return !game.players.some((p) => p.power === Powers.None);
+  return !game.players.some((p) => p.power === Powers.Unknown);
 };
 
 // Helper function to check if game data is complete
@@ -91,7 +91,7 @@ export const isGameDataComplete = (game: Game): boolean => {
   if (game.status === GameStatus.Finished) {
     return game.players.every(
       (p) =>
-        p.power !== Powers.None &&
+        p.power !== Powers.Unknown &&
         p.result !== GameResult.Unknown &&
         p.centers !== undefined &&
         p.years !== undefined

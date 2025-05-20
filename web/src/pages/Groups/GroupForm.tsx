@@ -128,7 +128,7 @@ const GroupForm: React.FC<GroupFormProps> = ({
       disableSubmit={!name}
     >
       <Grid container spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <TextField
             required
             fullWidth
@@ -139,10 +139,10 @@ const GroupForm: React.FC<GroupFormProps> = ({
             helperText={nameError}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Typography variant="subtitle1">Add Members</Typography>
           <Grid container spacing={2}>
-            <Grid item xs={9}>
+            <Grid size={9}>
               <Autocomplete
                 options={availablePlayers}
                 getOptionLabel={getPlayerName}
@@ -153,7 +153,7 @@ const GroupForm: React.FC<GroupFormProps> = ({
                 )}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid size={3}>
               <IconButton
                 color="primary"
                 onClick={handleAddMember}
@@ -165,7 +165,7 @@ const GroupForm: React.FC<GroupFormProps> = ({
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Divider sx={{ my: 2 }} />
           <Typography variant="subtitle1">Members</Typography>
           {members.length === 0 ? (

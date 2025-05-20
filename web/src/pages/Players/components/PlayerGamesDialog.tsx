@@ -68,9 +68,9 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({
     switch (status) {
       case GameStatus.Scheduled:
         return 'primary';
-      case GameStatus.InProgress:
+      case GameStatus.Underway:
         return 'warning';
-      case GameStatus.Completed:
+      case GameStatus.Finished:
         return 'success';
       case GameStatus.Cancelled:
         return 'error';
@@ -118,11 +118,11 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({
   // Find player's power and result in a game
   const getPlayerGameInfo = (game: Game) => {
     if (!player || !game.players)
-      return { power: Powers.TBD, result: GameResult.Unknown };
+      return { power: Powers.Unknown, result: GameResult.Unknown };
 
     const gamePlayer = game.players.find((p) => p.playerId === player.id);
     return {
-      power: gamePlayer?.power || Powers.TBD,
+      power: gamePlayer?.power || Powers.Unknown,
       result: gamePlayer?.result || GameResult.Unknown,
       score: gamePlayer?.score,
     };

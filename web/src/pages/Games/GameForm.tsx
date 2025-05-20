@@ -179,7 +179,7 @@ const GameForm: React.FC<GameFormProps> = ({
 
   // Check if a player has complete data
   const isPlayerComplete = (player: GamePlayer): boolean => {
-    if (player.power === Powers.None) return false;
+    if (player.power === Powers.Unknown) return false;
     if (player.result === GameResult.Unknown) return false;
 
     // For finished games, centers and years must be provided
@@ -194,7 +194,7 @@ const GameForm: React.FC<GameFormProps> = ({
 
   // Check if all powers are assigned in a game
   const allPowersAssigned = (game: Game): boolean => {
-    return game.players?.every((p) => p.power !== Powers.None) ?? false;
+    return game.players?.every((p) => p.power !== Powers.Unknown) ?? false;
   };
 
   // Check if the game data is complete
@@ -202,7 +202,7 @@ const GameForm: React.FC<GameFormProps> = ({
     if (!game.players?.length) return false;
 
     return game.players.every((player) => {
-      if (player.power === Powers.None) return false;
+      if (player.power === Powers.Unknown) return false;
       if (player.result === GameResult.Unknown) return false;
       if (game.status === GameStatus.Finished) {
         if (player.centers === undefined || player.years === undefined) {
@@ -398,7 +398,7 @@ const GameForm: React.FC<GameFormProps> = ({
       const newPlayer: GamePlayer = {
         playerId: selectedPlayer.id,
         playerName: selectedPlayer.name,
-        power: Powers.None,
+        power: Powers.Unknown,
         result: GameResult.Unknown,
         centers: 0,
         years: 0,
@@ -435,13 +435,13 @@ const GameForm: React.FC<GameFormProps> = ({
 
     let updatedPlayers = [...players];
 
-    if (otherPlayer && power !== Powers.None) {
+    if (otherPlayer && power !== Powers.Unknown) {
       // Swap powers with the other player
       updatedPlayers = players.map((p) => {
         if (p.playerId === playerId) {
           return { ...p, power };
         } else if (p.playerId === otherPlayer.playerId) {
-          return { ...p, power: Powers.None };
+          return { ...p, power: Powers.Unknown };
         }
         return p;
       });
