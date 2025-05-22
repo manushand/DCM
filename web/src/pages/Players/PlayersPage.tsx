@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, JSX, useCallback} from 'react';
 import {
   Button,
   Typography,
   Box,
-  Paper,
   IconButton,
   Tooltip,
 } from '@mui/material';
@@ -18,6 +17,8 @@ import PlayerForm from './PlayerForm';
 import PlayerConflictsDialog from './components/PlayerConflictsDialog';
 import PlayerGamesDialog from './components/PlayerGamesDialog';
 import PlayerGroupsDialog from './components/PlayerGroupsDialog';
+import {normalizePlayerName} from "../../utils/playerUtils";
+import Loading from "../../components/Loading/Loading";
 
 const PlayersPage: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -29,7 +30,7 @@ const PlayersPage: React.FC = () => {
   const [openGroupsDialog, setOpenGroupsDialog] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
 
-  const fetchPlayers = async () => {
+  const fetchPlayers = useCallback(async () => {
     try {
       setLoading(true);
       const data = await playerService.getAll();
@@ -41,11 +42,11 @@ const PlayersPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setPlayers, setError]);
 
   useEffect(() => {
-    fetchPlayers();
-  }, []);
+    fetchPlayers().then();
+  }, [fetchPlayers]);
 
   const handleAddPlayer = () => {
     setSelectedPlayer(null);
@@ -96,13 +97,51 @@ const PlayersPage: React.FC = () => {
       } else {
         await playerService.create(player);
       }
-      fetchPlayers();
+      await fetchPlayers();
       setOpenForm(false);
     } catch (err) {
       console.error('Failed to save player:', err);
       // Handle error (could show a snackbar or other notification)
     }
   };
+
+  const renderActions = (player: Player) => (
+      <Box>
+        <Tooltip title="Player Conflicts">
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenConflicts(player);
+            }}
+          >
+            <PeopleAltIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Player Games">
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenGames(player);
+            }}
+          >
+            <SportsEsportsIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Player Groups">
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleOpenGroups(player);
+            }}
+          >
+            <GroupsIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+  )
 
   const columns = [
     { id: 'id', label: 'ID', minWidth: 50 },
@@ -112,14 +151,7 @@ const PlayersPage: React.FC = () => {
       id: 'name',
       label: 'Full Name',
       minWidth: 170,
-      format: (value: string, row: Player) => {
-        // If firstName and lastName are available, use them
-        if (row.firstName && row.lastName) {
-          return `${row.firstName} ${row.lastName}`;
-        }
-        // Otherwise fall back to name
-        return value;
-      },
+      format: (value: string) => value,
     },
     {
       id: 'emailAddresses',
@@ -132,108 +164,86 @@ const PlayersPage: React.FC = () => {
       label: 'Actions',
       minWidth: 150,
       align: 'center' as const,
-      format: (_: any, row: Player) => (
-        <Box>
-          <Tooltip title="Player Conflicts">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenConflicts(row);
-              }}
-            >
-              <PeopleAltIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Player Games">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenGames(row);
-              }}
-            >
-              <SportsEsportsIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Player Groups">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleOpenGroups(row);
-              }}
-            >
-              <GroupsIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
+      format: (value: JSX.Element) => value,
     },
   ];
 
+  const processedPlayers = players.map((player) => ({
+    ...player,
+    name: normalizePlayerName(player),
+    actions: renderActions(player),
+  }));
+
   return (
     <div>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={2}
-      >
-        <Typography variant="h4">Players</Typography>
-        <Button
-          variant="contained"
-          color="primary"
-          startIcon={<AddIcon />}
-          onClick={handleAddPlayer}
+      {loading ? (
+        <Loading text="Loading players..." error={error}/>
+      ) : error ? (
+        <Box
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
+          height="100vh"
         >
-          Add Player
-        </Button>
-      </Box>
+          <Typography variant="h6" color="error" mb={2}>
+            {error}
+          </Typography>
+          <Button variant="contained" color="primary" onClick={fetchPlayers}>
+            Retry
+          </Button>
+        </Box>
+      ) : (
+        <>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mb={2}
+          >
+            <Typography variant="h4">Players</Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<AddIcon />}
+              onClick={handleAddPlayer}
+            >
+              Add Player
+            </Button>
+          </Box>
 
-      {error && (
-        <Paper
-          sx={{
-            p: 2,
-            mb: 2,
-            bgcolor: 'error.light',
-            color: 'error.contrastText',
-          }}
-        >
-          <Typography>{error}</Typography>
-        </Paper>
-      )}
+          <DataGrid
+            columns={columns}
+            rows={processedPlayers}
+            onRowClick={handleEditPlayer}
+          />
 
-      <DataGrid
-        columns={columns}
-        rows={players}
-        onRowClick={handleEditPlayer}
-      />
+          <PlayerForm
+            open={openForm}
+            onClose={handleCloseForm}
+            onSubmit={handleSavePlayer}
+            player={selectedPlayer}
+          />
 
-      <PlayerForm
-        open={openForm}
-        onClose={handleCloseForm}
-        onSubmit={handleSavePlayer}
-        player={selectedPlayer}
-      />
+          <PlayerConflictsDialog
+            open={openConflictsDialog}
+            onClose={handleCloseConflicts}
+            player={selectedPlayer}
+          />
 
-      <PlayerConflictsDialog
-        open={openConflictsDialog}
-        onClose={handleCloseConflicts}
-        player={selectedPlayer}
-      />
+          <PlayerGamesDialog
+            open={openGamesDialog}
+            onClose={handleCloseGames}
+            player={selectedPlayer}
+          />
 
-      <PlayerGamesDialog
-        open={openGamesDialog}
-        onClose={handleCloseGames}
-        player={selectedPlayer}
-      />
-
-      <PlayerGroupsDialog
-        open={openGroupsDialog}
-        onClose={handleCloseGroups}
-        player={selectedPlayer}
-      />
+          <PlayerGroupsDialog
+            open={openGroupsDialog}
+            onClose={handleCloseGroups}
+            player={selectedPlayer}
+          />
+        </>
+        )}
     </div>
   );
 };
