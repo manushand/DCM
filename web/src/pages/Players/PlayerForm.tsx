@@ -135,8 +135,9 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
         <Grid
           size={{
             xs: 12,
-            sm: 6
-          }}>
+            sm: 6,
+          }}
+        >
           <TextField
             required
             fullWidth
@@ -150,8 +151,9 @@ const PlayerForm: React.FC<PlayerFormProps> = ({
         <Grid
           size={{
             xs: 12,
-            sm: 6
-          }}>
+            sm: 6,
+          }}
+        >
           <TextField
             required
             fullWidth

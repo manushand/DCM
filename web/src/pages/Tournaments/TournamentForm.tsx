@@ -176,8 +176,9 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
         <Grid
           size={{
             xs: 12,
-            sm: 8
-          }}>
+            sm: 8,
+          }}
+        >
           <TextField
             required
             fullWidth
@@ -191,8 +192,9 @@ const TournamentForm: React.FC<TournamentFormProps> = ({
         <Grid
           size={{
             xs: 12,
-            sm: 4
-          }}>
+            sm: 4,
+          }}
+        >
           <FormControlLabel
             control={
               <Switch

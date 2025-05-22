@@ -42,6 +42,7 @@ import {
 import { ScoringSystem } from '../../models/ScoringSystem';
 import { Player } from '../../models/Player';
 import { playerService } from '../../services';
+import {getPowerColor} from "../../utils/powerUtils";
 
 interface GameFormProps {
   open: boolean;
@@ -298,7 +299,7 @@ const GameForm: React.FC<GameFormProps> = ({
     }
   };
 
-  const handleStatusChange = (e: React.ChangeEvent<{ value: unknown }>) => {
+  const handleStatusChange = (e: SelectChangeEvent) => {
     const newStatus = e.target.value as GameStatus;
     const currentStatus = status;
 
@@ -574,28 +575,6 @@ const GameForm: React.FC<GameFormProps> = ({
   const filteredPlayers = availablePlayers.filter(
     (player) => !players.some((p) => p.playerId === player.id)
   );
-
-  // Get power color based on the power
-  const getPowerColor = (power: Powers) => {
-    switch (power) {
-      case Powers.Austria:
-        return { color: 'white', backgroundColor: 'red' };
-      case Powers.England:
-        return { color: 'white', backgroundColor: 'royalblue' };
-      case Powers.France:
-        return { color: 'black', backgroundColor: 'skyblue' };
-      case Powers.Germany:
-        return { color: 'white', backgroundColor: 'black' };
-      case Powers.Italy:
-        return { color: 'black', backgroundColor: 'lime' };
-      case Powers.Russia:
-        return { color: 'black', backgroundColor: 'white' };
-      case Powers.Turkey:
-        return { color: 'black', backgroundColor: 'yellow' };
-      default:
-        return { color: 'inherit', backgroundColor: 'inherit' };
-    }
-  };
 
   return (
     <FormDialog

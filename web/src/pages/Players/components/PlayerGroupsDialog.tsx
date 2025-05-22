@@ -19,8 +19,9 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Player } from '../../../models/Player';
-import { Group, GroupMember } from '../../../models/Group';
+import { Group } from '../../../models/Group';
 import { playerService } from '../../../services';
+import { normalizePlayerName } from '../../../utils/playerUtils';
 
 interface PlayerGroupsDialogProps {
   open: boolean;
@@ -36,12 +37,6 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (open && player) {
-      fetchGroups();
-    }
-  }, [open, player]);
 
   const fetchGroups = async () => {
     if (!player) return;
@@ -59,18 +54,16 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({
     }
   };
 
-  // TODO: Fix get Player Name
-  const getPlayerName = (p: Player | GroupMember) => {
-    if ('firstName' in p && p.firstName && p.lastName) {
-      return `${p.firstName} ${p.lastName}`;
+  useEffect(() => {
+    if (open && player) {
+      fetchGroups();
     }
-    return 'TODO: FIX ME'; // p.name || p.playerName;
-  };
+  }, [open, player, fetchGroups]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        {player ? `Groups for ${getPlayerName(player)}` : 'Player Groups'}
+        {player ? `Groups for ${normalizePlayerName(player)}` : 'Player Groups'}
       </DialogTitle>
       <DialogContent dividers>
         {error && (

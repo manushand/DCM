@@ -1,5 +1,4 @@
 import { DetailedModel } from './BaseModel';
-import { Player } from './Player';
 
 export interface GroupMember {
   playerId: number;

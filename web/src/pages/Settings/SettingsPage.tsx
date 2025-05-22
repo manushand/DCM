@@ -112,8 +112,9 @@ const SettingsPage: React.FC = () => {
           <Grid
             size={{
               xs: 12,
-              sm: 6
-            }}>
+              sm: 6,
+            }}
+          >
             <FormControl fullWidth>
               <InputLabel>Database Type</InputLabel>
               <Select
@@ -173,8 +174,9 @@ const SettingsPage: React.FC = () => {
           <Grid
             size={{
               xs: 12,
-              sm: 8
-            }}>
+              sm: 8,
+            }}
+          >
             <TextField
               fullWidth
               label="SMTP Host"
@@ -185,8 +187,9 @@ const SettingsPage: React.FC = () => {
           <Grid
             size={{
               xs: 12,
-              sm: 4
-            }}>
+              sm: 4,
+            }}
+          >
             <TextField
               fullWidth
               label="SMTP Port"
@@ -203,8 +206,9 @@ const SettingsPage: React.FC = () => {
           <Grid
             size={{
               xs: 12,
-              sm: 6
-            }}>
+              sm: 6,
+            }}
+          >
             <TextField
               fullWidth
               label="SMTP Username"
@@ -217,8 +221,9 @@ const SettingsPage: React.FC = () => {
           <Grid
             size={{
               xs: 12,
-              sm: 6
-            }}>
+              sm: 6,
+            }}
+          >
             <TextField
               fullWidth
               label="SMTP Password"
@@ -232,8 +237,9 @@ const SettingsPage: React.FC = () => {
           <Grid
             size={{
               xs: 12,
-              sm: 6
-            }}>
+              sm: 6,
+            }}
+          >
             <TextField
               fullWidth
               label="From Email Address"
@@ -246,8 +252,9 @@ const SettingsPage: React.FC = () => {
           <Grid
             size={{
               xs: 12,
-              sm: 6
-            }}>
+              sm: 6,
+            }}
+          >
             <TextField
               fullWidth
               label="From Email Name"
