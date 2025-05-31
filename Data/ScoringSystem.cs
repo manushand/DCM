@@ -143,9 +143,6 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		if (!GameDataValid(out results))
 			return false;
 		gamePlayers = [..gamePlayers.OrderBy(static gamePlayer => gamePlayer.Power)];
-		var watch = ShowTimingData
-						? StartNew()
-						: null;
 		var scoring =
 			Calculator.Scoring =
 				new (this, gamePlayers);
@@ -156,6 +153,9 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		//	and do NOT auto-subtract it from the FinalScore.
 		var game = gamePlayers.First()
 							  .Game;
+		var watch = ShowTimingData
+						? StartNew()
+						: null;
 		var calculateAnte = UsesPlayerAnte && (game.IsNone || !game.Tournament.IsEvent);
 		if (UsesPlayerAnte)
 		{

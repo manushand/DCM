@@ -36,12 +36,14 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		   .WithName($"List{SwaggerTag}s")
 		   .WithDescription($"List all {TypeName}s.")
 		   .Produces(Status200OK, Type.MakeArrayType())
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 		app.MapGet($"{TypeName}/{{id:int}}", GetOne)
 		   .WithName($"Get{SwaggerTag}Details")
 		   .WithDescription($"Get details for {articled}.")
 		   .Produces(Status200OK, Type)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 		app.MapPost(TypeName, PostOne)
 		   .WithName($"Add{SwaggerTag}")
@@ -49,6 +51,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		   .Produces(Status201Created)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 		app.MapPut($"{TypeName}/{{id:int}}", PutOne)
 		   .WithName($"Update{SwaggerTag}")
@@ -56,12 +59,14 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces<string>(Status409Conflict)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 		app.MapDelete($"{TypeName}/{{id:int}}", DeleteOne)
 		   .WithName($"Delete{SwaggerTag}")
 		   .WithDescription($"Delete {articled}.")
 		   .Produces(Status204NoContent)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 	}
 

@@ -35,22 +35,26 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		   .WithName("GetGroupGames")
 		   .WithDescription("List all games played by the group.")
 		   .Produces<Game[]>()
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 		app.MapGet("group/{id:int}/game/{gameNumber:int}", GetGame)
 		   .WithName("GetGroupGame")
 		   .WithDescription("Get details on a game played by the group.")
 		   .Produces<Game>()
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 		app.MapGet("group/{id:int}/players", /* ?members=true */ GetMembers)
 		   .WithName("GetGroupPlayers")
 		   .WithDescription("List all players who are members or non-members of the group.")
 		   .Produces<Player[]>()
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 		app.MapPatch("group/{id:int}/player/{playerId:int}", ChangeMembership)
 		   .WithName("ChangeGroupPlayerMembership")
 		   .WithDescription("Add or remove a player from the group.")
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 
 		app.MapPost("group/{id:int}/game", AddGroupGame)
@@ -58,6 +62,7 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		   .WithDescription("Create a new game played by the group.")
 		   .Produces(Status201Created)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 	}
 

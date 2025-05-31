@@ -107,13 +107,16 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		   .WithDescription("List all players registered or unregistered for the event, with the rounds for which each player is registered.")
 		   .Produces<RoundPlayer[]>()
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
+
 		app.MapPatch("event/{id:int}/player/{playerId:int}", UpdateRegistration)
 		   .WithDescription("Register a player for the event while setting, updating, or clearing the player's round registration.")
 		   .Produces(Status200OK)
 		   .Produces(Status204NoContent)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 
 		//	Rounds
@@ -121,20 +124,26 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		   .WithDescription("List the event rounds.")
 		   .Produces<Round[]>()
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
+
 		app.MapGet("event/{id:int}/round/{roundNumber:int}", GetRound)
 		   .WithDescription("Get details for an event round.")
 		   .Produces<Round>()
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
+
 		app.MapGet("event/{id:int}/round/{roundNumber:int}/players",
 				   static (int id, int roundNumber, bool registered = true) => GetPlayerRegistration(id, [roundNumber], registered))
 		   .WithDescription("Get the registered players for an event round.")
 		   .Produces(Status200OK)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
+
 		app.MapPatch("event/{id:int}/round/{roundNumber:int}/player/{playerId:int}",
 					 static (int id, int playerId, int roundNumber, bool register) => UpdateRegistration(id, playerId, [roundNumber], register, true))
 		   .WithDescription("Set registration for a specific round for an event player.")
@@ -143,18 +152,23 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
 		   .Produces<string>(Status409Conflict)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
+
 		app.MapPost("event/{id:int}/round", CreateRound)
 		   .WithDescription("Create the next event round.")
 		   .Produces(Status201Created)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
+
 		app.MapPost("event/{id:int}/round/seed", SeedRound)
 		   .WithDescription("Seed the current event round.")
 		   .Produces(Status201Created)
 		   .Produces<string[]>(Status400BadRequest)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 
 		//	Games
@@ -163,10 +177,12 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
 		   .WithTags(SwaggerTag);
+
 		app.MapGet("event/{id:int}/round/{roundNumber:int}/game/{gameNumber:int}", GetGame)
 		   .WithDescription("Get details on an event game.")
 		   .Produces(Status200OK)
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 
 		//	Teams

@@ -7,13 +7,17 @@ global using static Data.Game.Statuses;
 global using static Data.GamePlayer;
 global using static Data.Tournament;
 global using GameResults = Data.GamePlayer.Results;
+global using static System.String;
 //
+using System.Net;
 using System.Runtime.Serialization;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using static System.Text.Json.JsonSerializer;
 using static System.Text.Json.Serialization.JsonIgnoreCondition;
 
 namespace API;
@@ -84,7 +88,8 @@ internal static class API
 		}
 		else
 			app.UseHttpsRedirection()
-			   .UseHsts();
+			   .UseHsts()
+			   .UseExceptionHandler(ExceptionHandler);
 
 		Group.CreateEndpoints(app);
 		Player.CreateEndpoints(app);
@@ -92,10 +97,21 @@ internal static class API
 		Event.CreateEndpoints(app);
 
 		app.Run();
+
+		static void ExceptionHandler(IApplicationBuilder app)
+			=> app.Run(static async context =>
+					   {
+						   var response = context.Response;
+						   response.StatusCode = HttpStatusCode.InternalServerError.AsInteger();
+						   response.ContentType = "application/json";
+						   var handler = context.Features.Get<IExceptionHandlerPathFeature>();
+						   var error = new Error(handler?.Error ?? new Exception("Unknown error"));
+						   await response.WriteAsync(Serialize(error));
+					   });
 	}
 
 	internal static string? NullIfEmpty(this string? s)
-		=> string.IsNullOrWhiteSpace(s)
+		=> IsNullOrWhiteSpace(s)
 			   ? null
 			   : s;
 

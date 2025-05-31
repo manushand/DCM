@@ -37,6 +37,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		   .WithDescription("List all games in which a player was involved.")
 		   .Produces<IEnumerable<Game>>()
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 
 		app.MapGet("player/{id:int}/groups", GetGroups)
@@ -44,6 +45,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		   .WithDescription("List all groups to which a player belongs.")
 		   .Produces<IEnumerable<Group>>()
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 
 		app.MapGet("player/{id:int}/conflicts", GetConflicts)
@@ -51,6 +53,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		   .WithDescription("Get the list of all conflicts for a player.")
 		   .Produces<IEnumerable<Conflict>>()
 		   .Produces(Status404NotFound)
+		   .Produces<Error>(Status500InternalServerError)
 		   .WithTags(SwaggerTag);
 
 		app.MapPatch("player/{id:int}/conflict/{playerId:int}", SetPlayerConflict)
@@ -88,7 +91,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		var addresses = player.Details?.EmailAddresses ?? [];
 		if (addresses.Any(static address => !address.IsValidEmail()))
 			return ["Invalid player email address."];
-		Record.EmailAddress = string.Join(",", addresses);
+		Record.EmailAddress = Join(",", addresses);
 		return [];
 	}
 

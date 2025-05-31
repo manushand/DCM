@@ -90,7 +90,7 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 									 ? []
 									 : Record.ScoreWithResults(Record.TestGamePlayers, out var errors)
 										 ? Record.TestGamePlayers.Select(gamePlayer => new Tester(new (gamePlayer, Record)))
-										 : throw new (string.Join("\n", errors))
+										 : throw Error.Exception($"Error scoring system {Record}", errors)
 				  };
 
 	internal static void CreateEndpoints(WebApplication app)
