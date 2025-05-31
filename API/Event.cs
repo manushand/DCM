@@ -302,9 +302,9 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		if (tournament is null)
 			return NotFound();
 		var round = tournament.Rounds.SingleOrDefault(static round => round.Workable);
-		if (round is null)
-			return Conflict("No seedable round");
-		throw new NotImplementedException();
+		return round is null
+				   ? Conflict("No seedable round")
+				   : throw new NotImplementedException();
 	}
 
 	private protected override string[] UpdateRecordForDatabase(Event @event)

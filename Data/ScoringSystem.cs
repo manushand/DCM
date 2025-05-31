@@ -356,9 +356,9 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 												});
 				using var cancellationTokenSource = new CancellationTokenSource();
 				using var task = compiled.RunAsync(scoring, cancellationTokenSource.Token);
-				if (task.Wait(ScriptTimeout))
-					return task.Result.ReturnValue;
-				throw new TimeoutException();
+				return task.Wait(ScriptTimeout)
+						   ? task.Result.ReturnValue
+						   : throw new TimeoutException();
 			}
 		}
 	}

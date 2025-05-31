@@ -642,10 +642,10 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void ChangeRoundButton_Click(object sender,
 										 EventArgs e)
 	{
-		if (Round.GamesStarted is false)
+		if (!Round.GamesStarted)
 			//	Can only discard a round if there are no started games
 			RoundInfoForm.DiscardRound();
-		else if (Round.GamesSeeded is not true)
+		else if (!Round.GamesSeeded)
 			//	Can only start a new round if there are started but no seeded games
 			RoundInfoForm.StartNewRound();
 	}

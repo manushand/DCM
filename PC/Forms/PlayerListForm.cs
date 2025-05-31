@@ -48,9 +48,9 @@ internal sealed partial class PlayerListForm : Form
 		Player = PlayerListBox.GetSelected<Player>() ?? Player.None;
 		SetEnabled(!Player.IsNone, EditButton, GroupsButton, RemoveButton);
 		ConflictsButton.Enabled = !Player.IsNone && PlayerListBox.Items.Count > 1;
-		RemoveButton.Text = Player.Games.Any() is false
-								? "Remove"
-								: GamesText;
+		RemoveButton.Text = Player.Games.Any()
+								? GamesText
+								: "Remove";
 		if (Player.IsNone)
 			return;
 		FirstNameTextBox.Text =
