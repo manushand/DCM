@@ -139,9 +139,12 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 	public bool ScoreWithResults(List<GamePlayer> gamePlayers,
 								 out List<string?> results)
 	{
-		const string bar = "――――――――――――――――――――";
 		if (!GameDataValid(out results))
 			return false;
+		const string bar = "――――――――――――――――――――";
+		var watch = ShowTimingData
+						? StartNew()
+						: null;
 		gamePlayers = [..gamePlayers.OrderBy(static gamePlayer => gamePlayer.Power)];
 		var scoring =
 			Calculator.Scoring =
@@ -153,9 +156,6 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		//	and do NOT auto-subtract it from the FinalScore.
 		var game = gamePlayers.First()
 							  .Game;
-		var watch = ShowTimingData
-						? StartNew()
-						: null;
 		var calculateAnte = UsesPlayerAnte && (game.IsNone || !game.Tournament.IsEvent);
 		if (UsesPlayerAnte)
 		{
