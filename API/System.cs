@@ -135,6 +135,6 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 		}
 		return Record.ScoreWithResults(Record.TestGamePlayers, out var results)
 				   ? []
-				   : results.OfType<string>().ToArray();
+				   : [..results.OfType<string>()];
 	}
 }

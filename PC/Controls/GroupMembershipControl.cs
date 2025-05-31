@@ -26,7 +26,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 		if (NonMemberListBox.SelectedItems.Count is not 0)
 		{
 			var joiningPlayers = NonMemberListBox.GetMultiSelected<Player>();
-			CreateMany(joiningPlayers.Select(player => new GroupPlayer { Group = Group, Player = player }).ToArray());
+			CreateMany([..joiningPlayers.Select(player => new GroupPlayer { Group = Group, Player = player })]);
 			SkipHandlers(NonMemberListBox.ClearSelected);
 			FillMembershipLists();
 			joiningPlayers.ForEach(MemberListBox.SelectedItems.Add);
