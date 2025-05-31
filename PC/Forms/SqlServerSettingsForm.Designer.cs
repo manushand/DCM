@@ -28,86 +28,86 @@ partial class SqlServerSettingsForm
 	/// </summary>
 	private void InitializeComponent()
 	{
-		ServerNameLabel = new System.Windows.Forms.Label();
-		ServerNameTextBox = new System.Windows.Forms.TextBox();
-		DatabaseLabel = new System.Windows.Forms.Label();
-		DatabaseTextBox = new System.Windows.Forms.TextBox();
-		UsernameLabel = new System.Windows.Forms.Label();
-		UsernameTextBox = new System.Windows.Forms.TextBox();
-		PasswordLabel = new System.Windows.Forms.Label();
-		PasswordTextBox = new System.Windows.Forms.TextBox();
-		ConnectButton = new System.Windows.Forms.Button();
+		ServerNameLabel = new Label();
+		ServerNameTextBox = new TextBox();
+		DatabaseLabel = new Label();
+		DatabaseTextBox = new TextBox();
+		UsernameLabel = new Label();
+		UsernameTextBox = new TextBox();
+		PasswordLabel = new Label();
+		PasswordTextBox = new TextBox();
+		ConnectButton = new Button();
 		SuspendLayout();
 		// 
 		// ServerNameLabel
 		// 
-		ServerNameLabel.Location = new System.Drawing.Point(17, 24);
+		ServerNameLabel.Location = new Point(17, 24);
 		ServerNameLabel.Name = "ServerNameLabel";
-		ServerNameLabel.Size = new System.Drawing.Size(82, 19);
+		ServerNameLabel.Size = new Size(82, 19);
 		ServerNameLabel.TabIndex = 0;
 		ServerNameLabel.Text = "Server Name:";
-		ServerNameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+		ServerNameLabel.TextAlign = ContentAlignment.MiddleLeft;
 		// 
 		// ServerNameTextBox
 		// 
-		ServerNameTextBox.Location = new System.Drawing.Point(105, 20);
+		ServerNameTextBox.Location = new Point(105, 20);
 		ServerNameTextBox.Name = "ServerNameTextBox";
-		ServerNameTextBox.Size = new System.Drawing.Size(286, 23);
+		ServerNameTextBox.Size = new Size(286, 23);
 		ServerNameTextBox.TabIndex = 1;
 		// 
 		// DatabaseLabel
 		// 
-		DatabaseLabel.Location = new System.Drawing.Point(228, 52);
+		DatabaseLabel.Location = new Point(222, 48);
 		DatabaseLabel.Name = "DatabaseLabel";
-		DatabaseLabel.Size = new System.Drawing.Size(57, 23);
+		DatabaseLabel.Size = new Size(63, 23);
 		DatabaseLabel.TabIndex = 2;
 		DatabaseLabel.Text = "Database:";
-		DatabaseLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+		DatabaseLabel.TextAlign = ContentAlignment.MiddleLeft;
 		// 
 		// DatabaseTextBox
 		// 
-		DatabaseTextBox.Location = new System.Drawing.Point(291, 49);
+		DatabaseTextBox.Location = new Point(291, 49);
 		DatabaseTextBox.Name = "DatabaseTextBox";
-		DatabaseTextBox.Size = new System.Drawing.Size(100, 23);
+		DatabaseTextBox.Size = new Size(100, 23);
 		DatabaseTextBox.TabIndex = 7;
 		// 
 		// UsernameLabel
 		// 
-		UsernameLabel.Location = new System.Drawing.Point(19, 49);
+		UsernameLabel.Location = new Point(19, 49);
 		UsernameLabel.Name = "UsernameLabel";
-		UsernameLabel.Size = new System.Drawing.Size(80, 20);
+		UsernameLabel.Size = new Size(80, 20);
 		UsernameLabel.TabIndex = 4;
 		UsernameLabel.Text = "Username:";
-		UsernameLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+		UsernameLabel.TextAlign = ContentAlignment.MiddleLeft;
 		// 
 		// UsernameTextBox
 		// 
-		UsernameTextBox.Location = new System.Drawing.Point(105, 49);
+		UsernameTextBox.Location = new Point(105, 49);
 		UsernameTextBox.Name = "UsernameTextBox";
-		UsernameTextBox.Size = new System.Drawing.Size(100, 23);
+		UsernameTextBox.Size = new Size(100, 23);
 		UsernameTextBox.TabIndex = 3;
 		// 
 		// PasswordLabel
 		// 
-		PasswordLabel.Location = new System.Drawing.Point(19, 81);
+		PasswordLabel.Location = new Point(19, 81);
 		PasswordLabel.Name = "PasswordLabel";
-		PasswordLabel.Size = new System.Drawing.Size(80, 23);
+		PasswordLabel.Size = new Size(80, 23);
 		PasswordLabel.TabIndex = 6;
 		PasswordLabel.Text = "Password:";
-		PasswordLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+		PasswordLabel.TextAlign = ContentAlignment.MiddleLeft;
 		// 
 		// PasswordTextBox
 		// 
-		PasswordTextBox.Location = new System.Drawing.Point(105, 81);
+		PasswordTextBox.Location = new Point(105, 81);
 		PasswordTextBox.Name = "PasswordTextBox";
-		PasswordTextBox.Size = new System.Drawing.Size(100, 23);
+		PasswordTextBox.Size = new Size(100, 23);
 		PasswordTextBox.TabIndex = 5;
 		// 
 		// ConnectButton
 		// 
-		ConnectButton.Location = new System.Drawing.Point(262, 81);
+		ConnectButton.Location = new Point(262, 81);
 		ConnectButton.Name = "ConnectButton";
-		ConnectButton.Size = new System.Drawing.Size(129, 23);
+		ConnectButton.Size = new Size(129, 23);
 		ConnectButton.TabIndex = 8;
 		ConnectButton.Text = "Connect";
 		ConnectButton.UseVisualStyleBackColor = true;
@@ -115,9 +115,9 @@ partial class SqlServerSettingsForm
 		// 
 		// SqlServerSettingsForm
 		// 
-		AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-		AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-		ClientSize = new System.Drawing.Size(422, 121);
+		AutoScaleDimensions = new SizeF(7F, 15F);
+		AutoScaleMode = AutoScaleMode.Font;
+		ClientSize = new Size(422, 121);
 		Controls.Add(ConnectButton);
 		Controls.Add(PasswordTextBox);
 		Controls.Add(PasswordLabel);
@@ -127,6 +127,7 @@ partial class SqlServerSettingsForm
 		Controls.Add(DatabaseLabel);
 		Controls.Add(ServerNameTextBox);
 		Controls.Add(ServerNameLabel);
+		Name = "SqlServerSettingsForm";
 		Text = "SQL Server Settings";
 		Load += SqlServerSettingsForm_Load;
 		ResumeLayout(false);
