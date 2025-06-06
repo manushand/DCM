@@ -158,7 +158,7 @@ internal static class PC
 			if (dbFileName is not null)
 				MessageBox.Show("Failed to connect to database file.",
 								"Data Connection Failed");
-			using var dialog = new OpenFileDialog();
+			using OpenFileDialog dialog = new ();
 			dialog.Title = "Choose DCM Data File";
 			dialog.Filter = DatabaseFileDialogFilter;
 			dialog.FileName = Settings.DatabaseFile;
@@ -193,7 +193,7 @@ internal static class PC
 
 	internal static void SaveAccessDatabase()
 	{
-		using var dialog = new SaveFileDialog();
+		using SaveFileDialog dialog = new ();
 		dialog.Title = "Save DCM Data File As…";
 		dialog.Filter = DatabaseFileDialogFilter;
 		dialog.RestoreDirectory = true;
@@ -482,18 +482,18 @@ internal static class PC
 							   string subtitle)
 	{
 		//	TODO: centering the table cramps the titles and footer text
-		var printer = new DGVPrinter
-					  {
-						  Title = title,
-						  SubTitle = subtitle,
-						  SubTitleSpacing = 16,
-						  PageNumbers = true,
-						  PageNumberInHeader = false,
-						  TableAlignment = Alignment.Center,
-						  ColumnWidth = ColumnWidthSetting.DataWidth,
-						  Footer = $"{nameof (DCM)} © {DateTime.Now.Year} ARMADA",
-						  FooterSpacing = 15
-					  };
+		DGVPrinter printer = new ()
+							 {
+								 Title = title,
+								 SubTitle = subtitle,
+								 SubTitleSpacing = 16,
+								 PageNumbers = true,
+								 PageNumberInHeader = false,
+								 TableAlignment = Alignment.Center,
+								 ColumnWidth = ColumnWidthSetting.DataWidth,
+								 Footer = $"{nameof (DCM)} © {DateTime.Now.Year} ARMADA",
+								 FooterSpacing = 15
+							 };
 		foreach (var cellStyle in printer.ColumnStyles.Values)
 		{
 			cellStyle.Font = new (cellStyle.Font.FontFamily, 14); //	TODO: seems not to do anything
@@ -569,13 +569,13 @@ internal static class PC
 										   Player? toPlayer = null,
 										   string? fromName = null)
 	{
-		var message = new MailMessage
-					  {
-						  From = new (Settings.FromEmailAddress, fromName ?? Settings.FromEmailName),
-						  Subject = subject,
-						  Body = body,
-						  IsBodyHtml = true
-					  };
+		MailMessage message = new ()
+							  {
+								  From = new (Settings.FromEmailAddress, fromName ?? Settings.FromEmailName),
+								  Subject = subject,
+								  Body = body,
+								  IsBodyHtml = true
+							  };
 		if (toPlayer is null || Settings.TestEmailOnly)
 		{
 			const string toTestOnlyInfo = """
@@ -602,11 +602,11 @@ internal static class PC
 		var host = Settings.SmtpHost;
 		if (host.Length is 0)
 			return SmtpHostNotSet;
-		using var client = new SmtpClient(host, Settings.SmtpPort);
+		using SmtpClient client = new (host, Settings.SmtpPort);
 		client.Credentials = new NetworkCredential(Settings.SmtpUsername, Settings.SmtpPassword);
 		client.EnableSsl = Settings.SmtpSsl;
 		var tasks = messages.ToDictionary(static message => message.To, client.SendMailAsync);
-		WaitAll([..tasks.Values]);
+		WaitAll(tasks.Values);
 		return [..tasks.Where(static t => t.Value.IsFaulted)
 					   .Select(static task => $"Problem sending email to {task.Key}: {task.Value.Exception?.Message ?? "UNKNOWN"}")];
 	}

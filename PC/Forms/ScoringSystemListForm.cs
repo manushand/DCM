@@ -51,7 +51,7 @@ internal sealed partial class ScoringSystemListForm : Form
 	private void NewButton_Click(object sender,
 								 EventArgs e)
 	{
-		var newSystem = new ScoringSystem();
+		ScoringSystem newSystem = new ();
 		Show<ScoringSystemInfoForm>(() => new (newSystem),
 									form =>
 									{
@@ -85,7 +85,7 @@ internal sealed partial class ScoringSystemListForm : Form
 
 			static string UsedInList(IReadOnlyCollection<object> objects,
 									 string what)
-				=> $"{(objects.Count is 1 ? "this" : "these")} {what.Pluralize(objects)}:{objects.BulletList()}";
+				=> objects.BulletList($"{(objects.Count is 1 ? "this" : "these")} {what.Pluralize(objects)}");
 		}
 		else if (MessageBox.Show($"Really delete the {scoringSystem} scoring system?",
 								 "Confirm Scoring System Deletion",

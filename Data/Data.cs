@@ -451,7 +451,7 @@ public static partial class Data
 		where T : class, IRecord, new()
 	{
 		OpenConnection();
-		var records = new List<T>();
+		List<T> records = [];
 		using (var command = Command($"SELECT * FROM {TableName<T>()}{record?.WhereClause()}"))
 		{
 			using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);

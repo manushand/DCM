@@ -104,7 +104,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	private protected static IResult PostOne(HttpRequest request,
 											 T1 candidate)
 	{
-		var record = new T1();
+		T1 record = new ();
 		var named = candidate.Name.Length > 0;
 		if (named && ReadByName<T2>(candidate.Name) is not null)
 			return Conflict("Name already in use.");
@@ -144,7 +144,7 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	private protected static T1 RestFrom(T2 @object,
 										 bool details = false)
 	{
-		var result = new T1 { Id = @object.Id, Name = @object.Name, Record = @object, Detailed = details };
+		T1 result = new () { Id = @object.Id, Name = @object.Name, Record = @object, Detailed = details };
 		result.LoadFromDataRecord(@object);
 		return result;
 	}

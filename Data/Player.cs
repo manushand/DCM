@@ -29,7 +29,7 @@ public sealed class Player : IdentityRecord<Player>
 			var groupCount = groups.Length;
 			return groupCount is 0
 					   ? $"{Name} is not a member of any groups."
-					   : $"{Name} is a member of the following {"group".Pluralize(groupCount)}:{groups.BulletList()}";
+					   : groups.BulletList($"{Name} is a member of the following {"group".Pluralize(groupCount)}");
 		}
 	}
 

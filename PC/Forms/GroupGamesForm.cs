@@ -328,7 +328,7 @@ internal sealed partial class GroupGamesForm : Form
 		||  Game.CalculateScores(out var errors, Group.ScoringSystem))
 			FillFinalScores(Game, ScoreLabels, TotalScoreLabel, ToolTip);
 		else
-			MessageBox.Show(errors.OfType<string>().BulletList(),
+			MessageBox.Show(errors.OfType<string>().BulletList("Error(s)"),
 							"Game in Error",
 							OK,
 							Warning);
@@ -382,7 +382,7 @@ internal sealed partial class GroupGamesForm : Form
 							  if (isGroup)
 								  details.Add($"Rating Change: {postGame - preGame}");
 							  details.Add($"Post-Game {scoreOrRating}: {postGame}");
-							  toolTip.SetToolTip(scoreLabels[i], $"{gamePlayer.Player}{details.BulletList()}");
+							  toolTip.SetToolTip(scoreLabels[i], details.BulletList($"{gamePlayer.Player}"));
 						  });
 		totalScoreLabel.Text = gamePlayers.Sum(static gamePlayer => gamePlayer.FinalScore)
 										  .ToString(format);
@@ -391,7 +391,7 @@ internal sealed partial class GroupGamesForm : Form
 	#region GroupGame class
 
 	[PublicAPI]
-	private sealed class GroupGame : IRecord
+	private sealed record GroupGame : IRecord
 	{
 		public string Date => $"{DateTime:d}";
 

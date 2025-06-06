@@ -125,7 +125,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		if (player is null || other is null)
 			return NotFound();
 		var playerConflict = ReadOne<PlayerConflict>(conflict => conflict.Involves(id) && conflict.Involves(playerId));
-		var result = new Conflict(other, value ?? playerConflict?.Value ?? default);
+		Conflict result = new (other, value ?? playerConflict?.Value ?? default);
 		if (value is null)
 			return Ok(result);
 		if (playerConflict is not null)

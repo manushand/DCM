@@ -28,7 +28,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 			return;
 		Tournament = tournament;
 		var tournamentSystem = tournament.ScoringSystem;
-		var gamePlayers = new List<GamePlayer>();
+		List<GamePlayer> gamePlayers = [];
 		foreach (var game in Tournament.FinishedGames)
 		{
 			//	TODO: is there any way around this?

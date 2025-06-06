@@ -12,7 +12,7 @@ internal sealed partial class SqlServerSettingsForm : Form
 		var connectionString = Settings.DatabaseConnectionString;
 		if (connectionString?.Length is null or 0)
 			return;
-		var stringBuilder = new SqlConnectionStringBuilder(connectionString);
+		SqlConnectionStringBuilder stringBuilder = new (connectionString);
 		ServerNameTextBox.Text = stringBuilder.DataSource;
 		DatabaseTextBox.Text = stringBuilder.InitialCatalog;
 		UsernameTextBox.Text = stringBuilder.UserID;
@@ -23,16 +23,14 @@ internal sealed partial class SqlServerSettingsForm : Form
 	{
 		try
 		{
-			var stringBuilder = new SqlConnectionStringBuilder
-								{
-									DataSource = ServerNameTextBox.Text,
-									InitialCatalog = DatabaseTextBox.Text,
-									UserID = UsernameTextBox.Text,
-									Password = PasswordTextBox.Text,
-									Encrypt = false
-								};
-			var connectionString = stringBuilder.ToString();
-			if (!OpenSqlServerDatabase(connectionString))
+			if (!OpenSqlServerDatabase($"{new SqlConnectionStringBuilder
+										  {
+											  DataSource = ServerNameTextBox.Text,
+											  InitialCatalog = DatabaseTextBox.Text,
+											  UserID = UsernameTextBox.Text,
+											  Password = PasswordTextBox.Text,
+											  Encrypt = false
+										  }}"))
 				throw new ("Could not connect to SQL Server.");
 			DialogResult = DialogResult.OK;
 			Close();

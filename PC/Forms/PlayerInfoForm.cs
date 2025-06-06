@@ -9,7 +9,7 @@ internal sealed partial class PlayerInfoForm : Form
 	internal PlayerInfoForm(Player? player = null)
 	{
 		InitializeComponent();
-		Player = player ?? new Player();
+		Player = player ?? new ();
 		if (player is null)
 			return;
 		FirstNameTextBox.Text = player.FirstName;
@@ -46,11 +46,11 @@ internal sealed partial class PlayerInfoForm : Form
 																			.Any(emailAddress.Matches))
                                                                             .ToArray();
 				if (playersWithThisEmail.Length is not 0
-				&& MessageBox.Show($"The email address {emailAddress} is already being used by:{playersWithThisEmail.BulletList()}" +
-									"Have this player use the same address?",
-									"Confirm Duplicate Player Email",
-									YesNo,
-									Question) is DialogResult.No)
+				&& MessageBox.Show(playersWithThisEmail.BulletList($"The email address {emailAddress} is already being used by") +
+																   "Have this player use the same address?",
+																   "Confirm Duplicate Player Email",
+																   YesNo,
+																   Question) is DialogResult.No)
 					return;
 			}
 		if (error is null)

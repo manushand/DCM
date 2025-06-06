@@ -60,8 +60,9 @@ public static partial class DCM
 			   ? result
 			   : @this[key] = func(key);
 
-	public static string BulletList(this IEnumerable<object> @this)
-		=> $"{Bullet}{Join(Bullet, @this)}";
+	public static string BulletList(this IEnumerable<object> @this,
+									string intro)
+		=> $"{intro}:{Bullet}{Join(Bullet, @this)}";
 
 	public static string InCaps(this Enum @this)
 		=> $"{@this}".ToUpper();

@@ -344,10 +344,12 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 									  .ToArray();
 		var numberPreregistered = preregistered.Length;
 		if (numberPreregistered > 0
-		&&  MessageBox.Show($"The {(numberPreregistered is 1
-										? "player below is"
-										: $"{numberPreregistered} players below are")} preregistered for this round:{preregistered.Select(static tp => tp.Player)
-																																  .BulletList()}{NewLine}{NewLine}Cancel preregistration?",
+		&&  MessageBox.Show(preregistered.Select(static tp => tp.Player)
+										 .BulletList($"The {(numberPreregistered is 1
+																 ? "player below is"
+																 : $"{numberPreregistered} players below are")}" +
+													 " preregistered for this round") +
+							$"{NewLine}{NewLine}Cancel preregistration?",
 							"Confirm Preregistration Cancellation",
 							YesNo,
 							Warning) is DialogResult.No)
@@ -500,8 +502,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 		int seededGamesConflict;
 		long? elapsedMilliseconds;
-		using (var form = new WaitForm($"Seeding {"Game".Pluralize(totalSeededGameCount, true)}",
-									   () => Round.Seed(roundPlayers, SeedingAssignsPowersCheckBox.Checked)))
+		using (WaitForm form = new ($"Seeding {"Game".Pluralize(totalSeededGameCount, true)}",
+									() => Round.Seed(roundPlayers, SeedingAssignsPowersCheckBox.Checked)))
 		{
 			form.ShowDialog(this);
 			seededGamesConflict = form.Result;
@@ -594,7 +596,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			var template = Settings.AssignmentEmailTemplate
 								   .Replace("{TournamentName}", Tournament.Name)
 								   .Replace("{RoundNumber}", $"{Round}");
-			var messages = new List<MailMessage>();
+			List<MailMessage> messages = [];
 			foreach (var game in unstartedGames)
 			{
 				var assignments = """
@@ -629,7 +631,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			//	TODO: ...and take it down here?
 			var hasErrors = errors.Length is not 0;
 			MessageBox.Show(hasErrors
-								? $"Errors sending email:{errors.BulletList()}"
+								? errors.BulletList("Errors sending email")
 								: "Emails sent successfully.",
 							$"Assignment Email {(hasErrors ? "Error" : "Success")}",
 							OK,

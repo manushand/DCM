@@ -101,9 +101,9 @@ internal sealed partial class PlayerListForm : Form
 								 {
 									 var playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses.Any(email.Matches)).ToArray();
 									 return playersWithThisEmail.Length is not 0
-											&& MessageBox.Show($"The email address {email} is already being used by:{playersWithThisEmail.BulletList()}" +
-															   "Add another player with this same address?",
-															   "Confirm Duplicate Player Email", YesNo, Question) is DialogResult.No;
+										 && MessageBox.Show(playersWithThisEmail.BulletList($"The email address {email} is already being used by") +
+															"Add another player with this same address?",
+															"Confirm Duplicate Player Email", YesNo, Question) is DialogResult.No;
 								 })
 						 .Any(static x => x))
 				return;

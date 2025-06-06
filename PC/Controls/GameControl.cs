@@ -163,7 +163,9 @@ internal sealed partial class GameControl : UserControl
 																		 ? ScoringSystem.FormattedScore(player.Other, true)
 																		 : null;
 									});
-						 SetOtherScoreLabel(ScoringSystem.OtherScoreAlias);
+						 if (ScoringSystem.UsesOtherScore)
+							SetOtherScoreLabel(ScoringSystem.OtherScoreAlias);
+						 SetVisible(ScoringSystem.UsesOtherScore, [OtherScoreLabel, ..OtherTextBoxes]);
 					 });
 		if (ScoringSystem.UsesGameResult)
 			if (ScoringSystem.UsesCenterCount)

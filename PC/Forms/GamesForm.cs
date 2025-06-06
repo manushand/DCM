@@ -123,7 +123,7 @@ internal sealed partial class GamesForm : Form
 		if (Game.CalculateScores(out var errors))
 			GroupGamesForm.FillFinalScores(Game, ScoreLabels, TotalScoreLabel, ToolTip);
 		else
-			MessageBox.Show(errors.OfType<string>().BulletList(),
+			MessageBox.Show(errors.OfType<string>().BulletList("Error(s)"),
 							"Game in Error",
 							OK,
 							Warning);
@@ -169,7 +169,7 @@ internal sealed partial class GamesForm : Form
 			var label = ConflictLabels[gamePlayer.Power.AsInteger()];
 			label.Text = gamePlayer.Conflict
 								   .Points();
-			ToolTip.SetToolTip(label, $"{gamePlayer.Player}:{gamePlayer.ConflictDetails.BulletList()}");
+			ToolTip.SetToolTip(label, gamePlayer.ConflictDetails.BulletList($"{gamePlayer.Player}"));
 		}
 		TotalConflictsLabel.Text = totalConflict.Points();
 	}

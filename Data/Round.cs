@@ -97,7 +97,7 @@ public sealed class Round : IdentityRecord<Round>
 		//	doing it by score really does improve performance (by about a third).
 		//	Note that doing it this way should, I think, mean that the "best" games
 		//	(having players with the best scores) should be the lower-numbered games.
-		var gamePlayers = new List<GamePlayer>();
+		List<GamePlayer> gamePlayers = [];
 		using (var seedingPlayers = roundPlayers.OrderByDescending(roundPlayer => Tournament.ScoreConflict is 0
 																					  ? RandomNumber()
 																					  : PreRoundScore(roundPlayer.Player))

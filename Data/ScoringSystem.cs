@@ -354,7 +354,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 														text = $"new Func<double>(() => {{{text}}}).Invoke()";
 													return Create<double>($"return (double)({text});", Options, typeof (Scoring));
 												});
-				using var cancellationTokenSource = new CancellationTokenSource();
+				using CancellationTokenSource cancellationTokenSource = new ();
 				using var task = compiled.RunAsync(scoring, cancellationTokenSource.Token);
 				return task.Wait(ScriptTimeout)
 						   ? task.Result.ReturnValue

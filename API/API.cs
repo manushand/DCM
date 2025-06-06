@@ -105,7 +105,7 @@ internal static class API
 						   response.StatusCode = HttpStatusCode.InternalServerError.AsInteger();
 						   response.ContentType = "application/json";
 						   var handler = context.Features.Get<IExceptionHandlerPathFeature>();
-						   var error = new Error(handler?.Error ?? new Exception("Unknown error"));
+						   Error error = new (handler?.Error ?? new ("Unknown error"));
 						   await response.WriteAsync(Serialize(error));
 					   });
 	}
