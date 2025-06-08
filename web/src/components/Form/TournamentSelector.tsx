@@ -161,15 +161,15 @@ interface TournamentSelectorProps {
 }
 
 const TournamentSelector: React.FC<TournamentSelectorProps> = ({
-                                                                 game,
-                                                                 tournamentId,
-                                                                 tournamentName,
-                                                                 round,
-                                                                 board,
-                                                                 onTournamentChange,
-                                                                 onRoundChange,
-                                                                 onBoardChange,
-                                                               }) => {
+  game,
+  tournamentId,
+  tournamentName,
+  round,
+  board,
+  onTournamentChange,
+  onRoundChange,
+  onBoardChange,
+}) => {
   const {
     tournaments,
     selectedTournament,
@@ -184,12 +184,7 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
     fetchAvailableBoards,
     validateBoardSelection,
     setSelectedTournament,
-  } = useTournamentSelector(
-    game,
-    tournamentId,
-    round,
-    board
-  );
+  } = useTournamentSelector(game, tournamentId, round, board);
 
   useEffect(() => {
     fetchTournaments().then();

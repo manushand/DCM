@@ -1,4 +1,4 @@
-import { Game } from '../../models/Game';
+import { Game, GamePlayer } from '../../models/Game';
 
 export interface GameService {
   getAll(): Promise<Game[]>;
@@ -6,4 +6,5 @@ export interface GameService {
   create(game: Game): Promise<Game>;
   update(id: number, game: Partial<Game>): Promise<Game>;
   delete(id: number): Promise<void>;
+  calculateConflicts(gamePlayer: GamePlayer, game: Game): number;
 }

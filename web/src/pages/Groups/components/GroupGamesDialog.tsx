@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -18,6 +18,7 @@ import {
 import { Group } from '../../../models/Group';
 import { Game, GameStatus } from '../../../models/Game';
 import { groupService } from '../../../services';
+import Loading from "../../../components/Loading/Loading";
 
 interface GroupGamesDialogProps {
   open: boolean;
@@ -34,13 +35,7 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && group) {
-      fetchGames();
-    }
-  }, [open, group]);
-
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     if (!group) return;
 
     try {
@@ -54,7 +49,13 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setGames, setError, group]);
+
+  useEffect(() => {
+    if (open && group) {
+      fetchGames().then();
+    }
+  }, [open, group, fetchGames]);
 
   // Function to get color for status chip
   const getStatusColor = (status: GameStatus) => {
@@ -71,6 +72,10 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({
         return 'default';
     }
   };
+
+  if(loading) {
+    return <Loading text="Loading players..." error={error} />;
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>

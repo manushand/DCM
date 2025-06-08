@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   TextField,
   Dialog,
@@ -42,7 +42,7 @@ import {
 import { ScoringSystem } from '../../models/ScoringSystem';
 import { Player } from '../../models/Player';
 import { playerService } from '../../services';
-import {getPowerColor} from "../../utils/powerUtils";
+import { getPowerColor } from '../../utils';
 
 interface GameFormProps {
   open: boolean;
@@ -85,84 +85,16 @@ const GameForm: React.FC<GameFormProps> = ({
   const [totalScore, setTotalScore] = useState(0);
   const [activeGameControl, setActiveGameControl] = useState(false);
 
-  useEffect(() => {
-    // Fetch players when the form opens
-    if (open) {
-      fetchPlayers();
-      fetchScoringSystems();
-    }
-  }, [open]);
-
-  useEffect(() => {
-    // Reset form when game changes
-    if (game) {
-      setName(game.name);
-      setStatus(game.status || GameStatus.Scheduled);
-      setTournamentId(game.tournamentId);
-      setTournamentName(game.tournamentName);
-      setRound(game.round);
-      setBoard(game.board);
-
-      // Ensure players have complete properties
-      const completePlayers = (game.players || []).map((player) => ({
-        ...player,
-        playComplete: isPlayerComplete(player),
-        centers: player.centers || 0,
-        years: player.years || 0,
-        conflict: player.conflict || 0,
-        conflictDetails: player.conflictDetails || [],
-        score: player.score || 0,
-      }));
-      setPlayers(completePlayers);
-
-      // Set scoring system
-      setSelectedScoringSystem(game.scoringSystem || null);
-
-      // Calculate game control active state
-      updateGameControlState({
-        ...game,
-        players: completePlayers,
-        scoringSystem: game.scoringSystem,
-      });
-    } else {
-      setName('');
-      setStatus(GameStatus.Scheduled);
-      setTournamentId(undefined);
-      setTournamentName(undefined);
-      setRound(undefined);
-      setBoard(undefined);
-      setPlayers([]);
-      setSelectedScoringSystem(null);
-      setActiveGameControl(false);
-    }
-    setNameError('');
-    setSelectedPlayer(null);
-    setGameInError(false);
-  }, [game, open]);
-
-  // Effect to update conflicts when players change
-  useEffect(() => {
-    if (players.length > 0) {
-      calculateConflicts();
-    }
-  }, [players]);
-
-  // Effect to update total score when player scores change
-  useEffect(() => {
-    const total = players.reduce((sum, player) => sum + (player.score || 0), 0);
-    setTotalScore(Math.round(total * 100) / 100);
-  }, [players]);
-
-  const fetchPlayers = async () => {
+  const fetchPlayers = useCallback(async () => {
     try {
       const data = await playerService.getAll();
       setAvailablePlayers(data);
     } catch (err) {
       console.error('Failed to fetch players:', err);
     }
-  };
+  }, [setAvailablePlayers]);
 
-  const fetchScoringSystems = async () => {
+  const fetchScoringSystems = useCallback(async () => {
     try {
       const { scoringSystemService } = await import('../../services');
       const systems = await scoringSystemService.getAll();
@@ -176,22 +108,25 @@ const GameForm: React.FC<GameFormProps> = ({
     } catch (err) {
       console.error('Failed to fetch scoring systems:', err);
     }
-  };
+  }, [setScoringSystems, setSelectedScoringSystem, selectedScoringSystem]);
 
   // Check if a player has complete data
-  const isPlayerComplete = (player: GamePlayer): boolean => {
-    if (player.power === Powers.Unknown) return false;
-    if (player.result === GameResult.Unknown) return false;
+  const isPlayerComplete = useCallback(
+    (player: GamePlayer): boolean => {
+      if (player.power === Powers.Unknown) return false;
+      if (player.result === GameResult.Unknown) return false;
 
-    // For finished games, centers and years must be provided
-    if (status === GameStatus.Finished) {
-      if (player.centers === undefined || player.years === undefined) {
-        return false;
+      // For finished games, centers and years must be provided
+      if (status === GameStatus.Finished) {
+        if (player.centers === undefined || player.years === undefined) {
+          return false;
+        }
       }
-    }
 
-    return true;
-  };
+      return true;
+    },
+    [status]
+  );
 
   // Check if all powers are assigned in a game
   const allPowersAssigned = (game: Game): boolean => {
@@ -215,8 +150,8 @@ const GameForm: React.FC<GameFormProps> = ({
   };
 
   // Calculate conflicts for all players in the game
-  const calculateConflicts = () => {
-    const gameService = require('../../services/gameService').gameService;
+  const calculateConflicts = useCallback(() => {
+    const gameService = require('../../services').gameService;
 
     let totalConflictScore = 0;
     const updatedPlayers = [...players];
@@ -243,26 +178,21 @@ const GameForm: React.FC<GameFormProps> = ({
 
     setPlayers(updatedPlayers);
     setTotalConflicts(totalConflictScore);
-  };
-
-  // Update game control active state based on game state
-  const updateGameControlState = (gameToCheck: Game) => {
-    // Game control is active when:
-    // 1. Game status is Underway
-    // 2. All powers are assigned (no TBD)
-    const powersAssigned = allPowersAssigned(gameToCheck);
-    const active = gameToCheck.status === GameStatus.Underway && powersAssigned;
-    setActiveGameControl(active);
-
-    // Calculate scores if active and we have a scoring system
-    if (active && gameToCheck.scoringSystem) {
-      calculateScores(gameToCheck);
-    }
-  };
+  }, [
+    board,
+    game,
+    name,
+    players,
+    round,
+    status,
+    tournamentId,
+    tournamentName,
+    selectedScoringSystem,
+  ]);
 
   // Calculate scores for the game
-  const calculateScores = (gameToCheck: Game) => {
-    const gameService = require('../../services/gameService').gameService;
+  const calculateScores = useCallback((gameToCheck: Game) => {
+    const gameService = require('../../services').gameService;
 
     // Update player complete status
     const updatedPlayers =
@@ -288,7 +218,26 @@ const GameForm: React.FC<GameFormProps> = ({
         setGameInError(true);
       }
     }
-  };
+  }, [isPlayerComplete, setGameInError, setPlayers]);
+
+  // Update game control active state based on game state
+  const updateGameControlState = useCallback(
+    (gameToCheck: Game) => {
+      // Game control is active when:
+      // 1. Game status is Underway
+      // 2. All powers are assigned (no TBD)
+      const powersAssigned = allPowersAssigned(gameToCheck);
+      const active =
+        gameToCheck.status === GameStatus.Underway && powersAssigned;
+      setActiveGameControl(active);
+
+      // Calculate scores if active and we have a scoring system
+      if (active && gameToCheck.scoringSystem) {
+        calculateScores(gameToCheck);
+      }
+    },
+    [calculateScores]
+  );
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setName(e.target.value);
@@ -575,6 +524,98 @@ const GameForm: React.FC<GameFormProps> = ({
   const filteredPlayers = availablePlayers.filter(
     (player) => !players.some((p) => p.playerId === player.id)
   );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await fetchPlayers();
+        await fetchScoringSystems();
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    // Fetch players when the form opens
+    if (open) {
+      fetchData();
+    }
+  }, [open, fetchPlayers, fetchScoringSystems]);
+
+  useEffect(() => {
+    // Reset form when game changes
+    if (game) {
+      setName(game.name);
+      setStatus(game.status || GameStatus.Scheduled);
+      setTournamentId(game.tournamentId);
+      setTournamentName(game.tournamentName);
+      setRound(game.round);
+      setBoard(game.board);
+
+      // Ensure players have complete properties
+      const completePlayers = (game.players || []).map((player) => ({
+        ...player,
+        playComplete: isPlayerComplete(player),
+        centers: player.centers || 0,
+        years: player.years || 0,
+        conflict: player.conflict || 0,
+        conflictDetails: player.conflictDetails || [],
+        score: player.score || 0,
+      }));
+      setPlayers(completePlayers);
+
+      // Set scoring system
+      setSelectedScoringSystem(game.scoringSystem || null);
+
+      // Calculate game control active state
+      updateGameControlState({
+        ...game,
+        players: completePlayers,
+        scoringSystem: game.scoringSystem,
+      });
+    } else {
+      setName('');
+      setStatus(GameStatus.Scheduled);
+      setTournamentId(undefined);
+      setTournamentName(undefined);
+      setRound(undefined);
+      setBoard(undefined);
+      setPlayers([]);
+      setSelectedScoringSystem(null);
+      setActiveGameControl(false);
+    }
+    setNameError('');
+    setSelectedPlayer(null);
+    setGameInError(false);
+  }, [
+    game,
+    setName,
+    setStatus,
+    setTournamentId,
+    setTournamentName,
+    setRound,
+    setBoard,
+    setPlayers,
+    setSelectedScoringSystem,
+    setActiveGameControl,
+    setNameError,
+    setSelectedPlayer,
+    setGameInError,
+    isPlayerComplete,
+    open,
+    updateGameControlState,
+  ]);
+
+  // Effect to update conflicts when players change
+  useEffect(() => {
+    if (players.length > 0) {
+      calculateConflicts();
+    }
+  }, [calculateConflicts, players]);
+
+  // Effect to update total score when player scores change
+  useEffect(() => {
+    const total = players.reduce((sum, player) => sum + (player.score || 0), 0);
+    setTotalScore(Math.round(total * 100) / 100);
+  }, [players]);
 
   return (
     <FormDialog

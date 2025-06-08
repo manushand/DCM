@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -24,6 +24,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { Player } from '../../../models/Player';
 import { playerService } from '../../../services';
 import { PlayerConflict } from '../../../types/services/PlayerService';
+import Loading from "../../../components/Loading/Loading";
 
 interface PlayerConflictsDialogProps {
   open: boolean;
@@ -43,14 +44,7 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [conflictValue, setConflictValue] = useState<number>(0);
 
-  useEffect(() => {
-    if (open && player) {
-      fetchConflicts();
-      fetchPlayers();
-    }
-  }, [open, player]);
-
-  const fetchConflicts = async () => {
+  const fetchConflicts = useCallback(async () => {
     if (!player) return;
 
     try {
@@ -64,9 +58,9 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [player, setLoading, setConflicts, setError]);
 
-  const fetchPlayers = async () => {
+  const fetchPlayers = useCallback(async () => {
     try {
       const data = await playerService.getAll();
       // Filter out the current player and players that already have conflicts
@@ -78,7 +72,14 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({
     } catch (err) {
       console.error('Failed to fetch players:', err);
     }
-  };
+  }, [player, conflicts, setAvailablePlayers]);
+
+  useEffect(() => {
+    if (open && player) {
+      fetchConflicts().then();
+      fetchPlayers().then();
+    }
+  }, [open, player, fetchConflicts, fetchPlayers]);
 
   const handleAddConflict = async () => {
     if (!player || !selectedPlayer) return;
@@ -138,6 +139,10 @@ const PlayerConflictsDialog: React.FC<PlayerConflictsDialogProps> = ({
     }
     return p.name;
   };
+
+  if(loading) {
+    return <Loading text="Loading players..." error={error} />;
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>

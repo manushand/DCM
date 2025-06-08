@@ -5,6 +5,7 @@ import DataGrid from '../../components/DataGrid/DataGrid';
 import { Game, GameStatus } from '../../models/Game';
 import { gameService } from '../../services';
 import GameForm from './GameForm';
+import Loading from "../../components/Loading/Loading";
 
 const GamesPage: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
@@ -99,6 +100,10 @@ const GamesPage: React.FC = () => {
         value ? `${value.length} players` : '0 players',
     },
   ];
+
+  if(loading) {
+    return <Loading text="Loading players..." error={error} />;
+  }
 
   return (
     <div>

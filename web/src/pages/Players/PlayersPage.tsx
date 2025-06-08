@@ -1,11 +1,5 @@
-import React, {useState, useEffect, JSX, useCallback} from 'react';
-import {
-  Button,
-  Typography,
-  Box,
-  IconButton,
-  Tooltip,
-} from '@mui/material';
+import React, { useState, useEffect, JSX, useCallback } from 'react';
+import { Button, Typography, Box, IconButton, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import GroupsIcon from '@mui/icons-material/Groups';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
@@ -17,8 +11,8 @@ import PlayerForm from './PlayerForm';
 import PlayerConflictsDialog from './components/PlayerConflictsDialog';
 import PlayerGamesDialog from './components/PlayerGamesDialog';
 import PlayerGroupsDialog from './components/PlayerGroupsDialog';
-import {normalizePlayerName} from "../../utils/playerUtils";
-import Loading from "../../components/Loading/Loading";
+import { getPlayerName } from '../../utils/playerUtils';
+import Loading from '../../components/Loading/Loading';
 
 const PlayersPage: React.FC = () => {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -106,42 +100,42 @@ const PlayersPage: React.FC = () => {
   };
 
   const renderActions = (player: Player) => (
-      <Box>
-        <Tooltip title="Player Conflicts">
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenConflicts(player);
-            }}
-          >
-            <PeopleAltIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Player Games">
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenGames(player);
-            }}
-          >
-            <SportsEsportsIcon />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title="Player Groups">
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenGroups(player);
-            }}
-          >
-            <GroupsIcon />
-          </IconButton>
-        </Tooltip>
-      </Box>
-  )
+    <Box>
+      <Tooltip title="Player Conflicts">
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenConflicts(player);
+          }}
+        >
+          <PeopleAltIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Player Games">
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenGames(player);
+          }}
+        >
+          <SportsEsportsIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Player Groups">
+        <IconButton
+          size="small"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenGroups(player);
+          }}
+        >
+          <GroupsIcon />
+        </IconButton>
+      </Tooltip>
+    </Box>
+  );
 
   const columns = [
     { id: 'id', label: 'ID', minWidth: 50 },
@@ -170,14 +164,14 @@ const PlayersPage: React.FC = () => {
 
   const processedPlayers = players.map((player) => ({
     ...player,
-    name: normalizePlayerName(player),
+    name: getPlayerName(player),
     actions: renderActions(player),
   }));
 
   return (
     <div>
       {loading ? (
-        <Loading text="Loading players..." error={error}/>
+        <Loading text="Loading players..." error={error} />
       ) : error ? (
         <Box
           display="flex"
@@ -243,7 +237,7 @@ const PlayersPage: React.FC = () => {
             player={selectedPlayer}
           />
         </>
-        )}
+      )}
     </div>
   );
 };

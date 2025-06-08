@@ -1,7 +1,11 @@
 import { CrudService } from './crudService';
 import { ScoringSystem } from '../models/ScoringSystem';
+import { ScoringSystemService } from '../types/services/ScoringSystemService';
 
-export class ApiScoringSystemService extends CrudService<ScoringSystem> {
+export class ApiScoringSystemService
+  extends CrudService<ScoringSystem>
+  implements ScoringSystemService
+{
   constructor() {
     super('scoringSystem');
   }

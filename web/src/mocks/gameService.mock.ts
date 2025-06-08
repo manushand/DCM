@@ -1,5 +1,11 @@
 import type { GameService } from '../types/services/GameService';
-import { Game, GameResult, GameStatus, Powers } from '../models/Game';
+import {
+  Game,
+  GamePlayer,
+  GameResult,
+  GameStatus,
+  Powers,
+} from '../models/Game';
 
 export class MockGameService implements GameService {
   private games: Game[] = [
@@ -92,5 +98,9 @@ export class MockGameService implements GameService {
   validate(game: Game): Promise<boolean> {
     // Pretend all games are valid in the mock
     return Promise.resolve(true);
+  }
+
+  calculateConflicts(gamePlayer: GamePlayer, game: Game): number {
+    return 0; // No conflicts in the mock
   }
 }

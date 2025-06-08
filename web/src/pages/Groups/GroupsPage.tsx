@@ -21,6 +21,7 @@ import { Group } from '../../models/Group';
 import { groupService } from '../../services';
 import GroupForm from './GroupForm';
 import GroupGamesDialog from './components/GroupGamesDialog';
+import Loading from "../../components/Loading/Loading";
 
 const GroupsPage: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
@@ -165,6 +166,10 @@ const GroupsPage: React.FC = () => {
       ),
     },
   ];
+
+  if (loading) {
+    return <Loading text="Loading groups..." error={error} />;
+  }
 
   return (
     <div>

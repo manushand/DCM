@@ -3,9 +3,12 @@ import { Player } from '../models/Player';
 import { Game } from '../models/Game';
 import { Group } from '../models/Group';
 import api from './api';
-import { PlayerConflict } from '../types/services/PlayerService';
+import { PlayerConflict, PlayerService } from '../types/services/PlayerService';
 
-export class ApiPlayerService extends CrudService<Player> {
+export class ApiPlayerService
+  extends CrudService<Player>
+  implements PlayerService
+{
   constructor() {
     super('player');
   }

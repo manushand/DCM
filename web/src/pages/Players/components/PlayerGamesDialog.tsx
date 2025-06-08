@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -16,8 +16,14 @@ import {
   Chip,
 } from '@mui/material';
 import { Player } from '../../../models/Player';
-import { Game, GameStatus, Powers, GameResult } from '../../../models/Game';
+import { Game, Powers, GameResult } from '../../../models/Game';
 import { playerService } from '../../../services';
+import {
+  getPlayerName,
+  getPowerColor,
+  getResultColor,
+  getStatusColor,
+} from '../../../utils';
 
 interface PlayerGamesDialogProps {
   open: boolean;
@@ -34,13 +40,7 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && player) {
-      fetchGames();
-    }
-  }, [open, player]);
-
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     if (!player) return;
 
     try {
@@ -54,66 +54,13 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setGames, player, setError]);
 
-  const getPlayerName = (p: Player) => {
-    if (p.firstName && p.lastName) {
-      return `${p.firstName} ${p.lastName}`;
+  useEffect(() => {
+    if (open && player) {
+      fetchGames().then();
     }
-    return p.name;
-  };
-
-  // Function to get color for status chip
-  const getStatusColor = (status: GameStatus) => {
-    switch (status) {
-      case GameStatus.Scheduled:
-        return 'primary';
-      case GameStatus.Underway:
-        return 'warning';
-      case GameStatus.Finished:
-        return 'success';
-      case GameStatus.Cancelled:
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  // Function to get color for power
-  const getPowerColor = (power: Powers) => {
-    switch (power) {
-      case Powers.Austria:
-        return { color: 'white', backgroundColor: 'red' };
-      case Powers.England:
-        return { color: 'white', backgroundColor: 'royalblue' };
-      case Powers.France:
-        return { color: 'black', backgroundColor: 'skyblue' };
-      case Powers.Germany:
-        return { color: 'white', backgroundColor: 'black' };
-      case Powers.Italy:
-        return { color: 'black', backgroundColor: 'lime' };
-      case Powers.Russia:
-        return { color: 'black', backgroundColor: 'white' };
-      case Powers.Turkey:
-        return { color: 'black', backgroundColor: 'yellow' };
-      default:
-        return { color: 'inherit', backgroundColor: 'inherit' };
-    }
-  };
-
-  // Function to get color for result chip
-  const getResultColor = (result: GameResult) => {
-    switch (result) {
-      case GameResult.Win:
-        return 'success';
-      case GameResult.Draw:
-        return 'info';
-      case GameResult.Loss:
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
+  }, [open, player, fetchGames]);
 
   // Find player's power and result in a game
   const getPlayerGameInfo = (game: Game) => {

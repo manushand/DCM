@@ -1,5 +1,5 @@
 // types/services/TournamentService.ts
-import { Round, Tournament } from '../../models/Tournament';
+import { Tournament } from '../../models/Tournament';
 import { Game } from '../../models/Game';
 
 export interface RoundInfo {

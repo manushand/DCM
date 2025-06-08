@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -21,7 +21,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Player } from '../../../models/Player';
 import { Group } from '../../../models/Group';
 import { playerService } from '../../../services';
-import { normalizePlayerName } from '../../../utils/playerUtils';
+import { getPlayerName } from '../../../utils';
 
 interface PlayerGroupsDialogProps {
   open: boolean;
@@ -38,7 +38,7 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchGroups = async () => {
+  const fetchGroups = useCallback(async () => {
     if (!player) return;
 
     try {
@@ -52,7 +52,7 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, player, setGroups, setError]);
 
   useEffect(() => {
     if (open && player) {
@@ -63,7 +63,7 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
-        {player ? `Groups for ${normalizePlayerName(player)}` : 'Player Groups'}
+        {player ? `Groups for ${getPlayerName(player)}` : 'Player Groups'}
       </DialogTitle>
       <DialogContent dividers>
         {error && (

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import { Button, Typography, Box, Paper, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DataGrid from '../../components/DataGrid/DataGrid';
 import { Tournament } from '../../models/Tournament';
 import { tournamentService } from '../../services';
 import TournamentForm from './TournamentForm';
+import Loading from "../../components/Loading/Loading";
 
 const TournamentsPage: React.FC = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -14,7 +15,7 @@ const TournamentsPage: React.FC = () => {
   const [selectedTournament, setSelectedTournament] =
     useState<Tournament | null>(null);
 
-  const fetchTournaments = async () => {
+  const fetchTournaments = useCallback(async () => {
     try {
       setLoading(true);
       const data = await tournamentService.getAll();
@@ -26,11 +27,11 @@ const TournamentsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setTournaments, setError]);
 
   useEffect(() => {
-    fetchTournaments();
-  }, []);
+    fetchTournaments().then();
+  }, [fetchTournaments]);
 
   const handleAddTournament = () => {
     setSelectedTournament(null);
@@ -84,6 +85,10 @@ const TournamentsPage: React.FC = () => {
       format: (value: any[]) => (value ? `${value.length} rounds` : '0 rounds'),
     },
   ];
+
+  if (loading) {
+    return <Loading text="Loading tournaments..." error={error}/>;
+  }
 
   return (
     <div>

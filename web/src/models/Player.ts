@@ -6,7 +6,6 @@ export interface Player extends DetailedModel {
   emailAddresses?: string[];
   score?: number;
   rating?: number;
-  normalizeName(): string;
 }
 
 export interface PlayerDetails {

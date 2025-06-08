@@ -1,4 +1,4 @@
-import { Game } from '../models/Game';
+import { Game, GameResult, GameStatus, Powers } from '../models/Game';
 import { Group } from '../models/Group';
 import { Player } from '../models/Player';
 import type {
@@ -7,8 +7,86 @@ import type {
 } from '../types/services/PlayerService';
 
 export class MockPlayerService implements PlayerService {
+  private playerGames: Game[] = [
+    {
+      id: 1,
+      name: 'Game 1',
+      status: GameStatus.Scheduled,
+      tournamentId: 100,
+      tournamentName: 'Mock Tournament',
+      round: 1,
+      board: 1,
+      players: [
+        {
+          playerId: 1,
+          playerName: 'Alice',
+          power: Powers.England,
+          result: GameResult.Unknown,
+          playComplete: false,
+        },
+        {
+          playerId: 2,
+          playerName: 'Bob',
+          power: Powers.France,
+          result: GameResult.Unknown,
+          playComplete: false,
+        },
+      ],
+      scoringSystemId: 1,
+      scoringSystemIsDefault: true,
+    },
+    {
+      id: 2,
+      name: 'Game 2',
+      status: GameStatus.Underway,
+      tournamentId: 100,
+      tournamentName: 'Mock Tournament',
+      round: 1,
+      board: 2,
+      players: [
+        {
+          playerId: 1,
+          playerName: 'Alice',
+          power: Powers.England,
+          result: GameResult.Unknown,
+          playComplete: false,
+        },
+        {
+          playerId: 2,
+          playerName: 'Bob',
+          power: Powers.France,
+          result: GameResult.Unknown,
+          playComplete: false,
+        },
+      ],
+      scoringSystemId: 1,
+      scoringSystemIsDefault: true,
+    },
+  ];
+  private players: Player[] = [
+    {
+      id: 1,
+      name: 'Alice Smith',
+      firstName: 'Alice',
+      lastName: 'Smith',
+      emailAddresses: ['asmith@example.com'],
+      rating: 1500,
+    },
+    {
+      id: 2,
+      name: 'Bob Smith',
+      firstName: 'Bob',
+      lastName: 'Smith',
+      emailAddresses: ['bsmith@example.com'],
+      rating: 1450,
+    },
+  ];
+
   getPlayerGames(id: number): Promise<Game[]> {
-    throw new Error('Method not implemented.');
+    const games = this.playerGames.filter((game) =>
+      game.players?.some((p) => p.playerId === id)
+    );
+    return Promise.resolve(games);
   }
   getPlayerGroups(id: number): Promise<Group[]> {
     throw new Error('Method not implemented.');
@@ -23,11 +101,6 @@ export class MockPlayerService implements PlayerService {
   ): Promise<PlayerConflict> {
     throw new Error('Method not implemented.');
   }
-
-  private players: Player[] = [
-    { id: 1, name: 'Alice', rating: 1500 },
-    { id: 2, name: 'Bob', rating: 1450 },
-  ];
 
   getAll(): Promise<Player[]> {
     return Promise.resolve(this.players);

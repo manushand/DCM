@@ -14,7 +14,6 @@ export interface PlayerService {
   create(player: Player): Promise<Player>;
   update(id: number, player: Partial<Player>): Promise<Player>;
   delete(id: number): Promise<void>;
-  normalizeName(player: Player): Promise<string>;
   getPlayerGames(id: number): Promise<Game[]>;
   getPlayerGroups(id: number): Promise<Group[]>;
   getPlayerConflicts(id: number): Promise<PlayerConflict[]>;

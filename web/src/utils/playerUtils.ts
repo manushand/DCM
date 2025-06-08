@@ -1,7 +1,7 @@
 import { Player } from '../models/Player';
 import { GroupMember } from '../models/Group';
 
-export const normalizePlayerName = (p: Player | GroupMember) => {
+export const getPlayerName = (p: Player | GroupMember) => {
   if ('firstName' in p && p.firstName && p.lastName) {
     return `${p.firstName} ${p.lastName}`;
   }
