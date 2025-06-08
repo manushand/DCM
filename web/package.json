@@ -28,13 +28,16 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest",
-      "prettier"
+      "prettier",
+      "plugin:storybook/recommended"
     ]
   },
   "browserslist": {
@@ -50,8 +53,16 @@
     ]
   },
   "devDependencies": {
+    "@storybook/addon-docs": "^9.0.6",
+    "@storybook/addon-onboarding": "^9.0.6",
+    "@storybook/preset-create-react-app": "^9.0.6",
+    "@storybook/react-webpack5": "^9.0.6",
     "@testing-library/user-event": "^14.6.1",
     "eslint-config-prettier": "^10.1.5",
-    "prettier": "^3.5.3"
+    "eslint-plugin-storybook": "^9.0.6",
+    "prettier": "^3.5.3",
+    "prop-types": "^15.8.1",
+    "storybook": "^9.0.6",
+    "webpack": "^5.99.9"
   }
 }

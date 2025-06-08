@@ -23,12 +23,30 @@ interface RoundInfo {
   availableBoards: number[];
 }
 
-const useTournamentSelector = (
-  game: Game | null,
-  tournamentId: number | undefined,
-  round: number | undefined,
-  board: number | undefined
-) => {
+interface TournamentSelectorProps {
+  game: Game | null;
+  tournamentId: number | undefined;
+  tournamentName: string | undefined;
+  round: number | undefined;
+  board: number | undefined;
+  onTournamentChange: (
+    tournamentId: number | undefined,
+    tournamentName: string | undefined
+  ) => void;
+  onRoundChange: (round: number | undefined) => void;
+  onBoardChange: (board: number | undefined) => void;
+}
+
+const TournamentSelector: React.FC<TournamentSelectorProps> = ({
+  game,
+  tournamentId,
+  tournamentName,
+  round,
+  board,
+  onTournamentChange,
+  onRoundChange,
+  onBoardChange,
+}) => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] =
     useState<Tournament | null>(null);
@@ -108,7 +126,7 @@ const useTournamentSelector = (
   );
 
   const fetchTournamentDetails = useCallback(
-    async (id: number) => {
+    async (id: number, roundForFetch?: number) => {
       try {
         setLoading(true);
         setError(null);
@@ -116,8 +134,8 @@ const useTournamentSelector = (
         const roundsInfo = await tournamentService.getRounds(id);
         setRounds(roundsInfo);
 
-        if (round !== undefined) {
-          fetchAvailableBoards(id, round);
+        if (roundForFetch !== undefined) {
+          await fetchAvailableBoards(id, roundForFetch);
         }
       } catch (err) {
         console.error('Failed to fetch tournament details:', err);
@@ -126,65 +144,8 @@ const useTournamentSelector = (
         setLoading(false);
       }
     },
-    [round, fetchAvailableBoards]
+    [fetchAvailableBoards]
   );
-
-  return {
-    tournaments,
-    selectedTournament,
-    rounds,
-    availableBoards,
-    loading,
-    error,
-    validationMessage,
-    validationSeverity,
-    fetchTournaments,
-    fetchTournamentDetails,
-    fetchAvailableBoards,
-    validateBoardSelection,
-    setSelectedTournament,
-  };
-};
-
-interface TournamentSelectorProps {
-  game: Game | null;
-  tournamentId: number | undefined;
-  tournamentName: string | undefined;
-  round: number | undefined;
-  board: number | undefined;
-  onTournamentChange: (
-    tournamentId: number | undefined,
-    tournamentName: string | undefined
-  ) => void;
-  onRoundChange: (round: number | undefined) => void;
-  onBoardChange: (board: number | undefined) => void;
-}
-
-const TournamentSelector: React.FC<TournamentSelectorProps> = ({
-  game,
-  tournamentId,
-  tournamentName,
-  round,
-  board,
-  onTournamentChange,
-  onRoundChange,
-  onBoardChange,
-}) => {
-  const {
-    tournaments,
-    selectedTournament,
-    rounds,
-    availableBoards,
-    loading,
-    error,
-    validationMessage,
-    validationSeverity,
-    fetchTournaments,
-    fetchTournamentDetails,
-    fetchAvailableBoards,
-    validateBoardSelection,
-    setSelectedTournament,
-  } = useTournamentSelector(game, tournamentId, round, board);
 
   useEffect(() => {
     fetchTournaments().then();
@@ -192,15 +153,13 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
 
   useEffect(() => {
     if (tournamentId) {
-      fetchTournamentDetails(tournamentId).then();
+      fetchTournamentDetails(tournamentId, round).then();
     }
-  }, [tournamentId, fetchTournamentDetails]);
+  }, [tournamentId, round, fetchTournamentDetails]);
 
   useEffect(() => {
-    if (tournamentId && round !== undefined) {
-      fetchAvailableBoards(tournamentId, round).then();
-    }
-  }, [tournamentId, round, fetchAvailableBoards]);
+    setAvailableBoards([]);
+  }, [tournamentId, round]);
 
   useEffect(() => {
     if (tournamentId && round !== undefined && board !== undefined) {
@@ -215,7 +174,7 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
       onTournamentChange(tournament.id, tournament.name);
       onRoundChange(undefined);
       onBoardChange(undefined);
-      fetchTournamentDetails(tournament.id).then();
+      fetchTournamentDetails(tournament.id, round !== undefined ? round : undefined).then();
     } else {
       onTournamentChange(undefined, undefined);
       onRoundChange(undefined);
