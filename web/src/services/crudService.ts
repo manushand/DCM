@@ -2,7 +2,7 @@ import api from './api';
 import { BaseModel } from '../models/BaseModel';
 
 export class CrudService<T extends BaseModel> {
-  private endpoint: string;
+  protected endpoint: string;
 
   constructor(endpoint: string) {
     this.endpoint = endpoint;
@@ -18,21 +18,25 @@ export class CrudService<T extends BaseModel> {
     return response.data;
   }
 
-  async create(item: Omit<T, 'id'>): Promise<void> {
-    await api.post(this.endpoint, item);
+  async create(item: Omit<T, 'id'>): Promise<T> {
+    const response = await api.post(this.endpoint, item);
+    return response.data;
   }
 
-  async update(id: number, item: T): Promise<void> {
-    await api.put(`${this.endpoint}/${id}`, item);
+  async update(id: number, item: T): Promise<T> {
+    const response = await api.put(`${this.endpoint}/${id}`, item);
+    return response.data;
   }
 
   async delete(id: number): Promise<void> {
     await api.delete(`${this.endpoint}/${id}`);
   }
-  
+
   // Add a generic method to get related items
   async getRelated<R>(id: number, relatedEndpoint: string): Promise<R[]> {
-    const response = await api.get<R[]>(`${this.endpoint}/${id}/${relatedEndpoint}`);
+    const response = await api.get<R[]>(
+      `${this.endpoint}/${id}/${relatedEndpoint}`
+    );
     return response.data;
   }
 }

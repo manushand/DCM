@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,11 +13,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip
+  Chip,
 } from '@mui/material';
 import { Group } from '../../../models/Group';
-import { Game, GameStatus, Powers, GameResult } from '../../../models/Game';
-import { groupService } from '../../../services/groupService';
+import { Game, GameStatus } from '../../../models/Game';
+import { groupService } from '../../../services';
+import Loading from "../../../components/Loading/Loading";
 
 interface GroupGamesDialogProps {
   open: boolean;
@@ -25,18 +26,16 @@ interface GroupGamesDialogProps {
   group: Group | null;
 }
 
-const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, group }) => {
+const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({
+  open,
+  onClose,
+  group,
+}) => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && group) {
-      fetchGames();
-    }
-  }, [open, group]);
-
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     if (!group) return;
 
     try {
@@ -50,16 +49,22 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, grou
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setGames, setError, group]);
+
+  useEffect(() => {
+    if (open && group) {
+      fetchGames().then();
+    }
+  }, [open, group, fetchGames]);
 
   // Function to get color for status chip
   const getStatusColor = (status: GameStatus) => {
     switch (status) {
       case GameStatus.Scheduled:
         return 'primary';
-      case GameStatus.InProgress:
+      case GameStatus.Underway:
         return 'warning';
-      case GameStatus.Completed:
+      case GameStatus.Finished:
         return 'success';
       case GameStatus.Cancelled:
         return 'error';
@@ -68,6 +73,10 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, grou
     }
   };
 
+  if(loading) {
+    return <Loading text="Loading players..." error={error} />;
+  }
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle>
@@ -75,7 +84,14 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, grou
       </DialogTitle>
       <DialogContent dividers>
         {error && (
-          <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          <Paper
+            sx={{
+              p: 2,
+              mb: 2,
+              bgcolor: 'error.light',
+              color: 'error.contrastText',
+            }}
+          >
             <Typography>{error}</Typography>
           </Paper>
         )}
@@ -83,7 +99,9 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, grou
         {loading ? (
           <Typography>Loading games...</Typography>
         ) : games.length === 0 ? (
-          <Typography color="textSecondary">No games found for this group</Typography>
+          <Typography color="textSecondary">
+            No games found for this group
+          </Typography>
         ) : (
           <TableContainer component={Paper}>
             <Table>
@@ -112,7 +130,9 @@ const GroupGamesDialog: React.FC<GroupGamesDialogProps> = ({ open, onClose, grou
                       />
                     </TableCell>
                     <TableCell>
-                      {game.players ? `${game.players.length} players` : '0 players'}
+                      {game.players
+                        ? `${game.players.length} players`
+                        : '0 players'}
                     </TableCell>
                   </TableRow>
                 ))}

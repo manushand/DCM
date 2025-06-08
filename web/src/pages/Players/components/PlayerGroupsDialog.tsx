@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -15,12 +15,13 @@ import {
   AccordionSummary,
   AccordionDetails,
   Box,
-  Chip
+  Chip,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { Player } from '../../../models/Player';
-import { Group, GroupMember } from '../../../models/Group';
-import { playerService } from '../../../services/playerService';
+import { Group } from '../../../models/Group';
+import { playerService } from '../../../services';
+import { getPlayerName } from '../../../utils';
 
 interface PlayerGroupsDialogProps {
   open: boolean;
@@ -28,18 +29,16 @@ interface PlayerGroupsDialogProps {
   player: Player | null;
 }
 
-const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, player }) => {
+const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({
+  open,
+  onClose,
+  player,
+}) => {
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && player) {
-      fetchGroups();
-    }
-  }, [open, player]);
-
-  const fetchGroups = async () => {
+  const fetchGroups = useCallback(async () => {
     if (!player) return;
 
     try {
@@ -53,14 +52,13 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, player, setGroups, setError]);
 
-  const getPlayerName = (p: Player | GroupMember) => {
-    if ('firstName' in p && p.firstName && p.lastName) {
-      return `${p.firstName} ${p.lastName}`;
+  useEffect(() => {
+    if (open && player) {
+      fetchGroups();
     }
-    return p.name || p.playerName;
-  };
+  }, [open, player, fetchGroups]);
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -69,7 +67,14 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
       </DialogTitle>
       <DialogContent dividers>
         {error && (
-          <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          <Paper
+            sx={{
+              p: 2,
+              mb: 2,
+              bgcolor: 'error.light',
+              color: 'error.contrastText',
+            }}
+          >
             <Typography>{error}</Typography>
           </Paper>
         )}
@@ -77,11 +82,14 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
         {loading ? (
           <Typography>Loading groups...</Typography>
         ) : groups.length === 0 ? (
-          <Typography color="textSecondary">No groups found for this player</Typography>
+          <Typography color="textSecondary">
+            No groups found for this player
+          </Typography>
         ) : (
           <div>
             <Typography variant="h6" gutterBottom>
-              {player?.firstName} {player?.lastName} is a member of {groups.length} group{groups.length !== 1 ? 's' : ''}
+              {player?.firstName} {player?.lastName} is a member of{' '}
+              {groups.length} group{groups.length !== 1 ? 's' : ''}
             </Typography>
 
             {groups.map((group) => (
@@ -90,7 +98,9 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
                   <Typography variant="subtitle1">{group.name}</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  <Typography variant="subtitle2" gutterBottom>Members:</Typography>
+                  <Typography variant="subtitle2" gutterBottom>
+                    Members:
+                  </Typography>
                   {group.members && group.members.length > 0 ? (
                     <List>
                       {group.members.map((member) => (
@@ -99,9 +109,9 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
                             <ListItemText
                               primary={member.playerName}
                               secondary={
-                                member.rating !== undefined ?
-                                `Rating: ${member.rating}` :
-                                'No rating'
+                                member.rating !== undefined
+                                  ? `Rating: ${member.rating}`
+                                  : 'No rating'
                               }
                             />
                             {member.playerId === player?.id && (
@@ -119,7 +129,9 @@ const PlayerGroupsDialog: React.FC<PlayerGroupsDialogProps> = ({ open, onClose, 
                       ))}
                     </List>
                   ) : (
-                    <Typography color="textSecondary">No members in this group</Typography>
+                    <Typography color="textSecondary">
+                      No members in this group
+                    </Typography>
                   )}
                 </AccordionDetails>
               </Accordion>

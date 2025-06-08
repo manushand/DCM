@@ -3,14 +3,12 @@ import { Player } from '../models/Player';
 import { Game } from '../models/Game';
 import { Group } from '../models/Group';
 import api from './api';
+import { PlayerConflict, PlayerService } from '../types/services/PlayerService';
 
-// Interface for player conflict
-export interface PlayerConflict {
-  player: Player;
-  value: number;
-}
-
-class PlayerService extends CrudService<Player> {
+export class ApiPlayerService
+  extends CrudService<Player>
+  implements PlayerService
+{
   constructor() {
     super('player');
   }
@@ -34,10 +32,15 @@ class PlayerService extends CrudService<Player> {
   }
 
   // Get or update a player conflict
-  async updatePlayerConflict(id: number, playerId: number, value?: number): Promise<PlayerConflict> {
-    const response = await api.patch<PlayerConflict>(`player/${id}/conflict/${playerId}`, { value });
+  async updatePlayerConflict(
+    id: number,
+    playerId: number,
+    value?: number
+  ): Promise<PlayerConflict> {
+    const response = await api.patch<PlayerConflict>(
+      `player/${id}/conflict/${playerId}`,
+      { value }
+    );
     return response.data;
   }
 }
-
-export const playerService = new PlayerService();

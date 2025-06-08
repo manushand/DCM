@@ -6,7 +6,16 @@ export interface Round {
   games?: Game[];
 }
 
+export enum TournamentStatus {
+  Unknown = 'Unknown',
+  Scheduled = 'Scheduled',
+  Cancelled = 'Cancelled',
+  Underway = 'Underway', // Changed to match WinForms
+  Finished = 'Finished', // Changed to match WinForms
+}
+
 export interface Tournament extends DetailedModel {
+  status: TournamentStatus;
   rounds?: Round[];
   isEvent?: boolean;
 }

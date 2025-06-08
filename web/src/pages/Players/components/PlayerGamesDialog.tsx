@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -13,11 +13,17 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip
+  Chip,
 } from '@mui/material';
 import { Player } from '../../../models/Player';
-import { Game, GameStatus, Powers, GameResult } from '../../../models/Game';
-import { playerService } from '../../../services/playerService';
+import { Game, Powers, GameResult } from '../../../models/Game';
+import { playerService } from '../../../services';
+import {
+  getPlayerName,
+  getPowerColor,
+  getResultColor,
+  getStatusColor,
+} from '../../../utils';
 
 interface PlayerGamesDialogProps {
   open: boolean;
@@ -25,18 +31,16 @@ interface PlayerGamesDialogProps {
   player: Player | null;
 }
 
-const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({ open, onClose, player }) => {
+const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({
+  open,
+  onClose,
+  player,
+}) => {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (open && player) {
-      fetchGames();
-    }
-  }, [open, player]);
-
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     if (!player) return;
 
     try {
@@ -50,76 +54,24 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({ open, onClose, pl
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setGames, player, setError]);
 
-  const getPlayerName = (p: Player) => {
-    if (p.firstName && p.lastName) {
-      return `${p.firstName} ${p.lastName}`;
+  useEffect(() => {
+    if (open && player) {
+      fetchGames().then();
     }
-    return p.name;
-  };
-
-  // Function to get color for status chip
-  const getStatusColor = (status: GameStatus) => {
-    switch (status) {
-      case GameStatus.Scheduled:
-        return 'primary';
-      case GameStatus.InProgress:
-        return 'warning';
-      case GameStatus.Completed:
-        return 'success';
-      case GameStatus.Cancelled:
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
-
-  // Function to get color for power
-  const getPowerColor = (power: Powers) => {
-    switch (power) {
-      case Powers.Austria:
-        return { color: 'white', backgroundColor: 'red' };
-      case Powers.England:
-        return { color: 'white', backgroundColor: 'royalblue' };
-      case Powers.France:
-        return { color: 'black', backgroundColor: 'skyblue' };
-      case Powers.Germany:
-        return { color: 'white', backgroundColor: 'black' };
-      case Powers.Italy:
-        return { color: 'black', backgroundColor: 'lime' };
-      case Powers.Russia:
-        return { color: 'black', backgroundColor: 'white' };
-      case Powers.Turkey:
-        return { color: 'black', backgroundColor: 'yellow' };
-      default:
-        return { color: 'inherit', backgroundColor: 'inherit' };
-    }
-  };
-
-  // Function to get color for result chip
-  const getResultColor = (result: GameResult) => {
-    switch (result) {
-      case GameResult.Win:
-        return 'success';
-      case GameResult.Draw:
-        return 'info';
-      case GameResult.Loss:
-        return 'error';
-      default:
-        return 'default';
-    }
-  };
+  }, [open, player, fetchGames]);
 
   // Find player's power and result in a game
   const getPlayerGameInfo = (game: Game) => {
-    if (!player || !game.players) return { power: Powers.TBD, result: GameResult.Unknown };
+    if (!player || !game.players)
+      return { power: Powers.Unknown, result: GameResult.Unknown };
 
-    const gamePlayer = game.players.find(p => p.playerId === player.id);
+    const gamePlayer = game.players.find((p) => p.playerId === player.id);
     return {
-      power: gamePlayer?.power || Powers.TBD,
+      power: gamePlayer?.power || Powers.Unknown,
       result: gamePlayer?.result || GameResult.Unknown,
-      score: gamePlayer?.score
+      score: gamePlayer?.score,
     };
   };
 
@@ -130,7 +82,14 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({ open, onClose, pl
       </DialogTitle>
       <DialogContent dividers>
         {error && (
-          <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+          <Paper
+            sx={{
+              p: 2,
+              mb: 2,
+              bgcolor: 'error.light',
+              color: 'error.contrastText',
+            }}
+          >
             <Typography>{error}</Typography>
           </Paper>
         )}
@@ -138,7 +97,9 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({ open, onClose, pl
         {loading ? (
           <Typography>Loading games...</Typography>
         ) : games.length === 0 ? (
-          <Typography color="textSecondary">No games found for this player</Typography>
+          <Typography color="textSecondary">
+            No games found for this player
+          </Typography>
         ) : (
           <TableContainer component={Paper}>
             <Table>
@@ -161,8 +122,12 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({ open, onClose, pl
                     <TableRow key={game.id}>
                       <TableCell>{game.name}</TableCell>
                       <TableCell>{game.tournamentName || 'N/A'}</TableCell>
-                      <TableCell align="center">{game.round || 'N/A'}</TableCell>
-                      <TableCell align="center">{game.board || 'N/A'}</TableCell>
+                      <TableCell align="center">
+                        {game.round || 'N/A'}
+                      </TableCell>
+                      <TableCell align="center">
+                        {game.board || 'N/A'}
+                      </TableCell>
                       <TableCell>
                         <Chip
                           label={game.status}
@@ -184,7 +149,9 @@ const PlayerGamesDialog: React.FC<PlayerGamesDialogProps> = ({ open, onClose, pl
                           size="small"
                         />
                       </TableCell>
-                      <TableCell>{score !== undefined ? score.toFixed(2) : 'N/A'}</TableCell>
+                      <TableCell>
+                        {score !== undefined ? score.toFixed(2) : 'N/A'}
+                      </TableCell>
                     </TableRow>
                   );
                 })}

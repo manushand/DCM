@@ -1,19 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import { Button, Typography, Box, Paper, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DataGrid from '../../components/DataGrid/DataGrid';
 import { Tournament } from '../../models/Tournament';
-import { tournamentService } from '../../services/tournamentService';
+import { tournamentService } from '../../services';
 import TournamentForm from './TournamentForm';
+import Loading from "../../components/Loading/Loading";
 
 const TournamentsPage: React.FC = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openForm, setOpenForm] = useState(false);
-  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  const [selectedTournament, setSelectedTournament] =
+    useState<Tournament | null>(null);
 
-  const fetchTournaments = async () => {
+  const fetchTournaments = useCallback(async () => {
     try {
       setLoading(true);
       const data = await tournamentService.getAll();
@@ -25,11 +27,11 @@ const TournamentsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [setLoading, setTournaments, setError]);
 
   useEffect(() => {
-    fetchTournaments();
-  }, []);
+    fetchTournaments().then();
+  }, [fetchTournaments]);
 
   const handleAddTournament = () => {
     setSelectedTournament(null);
@@ -53,7 +55,7 @@ const TournamentsPage: React.FC = () => {
       } else {
         await tournamentService.create(tournament);
       }
-      fetchTournaments();
+      await fetchTournaments();
       setOpenForm(false);
     } catch (err) {
       console.error('Failed to save tournament:', err);
@@ -74,19 +76,28 @@ const TournamentsPage: React.FC = () => {
           color={value ? 'primary' : 'default'}
           size="small"
         />
-      )
+      ),
     },
     {
       id: 'rounds',
       label: 'Rounds',
       minWidth: 100,
-      format: (value: any[]) => value ? `${value.length} rounds` : '0 rounds'
-    }
+      format: (value: any[]) => (value ? `${value.length} rounds` : '0 rounds'),
+    },
   ];
+
+  if (loading) {
+    return <Loading text="Loading tournaments..." error={error}/>;
+  }
 
   return (
     <div>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4">Tournaments</Typography>
         <Button
           variant="contained"
@@ -99,7 +110,14 @@ const TournamentsPage: React.FC = () => {
       </Box>
 
       {error && (
-        <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+        <Paper
+          sx={{
+            p: 2,
+            mb: 2,
+            bgcolor: 'error.light',
+            color: 'error.contrastText',
+          }}
+        >
           <Typography>{error}</Typography>
         </Paper>
       )}

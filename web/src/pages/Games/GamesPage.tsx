@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Button, Typography, Box, Paper, Chip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DataGrid from '../../components/DataGrid/DataGrid';
-import { Game, GameStatus, Powers } from '../../models/Game';
-import { gameService } from '../../services/gameService';
+import { Game, GameStatus } from '../../models/Game';
+import { gameService } from '../../services';
 import GameForm from './GameForm';
+import Loading from "../../components/Loading/Loading";
 
 const GamesPage: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
@@ -66,9 +67,9 @@ const GamesPage: React.FC = () => {
     switch (status) {
       case GameStatus.Scheduled:
         return 'primary';
-      case GameStatus.InProgress:
+      case GameStatus.Underway:
         return 'warning';
-      case GameStatus.Completed:
+      case GameStatus.Finished:
         return 'success';
       case GameStatus.Cancelled:
         return 'error';
@@ -85,12 +86,8 @@ const GamesPage: React.FC = () => {
       label: 'Status',
       minWidth: 120,
       format: (value: GameStatus) => (
-        <Chip
-          label={value}
-          color={getStatusColor(value)}
-          size="small"
-        />
-      )
+        <Chip label={value} color={getStatusColor(value)} size="small" />
+      ),
     },
     { id: 'tournamentName', label: 'Tournament', minWidth: 150 },
     { id: 'round', label: 'Round', minWidth: 80, align: 'center' as const },
@@ -99,13 +96,23 @@ const GamesPage: React.FC = () => {
       id: 'players',
       label: 'Players',
       minWidth: 100,
-      format: (value: any[]) => value ? `${value.length} players` : '0 players'
-    }
+      format: (value: any[]) =>
+        value ? `${value.length} players` : '0 players',
+    },
   ];
+
+  if(loading) {
+    return <Loading text="Loading players..." error={error} />;
+  }
 
   return (
     <div>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={2}
+      >
         <Typography variant="h4">Games</Typography>
         <Button
           variant="contained"
@@ -118,16 +125,19 @@ const GamesPage: React.FC = () => {
       </Box>
 
       {error && (
-        <Paper sx={{ p: 2, mb: 2, bgcolor: 'error.light', color: 'error.contrastText' }}>
+        <Paper
+          sx={{
+            p: 2,
+            mb: 2,
+            bgcolor: 'error.light',
+            color: 'error.contrastText',
+          }}
+        >
           <Typography>{error}</Typography>
         </Paper>
       )}
 
-      <DataGrid
-        columns={columns}
-        rows={games}
-        onRowClick={handleEditGame}
-      />
+      <DataGrid columns={columns} rows={games} onRowClick={handleEditGame} />
 
       <GameForm
         open={openForm}

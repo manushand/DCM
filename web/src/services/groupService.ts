@@ -3,7 +3,7 @@ import { Group } from '../models/Group';
 import { Game } from '../models/Game';
 import api from './api';
 
-class GroupService extends CrudService<Group> {
+export class ApiGroupService extends CrudService<Group> {
   constructor() {
     super('group');
   }
@@ -14,5 +14,3 @@ class GroupService extends CrudService<Group> {
     return response.data;
   }
 }
-
-export const groupService = new GroupService();

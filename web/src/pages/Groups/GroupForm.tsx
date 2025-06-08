@@ -9,13 +9,13 @@ import {
   IconButton,
   Autocomplete,
   Divider,
-  Typography
+  Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormDialog from '../../components/Form/FormDialog';
 import { Group, GroupMember } from '../../models/Group';
 import { Player } from '../../models/Player';
-import { playerService } from '../../services/playerService';
+import { playerService } from '../../services';
 
 interface GroupFormProps {
   open: boolean;
@@ -24,7 +24,12 @@ interface GroupFormProps {
   group: Group | null;
 }
 
-const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group }) => {
+const GroupForm: React.FC<GroupFormProps> = ({
+  open,
+  onClose,
+  onSubmit,
+  group,
+}) => {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [members, setMembers] = useState<GroupMember[]>([]);
@@ -77,10 +82,13 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
   };
 
   const handleAddMember = () => {
-    if (selectedPlayer && !members.some(m => m.playerId === selectedPlayer.id)) {
+    if (
+      selectedPlayer &&
+      !members.some((m) => m.playerId === selectedPlayer.id)
+    ) {
       const newMember: GroupMember = {
         playerId: selectedPlayer.id,
-        playerName: getPlayerName(selectedPlayer)
+        playerName: getPlayerName(selectedPlayer),
       };
       setMembers([...members, newMember]);
       setSelectedPlayer(null);
@@ -88,7 +96,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
   };
 
   const handleRemoveMember = (playerId: number) => {
-    setMembers(members.filter(m => m.playerId !== playerId));
+    setMembers(members.filter((m) => m.playerId !== playerId));
   };
 
   const handleSubmit = () => {
@@ -100,7 +108,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
     const updatedGroup: Group = {
       id: group?.id || 0,
       name,
-      members: members.length > 0 ? members : undefined
+      members: members.length > 0 ? members : undefined,
     };
 
     onSubmit(updatedGroup);
@@ -108,7 +116,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
 
   // Filter out players that are already members
   const availablePlayers = players.filter(
-    player => !members.some(member => member.playerId === player.id)
+    (player) => !members.some((member) => member.playerId === player.id)
   );
 
   return (
@@ -120,7 +128,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
       disableSubmit={!name}
     >
       <Grid container spacing={3}>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <TextField
             required
             fullWidth
@@ -131,10 +139,10 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
             helperText={nameError}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Typography variant="subtitle1">Add Members</Typography>
           <Grid container spacing={2}>
-            <Grid item xs={9}>
+            <Grid size={9}>
               <Autocomplete
                 options={availablePlayers}
                 getOptionLabel={getPlayerName}
@@ -145,7 +153,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
                 )}
               />
             </Grid>
-            <Grid item xs={3}>
+            <Grid size={3}>
               <IconButton
                 color="primary"
                 onClick={handleAddMember}
@@ -157,7 +165,7 @@ const GroupForm: React.FC<GroupFormProps> = ({ open, onClose, onSubmit, group })
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Divider sx={{ my: 2 }} />
           <Typography variant="subtitle1">Members</Typography>
           {members.length === 0 ? (

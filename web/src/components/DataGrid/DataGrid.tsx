@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { JSX } from 'react';
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   Paper,
   TablePagination,
   Box,
-  Typography
+  Typography,
 } from '@mui/material';
 
 interface Column {
@@ -17,7 +17,7 @@ interface Column {
   label: string;
   minWidth?: number;
   align?: 'right' | 'left' | 'center';
-  format?: (value: any) => string;
+  format?: (value: any) => string | JSX.Element;
 }
 
 interface DataGridProps {
@@ -27,7 +27,12 @@ interface DataGridProps {
   onRowClick?: (row: any) => void;
 }
 
-const DataGrid: React.FC<DataGridProps> = ({ columns, rows, title, onRowClick }) => {
+const DataGrid: React.FC<DataGridProps> = ({
+  columns,
+  rows,
+  title,
+  onRowClick,
+}) => {
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
@@ -35,7 +40,9 @@ const DataGrid: React.FC<DataGridProps> = ({ columns, rows, title, onRowClick })
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };

@@ -1,15 +1,19 @@
 import { CrudService } from './crudService';
-import { ScoringSystem } from '../models/Game';
+import { ScoringSystem } from '../models/ScoringSystem';
+import { ScoringSystemService } from '../types/services/ScoringSystemService';
 
-class ScoringSystemService extends CrudService<ScoringSystem> {
+export class ApiScoringSystemService
+  extends CrudService<ScoringSystem>
+  implements ScoringSystemService
+{
   constructor() {
     super('scoringSystem');
   }
-  
+
   async getDefault(): Promise<ScoringSystem> {
     const response = await this.getAll();
-    const defaultSystem = response.find(system => system.isDefault);
-    
+    const defaultSystem = response.find((system) => system.isDefault);
+
     if (!defaultSystem) {
       // Return a reasonable default if no default is found
       return {
@@ -22,13 +26,10 @@ class ScoringSystemService extends CrudService<ScoringSystem> {
         survivorValue: 1,
         soloValue: 100,
         centerValue: 1,
-        yearValue: 0.1
+        yearValue: 0.1,
       };
     }
-    
+
     return defaultSystem;
   }
 }
-
-export const scoringSystemService = new ScoringSystemService();
-

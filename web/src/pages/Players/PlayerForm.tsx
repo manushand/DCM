@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Grid, Chip, InputAdornment, IconButton } from '@mui/material';
+import {
+  TextField,
+  Grid,
+  Chip,
+  InputAdornment,
+  IconButton,
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import FormDialog from '../../components/Form/FormDialog';
 import { Player } from '../../models/Player';
@@ -11,7 +17,12 @@ interface PlayerFormProps {
   player: Player | null;
 }
 
-const PlayerForm: React.FC<PlayerFormProps> = ({ open, onClose, onSubmit, player }) => {
+const PlayerForm: React.FC<PlayerFormProps> = ({
+  open,
+  onClose,
+  onSubmit,
+  player,
+}) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -77,7 +88,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ open, onClose, onSubmit, player
   };
 
   const handleDeleteEmail = (emailToDelete: string) => {
-    setEmails(emails.filter(e => e !== emailToDelete));
+    setEmails(emails.filter((e) => e !== emailToDelete));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -106,7 +117,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ open, onClose, onSubmit, player
       name: `${firstName} ${lastName}`, // Keep name for backward compatibility
       firstName,
       lastName,
-      emailAddresses: emails.length > 0 ? emails : undefined
+      emailAddresses: emails.length > 0 ? emails : undefined,
     };
 
     onSubmit(updatedPlayer);
@@ -121,7 +132,12 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ open, onClose, onSubmit, player
       disableSubmit={!firstName || !lastName}
     >
       <Grid container spacing={3}>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+          }}
+        >
           <TextField
             required
             fullWidth
@@ -132,7 +148,12 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ open, onClose, onSubmit, player
             helperText={firstNameError}
           />
         </Grid>
-        <Grid item xs={12} sm={6}>
+        <Grid
+          size={{
+            xs: 12,
+            sm: 6,
+          }}
+        >
           <TextField
             required
             fullWidth
@@ -143,7 +164,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ open, onClose, onSubmit, player
             helperText={lastNameError}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <TextField
             fullWidth
             label="Email"
@@ -151,13 +172,17 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ open, onClose, onSubmit, player
             onChange={handleEmailChange}
             onKeyPress={handleKeyPress}
             error={email !== '' && !isValidEmail(email)}
-            helperText={email !== '' && !isValidEmail(email) ? 'Invalid email format' : ''}
+            helperText={
+              email !== '' && !isValidEmail(email) ? 'Invalid email format' : ''
+            }
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
                     onClick={handleAddEmail}
-                    disabled={!email || !isValidEmail(email) || emails.includes(email)}
+                    disabled={
+                      !email || !isValidEmail(email) || emails.includes(email)
+                    }
                   >
                     <AddIcon />
                   </IconButton>
@@ -166,7 +191,7 @@ const PlayerForm: React.FC<PlayerFormProps> = ({ open, onClose, onSubmit, player
             }}
           />
         </Grid>
-        <Grid item xs={12}>
+        <Grid size={12}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {emails.map((email, index) => (
               <Chip
