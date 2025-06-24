@@ -365,8 +365,7 @@ internal static class PC
 	{
 		//	Some of this may seem like overkill, but it seems it is safest to do all of this
 		dataGridView.ClearSelection();
-		if (dataGridView.CurrentRow is not null)
-			dataGridView.CurrentRow.Selected = false;
+		dataGridView.CurrentRow?.Selected = false;
 		dataGridView.CurrentCell = null;
 	}
 

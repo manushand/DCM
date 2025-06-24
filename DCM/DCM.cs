@@ -82,7 +82,7 @@ public static partial class DCM
 			   ? null
 			   : @this.AsInteger();
 
-	public static int AsInteger(this bool @this)
+	public static int AsInteger(this object @this)
 		=> ToInt32(@this);
 
 	public static int AsInteger(this string @this)
@@ -102,7 +102,7 @@ public static partial class DCM
 
 	public static string Points<T>(this T @this)
 		where T : INumber<T>
-		=> $"{"pt".Pluralize(ToInt32(@this), true)}.";
+		=> $"{"pt".Pluralize(@this.AsInteger(), true)}.";
 
 	public static bool NotEquals(this double @this,
 								 double other)

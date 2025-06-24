@@ -257,6 +257,7 @@ internal sealed partial class MainForm : Form
 											   return;
 										   AccessToolStripMenuItem.Checked = false;
 										   SqlServerToolStripMenuItem.Checked = true;
+										   Event = Tournament.None;
 									   });
 
 	private void DatabaseOpenToolStripMenuItem_Click(object sender,

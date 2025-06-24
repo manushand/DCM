@@ -245,9 +245,8 @@ internal sealed partial class GameControl : UserControl
 	{
 		var resultComboBox = (ComboBox)sender;
 		resultComboBox.UpdateShadowLabel();
-		if (GamePlayers is not null)
-			GamePlayers[PowerOffsetFor(resultComboBox)].Result = resultComboBox.SelectedIndex
-																			   .As<Results>();
+		GamePlayers?[PowerOffsetFor(resultComboBox)].Result = resultComboBox.SelectedIndex
+																			.As<Results>();
 		if (SkippingHandlers)
 			return;
 		++UpdateDepth;
@@ -348,10 +347,9 @@ internal sealed partial class GameControl : UserControl
 	{
 		var centersComboBox = (ComboBox)sender;
 		centersComboBox.UpdateShadowLabel();
-		if (GamePlayers is not null)
-			GamePlayers[PowerOffsetFor(centersComboBox)].Centers = centersComboBox.SelectedItem is null
-																	   ? null
-																	   : centersComboBox.SelectedIndex;
+		GamePlayers?[PowerOffsetFor(centersComboBox)].Centers = centersComboBox.SelectedItem is null
+																	? null
+																	: centersComboBox.SelectedIndex;
 		if (SkippingHandlers || centersComboBox.SelectedItem is null)
 			return;
 		++UpdateDepth;
@@ -432,10 +430,9 @@ internal sealed partial class GameControl : UserControl
 	{
 		var yearsComboBox = (ComboBox)sender;
 		yearsComboBox.UpdateShadowLabel();
-		if (GamePlayers is not null)
-			GamePlayers[PowerOffsetFor(yearsComboBox)].Years = yearsComboBox.SelectedIndex is -1
-																   ? null
-																   : yearsComboBox.SelectedIndex + 1;
+		GamePlayers?[PowerOffsetFor(yearsComboBox)].Years = yearsComboBox.SelectedIndex is -1
+																? null
+																: yearsComboBox.SelectedIndex + 1;
 		++UpdateDepth;
 		var resultComboBox = ResultBoxFor(yearsComboBox);
 		var centersComboBox = CentersBoxFor(yearsComboBox);
@@ -831,8 +828,7 @@ internal sealed partial class GameControl : UserControl
 			textBox.Text = $"{textBox.Text}"[..(textBox.TextLength - 1)];
 			return;
 		}
-		if (GamePlayers is not null)
-			GamePlayers[OtherTextBoxes.IndexOf(textBox)].Other = other;
+		GamePlayers?[OtherTextBoxes.IndexOf(textBox)].Other = other;
 	}
 
 	internal delegate void Callback(bool state);

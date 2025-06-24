@@ -121,7 +121,7 @@ public static partial class Data
 								 if (record is not IdInfoRecord idInfoRecord)
 									 continue;
 								 command.CommandText = _selectIdentitySql;
-								 idInfoRecord.Id = (int)command.ExecuteScalar().OrThrow();
+								 idInfoRecord.Id = command.ExecuteScalar().OrThrow().AsInteger();
 							 }
 						 });
 		Cache.AddRange(records);
@@ -330,7 +330,7 @@ public static partial class Data
 
 	internal static decimal Decimal(this IDataRecord record,
 									string columnName)
-		=> (decimal)record.GetDouble(record.GetOrdinal(columnName));
+		=> record.GetDecimal(record.GetOrdinal(columnName));
 
 	internal static int Integer(this IDataRecord record,
 								string columnName)
