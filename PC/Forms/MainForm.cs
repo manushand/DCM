@@ -85,7 +85,7 @@ internal sealed partial class MainForm : Form
 									: createdRounds == tournament.TotalRounds
 										? "Rounds"
 										: $"Rounds and{NewLine}Registration";
-			MiddleButton.Enabled = createdRounds is not 0;
+			MiddleButton.Enabled = true;
 			RightButton.Text = "Scores";
 			RightButton.Enabled = tournament.Games //	This could be .FinishedGames but it wastes time doing .ToList()
 											.Any(static game => game.Status is Finished);

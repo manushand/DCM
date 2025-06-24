@@ -28,315 +28,335 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-			System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-			this.StartFirstRoundButton = new System.Windows.Forms.Button();
-			this.OrderByNamePanel = new System.Windows.Forms.Panel();
-			this.LastNameRegistrationTabRadioButton = new System.Windows.Forms.RadioButton();
-			this.FirstNameRegistrationTabRadioButton = new System.Windows.Forms.RadioButton();
-			this.OrderByNameLabel = new System.Windows.Forms.Label();
-			this.RegisteredPlayersLabel = new System.Windows.Forms.Label();
-			this.UnregisteredPlayersLabel = new System.Windows.Forms.Label();
-			this.RoundsRegisteredGroupBox = new System.Windows.Forms.GroupBox();
-			this.Round9RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.Round8RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.Round7RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.Round6RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.Round5RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.Round4RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.Round3RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.Round2RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.Round1RegistrationCheckBox = new System.Windows.Forms.CheckBox();
-			this.RegisteredDataGridView = new System.Windows.Forms.DataGridView();
-			this.RegisterPlayerButton = new System.Windows.Forms.Button();
-			this.UnregisteredListBox = new System.Windows.Forms.ListBox();
-			this.NewPlayerButton = new System.Windows.Forms.Button();
-			this.OrderByNamePanel.SuspendLayout();
-			this.RoundsRegisteredGroupBox.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.RegisteredDataGridView)).BeginInit();
-			this.SuspendLayout();
+			DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+			DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+			StartFirstRoundButton = new Button();
+			OrderByNamePanel = new Panel();
+			LastNameRegistrationTabRadioButton = new RadioButton();
+			FirstNameRegistrationTabRadioButton = new RadioButton();
+			OrderByNameLabel = new Label();
+			RegisteredPlayersLabel = new Label();
+			UnregisteredPlayersLabel = new Label();
+			RoundsRegisteredGroupBox = new GroupBox();
+			Round9RegistrationCheckBox = new CheckBox();
+			Round8RegistrationCheckBox = new CheckBox();
+			Round7RegistrationCheckBox = new CheckBox();
+			Round6RegistrationCheckBox = new CheckBox();
+			Round5RegistrationCheckBox = new CheckBox();
+			Round4RegistrationCheckBox = new CheckBox();
+			Round3RegistrationCheckBox = new CheckBox();
+			Round2RegistrationCheckBox = new CheckBox();
+			Round1RegistrationCheckBox = new CheckBox();
+			RegisteredDataGridView = new DataGridView();
+			RegisterPlayerButton = new Button();
+			UnregisteredListBox = new ListBox();
+			NewPlayerButton = new Button();
+			OrderByNamePanel.SuspendLayout();
+			RoundsRegisteredGroupBox.SuspendLayout();
+			((ISupportInitialize)RegisteredDataGridView).BeginInit();
+			SuspendLayout();
 			// 
 			// StartFirstRoundButton
 			// 
-			this.StartFirstRoundButton.BackColor = System.Drawing.Color.LightGreen;
-			this.StartFirstRoundButton.Location = new System.Drawing.Point(723, 2);
-			this.StartFirstRoundButton.Name = "StartFirstRoundButton";
-			this.StartFirstRoundButton.Size = new System.Drawing.Size(61, 52);
-			this.StartFirstRoundButton.TabIndex = 67;
-			this.StartFirstRoundButton.Text = "  Start   ▶\r\n  First   ▶\r\nRound ▶";
-			this.StartFirstRoundButton.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-			this.StartFirstRoundButton.UseVisualStyleBackColor = false;
-			this.StartFirstRoundButton.Click += new System.EventHandler(this.StartFirstRoundButton_Click);
+			StartFirstRoundButton.BackColor = Color.LightGreen;
+			StartFirstRoundButton.Location = new Point(844, 2);
+			StartFirstRoundButton.Margin = new Padding(4, 3, 4, 3);
+			StartFirstRoundButton.Name = "StartFirstRoundButton";
+			StartFirstRoundButton.Size = new Size(71, 60);
+			StartFirstRoundButton.TabIndex = 67;
+			StartFirstRoundButton.Text = "  Start   ▶\r\n  First   ▶\r\nRound ▶";
+			StartFirstRoundButton.TextAlign = ContentAlignment.MiddleRight;
+			StartFirstRoundButton.UseVisualStyleBackColor = false;
+			StartFirstRoundButton.Click += StartFirstRoundButton_Click;
 			// 
 			// OrderByNamePanel
 			// 
-			this.OrderByNamePanel.Controls.Add(this.LastNameRegistrationTabRadioButton);
-			this.OrderByNamePanel.Controls.Add(this.FirstNameRegistrationTabRadioButton);
-			this.OrderByNamePanel.Controls.Add(this.OrderByNameLabel);
-			this.OrderByNamePanel.Location = new System.Drawing.Point(194, 152);
-			this.OrderByNamePanel.Name = "OrderByNamePanel";
-			this.OrderByNamePanel.Size = new System.Drawing.Size(243, 30);
-			this.OrderByNamePanel.TabIndex = 66;
+			OrderByNamePanel.Controls.Add(LastNameRegistrationTabRadioButton);
+			OrderByNamePanel.Controls.Add(FirstNameRegistrationTabRadioButton);
+			OrderByNamePanel.Controls.Add(OrderByNameLabel);
+			OrderByNamePanel.Location = new Point(226, 175);
+			OrderByNamePanel.Margin = new Padding(4, 3, 4, 3);
+			OrderByNamePanel.Name = "OrderByNamePanel";
+			OrderByNamePanel.Size = new Size(284, 35);
+			OrderByNamePanel.TabIndex = 66;
 			// 
 			// LastNameRegistrationTabRadioButton
 			// 
-			this.LastNameRegistrationTabRadioButton.AutoSize = true;
-			this.LastNameRegistrationTabRadioButton.Location = new System.Drawing.Point(166, 6);
-			this.LastNameRegistrationTabRadioButton.Name = "LastNameRegistrationTabRadioButton";
-			this.LastNameRegistrationTabRadioButton.Size = new System.Drawing.Size(76, 17);
-			this.LastNameRegistrationTabRadioButton.TabIndex = 17;
-			this.LastNameRegistrationTabRadioButton.TabStop = true;
-			this.LastNameRegistrationTabRadioButton.Text = "Last Name";
-			this.LastNameRegistrationTabRadioButton.UseVisualStyleBackColor = true;
-			this.LastNameRegistrationTabRadioButton.CheckedChanged += new System.EventHandler(this.NameRegistrationTabRadioButton_CheckedChanged);
+			LastNameRegistrationTabRadioButton.AutoSize = true;
+			LastNameRegistrationTabRadioButton.Location = new Point(194, 7);
+			LastNameRegistrationTabRadioButton.Margin = new Padding(4, 3, 4, 3);
+			LastNameRegistrationTabRadioButton.Name = "LastNameRegistrationTabRadioButton";
+			LastNameRegistrationTabRadioButton.Size = new Size(81, 19);
+			LastNameRegistrationTabRadioButton.TabIndex = 17;
+			LastNameRegistrationTabRadioButton.TabStop = true;
+			LastNameRegistrationTabRadioButton.Text = "Last Name";
+			LastNameRegistrationTabRadioButton.UseVisualStyleBackColor = true;
+			LastNameRegistrationTabRadioButton.CheckedChanged += NameRegistrationTabRadioButton_CheckedChanged;
 			// 
 			// FirstNameRegistrationTabRadioButton
 			// 
-			this.FirstNameRegistrationTabRadioButton.AutoSize = true;
-			this.FirstNameRegistrationTabRadioButton.Location = new System.Drawing.Point(93, 6);
-			this.FirstNameRegistrationTabRadioButton.Name = "FirstNameRegistrationTabRadioButton";
-			this.FirstNameRegistrationTabRadioButton.Size = new System.Drawing.Size(75, 17);
-			this.FirstNameRegistrationTabRadioButton.TabIndex = 16;
-			this.FirstNameRegistrationTabRadioButton.TabStop = true;
-			this.FirstNameRegistrationTabRadioButton.Text = "First Name";
-			this.FirstNameRegistrationTabRadioButton.UseVisualStyleBackColor = true;
-			this.FirstNameRegistrationTabRadioButton.CheckedChanged += new System.EventHandler(this.NameRegistrationTabRadioButton_CheckedChanged);
+			FirstNameRegistrationTabRadioButton.AutoSize = true;
+			FirstNameRegistrationTabRadioButton.Location = new Point(108, 7);
+			FirstNameRegistrationTabRadioButton.Margin = new Padding(4, 3, 4, 3);
+			FirstNameRegistrationTabRadioButton.Name = "FirstNameRegistrationTabRadioButton";
+			FirstNameRegistrationTabRadioButton.Size = new Size(82, 19);
+			FirstNameRegistrationTabRadioButton.TabIndex = 16;
+			FirstNameRegistrationTabRadioButton.TabStop = true;
+			FirstNameRegistrationTabRadioButton.Text = "First Name";
+			FirstNameRegistrationTabRadioButton.UseVisualStyleBackColor = true;
+			FirstNameRegistrationTabRadioButton.CheckedChanged += NameRegistrationTabRadioButton_CheckedChanged;
 			// 
 			// OrderByNameLabel
 			// 
-			this.OrderByNameLabel.AutoSize = true;
-			this.OrderByNameLabel.Location = new System.Drawing.Point(1, 7);
-			this.OrderByNameLabel.Name = "OrderByNameLabel";
-			this.OrderByNameLabel.Size = new System.Drawing.Size(88, 13);
-			this.OrderByNameLabel.TabIndex = 15;
-			this.OrderByNameLabel.Text = "Order Players By:";
+			OrderByNameLabel.AutoSize = true;
+			OrderByNameLabel.Location = new Point(1, 8);
+			OrderByNameLabel.Margin = new Padding(4, 0, 4, 0);
+			OrderByNameLabel.Name = "OrderByNameLabel";
+			OrderByNameLabel.Size = new Size(96, 15);
+			OrderByNameLabel.TabIndex = 15;
+			OrderByNameLabel.Text = "Order Players By:";
 			// 
 			// RegisteredPlayersLabel
 			// 
-			this.RegisteredPlayersLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.RegisteredPlayersLabel.Location = new System.Drawing.Point(443, 6);
-			this.RegisteredPlayersLabel.Name = "RegisteredPlayersLabel";
-			this.RegisteredPlayersLabel.Size = new System.Drawing.Size(273, 18);
-			this.RegisteredPlayersLabel.TabIndex = 65;
-			this.RegisteredPlayersLabel.Text = "Registered Players";
-			this.RegisteredPlayersLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+			RegisteredPlayersLabel.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			RegisteredPlayersLabel.Location = new Point(517, 7);
+			RegisteredPlayersLabel.Margin = new Padding(4, 0, 4, 0);
+			RegisteredPlayersLabel.Name = "RegisteredPlayersLabel";
+			RegisteredPlayersLabel.Size = new Size(318, 21);
+			RegisteredPlayersLabel.TabIndex = 65;
+			RegisteredPlayersLabel.Text = "Registered Players";
+			RegisteredPlayersLabel.TextAlign = ContentAlignment.TopCenter;
 			// 
 			// UnregisteredPlayersLabel
 			// 
-			this.UnregisteredPlayersLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.UnregisteredPlayersLabel.Location = new System.Drawing.Point(6, 6);
-			this.UnregisteredPlayersLabel.Name = "UnregisteredPlayersLabel";
-			this.UnregisteredPlayersLabel.Size = new System.Drawing.Size(179, 18);
-			this.UnregisteredPlayersLabel.TabIndex = 64;
-			this.UnregisteredPlayersLabel.Text = "Unregistered Players";
-			this.UnregisteredPlayersLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+			UnregisteredPlayersLabel.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+			UnregisteredPlayersLabel.Location = new Point(7, 7);
+			UnregisteredPlayersLabel.Margin = new Padding(4, 0, 4, 0);
+			UnregisteredPlayersLabel.Name = "UnregisteredPlayersLabel";
+			UnregisteredPlayersLabel.Size = new Size(209, 21);
+			UnregisteredPlayersLabel.TabIndex = 64;
+			UnregisteredPlayersLabel.Text = "Unregistered Players";
+			UnregisteredPlayersLabel.TextAlign = ContentAlignment.TopCenter;
 			// 
 			// RoundsRegisteredGroupBox
 			// 
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round9RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round8RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round7RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round6RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round5RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round4RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round3RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round2RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Controls.Add(this.Round1RegistrationCheckBox);
-			this.RoundsRegisteredGroupBox.Location = new System.Drawing.Point(194, 274);
-			this.RoundsRegisteredGroupBox.Name = "RoundsRegisteredGroupBox";
-			this.RoundsRegisteredGroupBox.Size = new System.Drawing.Size(243, 101);
-			this.RoundsRegisteredGroupBox.TabIndex = 63;
-			this.RoundsRegisteredGroupBox.TabStop = false;
-			this.RoundsRegisteredGroupBox.Text = "Player Name";
+			RoundsRegisteredGroupBox.Controls.Add(Round9RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Controls.Add(Round8RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Controls.Add(Round7RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Controls.Add(Round6RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Controls.Add(Round5RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Controls.Add(Round4RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Controls.Add(Round3RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Controls.Add(Round2RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Controls.Add(Round1RegistrationCheckBox);
+			RoundsRegisteredGroupBox.Location = new Point(226, 316);
+			RoundsRegisteredGroupBox.Margin = new Padding(4, 3, 4, 3);
+			RoundsRegisteredGroupBox.Name = "RoundsRegisteredGroupBox";
+			RoundsRegisteredGroupBox.Padding = new Padding(4, 3, 4, 3);
+			RoundsRegisteredGroupBox.Size = new Size(284, 117);
+			RoundsRegisteredGroupBox.TabIndex = 63;
+			RoundsRegisteredGroupBox.TabStop = false;
+			RoundsRegisteredGroupBox.Text = "Player Name";
 			// 
 			// Round9RegistrationCheckBox
 			// 
-			this.Round9RegistrationCheckBox.AutoSize = true;
-			this.Round9RegistrationCheckBox.Location = new System.Drawing.Point(166, 71);
-			this.Round9RegistrationCheckBox.Name = "Round9RegistrationCheckBox";
-			this.Round9RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round9RegistrationCheckBox.TabIndex = 8;
-			this.Round9RegistrationCheckBox.Text = "Round 9";
-			this.Round9RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round9RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round9RegistrationCheckBox.AutoSize = true;
+			Round9RegistrationCheckBox.Location = new Point(194, 82);
+			Round9RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round9RegistrationCheckBox.Name = "Round9RegistrationCheckBox";
+			Round9RegistrationCheckBox.Size = new Size(70, 19);
+			Round9RegistrationCheckBox.TabIndex = 8;
+			Round9RegistrationCheckBox.Text = "Round 9";
+			Round9RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round9RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// Round8RegistrationCheckBox
 			// 
-			this.Round8RegistrationCheckBox.AutoSize = true;
-			this.Round8RegistrationCheckBox.Location = new System.Drawing.Point(92, 71);
-			this.Round8RegistrationCheckBox.Name = "Round8RegistrationCheckBox";
-			this.Round8RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round8RegistrationCheckBox.TabIndex = 7;
-			this.Round8RegistrationCheckBox.Text = "Round 8";
-			this.Round8RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round8RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round8RegistrationCheckBox.AutoSize = true;
+			Round8RegistrationCheckBox.Location = new Point(107, 82);
+			Round8RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round8RegistrationCheckBox.Name = "Round8RegistrationCheckBox";
+			Round8RegistrationCheckBox.Size = new Size(70, 19);
+			Round8RegistrationCheckBox.TabIndex = 7;
+			Round8RegistrationCheckBox.Text = "Round 8";
+			Round8RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round8RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// Round7RegistrationCheckBox
 			// 
-			this.Round7RegistrationCheckBox.AutoSize = true;
-			this.Round7RegistrationCheckBox.Location = new System.Drawing.Point(18, 71);
-			this.Round7RegistrationCheckBox.Name = "Round7RegistrationCheckBox";
-			this.Round7RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round7RegistrationCheckBox.TabIndex = 6;
-			this.Round7RegistrationCheckBox.Text = "Round 7";
-			this.Round7RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round7RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round7RegistrationCheckBox.AutoSize = true;
+			Round7RegistrationCheckBox.Location = new Point(21, 82);
+			Round7RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round7RegistrationCheckBox.Name = "Round7RegistrationCheckBox";
+			Round7RegistrationCheckBox.Size = new Size(70, 19);
+			Round7RegistrationCheckBox.TabIndex = 6;
+			Round7RegistrationCheckBox.Text = "Round 7";
+			Round7RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round7RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// Round6RegistrationCheckBox
 			// 
-			this.Round6RegistrationCheckBox.AutoSize = true;
-			this.Round6RegistrationCheckBox.Location = new System.Drawing.Point(166, 47);
-			this.Round6RegistrationCheckBox.Name = "Round6RegistrationCheckBox";
-			this.Round6RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round6RegistrationCheckBox.TabIndex = 5;
-			this.Round6RegistrationCheckBox.Text = "Round 6";
-			this.Round6RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round6RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round6RegistrationCheckBox.AutoSize = true;
+			Round6RegistrationCheckBox.Location = new Point(194, 54);
+			Round6RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round6RegistrationCheckBox.Name = "Round6RegistrationCheckBox";
+			Round6RegistrationCheckBox.Size = new Size(70, 19);
+			Round6RegistrationCheckBox.TabIndex = 5;
+			Round6RegistrationCheckBox.Text = "Round 6";
+			Round6RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round6RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// Round5RegistrationCheckBox
 			// 
-			this.Round5RegistrationCheckBox.AutoSize = true;
-			this.Round5RegistrationCheckBox.Location = new System.Drawing.Point(92, 47);
-			this.Round5RegistrationCheckBox.Name = "Round5RegistrationCheckBox";
-			this.Round5RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round5RegistrationCheckBox.TabIndex = 4;
-			this.Round5RegistrationCheckBox.Text = "Round 5";
-			this.Round5RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round5RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round5RegistrationCheckBox.AutoSize = true;
+			Round5RegistrationCheckBox.Location = new Point(107, 54);
+			Round5RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round5RegistrationCheckBox.Name = "Round5RegistrationCheckBox";
+			Round5RegistrationCheckBox.Size = new Size(70, 19);
+			Round5RegistrationCheckBox.TabIndex = 4;
+			Round5RegistrationCheckBox.Text = "Round 5";
+			Round5RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round5RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// Round4RegistrationCheckBox
 			// 
-			this.Round4RegistrationCheckBox.AutoSize = true;
-			this.Round4RegistrationCheckBox.Location = new System.Drawing.Point(18, 47);
-			this.Round4RegistrationCheckBox.Name = "Round4RegistrationCheckBox";
-			this.Round4RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round4RegistrationCheckBox.TabIndex = 3;
-			this.Round4RegistrationCheckBox.Text = "Round 4";
-			this.Round4RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round4RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round4RegistrationCheckBox.AutoSize = true;
+			Round4RegistrationCheckBox.Location = new Point(21, 54);
+			Round4RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round4RegistrationCheckBox.Name = "Round4RegistrationCheckBox";
+			Round4RegistrationCheckBox.Size = new Size(70, 19);
+			Round4RegistrationCheckBox.TabIndex = 3;
+			Round4RegistrationCheckBox.Text = "Round 4";
+			Round4RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round4RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// Round3RegistrationCheckBox
 			// 
-			this.Round3RegistrationCheckBox.AutoSize = true;
-			this.Round3RegistrationCheckBox.Location = new System.Drawing.Point(166, 23);
-			this.Round3RegistrationCheckBox.Name = "Round3RegistrationCheckBox";
-			this.Round3RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round3RegistrationCheckBox.TabIndex = 2;
-			this.Round3RegistrationCheckBox.Text = "Round 3";
-			this.Round3RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round3RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round3RegistrationCheckBox.AutoSize = true;
+			Round3RegistrationCheckBox.Location = new Point(194, 27);
+			Round3RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round3RegistrationCheckBox.Name = "Round3RegistrationCheckBox";
+			Round3RegistrationCheckBox.Size = new Size(70, 19);
+			Round3RegistrationCheckBox.TabIndex = 2;
+			Round3RegistrationCheckBox.Text = "Round 3";
+			Round3RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round3RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// Round2RegistrationCheckBox
 			// 
-			this.Round2RegistrationCheckBox.AutoSize = true;
-			this.Round2RegistrationCheckBox.Location = new System.Drawing.Point(92, 23);
-			this.Round2RegistrationCheckBox.Name = "Round2RegistrationCheckBox";
-			this.Round2RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round2RegistrationCheckBox.TabIndex = 1;
-			this.Round2RegistrationCheckBox.Text = "Round 2";
-			this.Round2RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round2RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round2RegistrationCheckBox.AutoSize = true;
+			Round2RegistrationCheckBox.Location = new Point(107, 27);
+			Round2RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round2RegistrationCheckBox.Name = "Round2RegistrationCheckBox";
+			Round2RegistrationCheckBox.Size = new Size(70, 19);
+			Round2RegistrationCheckBox.TabIndex = 1;
+			Round2RegistrationCheckBox.Text = "Round 2";
+			Round2RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round2RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// Round1RegistrationCheckBox
 			// 
-			this.Round1RegistrationCheckBox.AutoSize = true;
-			this.Round1RegistrationCheckBox.Location = new System.Drawing.Point(18, 23);
-			this.Round1RegistrationCheckBox.Name = "Round1RegistrationCheckBox";
-			this.Round1RegistrationCheckBox.Size = new System.Drawing.Size(67, 17);
-			this.Round1RegistrationCheckBox.TabIndex = 0;
-			this.Round1RegistrationCheckBox.Text = "Round 1";
-			this.Round1RegistrationCheckBox.UseVisualStyleBackColor = true;
-			this.Round1RegistrationCheckBox.CheckedChanged += new System.EventHandler(this.RoundRegistrationCheckBox_CheckedChanged);
+			Round1RegistrationCheckBox.AutoSize = true;
+			Round1RegistrationCheckBox.Location = new Point(21, 27);
+			Round1RegistrationCheckBox.Margin = new Padding(4, 3, 4, 3);
+			Round1RegistrationCheckBox.Name = "Round1RegistrationCheckBox";
+			Round1RegistrationCheckBox.Size = new Size(70, 19);
+			Round1RegistrationCheckBox.TabIndex = 0;
+			Round1RegistrationCheckBox.Text = "Round 1";
+			Round1RegistrationCheckBox.UseVisualStyleBackColor = true;
+			Round1RegistrationCheckBox.CheckedChanged += RoundRegistrationCheckBox_CheckedChanged;
 			// 
 			// RegisteredDataGridView
 			// 
-			this.RegisteredDataGridView.AllowUserToAddRows = false;
-			this.RegisteredDataGridView.AllowUserToDeleteRows = false;
-			this.RegisteredDataGridView.AllowUserToResizeColumns = false;
-			this.RegisteredDataGridView.AllowUserToResizeRows = false;
-			dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.ControlLight;
-			this.RegisteredDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
-			this.RegisteredDataGridView.BackgroundColor = System.Drawing.SystemColors.Window;
-			this.RegisteredDataGridView.CellBorderStyle = System.Windows.Forms.DataGridViewCellBorderStyle.None;
-			dataGridViewCellStyle2.Alignment = MiddleLeft;
-			dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Control;
-			dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.WindowText;
-			dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Control;
-			dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.WindowText;
-			dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-			this.RegisteredDataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
-			this.RegisteredDataGridView.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.RegisteredDataGridView.ColumnHeadersVisible = false;
-			this.RegisteredDataGridView.Location = new System.Drawing.Point(443, 27);
-			this.RegisteredDataGridView.MultiSelect = false;
-			this.RegisteredDataGridView.Name = "RegisteredDataGridView";
-			this.RegisteredDataGridView.ReadOnly = true;
-			this.RegisteredDataGridView.RowHeadersVisible = false;
-			this.RegisteredDataGridView.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
-			this.RegisteredDataGridView.RowTemplate.Height = 16;
-			this.RegisteredDataGridView.RowTemplate.Resizable = System.Windows.Forms.DataGridViewTriState.False;
-			this.RegisteredDataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.RegisteredDataGridView.ShowCellToolTips = false;
-			this.RegisteredDataGridView.Size = new System.Drawing.Size(273, 496);
-			this.RegisteredDataGridView.TabIndex = 62;
-			this.RegisteredDataGridView.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.RegisterPlayerButton_Click);
-			this.RegisteredDataGridView.DataBindingComplete += new System.Windows.Forms.DataGridViewBindingCompleteEventHandler(this.RegisteredDataGridView_DataBindingComplete);
-			this.RegisteredDataGridView.SelectionChanged += new System.EventHandler(this.RegisteredDataGridView_SelectionChanged);
+			RegisteredDataGridView.AllowUserToAddRows = false;
+			RegisteredDataGridView.AllowUserToDeleteRows = false;
+			RegisteredDataGridView.AllowUserToResizeColumns = false;
+			RegisteredDataGridView.AllowUserToResizeRows = false;
+			dataGridViewCellStyle1.BackColor = SystemColors.ControlLight;
+			RegisteredDataGridView.AlternatingRowsDefaultCellStyle = dataGridViewCellStyle1;
+			RegisteredDataGridView.BackgroundColor = SystemColors.Window;
+			RegisteredDataGridView.CellBorderStyle = DataGridViewCellBorderStyle.None;
+			dataGridViewCellStyle2.BackColor = SystemColors.Control;
+			dataGridViewCellStyle2.Font = new Font("Microsoft Sans Serif", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+			dataGridViewCellStyle2.ForeColor = SystemColors.WindowText;
+			dataGridViewCellStyle2.SelectionBackColor = SystemColors.Control;
+			dataGridViewCellStyle2.SelectionForeColor = SystemColors.WindowText;
+			dataGridViewCellStyle2.WrapMode = DataGridViewTriState.True;
+			RegisteredDataGridView.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle2;
+			RegisteredDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			RegisteredDataGridView.ColumnHeadersVisible = false;
+			RegisteredDataGridView.Location = new Point(517, 31);
+			RegisteredDataGridView.Margin = new Padding(4, 3, 4, 3);
+			RegisteredDataGridView.MultiSelect = false;
+			RegisteredDataGridView.Name = "RegisteredDataGridView";
+			RegisteredDataGridView.ReadOnly = true;
+			RegisteredDataGridView.RowHeadersVisible = false;
+			RegisteredDataGridView.RowHeadersWidthSizeMode = DataGridViewRowHeadersWidthSizeMode.AutoSizeToAllHeaders;
+			RegisteredDataGridView.RowTemplate.Height = 16;
+			RegisteredDataGridView.RowTemplate.Resizable = DataGridViewTriState.False;
+			RegisteredDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+			RegisteredDataGridView.ShowCellToolTips = false;
+			RegisteredDataGridView.Size = new Size(318, 572);
+			RegisteredDataGridView.TabIndex = 62;
+			RegisteredDataGridView.CellContentDoubleClick += RegisterPlayerButton_Click;
+			RegisteredDataGridView.DataBindingComplete += RegisteredDataGridView_DataBindingComplete;
+			RegisteredDataGridView.SelectionChanged += RegisteredDataGridView_SelectionChanged;
 			// 
 			// RegisterPlayerButton
 			// 
-			this.RegisterPlayerButton.Location = new System.Drawing.Point(194, 230);
-			this.RegisterPlayerButton.Name = "RegisterPlayerButton";
-			this.RegisterPlayerButton.Size = new System.Drawing.Size(243, 23);
-			this.RegisterPlayerButton.TabIndex = 61;
-			this.RegisterPlayerButton.Text = "Register This Player  ───────▶";
-			this.RegisterPlayerButton.UseVisualStyleBackColor = true;
-			this.RegisterPlayerButton.Click += new System.EventHandler(this.RegisterPlayerButton_Click);
+			RegisterPlayerButton.Location = new Point(226, 265);
+			RegisterPlayerButton.Margin = new Padding(4, 3, 4, 3);
+			RegisterPlayerButton.Name = "RegisterPlayerButton";
+			RegisterPlayerButton.Size = new Size(284, 27);
+			RegisterPlayerButton.TabIndex = 61;
+			RegisterPlayerButton.Text = "Register This Player  ───────▶";
+			RegisterPlayerButton.UseVisualStyleBackColor = true;
+			RegisterPlayerButton.Click += RegisterPlayerButton_Click;
 			// 
 			// UnregisteredListBox
 			// 
-			this.UnregisteredListBox.FormattingEnabled = true;
-			this.UnregisteredListBox.Location = new System.Drawing.Point(10, 27);
-			this.UnregisteredListBox.Name = "UnregisteredListBox";
-			this.UnregisteredListBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
-			this.UnregisteredListBox.Size = new System.Drawing.Size(179, 498);
-			this.UnregisteredListBox.TabIndex = 60;
-			this.UnregisteredListBox.SelectedIndexChanged += new System.EventHandler(this.UnregisteredListBox_SelectedIndexChanged);
-			this.UnregisteredListBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.RegisterPlayerButton_Click);
+			UnregisteredListBox.FormattingEnabled = true;
+			UnregisteredListBox.Location = new Point(12, 31);
+			UnregisteredListBox.Margin = new Padding(4, 3, 4, 3);
+			UnregisteredListBox.Name = "UnregisteredListBox";
+			UnregisteredListBox.Size = new Size(208, 574);
+			UnregisteredListBox.TabIndex = 60;
+			UnregisteredListBox.SelectedIndexChanged += UnregisteredListBox_SelectedIndexChanged;
+			UnregisteredListBox.MouseDoubleClick += RegisterPlayerButton_Click;
 			// 
 			// NewPlayerButton
 			// 
-			this.NewPlayerButton.Location = new System.Drawing.Point(194, 48);
-			this.NewPlayerButton.Name = "AddNewPlayerButton";
-			this.NewPlayerButton.Size = new System.Drawing.Size(243, 23);
-			this.NewPlayerButton.TabIndex = 68;
-			this.NewPlayerButton.Text = "Add and Register a New Player";
-			this.NewPlayerButton.UseVisualStyleBackColor = true;
-			this.NewPlayerButton.Click += new System.EventHandler(this.NewPlayerButton_Click);
+			NewPlayerButton.Location = new Point(226, 55);
+			NewPlayerButton.Margin = new Padding(4, 3, 4, 3);
+			NewPlayerButton.Name = "NewPlayerButton";
+			NewPlayerButton.Size = new Size(284, 27);
+			NewPlayerButton.TabIndex = 68;
+			NewPlayerButton.Text = "Add and Register a New Player";
+			NewPlayerButton.UseVisualStyleBackColor = true;
+			NewPlayerButton.Click += NewPlayerButton_Click;
 			// 
 			// RegistrationControl
 			// 
-			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.Controls.Add(this.NewPlayerButton);
-			this.Controls.Add(this.StartFirstRoundButton);
-			this.Controls.Add(this.OrderByNamePanel);
-			this.Controls.Add(this.RegisteredPlayersLabel);
-			this.Controls.Add(this.UnregisteredPlayersLabel);
-			this.Controls.Add(this.RoundsRegisteredGroupBox);
-			this.Controls.Add(this.RegisteredDataGridView);
-			this.Controls.Add(this.RegisterPlayerButton);
-			this.Controls.Add(this.UnregisteredListBox);
-			this.Margin = new System.Windows.Forms.Padding(1);
-			this.Name = "RegistrationControl";
-			this.Size = new System.Drawing.Size(792, 533);
-			this.OrderByNamePanel.ResumeLayout(false);
-			this.OrderByNamePanel.PerformLayout();
-			this.RoundsRegisteredGroupBox.ResumeLayout(false);
-			this.RoundsRegisteredGroupBox.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.RegisteredDataGridView)).EndInit();
-			this.ResumeLayout(false);
+			AutoScaleDimensions = new SizeF(7F, 15F);
+			AutoScaleMode = AutoScaleMode.Font;
+			Controls.Add(NewPlayerButton);
+			Controls.Add(StartFirstRoundButton);
+			Controls.Add(OrderByNamePanel);
+			Controls.Add(RegisteredPlayersLabel);
+			Controls.Add(UnregisteredPlayersLabel);
+			Controls.Add(RoundsRegisteredGroupBox);
+			Controls.Add(RegisteredDataGridView);
+			Controls.Add(RegisterPlayerButton);
+			Controls.Add(UnregisteredListBox);
+			Margin = new Padding(1);
+			Name = "RegistrationControl";
+			Size = new Size(924, 615);
+			OrderByNamePanel.ResumeLayout(false);
+			OrderByNamePanel.PerformLayout();
+			RoundsRegisteredGroupBox.ResumeLayout(false);
+			RoundsRegisteredGroupBox.PerformLayout();
+			((ISupportInitialize)RegisteredDataGridView).EndInit();
+			ResumeLayout(false);
 
 		}
 
