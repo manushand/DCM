@@ -128,6 +128,7 @@ partial class SqlServerSettingsForm
 		Controls.Add(ServerNameTextBox);
 		Controls.Add(ServerNameLabel);
 		Name = "SqlServerSettingsForm";
+		ShowIcon = false;
 		Text = "SQL Server Settings";
 		Load += SqlServerSettingsForm_Load;
 		ResumeLayout(false);
