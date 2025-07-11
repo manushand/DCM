@@ -1,0 +1,71 @@
+<div class="container">
+  <h2>Player Conflicts</h2>
+
+  @if (player) {
+    <div class="player-info">
+      <h3>{{ player.name }}</h3>
+
+      <div class="conflicts-panel">
+        @if (conflicts.length > 0) {
+          <table class="conflicts-table">
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Conflict Level</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (conflict of conflicts; track conflict.conflictPlayerId) {
+                <tr>
+                  <td>{{ conflict.conflictPlayerName }}</td>
+                  <td>
+                    <input type="number" min="0" max="10"
+                          [(ngModel)]="conflict.value"
+                          (change)="updateConflict(conflict)" />
+                  </td>
+                  <td>
+                    <button (click)="removeConflict(conflict)">Remove</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } @else {
+          <div class="no-conflicts">
+            No conflicts defined
+          </div>
+        }
+
+      <div class="add-conflict">
+        <h4>Add Conflict</h4>
+        <div class="form-group">
+          <label>Player:</label>
+          <select [(ngModel)]="selectedPlayerId">
+            <option [value]="null">Select player...</option>
+            @for (p of availablePlayers; track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Conflict Level (0-10):</label>
+          <input type="number" min="0" max="10" [(ngModel)]="conflictValue" />
+        </div>
+
+        <button [disabled]="!selectedPlayerId" (click)="addConflict()">Add Conflict</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button (click)="goBack()">Back</button>
+    </div>
+  </div>
+  }
+  @if (loading) {
+    <div class="loading">
+      Loading...
+    </div>
+  }
+</div>

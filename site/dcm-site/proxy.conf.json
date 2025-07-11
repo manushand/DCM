@@ -1,0 +1,14 @@
+{
+  "/players": {
+    "target": "http://localhost:5104",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  },
+  "/player": {
+    "target": "http://localhost:5104",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  }
+}

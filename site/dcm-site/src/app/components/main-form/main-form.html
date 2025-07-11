@@ -1,0 +1,115 @@
+<div class="main-form">
+  <nav class="menu-bar">
+    <div class="menu-item" [class.active]="activeMenu === 'players'" (click)="setActiveMenu('players')">
+      Players
+      @if (activeMenu === 'players') {
+        <div class="dropdown">
+          <div class="dropdown-item" (click)="navigateToPlayerManagement(); $event.stopPropagation()">
+            Manage...
+          </div>
+          <div class="dropdown-item" (click)="navigateToPlayerConflicts(); $event.stopPropagation()">
+            Conflicts...
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="menu-item" [class.active]="activeMenu === 'group'" (click)="setActiveMenu('group')">
+      Group
+      @if (activeMenu === 'group') {
+        <div class="dropdown">
+          <div class="dropdown-item" (click)="showStub('Open Group'); $event.stopPropagation()">
+            Open...
+          </div>
+          <div class="dropdown-item" (click)="showStub('Manage Groups'); $event.stopPropagation()">
+            Manage...
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="menu-item" [class.active]="activeMenu === 'scoring'" (click)="setActiveMenu('scoring')">
+      Scoring
+      @if (activeMenu === 'scoring') {
+        <div class="dropdown">
+          <div class="dropdown-item" (click)="showStub('Scoring Systems'); $event.stopPropagation()">
+            Systems...
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="menu-item" [class.active]="activeMenu === 'event'" (click)="setActiveMenu('event')">
+      Event
+      @if (activeMenu === 'event') {
+        <div class="dropdown">
+          <div class="dropdown-item" (click)="showStub('Open Event'); $event.stopPropagation()">
+            Open...
+          </div>
+          <div class="dropdown-item" (click)="showStub('New Event'); $event.stopPropagation()">
+            New...
+          </div>
+          <div class="dropdown-item" (click)="showStub('Delete Event'); $event.stopPropagation()">
+            Delete...
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="menu-item" [class.active]="activeMenu === 'configuration'" (click)="setActiveMenu('configuration')">
+      Configuration
+      @if (activeMenu === 'configuration') {
+        <div class="dropdown">
+          <div class="dropdown-item" (click)="showStub('Show Timing'); $event.stopPropagation()">
+            Show Timing
+          </div>
+          <div class="dropdown-item" (click)="showStub('Email Configuration'); $event.stopPropagation()">
+            Email...
+          </div>
+          <div class="dropdown-item" (click)="showStub('Database Configuration'); $event.stopPropagation()">
+            Database
+          </div>
+          <div class="dropdown-item" (click)="showStub('Reports Configuration'); $event.stopPropagation()">
+            Reports...
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="menu-item" [class.active]="activeMenu === 'help'" (click)="setActiveMenu('help')">
+      Help
+      @if (activeMenu === 'help') {
+        <div class="dropdown">
+          <div class="dropdown-item" (click)="showStub('Help Topics'); $event.stopPropagation()">
+            Topics...
+          </div>
+          <div class="dropdown-item" (click)="showStub('About'); $event.stopPropagation()">
+            About...
+          </div>
+        </div>
+      }
+    </div>
+  </nav>
+
+  <div class="content">
+    <div class="tournament-name">
+      <h1>{{ tournamentName }}</h1>
+    </div>
+
+    @if (showButtons) {
+      <div class="button-panel">
+        <button class="action-button" (click)="showStub('Event Settings')">
+          {{ leftButtonText }}
+        </button>
+        <button class="action-button" [disabled]="!middleButtonEnabled" (click)="showStub('Registration/Rounds')">
+          {{ middleButtonText }}
+        </button>
+        <button class="action-button" [disabled]="!rightButtonEnabled" (click)="showStub('Scores')">
+          {{ rightButtonText }}
+        </button>
+      </div>
+    }
+  </div>
+
+  <router-outlet></router-outlet>
+</div>

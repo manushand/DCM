@@ -1,0 +1,75 @@
+<div class="player-list-container">
+  <h2>Player Management</h2>
+
+  <div class="player-form">
+    <div class="form-group">
+      <label>Sort by:</label>
+      <label>
+        <input type="radio" [(ngModel)]="sortByLastName" [value]="true" (change)="loadPlayers()"> Last Name
+      </label>
+      <label>
+        <input type="radio" [(ngModel)]="sortByLastName" [value]="false" (change)="loadPlayers()"> First Name
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label for="firstName">First Name:</label>
+      <input type="text" id="firstName" [(ngModel)]="newPlayer.firstName"
+             (focus)="onNewPlayerFocus()" (keyup)="onFirstNameKeyUp()">
+    </div>
+
+    <div class="form-group">
+      <label for="lastName">Last Name:</label>
+      <input type="text" id="lastName" [(ngModel)]="newPlayer.lastName" (focus)="onNewPlayerFocus()">
+    </div>
+
+    <div class="form-group">
+      <label for="email" [title]="emailTooltip">Email Address:</label>
+      <input type="text" id="email" [(ngModel)]="emailAddresses"
+             [disabled]="!emailEnabled" (focus)="onNewPlayerFocus()">
+      @if (emailEnabled) {
+        <small>{{ emailTooltip }}</small>
+      }
+    </div>
+
+    <button [disabled]="!addButtonEnabled" (click)="addPlayer()">Add Player</button>
+  </div>
+
+  <div class="player-list">
+    <label>Players: @if (players.length > 0) {<span>({{ players.length }})</span>}</label>
+    <select size="10" [(ngModel)]="selectedPlayer" (change)="onPlayerSelected()" #playerSelect>
+      @if (players.length > 0) {
+        @for (player of players; track player.id) {
+          <option [ngValue]="player">
+            {{ player.name || (player.firstName + ' ' + player.lastName) }} {{player._lastUpdated ? '' : ''}}
+          </option>
+        }
+      } @else {
+        <option disabled>No players available</option>
+      }
+    </select>
+
+    <!-- Debug info - can be removed in production -->
+    <div class="debug-info" style="margin-top: 10px; font-size: 12px; color: #666;">
+      @if (players.length === 0) {
+        <div>No players loaded. Check console for errors.</div>
+      }
+    </div>
+
+    <!-- Manual rendering fallback -->
+    <div style="display:none">
+      <button #manualRefreshBtn (click)="manuallyRefreshPlayerList()">Refresh Players</button>
+    </div>
+  </div>
+
+  <div class="player-actions">
+    <button [disabled]="!selectedPlayer" (click)="editPlayer()">Edit</button>
+    <button [disabled]="!selectedPlayer" (click)="showPlayerGroups()">Groups</button>
+    <button [disabled]="!conflictsEnabled" (click)="showPlayerConflicts()">Conflicts</button>
+    <button [disabled]="!selectedPlayer" (click)="removePlayer()">{{ removeButtonText }}</button>
+  </div>
+
+  <div class="actions">
+    <button (click)="goBack()">Back to Main</button>
+  </div>
+</div>
