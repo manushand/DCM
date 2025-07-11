@@ -252,6 +252,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void SeededDataGridView_DataBindingComplete(object sender,
 														DataGridViewBindingCompleteEventArgs e)
 	{
+		if (SeededDataGridView.ColumnCount is 0)
+			return;
 		SeededDataGridView.FillColumn(1);
 		SeededDataGridView.AlignColumn(MiddleLeft, 1);      //	Player Name
 		SeededDataGridView.AlignColumn(MiddleCenter, 0, 3); //	Game Number, Status

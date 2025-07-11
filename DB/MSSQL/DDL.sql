@@ -338,7 +338,7 @@ ALTER TABLE [PlayerConflict]
 -- Game numbers must be positive
 ALTER TABLE [Game]
     ADD CONSTRAINT [CHK_Game_Number]
-        CHECK ([Number] > 1);
+        CHECK ([Number] > 0);
 
 -- Round numbers may be 0 (Group games host round) or 1-9 (Tournament Round)
 ALTER TABLE [Round]
