@@ -42,11 +42,6 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Update="Program.cs" />
-        <Compile Update="Properties\Settings.Designer.cs">
-          <DesignTimeSharedInput>True</DesignTimeSharedInput>
-          <AutoGen>True</AutoGen>
-          <DependentUpon>Settings.settings</DependentUpon>
-        </Compile>
         <Compile Update="Forms\Group.RatingInfo.cs">
           <DependentUpon>GroupRatingsForm.cs</DependentUpon>
         </Compile>
@@ -55,15 +50,9 @@
         <Content Include="DCM.ico" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2025.1.0-eap1" />
         <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
-        <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.0" />
-    </ItemGroup>
-    <ItemGroup>
-      <None Update="Properties\Settings.settings">
-        <Generator>SettingsSingleFileGenerator</Generator>
-        <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-      </None>
+        <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.7" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Data\Data.csproj" />
