@@ -63,6 +63,12 @@ internal static class API
 										   serializerOptions.DefaultIgnoreCondition = WhenWritingNull;
 										   serializerOptions.Converters.Add(new JsonStringEnumConverter());
 									   })
+			   .AddCors(static options => options.AddDefaultPolicy(static policy =>
+																   {
+																	   policy.AllowAnyOrigin()
+																			 .AllowAnyMethod()
+																			 .AllowAnyHeader();
+																   }))
 			   .AddOpenApi()
 			   .AddEndpointsApiExplorer()
 			   .AddSwaggerGen(config =>

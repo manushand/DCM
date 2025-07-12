@@ -1,4 +1,6 @@
-﻿namespace API;
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace API;
 
 using DCM;
 using Data;
@@ -81,20 +83,47 @@ internal abstract class Rest<T1, T2, T3> : IRest
 				   : Ok(record);
 	}
 
-	private protected static IResult PutOne(int id,
-											T1 updated)
+	private string[] CheckName()
 	{
+		Name = Name.Trim();
+		switch (this)
+		{
+		case Player player:
+			if (Name.Length > 0)
+				return Player.NameIsDetermined;
+			player.FirstName = player.FirstName.Trim();
+			player.LastName = player.LastName.Trim();
+			if (player.FirstName.Length is 0 || player.LastName.Length is 0)
+				return Player.NamesAreRequired;
+			Name = $"{player.FirstName} {player.LastName}".Trim();
+			goto default;
+		case not Game when Name.Length is 0:
+			return ["Name is required."];
+		default:
+			return [];
+		}
+	}
+
+	private protected bool WouldCollide()
+		=> (ReadByName<T2>(Name)?.Id ?? Id) != Id;
+
+	private protected static IResult PutOne(int id,
+											[FromBody] T1 updated,
+											[FromQuery] bool force = false)
+	{
+		if (force && updated is not Player and not Game)
+			return BadRequest("Force update is only allowed for players and games.");
 		var rest = RestForId(id);
 		if (rest is null)
 			return NotFound();
-		var recordId = updated.Id;
-		if (updated is not Game && (ReadByName<T2>(updated.Name)?.Id ?? id) != id)
+		var issues = updated.CheckName();
+		if (issues.Length is not 0)
+			return BadRequest(issues);
+		if (updated.Name.Length > 0 && !force && updated.WouldCollide())
 			return Conflict("Proposed new name already in use.");
-		var issues = id != recordId
+		issues = updated.Id != id
 						 ? ["IDs do not match."]
-						 : updated.Name.Length is 0
-							 ? ["Name is required"]
-							 : rest.UpdateRecordForDatabase(updated);
+						 : rest.UpdateRecordForDatabase(updated);
 		if (issues.Length is not 0)
 			return BadRequest(issues);
 		UpdateOne(rest.Record);
@@ -102,17 +131,20 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	}
 
 	private protected static IResult PostOne(HttpRequest request,
-											 T1 candidate)
+											 [FromBody] T1 candidate,
+											 [FromQuery] bool force = false)
 	{
-		T1 record = new ();
-		var named = candidate.Name.Length > 0;
-		if (named && ReadByName<T2>(candidate.Name) is not null)
+		if (force && candidate is not Player and not Game)
+			return BadRequest("Force update is only allowed for players and games.");
+		var issues = candidate.CheckName();
+		if (issues.Length is not 0)
+			return BadRequest(issues);
+		if (candidate.Name.Length > 0 && !force && candidate.WouldCollide())
 			return Conflict("Name already in use.");
-		var issues = candidate.Id is not 0
+		T1 record = new ();
+		issues = candidate.Id is not 0
 						 ? ["ID must be null or 0 for POST."]
-						 : !named
-							 ? ["Name is required"]
-							 : record.UpdateRecordForDatabase(candidate);
+						 : record.UpdateRecordForDatabase(candidate);
 		if (issues.Length is not 0)
 			return BadRequest(issues);
 		CreateOne(record.Record);

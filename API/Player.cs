@@ -12,6 +12,9 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 
 	private IEnumerable<Game> Games => Game.RestFrom(Record.Games);
 
+	internal static readonly string[] NameIsDetermined = ["Player name is determined from FirstName and LastName."];
+	internal static readonly string[] NamesAreRequired = ["Player FirstName and LastName are required."];
+
 	[PublicAPI]
 	internal sealed class Detail : DetailClass
 	{

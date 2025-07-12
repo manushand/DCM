@@ -330,7 +330,11 @@ public static partial class Data
 
 	internal static decimal Decimal(this IDataRecord record,
 									string columnName)
-		=> record.GetDecimal(record.GetOrdinal(columnName));
+		=> _connection is SqlConnection
+				//	In Access (only; not SqlServer), floating point columns are DOUBLE, not DECIMAL.
+				//	It should be easy enough to change them to DECIMAL, but, well, it isn't.
+			   ? record.GetDecimal(record.GetOrdinal(columnName))
+			   : (decimal)Double(record, columnName);
 
 	internal static int Integer(this IDataRecord record,
 								string columnName)
