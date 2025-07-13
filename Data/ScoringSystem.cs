@@ -428,12 +428,12 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 	private const char CompiledFormulaSuffix = '\a'; //	Cannot be 0, as this truncates the SQL insert
 
 	private static readonly ScriptOptions Options = ScriptOptions.Default
-																 .WithReferences(GetAssembly(typeof (Enumerable)),
+																 .WithReferences(GetAssembly(typeof (Enumerable)).OrThrow(),
 																				 GetExecutingAssembly())
 																 .WithImports(nameof (System),
-																			  typeof (List<int>).Namespace,
-																			  typeof (Enumerable).Namespace,
-																			  typeof (Math).FullName); // nameof (DCM) used to be here too; unnecessary???
+																			  typeof (List<int>).Namespace.OrThrow(),
+																			  typeof (Enumerable).Namespace.OrThrow(),
+																			  typeof (Math).FullName.OrThrow()); // nameof (DCM) used to be here too; unnecessary???
 
 	/// <summary>
 	///     Holds formulae after comments have been removed and OtherScoreAlias instances swapped out.
