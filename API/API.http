@@ -1,0 +1,13 @@
+@host = http://localhost:5104
+
+GET {{host}}/systems
+Accept: application/json
+Authorization: Manus
+
+###
+
+GET {{host}}/system/2
+Accept: application/json
+Authorization: Emmett
+
+###

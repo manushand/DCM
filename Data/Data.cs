@@ -38,6 +38,20 @@ public static partial class Data
 		SqlServer = 2
 	}
 
+	public static void ConnectTo(string connectionString)
+	{
+		if (!Connections.TryGetValue(connectionString, out _connection))
+		{
+			//	A poor-man's way of deciding whether the connection string is for SQL or Access
+			if (connectionString.Contains('='))
+				ConnectToSqlServerDatabase(connectionString);
+			else
+				ConnectToAccessDatabase(connectionString);
+			Connections[connectionString] = _connection ?? throw new ("Connection Failed");
+		}
+		Cache.Restore(connectionString);
+	}
+
 	public static bool ConnectToAccessDatabase(string databaseFile)
 	{
 		foreach (var provider in Providers)
@@ -324,17 +338,21 @@ public static partial class Data
 				   : record.GetString(ordinal);
 	}
 
+	//	Some fields that are DECIMAL type in SqlServer are DOUBLE in Access.
+	//	We should fix this, but it's not that easy without paying Bill Gates.
+	//	So we have the Double() and Decimal() methods do a field type check.
+
 	internal static double Double(this IDataRecord record,
 								  string columnName)
-		=> record.GetDouble(record.GetOrdinal(columnName));
+		=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (double)
+			   ? record.GetDouble(record.GetOrdinal(columnName))
+			   : Convert.ToDouble(Decimal(record, columnName));
 
 	internal static decimal Decimal(this IDataRecord record,
 									string columnName)
-		=> _connection is SqlConnection
-				//	In Access (only; not SqlServer), floating point columns are DOUBLE, not DECIMAL.
-				//	It should be easy enough to change them to DECIMAL, but, well, it isn't.
+		=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (decimal)
 			   ? record.GetDecimal(record.GetOrdinal(columnName))
-			   : (decimal)Double(record, columnName);
+			   : Convert.ToDecimal(Double(record, columnName));
 
 	internal static int Integer(this IDataRecord record,
 								string columnName)
@@ -397,6 +415,7 @@ public static partial class Data
 
 	private static DbConnection? _connection;
 	private static DbTransaction? _transaction;
+	private static readonly Dictionary<string, DbConnection> Connections = new ();
 
 	private static DbConnection Connection => _connection.OrThrow();
 

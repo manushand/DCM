@@ -1,4 +1,1 @@
-using static API.API;
-
-Connect();
-Startup();
+API.API.Startup();

@@ -55,7 +55,7 @@ internal static class PC
 		private set => Settings.DatabaseType = value.AsInteger();
 	}
 	internal static bool SkippingHandlers { get; private set; }
-	internal static int[] Seven => [..Range(0, 7).OrderBy(static _ => RandomNumber())];
+	internal static int[] Seven => [..Range(0, 7).OrderBy(RandomNumber)];
 
 	private static readonly SortedDictionary<Powers, DataGridViewCellStyle> PowerColors
 		= new ()

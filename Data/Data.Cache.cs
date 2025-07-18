@@ -2,13 +2,16 @@
 
 namespace Data;
 
+using CacheType = Dictionary<Type, SortedDictionary<string, IRecord>>;
+
 public static partial class Data
 {
 	private static class Cache
 	{
 		#region Fields
 
-		private static readonly Dictionary<Type, SortedDictionary<string, IRecord>> Data = [];
+		private static CacheType _data = [];
+		private static readonly Dictionary<string, CacheType> Stores = [];
 
 		private static readonly MethodInfo LoadMethod = typeof (Cache).GetMethod(nameof (Load), Static | NonPublic)
 																	  .OrThrow();
@@ -17,12 +20,17 @@ public static partial class Data
 
 		#endregion
 
+		internal static void Restore(string store)
+			=> _data = Stores.TryGetValue(store, out var held)
+					? held
+					: Stores[store] = [];
+
 		internal static void Flush()
-			=> Data.Clear();
+			=> _data.Clear();
 
 		internal static bool ContainsKey<T>()
 			where T : IRecord
-			=> Data.ContainsKey(typeof (T));
+			=> _data.ContainsKey(typeof (T));
 
 		internal static void Add<T>(T record)
 			where T : IRecord
@@ -72,13 +80,13 @@ public static partial class Data
 			if (!ContainsKey<T>())
 				LoadMethods.GetOrSet([type], LoadMethod.MakeGenericMethod)
 						   .Invoke(null, null);
-			return Data[type];
+			return _data[type];
 		}
 
 		private static void Load<T>()
 			where T : class, IRecord, new()
-			=> Data[typeof (T)] = new (Read<T>().Cast<IRecord>()
-												.ToDictionary(static record => record.PrimaryKey));
+			=> _data[typeof (T)] = new (Read<T>().Cast<IRecord>()
+												 .ToDictionary(static record => record.PrimaryKey));
 
 		#endregion
 	}

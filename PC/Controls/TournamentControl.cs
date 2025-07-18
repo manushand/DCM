@@ -14,10 +14,9 @@ internal sealed partial class TournamentControl : UserControl
 	{
 		InitializeComponent();
 		PowerGroupComboBox.Items.AddRange(Enum.GetNames<PowerGroups>()
-											  .Select(static object (name) => ((typeof (PowerGroups).GetField(name)
-																									?.GetCustomAttribute(typeof (PowerGroupingsAttribute))
-																					as PowerGroupingsAttribute)
-																				  ?.Text).OrThrow())
+											  .Select(static object (name) => ((typeof (PowerGroups).GetField(name)?
+																									.GetCustomAttribute(typeof (PowerGroupingsAttribute))
+																					as PowerGroupingsAttribute)?.Text).OrThrow())
 											  .ToArray());
 	}
 
