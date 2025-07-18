@@ -657,7 +657,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	internal void DiscardRound()
 		=> SkipHandlers(() =>
 						{
-							UnseedButton_Click();
+							UnseedGames(Round.SeededGames);
 							Delete(Round.RoundPlayers);
 							Delete(Round);
 						});
@@ -886,7 +886,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	{
 		if (games.Length is 0 || games.Any(static game => game.Status is not Seeded))
 			throw new InvalidOperationException(); //	TODO
-		if (MessageBox.Show($"Are you sure you want to unseed the {"seeded game".Pluralize(games, true)}?",
+		if (!SkippingHandlers
+		&& MessageBox.Show($"Are you sure you want to unseed the {"seeded game".Pluralize(games, true)}?",
 							"Confirm Game Unseeding",
 							YesNo,
 							Question) is DialogResult.No)
