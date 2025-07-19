@@ -117,10 +117,9 @@ internal sealed partial class GamesForm : Form
 		//	this means that FinalGameDataValidation failed. Show the GameInErrorButton.
 		GameInErrorButton.Visible = !allFilledIn
 								 && GamePlayers.All(static gamePlayer => gamePlayer.PlayComplete);
-		if (!allFilledIn)
-			return;
-		//	Fill in the scores
-		if (Game.CalculateScores(out var errors))
+		if (!allFilledIn || Game.Status is not Finished)
+			GroupGamesForm.WipeFinalScores(ScoreLabels, TotalScoreLabel, ToolTip);
+		else if (Game.CalculateScores(out var errors))
 			GroupGamesForm.FillFinalScores(Game, ScoreLabels, TotalScoreLabel, ToolTip);
 		else
 			MessageBox.Show(errors.OfType<string>().BulletList("Error(s)"),
@@ -226,14 +225,6 @@ internal sealed partial class GamesForm : Form
 										  .As<Statuses>();
 		switch (newStatus)
 		{
-		case Finished when !GameControl.AllFilledIn:
-			MessageBox.Show("Game details are not complete.",
-							"Cannot Finish Game",
-							OK,
-							Hand);
-			GameStatusComboBox.SelectedIndex = Game.Status
-												   .AsInteger();
-			return;
 		case Seeded when GameControl.HasData:
 			if (MessageBox.Show($"Are you sure you wish to unstart this game?{NewLine}{NewLine}The game details recorded for players will be erased.",
 								"Confirm Erasure of Game-Player Details",
@@ -251,6 +242,20 @@ internal sealed partial class GamesForm : Form
 			UpdateMany(GamePlayers);
 			break;
 		case Finished:
+			var issue = !GameControl.AllFilledIn
+							? "Game details are not complete."
+							: !Game.CalculateScores(out var issues)
+								? Join(NewLine, issues)
+								: Empty;
+			if (issue.Length is 0)
+				break;
+			MessageBox.Show(issue,
+							"Cannot Finish Game",
+							OK,
+							Hand);
+			GameStatusComboBox.SelectedIndex = Game.Status
+												   .AsInteger();
+			return;
 		case Underway:
 		case Seeded:
 			break;

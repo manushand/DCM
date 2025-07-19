@@ -527,6 +527,8 @@ internal sealed partial class GameControl : UserControl
 																						? 5
 																						: box.SelectedIndex + 1)))
 				error = "Impossibly too many centers for a pre-1904 survival.";
+		if (ScoringSystem.UsesOtherScore && OtherTextBoxes.Any(static box => box.Text.Trim().Length is 0))
+			error = "Not all player data has been filled in.";
 		if (!ScoringSystem.UsesGameResult)
 			return error is null;
 		var soleWinner = NumberOfWinners is 1;
