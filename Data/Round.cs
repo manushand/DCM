@@ -34,7 +34,8 @@ public sealed class Round : IdentityRecord<Round>
 	//	TODO - It may be useful to have Workable return true if a specific Setting is set,
 	//	TODO - allowing ALL rounds to be workable, even when finished
 	public bool Workable => Number == (Tournament.Rounds.Length is 0 ? default : Tournament.Rounds.Max(static round => round.Number))
-                         && (Number < Tournament.TotalRounds || Games.Any(static game => game.Status is not Finished));
+                         && (Number < Tournament.TotalRounds || Games.Any(static game => game.Status is not Finished))
+						 || Games.Length is 0;
 
 	public int ScoringSystemId => _scoringSystemId ?? Tournament.ScoringSystemId;
 
