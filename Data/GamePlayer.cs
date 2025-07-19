@@ -220,10 +220,11 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 			opponentIds.ForSome(memberIds.Contains,
 								opponent =>
 								{
+									var player = group.Players.Single(player => player.Id == opponent);
 									var conflict = group.Conflict;
 									Conflict += conflict;
 									if (fillDetails)
-										ConflictDetails.Add($"{conflict.Points()} for being in the group {group} with {opponent}.");
+										ConflictDetails.Add($"{conflict.Points()} for being in the group {group} with {player}.");
 								});
 
 		//	Powers-Played-Earlier Conflicts
