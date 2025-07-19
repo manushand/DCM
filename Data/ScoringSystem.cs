@@ -171,7 +171,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 				}
 				catch (Exception exception)
 				{
-					results.Add($"Player ante calculation for {gamePlayer.Power} FAILED: {ErrorDetail(exception)}");
+					results.Add(ErrorDetail("Ante calculation", gamePlayer, exception));
 					return false;
 				}
 			results.Add(bar);
@@ -190,7 +190,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 				}
 				catch (Exception exception)
 				{
-					results.Add($"Provisional scoring for {gamePlayer.Power} FAILED: {ErrorDetail(exception)}");
+					results.Add(ErrorDetail("Provisional scoring", gamePlayer, exception));
 					return false;
 				}
 			results.Add(bar);
@@ -208,10 +208,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 			}
 			catch (Exception exception)
 			{
-				var fault = scoring.OtherScoreValid is false
-								? "game data"
-								: $"{gamePlayer.Power}";
-				results.Add($"Final scoring for {fault} FAILED: {ErrorDetail(exception)}");
+				results.Add(ErrorDetail("Final scoring", gamePlayer, exception));
 				return false;
 			}
 		watch?.Stop();
@@ -249,16 +246,20 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 			results.AddRange(null, error);
 		return status;
 
-		static string ErrorDetail(Exception exception)
+		string ErrorDetail(string reason, GamePlayer gamePlayer, Exception exception)
 		{
+			var source = scoring.OtherScoreValid is false
+									? "game data"
+									: $"{gamePlayer.Power}";
 			var message = $"{exception.Message} {exception.InnerException?.Message}";
-			return exception switch
-				   {
-					   CompilationErrorException when message.Count(static c => c is Colon) > 1 => Join(Colon, message.Split(Colon).Skip(2)),
-					   AggregateException aggregateException                                    => Join(NewLine, aggregateException.InnerExceptions
-																																   .Select(static inner => inner.Message)),
-					   _                                                                        => message
-				   };
+			message = exception switch
+					  {
+						  CompilationErrorException when message.Count(static c => c is Colon) > 1 => Join(Colon, message.Split(Colon).Skip(2)),
+						  AggregateException aggregateException => Join(NewLine, aggregateException.InnerExceptions
+																								   .Select(static inner => inner.Message)),
+						  _ => message
+					  };
+			return $"{reason} for {source} FAILED: {message}";
 		}
 
 		bool GameDataValid(out List<string?> issues)
