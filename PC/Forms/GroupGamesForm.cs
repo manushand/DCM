@@ -349,18 +349,6 @@ internal sealed partial class GroupGamesForm : Form
 						Warning);
 	}
 
-	public static void WipeFinalScores(List<Label> scoreLabels,
-									   Label totalScoreLabel,
-									   ToolTip toolTip)
-	{
-		scoreLabels.ForEach(label =>
-							{
-								toolTip.SetToolTip(label, Empty);
-								label.Text = "0";
-							});
-		totalScoreLabel.Text = "0";
-	}
-
 	public static void FillFinalScores(Game game,
 									   List<Label> scoreLabels,
 									   Label totalScoreLabel,

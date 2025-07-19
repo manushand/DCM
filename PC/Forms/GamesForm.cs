@@ -112,16 +112,17 @@ internal sealed partial class GamesForm : Form
 		if (SkippingHandlers)
 			return;
 		UpdateMany(GamePlayers);
-		SetVisible(allFilledIn, [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
+		List<string?> errors = [];
+		var scored = allFilledIn && Game.Status is Finished && Game.CalculateScores(out errors);
+		SetVisible(scored,
+				   [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
 		//	If all GamePlayers are totally filled in, but we were told NOT allFilledIn,
 		//	this means that FinalGameDataValidation failed. Show the GameInErrorButton.
 		GameInErrorButton.Visible = !allFilledIn
 								 && GamePlayers.All(static gamePlayer => gamePlayer.PlayComplete);
-		if (!allFilledIn || Game.Status is not Finished)
-			GroupGamesForm.WipeFinalScores(ScoreLabels, TotalScoreLabel, ToolTip);
-		else if (Game.CalculateScores(out var errors))
+		if (scored)
 			GroupGamesForm.FillFinalScores(Game, ScoreLabels, TotalScoreLabel, ToolTip);
-		else
+		else if (errors.Count > 0)
 			MessageBox.Show(errors.OfType<string>().BulletList("Error(s)"),
 							"Game in Error",
 							OK,
