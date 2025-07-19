@@ -22,12 +22,12 @@ public sealed partial class Scoring
 	internal static readonly string[] OtherScoreAliases =
 	[
 		//	Ordered by descending length
-		nameof (OtherScoreNotValidated),
 		nameof (SumOfEveryOtherScore),
 		nameof (AverageOtherScore),
 		nameof (HighestOtherScore),
 		nameof (LowestOtherScore),
 		nameof (SumOfOtherScores),
+		nameof (OtherScoreValid),
 		nameof (OtherScore)
 	];
 
@@ -57,7 +57,7 @@ public sealed partial class Scoring
 
 	#region Scoring properties shared by all players
 
-	public bool OtherScoreNotValidated => PlayerPower is GamePlayer.Powers.Austria;
+	public bool? OtherScoreValid { get; set; }
 
 	//  C# Formula use case: foreach (var (name, data) in Powers) ...
 	public Dictionary<Powers, PowerData> Powers { get; }

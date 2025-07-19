@@ -208,7 +208,10 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 			}
 			catch (Exception exception)
 			{
-				results.Add($"Final scoring for {gamePlayer.Power} FAILED: {ErrorDetail(exception)}");
+				var fault = scoring.OtherScoreValid is false
+								? "game data"
+								: $"{gamePlayer.Power}";
+				results.Add($"Final scoring for {fault} FAILED: {ErrorDetail(exception)}");
 				return false;
 			}
 		watch?.Stop();
