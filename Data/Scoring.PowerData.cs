@@ -74,9 +74,9 @@ public sealed partial class Scoring
 		public int WorstEliminationOrder => OrderOfElimination(EliminationOrderType.Worst);
 		public int EliminationOrderSharers => _scoring.Powers.Count(power => power.Value.BestEliminationOrder == BestEliminationOrder);
 
-		public double CenterRank => (double)(WorstCenterRank + BestCenterRank) / 2;
-		public double SurvivorRank => (double)(BestSurvivorRank + WorstSurvivorRank) / 2;
-		public double EliminationOrder => (double)(BestEliminationOrder + WorstEliminationOrder) / 2;
+		public double CenterRank => (WorstCenterRank + BestCenterRank) / 2d;
+		public double SurvivorRank => (BestSurvivorRank + WorstSurvivorRank) / 2d;
+		public double EliminationOrder => (BestEliminationOrder + WorstEliminationOrder) / 2d;
 
 		internal PowerData(Scoring scoring,
 						   GamePlayer gamePlayer)
@@ -111,11 +111,12 @@ public sealed partial class Scoring
 		///     Determines which result is returned for an eliminated player.
 		/// </param>
 		/// <returns>
-		///     0 if the player's result was a Win, the number of non-winners if the player survived,
-		///     and a specific result (based on the parameter sent in) if the player was eliminated:
-		///     if type is Earlier => number of players eliminated before this player's final year
-		///     if type is Best => one-greater than the result returned when the type is Earlier
-		///     if type is Worst => number of players eliminated before OR ON this player's final year.
+		///     if the player's result was a Win => 0;
+		///		if the player survived => the number of non-winners;
+		///     if the player was eliminated, the result is determined by the method parameter:
+		///		...if Earlier => number of players eliminated before this player's final year;
+		///		...if Best => one-greater than the result returned when the type is Earlier;
+		///		...if Worst => number of players eliminated before OR ON this player's final year.
 		/// </returns>
 		private int OrderOfElimination(EliminationOrderType type)
 			=> Won ? 0

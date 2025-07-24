@@ -14,8 +14,8 @@
         <UpdateRequired>false</UpdateRequired>
         <MapFileExtensions>true</MapFileExtensions>
         <ApplicationRevision>0</ApplicationRevision>
-        <AssemblyVersion>24.12.12</AssemblyVersion>
-        <ApplicationVersion>24.12.12.%2a</ApplicationVersion>
+        <AssemblyVersion>25.7.23</AssemblyVersion>
+        <ApplicationVersion>25.7.23.%2a</ApplicationVersion>
         <IsWebBootstrapper>false</IsWebBootstrapper>
         <UseApplicationTrust>false</UseApplicationTrust>
         <BootstrapperEnabled>true</BootstrapperEnabled>
