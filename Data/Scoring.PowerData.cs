@@ -12,27 +12,28 @@ public sealed partial class Scoring
 		private readonly double? _other;
 		private readonly Results? _result;
 		private readonly Scoring _scoring;
+
 		private double? _playerAnte;
 		private double? _provisionalScore;
 
-		private Results Result => _result.OrThrow("Invalid reference to win/loss result.");
+		private Results Result => _result ?? throw ScoringException(nameof (Result));
 
 		public Powers Power { get; }
 
-		public int Centers => _centers.OrThrow("Invalid reference to center count.");
-		public int Years => _years.OrThrow("Invalid reference to years played.");
+		public int Centers => _centers ?? throw ScoringException(nameof (Centers));
+		public int Years => _years ?? throw ScoringException(nameof (Years));
 
-		public double OtherScore => _other.OrThrow("Invalid reference to other score.");
+		public double OtherScore => _other ?? throw ScoringException();
 
 		public double ProvisionalScore
 		{
-			get => _provisionalScore.OrThrow("Invalid reference to provisional score.");
+			get => _provisionalScore ?? throw ScoringException(nameof (ProvisionalScore));
 			internal set => _provisionalScore = value;
 		}
 
 		public double PlayerAnte
 		{
-			get => _playerAnte.OrThrow("Invalid reference to player ante.");
+			get => _playerAnte ?? throw ScoringException(nameof (PlayerAnte));
 			internal set => _playerAnte = value;
 		}
 
@@ -93,7 +94,7 @@ public sealed partial class Scoring
 				_years = gamePlayer.Years;
 			if (system.UsesOtherScore)
 				_other = gamePlayer.Other;
-			//	ScoringSystem test games have a GameId of 0
+			//	ScoringSystem test games are Game.None
 			if (gamePlayer.Game.IsNone)
 				return;
 			var game = gamePlayer.Game;
@@ -117,12 +118,12 @@ public sealed partial class Scoring
 		///     if type is Worst => number of players eliminated before OR ON this player's final year.
 		/// </returns>
 		private int OrderOfElimination(EliminationOrderType type)
-			=> Won            ? 0
-			   : Uneliminated ? 7 - _scoring.Winners
-								: _scoring.Powers
-										 .Count(power => power.Value.Eliminated
-													  && power.Value.Years.CompareTo(Years) < (type is EliminationOrderType.Worst).AsInteger())
-								+ (type is EliminationOrderType.Best).AsInteger();
+			=> Won ? 0
+				   : Uneliminated ? 7 - _scoring.Winners
+								  : _scoring.Powers
+											.Count(power => power.Value.Eliminated
+														 && power.Value.Years.CompareTo(Years) < (type is EliminationOrderType.Worst).AsInteger())
+									+ (type is EliminationOrderType.Best).AsInteger();
 
 		private enum EliminationOrderType : byte
 		{

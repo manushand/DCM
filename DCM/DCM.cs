@@ -27,11 +27,6 @@ public static partial class DCM
 
 	public static T OrThrow<T>(this T? @this,
 							   string? message = null)
-		where T : struct
-		=> @this ?? throw new InvalidOperationException(message);
-
-	public static T OrThrow<T>(this T? @this,
-							   string? message = null)
 		where T : class
 		=> @this ?? throw new InvalidOperationException(message);
 

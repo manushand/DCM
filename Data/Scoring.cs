@@ -1,6 +1,6 @@
 ﻿namespace Data;
 
-using static GamePlayer;
+using Power = Powers;
 
 //	This class is public (as are most of its members) so that C# formulas have access to it
 [PublicAPI]
@@ -10,9 +10,9 @@ public sealed partial class Scoring
 	internal bool IsNone => ScoringSystem.IsNone;
 
 	private ScoringSystem ScoringSystem { get; }
-	private Dictionary<Powers, GamePlayer> GamePlayers { get; }
+	private Dictionary<Power, GamePlayer> GamePlayers { get; }
 
-	internal Powers PlayerPower
+	internal Power PlayerPower
 	{
 		private get;
 		set;
@@ -47,6 +47,9 @@ public sealed partial class Scoring
 	internal void UpdatePlayerAntes()
 		=> Powers.ForEach(power => power.Value.PlayerAnte = GamePlayers[power.Key].PlayerAnte);
 
+	private static InvalidOperationException ScoringException(string reference = nameof (OtherScore))
+		=> new ($"Reference to data not collected for scoring ({reference}).");
+
 	#region Scoring fields and properties
 
 	private IEnumerable<double> AllProvisionalScores => Powers.Select(static power => power.Value.ProvisionalScore);
@@ -57,22 +60,29 @@ public sealed partial class Scoring
 
 	#region Scoring properties shared by all players
 
-	public bool? OtherScoreValid { get; set; }
+	//	This is the only field that can be set during scoring. Initially null, if set to false when an exception
+	//	is thrown, the error will be reported to the user as NOT being specific to the particular scoring power.
+	//	Its value can only be set and accessed in systems that use the system-defined "OtherScore" capability.
+	public bool? OtherScoreValid
+	{
+		get => ScoringSystem.UsesOtherScore ? field : throw ScoringException();
+		set => field = ScoringSystem.UsesOtherScore ? value : throw ScoringException();
+	}
 
 	//  C# Formula use case: foreach (var (name, data) in Powers) ...
-	public Dictionary<Powers, PowerData> Powers { get; }
+	public Dictionary<Power, PowerData> Powers { get; }
 
 	//	C# Formula use case: if (Player == Austria) ...
 	public PowerData Player => Powers[PlayerPower];
 
 	//	C# Formula use case: Austria.Centers, England.Scoring, etc.
-	public PowerData Austria => Powers[GamePlayer.Powers.Austria];
-	public PowerData England => Powers[GamePlayer.Powers.England];
-	public PowerData France => Powers[GamePlayer.Powers.France];
-	public PowerData Germany => Powers[GamePlayer.Powers.Germany];
-	public PowerData Italy => Powers[GamePlayer.Powers.Italy];
-	public PowerData Russia => Powers[GamePlayer.Powers.Russia];
-	public PowerData Turkey => Powers[GamePlayer.Powers.Turkey];
+	public PowerData Austria => Powers[Power.Austria];
+	public PowerData England => Powers[Power.England];
+	public PowerData France => Powers[Power.France];
+	public PowerData Germany => Powers[Power.Germany];
+	public PowerData Italy => Powers[Power.Italy];
+	public PowerData Russia => Powers[Power.Russia];
+	public PowerData Turkey => Powers[Power.Turkey];
 
 	public bool SingleWinner => Winners is 1;
 
