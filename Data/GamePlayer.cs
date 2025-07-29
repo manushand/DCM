@@ -2,6 +2,8 @@
 
 public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer>
 {
+	#region Enumerations
+
 	public enum Powers : sbyte
 	{
 		//	IMPORTANT: Values must be -1 through 6
@@ -23,6 +25,10 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		Win = 1
 	}
 
+	#endregion
+
+	#region Fields
+
 	public int? Centers;
 	public int? Years;
 	public double Other;
@@ -31,6 +37,10 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 	public Results Result;
 
 	private double? _finalScore;
+
+	#endregion
+
+	#region Properties
 
 	public string PowerName => Power.InCaps();
 
@@ -85,6 +95,8 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 								|| Game.ScoringSystem.UsesYearsPlayed && Years is null;
 
 	private Tournament Tournament => Game.Tournament;
+
+	#endregion
 
 	#region IComparable interface implementation
 
@@ -183,8 +195,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		TournamentTeamPlayerIds.FillWith(Player.TournamentTeamPlayers(Tournament)
 											   .Ids());
 		PlayerGroups.Clear();
-		Player.Groups.ForEach(group => PlayerGroups.Add(group, [..group.Players
-																	   .Ids()]));
+		Player.Groups.ForEach(group => PlayerGroups.Add(group, [..group.Players.Ids()]));
 		return this;
 	}
 
@@ -217,7 +228,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 		//	Player-Group Conflicts
 		//	These are applied only in the first round if the tournament uses a score conflict.
-		if (Tournament.ScoreConflict is 0 || Game.Round.Number is 1)
+		if (Tournament.ScoreConflict is 0 || _roundNumber is 1)
 			foreach (var (group, memberIds) in PlayerGroups)
 				opponentIds.ForSome(memberIds.Contains,
 									opponent =>

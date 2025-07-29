@@ -133,7 +133,7 @@ public sealed class Round : IdentityRecord<Round>
 		gamePlayers.AddRange(preSeeded);
 		Delete(preSeeded);
 
-		//	Create the list of seeding GamePlayers, and prepare them all for seeding
+		//	Create the list of seeding GamePlayers and prepare them all for seeding
 		var seeding = gamePlayers.Select(static gamePlayer => gamePlayer.PrepareForSeeding())
 								 .ToArray();
 

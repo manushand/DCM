@@ -26,6 +26,8 @@ internal sealed partial class GamesForm : Form
 
 	private bool AnyPowerUnassigned => GamePlayers.Any(static player => player.Power is TBD);
 
+	private Control[] ScoreDisplayControls => [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, ScoresPanel, TotalScoreLabel];
+
 	private GamesForm(IEnumerable<Game> games)
 	{
 		Games = [..games];
@@ -42,6 +44,47 @@ internal sealed partial class GamesForm : Form
 	internal GamesForm(Player player,
 					   params Game[] games) : this(games.Length is not 0 ? games : player.Games)
 		=> Player = player;
+
+	//	This static method is internal because it is also used by GroupGamesForm.
+	//	TODO: A better way to do this would be to have both forms inherit from a common base class.
+	internal static void FillFinalScores(Game game,
+										 List<Label> scoreLabels,
+										 Label totalScoreLabel,
+										 ToolTip toolTip)
+	{
+		var format = game.ScoringSystem.ScoreFormat;
+		var gamePlayers = game.GamePlayers.ToArray();
+		var isGroup = !game.Tournament.IsEvent;
+		var scoreOrRating = isGroup
+								? "Rating"
+								: "Score";
+		var usesAnte = isGroup && game.ScoringSystem.UsesPlayerAnte;
+		scoreLabels.Apply((scoreLabel, i) =>
+						  {
+							  var gamePlayer = gamePlayers[i];
+							  var score = gamePlayer.FinalScore;
+							  scoreLabel.Text = score.ToString(format);
+							  var preGame = game.Round
+												.PreRoundScore(gamePlayer);
+							  var postGame = isGroup
+												 ? game.Tournament
+													   .Group
+													   .RatePlayer(gamePlayer.Player, game, includeTheBeforeGame: true)?
+													   .Rating ?? 0
+												 : preGame + score;
+							  List<string> details = [$"Pre-Game {scoreOrRating}: {preGame}"];
+							  var ante = gamePlayer.PlayerAnte;
+							  if (usesAnte)
+								  details.AddRange($"Player Ante: {ante}",
+												   $"Game Score: {ante + score}");
+							  if (isGroup)
+								  details.Add($"Rating Change: {postGame - preGame}");
+							  details.Add($"Post-Game {scoreOrRating}: {postGame}");
+							  toolTip.SetToolTip(scoreLabels[i], details.BulletList($"{gamePlayer.Player}"));
+						  });
+		totalScoreLabel.Text = gamePlayers.Sum(static gamePlayer => gamePlayer.FinalScore)
+										  .ToString(format);
+	}
 
 	private void GamesForm_Load(object sender,
 								EventArgs e)
@@ -114,14 +157,13 @@ internal sealed partial class GamesForm : Form
 		UpdateMany(GamePlayers);
 		List<string?> errors = [];
 		var scored = allFilledIn && Game.Status is Finished && Game.CalculateScores(out errors);
-		SetVisible(scored,
-				   [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
+		SetVisible(scored, ScoreDisplayControls);
 		//	If all GamePlayers are totally filled in, but we were told NOT allFilledIn,
 		//	this means that FinalGameDataValidation failed. Show the GameInErrorButton.
 		GameInErrorButton.Visible = !allFilledIn
 								 && GamePlayers.All(static gamePlayer => gamePlayer.PlayComplete);
 		if (scored)
-			GroupGamesForm.FillFinalScores(Game, ScoreLabels, TotalScoreLabel, ToolTip);
+			FillFinalScores(Game, ScoreLabels, TotalScoreLabel, ToolTip);
 		else if (errors.Count > 0)
 			MessageBox.Show(errors.OfType<string>().BulletList("Error(s)"),
 							"Game in Error",
@@ -199,7 +241,7 @@ internal sealed partial class GamesForm : Form
 		if (PlayerNameComboBoxes.All(static box => box.SelectedItem is not null))
 			SkipHandlers(() =>
 						 {
-							 SetEnabled(false, [..PlayerNameComboBoxes]);
+							 SetEnabled(false, PlayerNameComboBoxes);
 							 GameControl.Active = Game.Status is Underway;
 							 PlayerAssignmentAdviceLabel.Hide();
 							 FillConflicts();
@@ -265,6 +307,7 @@ internal sealed partial class GamesForm : Form
 		}
 		Game.Status = newStatus;
 		UpdateOne(Game);
+		SetVisible(newStatus is Finished, ScoreDisplayControls);
 		GameControl.Active = Game.Status is Underway && !AnyPowerUnassigned;
 		SetScoringSystemChangeability();
 	}

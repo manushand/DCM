@@ -27,9 +27,9 @@ internal sealed partial class GameControl : UserControl
 		set
 		{
 			field = value;
-			SetEnabled(value.UsesGameResult || TournamentScoringSystem?.UsesGameResult is true, [..ResultComboBoxes]);
-			SetEnabled(value.UsesCenterCount || TournamentScoringSystem?.UsesCenterCount is true, [..CentersComboBoxes]);
-			SetEnabled(value.UsesYearsPlayed || TournamentScoringSystem?.UsesYearsPlayed is true, [..YearsComboBoxes]);
+			SetEnabled(value.UsesGameResult || TournamentScoringSystem?.UsesGameResult is true, ResultComboBoxes);
+			SetEnabled(value.UsesCenterCount || TournamentScoringSystem?.UsesCenterCount is true, CentersComboBoxes);
+			SetEnabled(value.UsesYearsPlayed || TournamentScoringSystem?.UsesYearsPlayed is true, YearsComboBoxes);
 			AllComboBoxes.ForSome(static box => !box.Enabled, static box => box.Deselect());
 			SetOtherScoreLabel(value.OtherScoreAlias);
 			OtherTextBoxes.ForEach(box =>
@@ -42,9 +42,10 @@ internal sealed partial class GameControl : UserControl
 	} = ScoringSystem.None;
 
 	/// <summary>
-	///     Holds the main Scoring System for a Tournament (in a test game situation on the ScoringSystemInfoForm,
-	///     this is left null) so that all necessary ComboBoxes are enabled even if the game overrides the scoring
-	///     system with one that doesn't think it needs certain things (i.e., game result, center count, or year).
+	///     Holds the main Scoring System for a Tournament so that all necessary ComboBoxes are enabled
+	///		even if the game overrides the scoring system with one that doesn't think it needs certain
+	///		things (i.e., game result, center count, or year). In a test game (on the ScoringSystemInfoForm)
+	///     this field is left null.
 	/// </summary>
 	[DesignerSerializationVisibility(Hidden)]
 	internal ScoringSystem? TournamentScoringSystem { private get; set; }
@@ -184,7 +185,7 @@ internal sealed partial class GameControl : UserControl
 																						   ? WinText
 																						   : DrawText);
 			}
-		//	Turn callbacks on again, and force a callback now that all data is loaded.
+		//	Turn callbacks on again and force a callback now that all data is loaded.
 		SkippingCallbacks = false;
 		RunGameDataChangedCallback();
 	}
@@ -301,7 +302,7 @@ internal sealed partial class GameControl : UserControl
 								 ResultBoxFor(CentersComboBoxes.Single(box => box != centersComboBox && box.SelectedIndex > 0)).SelectedIndex = 1;
 							 break;
 						 case 1 when centersComboBox.SelectedIndex is 0:
-							 //	If win/loss is win and centers is 0, clear the centers (can't be true!)
+							 //	If win/loss is win and the center count is 0, clear the centers (can't be true!)
 							 centersComboBox.Deselect();
 							 goto case 1;
 						 case 1:
@@ -397,7 +398,7 @@ internal sealed partial class GameControl : UserControl
 								 if (NumberOfWinners is 1 && resultComboBox.SelectedIndex is 1)
 									 resultComboBox.Items[1] = ConcText;
 								 else if (ScoringSystem.DrawsIncludeAllSurvivors)
-									 //	If DIAS, and if no other power claims a solo, set box to WIN
+									 //	If DIAS, and if no other power claims a solo, set the box to WIN
 									 if (CentersComboBoxes.All(static comboBox => comboBox.SelectedIndex < 18)
 									 && (NumberOfWinners is not 1 || !SoloConcededCheckBox.Checked))
 									 {
@@ -582,7 +583,7 @@ internal sealed partial class GameControl : UserControl
 																+ Max(0, index));
 										 //	The Max(0...) call below isn't just superfluous.
 										 //	It speeds us and is needed for exception prevention
-										 //	during generation of ScoringSystem test game data.
+										 //	while generating the ScoringSystem test game data.
 										 comboBox.FillRange(0, Max(0, available));
 										 comboBox.SelectedIndex = index < comboBox.Items.Count
 																	  ? index
@@ -721,7 +722,7 @@ internal sealed partial class GameControl : UserControl
 					ResultComboBoxes.ForEach(box => box.SelectedIndex = (CentersBoxFor(box).SelectedIndex >= minToWin).AsInteger());
 
 				//	This is separate from the above. Do not make it an "else if" -- the NumberOfWinners may have changed.
-				//	This code, which just sets the ComboBox item text if there is a sole winner is (I think) only needed
+				//	This code, which just sets the ComboBox item text if there is a sole winner, is (I think) only needed
 				//	here in the test game code; I'm less sure about that for the above code (hence the TODOs up there).
 				var concession = minToWin is 1 && RandomNumber(7) is 0;
 				if (NumberOfWinners is not 1)

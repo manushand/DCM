@@ -74,11 +74,11 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 
 	public Group Group
 	{
-		get => GroupId is null or 0
-				   ? Group.None
-				   : field.Id != GroupId
+		get => GroupId > 0
+				   ? field.Id != GroupId
 					   ? field = ReadById<Group>(GroupId.Value)
-					   : field;
+					   : field
+				   : Group.None;
 		internal init => (field, GroupId) = (value, value.Id);
 	} = Group.None;
 
@@ -106,8 +106,7 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 																{
 																	Round = round,
 																	Player = tournamentPlayer.Player
-																})
-									.ToArray());
+																}));
 		return round;
 	}
 

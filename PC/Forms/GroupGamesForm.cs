@@ -111,7 +111,7 @@ internal sealed partial class GroupGamesForm : Form
 		SetVisible(visible,
 				   GameControl, GameStatusComboBox, GameDateTimePicker, GameNameTextBox,
 				   PlayerColumnHeaderLabel, GameStatusLabel, GameNameLabel, GameDateLabel);
-		SetEnabled(Game.IsNone, [..PlayerComboBoxes]);
+		SetEnabled(Game.IsNone, PlayerComboBoxes);
 		var scored = Game.Status is Finished;
 		SetVisible(scored, [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
 		OrderByNamePanel.Visible = GameStatusComboBox.SelectedIndex < 1;
@@ -127,7 +127,7 @@ internal sealed partial class GroupGamesForm : Form
 		SetVisible(false, ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, GameInErrorButton);
 		GameControl.Active = true;
 		//  TODO - Is there some reason that the line above prevents the one below from joining the SetVisible above?
-		SetVisible(false, [..ScoreLabels]);
+		SetVisible(false, ScoreLabels);
 		Game = Game.None;
 		GameControl.ClearGame();
 		GameNameTextBox.Clear();
@@ -211,7 +211,7 @@ internal sealed partial class GroupGamesForm : Form
 		GameControl.Active = status is Underway;
 		var seeding = status is Seeded;
 		OrderByNamePanel.Visible = seeding;
-		SetEnabled(seeding, [..PlayerComboBoxes]);
+		SetEnabled(seeding, PlayerComboBoxes);
 		//	Games in Seeded status aren't (yet) recorded in the database.
 		if (seeding)
 			return;
@@ -326,7 +326,7 @@ internal sealed partial class GroupGamesForm : Form
 		//	Calculate the scores
 		if (Game.Scored && Game.ScoringSystemId == Group.ScoringSystemId
 		||  Game.CalculateScores(out var errors, Group.ScoringSystem))
-			FillFinalScores(Game, ScoreLabels, TotalScoreLabel, ToolTip);
+			GamesForm.FillFinalScores(Game, ScoreLabels, TotalScoreLabel, ToolTip);
 		else
 			MessageBox.Show(errors.OfType<string>().BulletList("Error(s)"),
 							"Game in Error",
@@ -347,45 +347,6 @@ internal sealed partial class GroupGamesForm : Form
 						"Game in Error",
 						OK,
 						Warning);
-	}
-
-	public static void FillFinalScores(Game game,
-									   List<Label> scoreLabels,
-									   Label totalScoreLabel,
-									   ToolTip toolTip)
-	{
-		var format = game.ScoringSystem.ScoreFormat;
-		var gamePlayers = game.GamePlayers.ToArray();
-		var isGroup = !game.Tournament.IsEvent;
-		var scoreOrRating = isGroup
-								? "Rating"
-								: "Score";
-		var usesAnte = isGroup && game.ScoringSystem.UsesPlayerAnte;
-		scoreLabels.Apply((scoreLabel, i) =>
-						  {
-							  var gamePlayer = gamePlayers[i];
-							  var score = gamePlayer.FinalScore;
-							  scoreLabel.Text = score.ToString(format);
-							  var preGame = game.Round
-												.PreRoundScore(gamePlayer);
-							  var postGame = isGroup
-												 ? game.Tournament
-													   .Group
-													   .RatePlayer(gamePlayer.Player, game, includeTheBeforeGame: true)?
-													   .Rating ?? 0
-												 : preGame + score;
-							  List<string> details = [$"Pre-Game {scoreOrRating}: {preGame}"];
-							  var ante = gamePlayer.PlayerAnte;
-							  if (usesAnte)
-								  details.AddRange($"Player Ante: {ante}",
-												   $"Game Score: {ante + score}");
-							  if (isGroup)
-								  details.Add($"Rating Change: {postGame - preGame}");
-							  details.Add($"Post-Game {scoreOrRating}: {postGame}");
-							  toolTip.SetToolTip(scoreLabels[i], details.BulletList($"{gamePlayer.Player}"));
-						  });
-		totalScoreLabel.Text = gamePlayers.Sum(static gamePlayer => gamePlayer.FinalScore)
-										  .ToString(format);
 	}
 
 	#region GroupGame class
