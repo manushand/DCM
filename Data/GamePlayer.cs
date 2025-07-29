@@ -216,16 +216,18 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 									   });
 
 		//	Player-Group Conflicts
-		foreach (var (group, memberIds) in PlayerGroups)
-			opponentIds.ForSome(memberIds.Contains,
-								opponent =>
-								{
-									var player = group.Players.Single(player => player.Id == opponent);
-									var conflict = group.Conflict;
-									Conflict += conflict;
-									if (fillDetails)
-										ConflictDetails.Add($"{conflict.Points()} for being in the group {group} with {player}.");
-								});
+		//	These are applied only in the first round if the tournament uses a score conflict.
+		if (Tournament.ScoreConflict is 0 || Game.Round.Number is 1)
+			foreach (var (group, memberIds) in PlayerGroups)
+				opponentIds.ForSome(memberIds.Contains,
+									opponent =>
+									{
+										var player = group.Players.Single(player => player.Id == opponent);
+										var conflict = group.Conflict;
+										Conflict += conflict;
+										if (fillDetails)
+											ConflictDetails.Add($"{conflict.Points()} for being in the group {group} with {player}.");
+									});
 
 		//	Powers-Played-Earlier Conflicts
 		if (Power is not TBD)
