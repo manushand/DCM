@@ -248,9 +248,9 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 
 		string ErrorDetail(string reason, GamePlayer gamePlayer, Exception exception)
 		{
-			var source = scoring.OtherScoreValid is false
-									? "game data"
-									: $"{gamePlayer.Power}";
+			var source = UsesOtherScore && scoring.OtherScoreValid is false
+							 ? "game data"
+							 : $"{gamePlayer.Power}";
 			var message = $"{exception.Message} {exception.InnerException?.Message}";
 			message = exception switch
 					  {
