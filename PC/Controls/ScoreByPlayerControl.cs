@@ -46,7 +46,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 		if (TournamentScores.Any(static score => !score.Qualified))
 			FinalScoresTabControl.TabPages
 								 .Add(UnqualifiedPlayersTabPage);
-		FinalScoresTabControl.SelectedIndex = FinalScoresTabControl.TabCount - 1;
+		FinalScoresTabControl.SelectedIndex = default;
 		FinalScoresTabControl_SelectedIndexChanged();
 
 		void ScoreTournament()
@@ -269,8 +269,9 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 			Qualified = roundsPlayed >= Tournament.MinimumRounds;
 			//	Drop then scale the lowest rounds
 			if (scoringRounds > _roundsBeforeScoreChanges)
-				foreach (var tuple in RoundScores.Order()
+				foreach (var tuple in RoundScores.Take(scoringRounds)
 												 .Select(static (score, roundNumber) => new { score, roundNumber })
+												 .OrderBy(static a => a.score)
 												 .Take(_roundsToHaveScoreChanges)
 												 .Select(static (a, i) => new { a.roundNumber, drop = i < Tournament.RoundsToDrop }))
 				{
