@@ -2,16 +2,15 @@
 
 public sealed class Round : IdentityRecord<Round>
 {
-	/// <summary>
-	///     Holds calculated scores (sum of scores in prior rounds of the same tournament) for a given round.
-	///     These calculations are held in this cache because they are expensive and the result often requested
-	///     during seeding.
-	/// </summary>
-	private readonly Dictionary<int, List<double>> _preRoundGames = [];
+	public int Number;
 
 	private int? _scoringSystemId;
 
-	public int Number;
+	/// <summary>
+	///     Holds calculated scores (sum of scores in prior rounds of the same tournament) for a given round.
+	///     These are held in this cache because they are expensive and are often requested during seeding.
+	/// </summary>
+	private Dictionary<int, List<double>> PreRoundGames { get; } = [];
 
 	internal int TournamentId { get; private set; }
 
@@ -25,19 +24,24 @@ public sealed class Round : IdentityRecord<Round>
 
 	public bool GamesSeeded => SeededGames.Length is not 0;
 	public bool GamesStarted => StartedGames.Length is not 0;
+
 	public Game.Statuses Status => GamesSeeded
 									   ? Seeded
 									   : Games.Any(static game => game.Status is Underway)
 										   ? Underway
 										   : Finished;
 
+	public int ScoringSystemId => _scoringSystemId ?? Tournament.ScoringSystemId;
+
+	public int Conflict => Games.Sum(static game => game.Conflict);
+
 	//	TODO - It may be useful to have Workable return true if a specific Setting is set,
 	//	TODO - allowing ALL rounds to be workable, even when finished
 	public bool Workable => Number == (Tournament.Rounds.Length is 0 ? default : Tournament.Rounds.Max(static round => round.Number))
-                         && (Number < Tournament.TotalRounds || Games.Any(static game => game.Status is not Finished))
-                         || Games.Length is 0;
+						 && (Number < Tournament.TotalRounds || Games.Any(static game => game.Status is not Finished))
+						 || Games.Length is 0;
 
-	public int ScoringSystemId => _scoringSystemId ?? Tournament.ScoringSystemId;
+	public bool ScoringSystemIsDefault => _scoringSystemId is null;
 
 	public ScoringSystem ScoringSystem
 	{
@@ -55,8 +59,6 @@ public sealed class Round : IdentityRecord<Round>
 		}
 	} = ScoringSystem.None;
 
-	public bool ScoringSystemIsDefault => _scoringSystemId is null;
-
 	public Tournament Tournament
 	{
 		get => field.Id == TournamentId
@@ -68,8 +70,6 @@ public sealed class Round : IdentityRecord<Round>
 	public Game[] Games => [..ReadMany<Game>(game => game.RoundId == Id).OrderBy(static game => game.Number)];
 
 	public RoundPlayer[] RoundPlayers => [..ReadMany<RoundPlayer>(roundPlayer => roundPlayer.RoundId == Id)];
-
-	public int Conflict => Games.Sum(static game => game.Conflict);
 
 	public void AddPlayer(Player player)
 		=> CreateOne(new RoundPlayer { Round = this, Player = player });
@@ -121,10 +121,6 @@ public sealed class Round : IdentityRecord<Round>
 										Result = Unknown
 									});
 				}
-
-		/*  TODO: I see no reason why I was making a copy of the gamePlayers List and using it instead below.
-		var seedList = [..gamePlayers];
-		*/
 
 		//	Now add in for optimization all the existing players in seeded but not started games
 
@@ -193,11 +189,17 @@ public sealed class Round : IdentityRecord<Round>
 					//	players and see if this improves the total conflict or not. Ties go
 					//	to the runner (i.e., if the swap is no better, keep what we have).
 					var updatedConflict = SwapSeeders(lastSeeded, swapWith);
+					//	Do not keep the swap if it does not IMPROVE things (that is, if the
+					//	totalConflict stays the same).  Because then we'll just swap again
+					//	and again back and forth without improving, just keeping the same
+					//	conflict total, and we'll never finish.
+					//	TODO: It may be possible, though, that some tied-total leads to
+					//	TODO: a better final result than others, so maybe (?) introduce
+					//	TODO: some 50% chance of keeping the swap??
 					if (updatedConflict < totalConflict)
 					{
 						//	The swap improved things.  Keep it.
-						//	Reorder the GamePlayers and start again
-						//	hoping to only make things even better.
+						//	Start over again, hoping things get even better.
 						totalConflict = updatedConflict;
 						//	TODO: Do we really need to start completely over?
 						lastSeeded = -1;
@@ -242,25 +244,25 @@ public sealed class Round : IdentityRecord<Round>
 	}
 
 	private List<double> PriorGameScores(GamePlayer gamePlayer)
-		=> _preRoundGames.GetOrSet(gamePlayer.PlayerId,
-								   playerId =>
-								   {
-									   var roundsPrior = Tournament.IsEvent
-															 ? Number - 1
-															 : 1;
-									   var scores = Tournament.Rounds
-															  .Take(roundsPrior)
-															  .SelectMany(static r => r.FinishedGames)
-															  .Where(game => (Tournament.IsEvent || game.Date < gamePlayer.Game.Date)
-																		  && game.GamePlayers.HasPlayerId(playerId))
-															  .Select(game => game.GamePlayers.ByPlayerId(playerId).FinalScore)
-															  //	Leave this .DefaultIfEmpty; it's important that at least one score is in the List
-															  .DefaultIfEmpty(Tournament.UnplayedScore)
-															  .ToList();
-									   while (scores.Count < roundsPrior)
-										   scores.Add(Tournament.UnplayedScore);
-									   return scores;
-								   });
+		=> PreRoundGames.GetOrSet(gamePlayer.PlayerId,
+								  playerId =>
+								  {
+									  var roundsPrior = Tournament.IsEvent
+															? Number - 1
+															: 1;
+									  var scores = Tournament.Rounds
+															 .Take(roundsPrior)
+															 .SelectMany(static r => r.FinishedGames)
+															 .Where(game => (Tournament.IsEvent || game.Date < gamePlayer.Game.Date)
+																			&& game.GamePlayers.HasPlayerId(playerId))
+															 .Select(game => game.GamePlayers.ByPlayerId(playerId).FinalScore)
+															 //	Leave this .DefaultIfEmpty; it's important that at least one score is in the List
+															 .DefaultIfEmpty(Tournament.UnplayedScore)
+															 .ToList();
+									  while (scores.Count < roundsPrior)
+										  scores.Add(Tournament.UnplayedScore);
+									  return scores;
+								  });
 
 	/// <summary>
 	///     Returns the average of a player's game scores from all prior rounds in
@@ -273,9 +275,8 @@ public sealed class Round : IdentityRecord<Round>
 		=> PriorGameScores(gamePlayer).Average();
 
 	/// <summary>
-	///     Returns the sum of a player's scores from all prior rounds in
-	///     the tournament or, if this is a Group, the player's group rating,
-	///     calculating (then caching) it if necessary.
+	///     Returns the sum of a player's scores from all prior rounds in the tournament or, if
+	///     this is a Group, the player's group rating, calculating (then caching) it if necessary.
 	/// </summary>
 	/// <param name="gamePlayer">The player whose score is being requested.</param>
 	/// <returns>The sum of the player's game scores in all prior tournament rounds.</returns>
@@ -292,7 +293,7 @@ public sealed class Round : IdentityRecord<Round>
 	/// </summary>
 	/// <param name="player">The player whose FinalScore is changing.</param>
 	internal void ClearPreRoundScore(Player player)
-		=> _preRoundGames.Remove(player.Id);
+		=> PreRoundGames.Remove(player.Id);
 
 	#region IInfoRecord interface implementation
 

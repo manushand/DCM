@@ -254,8 +254,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 										   .FinishedGames
 										   .SelectMany(static game => game.GamePlayers)
 										   .SingleOrDefault(gp => gp.PlayerId == player.Id);
-				RoundScores[roundNumber] = gamePlayer?.FinalScore
-										   ?? Tournament.UnplayedScore;
+				RoundScores[roundNumber] = gamePlayer?.FinalScore ?? Tournament.UnplayedScore;
 				centers[roundNumber] = gamePlayer?.Centers ?? 0;
 				years[roundNumber] = gamePlayer?.Years ?? 0;
 				if (gamePlayer is null)
@@ -269,24 +268,24 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 			Qualified = roundsPlayed >= Tournament.MinimumRounds;
 			//	Drop then scale the lowest rounds
 			if (scoringRounds > _roundsBeforeScoreChanges)
-				foreach (var tuple in RoundScores.Take(scoringRounds)
-												 .Select(static (score, roundNumber) => new { score, roundNumber })
-												 .OrderBy(static a => a.score)
-												 .Take(_roundsToHaveScoreChanges)
-												 .Select(static (a, i) => new { a.roundNumber, drop = i < Tournament.RoundsToDrop }))
+				foreach (var (roundNumber, drop) in RoundScores.Take(scoringRounds)
+															   .Select(static (score, roundNumber) => new { score, roundNumber })
+															   .OrderBy(static a => a.score)
+															   .Take(_roundsToHaveScoreChanges)
+															   .Select(static (a, i) => (a.roundNumber, i < Tournament.RoundsToDrop)))
 				{
-					if (tuple.drop)
+					if (drop)
 					{
-						RoundScores[tuple.roundNumber] = Tournament.UnplayedScore;
-						centers[tuple.roundNumber] =
-							years[tuple.roundNumber] =
+						RoundScores[roundNumber] = Tournament.UnplayedScore;
+						centers[roundNumber] =
+							years[roundNumber] =
 								0;
 					}
 					else
-						RoundScores[tuple.roundNumber] *= Tournament.ScalePercentage;
-					ScoreNotes[tuple.roundNumber] += tuple.drop
-														 ? TooLow
-														 : Scaled;
+						RoundScores[roundNumber] *= Tournament.ScalePercentage / 100d;
+					ScoreNotes[roundNumber] += drop
+												   ? TooLow
+												   : Scaled;
 				}
 			Score = RoundScores.Sum();
 			_totalCenters = centers.Sum();

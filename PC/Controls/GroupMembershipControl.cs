@@ -18,7 +18,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 		=> InitializeComponent();
 
 	internal void ClearMemberList()
-		=> MemberListBox.Items.Clear();
+		=> MemberListBox.Clear();
 
 	private void JoinButton_Click(object sender,
 								  EventArgs e)
@@ -48,10 +48,8 @@ internal sealed partial class GroupMembershipControl : UserControl
 	{
 		if (Group.IsNone)
 		{
-			MemberListBox.Items
-						 .Clear();
-			NonMemberListBox.Items
-							.Clear();
+			MemberListBox.Clear();
+			NonMemberListBox.Clear();
 			MembersLabel.Text = "Members";
 			return;
 		}

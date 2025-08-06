@@ -195,7 +195,8 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		TournamentTeamPlayerIds.FillWith(Player.TournamentTeamPlayers(Tournament)
 											   .Ids());
 		PlayerGroups.Clear();
-		Player.Groups.ForEach(group => PlayerGroups.Add(group, [..group.Players.Ids()]));
+		Player.Groups
+			  .ForEach(group => PlayerGroups.Add(group, [..group.Players.Ids()]));
 		return this;
 	}
 

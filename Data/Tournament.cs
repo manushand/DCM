@@ -121,6 +121,7 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 		Name = record.String(nameof (Name));
 		Date = record.NullableDate(nameof (Date)) ?? DateTime.Today;
 		Description = record.String(nameof (Description));
+		GroupId = record.NullableInteger(nameof (GroupId));
 		ScoringSystemId = record.Integer(nameof (ScoringSystemId));
 		TeamConflict = record.Integer(nameof (TeamConflict));
 		PlayerConflict = record.Integer(nameof (PlayerConflict));
@@ -146,7 +147,6 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 		var scoreConflict = record.Integer(nameof (ScoreConflict));
 		ScoreConflict = Abs(scoreConflict);
 		ProgressiveScoreConflict = scoreConflict < 0;
-		GroupId = record.NullableInteger(nameof (GroupId));
 		return this;
 	}
 

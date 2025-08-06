@@ -53,10 +53,10 @@ public sealed class Game : IdentityRecord<Game>
 	public IEnumerable<int> PlayerIds => GamePlayers.Select(static gamePlayer => gamePlayer.PlayerId);
 
 	internal double AveragePreGameScore => GamePlayers.Select(PreGameScore)
-													   .ToArray() //	These two .ToArray() call aren't needed, ...
-													   .DefaultIfEmpty(Tournament.UnplayedScore)
-													   .ToArray() //	...but for some reason they increase speed big-time
-													   .Average();
+													  .ToArray() //	These two .ToArray() call aren't needed, ...
+													  .DefaultIfEmpty(Tournament.UnplayedScore)
+													  .ToArray() //	...but for some reason they increase speed big-time
+													  .Average();
 
 	internal int Conflict => GamePlayers.Sum(static game => game.Conflict);
 

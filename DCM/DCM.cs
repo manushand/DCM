@@ -31,31 +31,31 @@ public static partial class DCM
 		=> @this ?? throw new InvalidOperationException(message);
 
 	public static void FillWith<T>(this List<T> @this,
-								   IEnumerable<T> items)
+								   [InstantHandle] IEnumerable<T> items)
 	{
 		@this.Clear();
 		@this.AddRange(items);
 	}
 
 	public static void ForEach<T>([InstantHandle] this IEnumerable<T> @this,
-								  Action<T> action)
+								  [InstantHandle] Action<T> action)
 		=> @this.ToList()
 				.ForEach(action);
 
 	public static void ForSome<T>([InstantHandle] this IEnumerable<T> @this,
-								  Func<T, bool> func,
-								  Action<T> action)
+								  [InstantHandle] Func<T, bool> func,
+								  [InstantHandle] Action<T> action)
 		=> @this.Where(func)
 				.ForEach(action);
 
 	public static TValue GetOrSet<TKey, TValue>(this IDictionary<TKey, TValue> @this,
 												TKey key,
-												Func<TKey, TValue> func)
+												[InstantHandle] Func<TKey, TValue> func)
 		=> @this.TryGetValue(key, out var result)
 			   ? result
 			   : @this[key] = func(key);
 
-	public static string BulletList(this IEnumerable<object> @this,
+	public static string BulletList([InstantHandle] this IEnumerable<object> @this,
 									string intro)
 		=> $"{intro}:{Bullet}{Join(Bullet, @this)}";
 
@@ -110,8 +110,8 @@ public static partial class DCM
 		&& @this >= lowerBound
 		&& @this <= upperBound;
 
-	public static void Apply<T>(this IEnumerable<T> @this,
-								Action<T, int> func)
+	public static void Apply<T>([InstantHandle] this IEnumerable<T> @this,
+								[InstantHandle] Action<T, int> func)
 		where T : class
 		=> @this.Select(static (item, index) => (item, index))
 				.ForEach(tuple => func(tuple.item, tuple.index));
@@ -121,9 +121,9 @@ public static partial class DCM
 		=> @this.Equals(other, InvariantCultureIgnoreCase);
 
 	public static string Pluralize<T>(this string @this,
-									  IEnumerable<T> items,
+									  IReadOnlyCollection<T> items,
 									  bool provideCount = false)
-		=> @this.Pluralize(items.Count(), provideCount);
+		=> @this.Pluralize(items.Count, provideCount);
 
 	public static string Pluralize(this string @this,
 								   int count,
@@ -154,7 +154,7 @@ public static partial class DCM
 
 	public static void ForRange(int start,
 								int count,
-								Action<int> action)
+								[InstantHandle] Action<int> action)
 		=> Range(start, count).ForEach(action);
 
 	public static IEnumerable<int> Range(int start,

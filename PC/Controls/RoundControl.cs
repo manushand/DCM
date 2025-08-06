@@ -683,10 +683,6 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		=> SeededDataGridView.Print(Tournament.Name,
 									$"Seeding for Round {Round}");
 
-	private void ComboBox_EnabledChanged(object sender,
-										 EventArgs e)
-		=> sender.ToggleEnabled();
-
 	private void FindPlayerTextBox_TextChanged(object sender,
 											   EventArgs e)
 	{

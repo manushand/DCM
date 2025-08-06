@@ -38,7 +38,7 @@ internal sealed partial class TeamsControl : UserControl
 	private void FillMembershipLists(object? sender = null,
 									 EventArgs? e = null)
 	{
-		MemberListBox.Items.Clear();
+		MemberListBox.Clear();
 		if (Team.IsNone)
 			SelectNoTeam();
 		else
@@ -46,12 +46,11 @@ internal sealed partial class TeamsControl : UserControl
 			var members = Team.Players
 							  .Sorted(LastNameRadioButton.Checked)
 							  .ToArray();
-			var memberCount = members.Length;
 			var selectedMember = MemberListBox.GetSelected<Player>();
 			MemberListBox.FillWithRecords(members);
 			if (selectedMember is not null)
 				MemberListBox.SelectedItem = MemberListBox.Find(selectedMember);
-			MembersLabel.Text = "Member".Pluralize(memberCount, true);
+			MembersLabel.Text = "Member".Pluralize(members.Length, true);
 		}
 
 		//	TODO: Hmm, looks like we only include tournament-registered players in the non-member list?
@@ -81,8 +80,8 @@ internal sealed partial class TeamsControl : UserControl
 	private void SelectNoTeam()
 	{
 		SetEnabled(false, RenameButton, DissolveButton);
-		MemberListBox.Items.Clear();
-		NonMemberListBox.Items.Clear();
+		MemberListBox.Clear();
+		NonMemberListBox.Clear();
 		MembersLabel.Text = "Members";
 	}
 

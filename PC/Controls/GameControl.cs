@@ -65,13 +65,7 @@ internal sealed partial class GameControl : UserControl
 	internal bool Active
 	{
 		private get;
-		set
-		{
-			field =
-				SoloConcededCheckBox.Enabled =
-					value;
-			AllComboBoxes.ForEach(box => box.Enabled = value);
-		}
+		set => SetEnabled(field = value, [..AllComboBoxes, ..OtherTextBoxes, SoloConcededCheckBox]);
 	}
 
 	private List<GamePlayer>? GamePlayers { get; set; }
@@ -89,11 +83,13 @@ internal sealed partial class GameControl : UserControl
 	internal GameControl()
 	{
 		InitializeComponent();
-		CentersComboBoxes = CentersPanel.PowerControls<ComboBox>();
-		ResultComboBoxes = ResultPanel.PowerControls<ComboBox>();
-		YearsComboBoxes = YearsPanel.PowerControls<ComboBox>();
-		//	IMPORTANT: Keep them loading into AllComboBoxes in THIS ORDER
-		AllComboBoxes = [..CentersComboBoxes, ..ResultComboBoxes, ..YearsComboBoxes];
+		AllComboBoxes =
+		[
+			//	IMPORTANT: Keep them loading into AllComboBoxes in THIS ORDER
+			..CentersComboBoxes = CentersPanel.PowerControls<ComboBox>(),
+			..ResultComboBoxes = ResultPanel.PowerControls<ComboBox>(),
+			..YearsComboBoxes = YearsPanel.PowerControls<ComboBox>()
+		];
 		OtherTextBoxes = OtherPanel.PowerControls<TextBox>();
 	}
 
@@ -130,7 +126,11 @@ internal sealed partial class GameControl : UserControl
 		GamePlayers = gamePlayers;
 		if (GamePlayers?.Count is null or 0)
 		{
-			SkipHandlers(() => AllComboBoxes.ForEach(static box => box.Deselect()));
+			SkipHandlers(() =>
+						 {
+							 AllComboBoxes.ForEach(static box => box.Deselect());
+							 OtherTextBoxes.ForEach(static textBox => textBox.Text = null);
+						 });
 			Active = false;
 			return;
 		}
@@ -479,10 +479,6 @@ internal sealed partial class GameControl : UserControl
 																		 ? SoloText
 																		 : DrawText);
 	}
-
-	private void ComboBox_EnabledChanged(object sender,
-										 EventArgs e)
-		=> sender.ToggleEnabled();
 
 	internal bool FinalGameDataValidation(out string? error)
 	{

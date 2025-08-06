@@ -226,7 +226,7 @@ internal static class PC
 
 	internal static void ClearDatabase()
 	{
-		Clear();
+		DeleteAllData();
 		if (Settings.EventId > 0)
 			SetEvent();
 	}
@@ -292,6 +292,9 @@ internal static class PC
 
 	internal static void Deselect(this ComboBox comboBox)
 		=> comboBox.SelectedItem = null;
+
+	internal static void Clear(this ListBox listBox)
+		=> listBox.Items.Clear();
 
 	internal static T? GetSelected<T>(this ListBox listBox)
 		where T : class
@@ -424,12 +427,11 @@ internal static class PC
 							  : ContentAlignment.MiddleCenter;
 	}
 
-	/// <summary>
-	///     This method should be called from a ComboBox's EnabledChange event method to toggle
-	///     the box to and from a Label (which is much more visible than a disabled ComboBox).
-	/// </summary>
-	/// <param name="object"></param>
-	internal static void ToggleEnabled(this object @object)
+	//	This method is an event handler for the EnabledChanged event of a ComboBox.
+	//	It makes the ComboBox's label (if it exists) more visible or less visible.
+	internal static void ComboBox_EnabledChanged(this Control _,
+												 object @object,
+												 EventArgs e)
 	{
 		var box = (ComboBox)@object;
 		/*
@@ -529,19 +531,19 @@ internal static class PC
 
 	#region UI utility methods
 
-	internal static void SkipHandlers(Action action)
+	internal static void SkipHandlers([InstantHandle] Action action)
 	{
 		SkippingHandlers = true;
 		action();
 		SkippingHandlers = false;
 	}
 
-	internal static void Show<T>(Action<T>? after = null)
+	internal static void Show<T>([InstantHandle] Action<T>? after = null)
 		where T : Form, new()
 		=> Show(static () => new (), after);
 
-	internal static void Show<T>(Func<T> constructor,
-								 Action<T>? after = null)
+	internal static void Show<T>([InstantHandle] Func<T> constructor,
+								 [InstantHandle] Action<T>? after = null)
 		where T : Form
 	{
 		using var form = constructor();
@@ -553,10 +555,12 @@ internal static class PC
 	internal static Font BoldFont(Font font)
 		=> new (font, FontStyle.Bold);
 
-	internal static void SetVisible(bool visible, params IEnumerable<Control> controls)
+	internal static void SetVisible(bool visible,
+									[InstantHandle] params IEnumerable<Control> controls)
 		=> controls.ForEach(control => control.Visible = visible);
 
-	internal static void SetEnabled(bool enabled, params IEnumerable<Control> controls)
+	internal static void SetEnabled(bool enabled,
+									[InstantHandle] params IEnumerable<Control> controls)
 		=> controls.ForEach(control => control.Enabled = enabled);
 
 	#endregion
@@ -578,7 +582,7 @@ internal static class PC
 		if (toPlayer is null || Settings.TestEmailOnly)
 		{
 			const string toTestOnlyInfo = """
-                                          <h4 style='text-align:center; color:red;'>
+                                          <h4 style="text-align:center; color:red;">
                                               THIS EMAIL WAS SENT TO THE TEST ADDRESS ONLY!
                                           </h4>
                                           """;
@@ -596,7 +600,7 @@ internal static class PC
 		return message;
 	}
 
-	internal static string[] SendEmail(params MailMessage[] messages)
+	internal static string[] SendEmail([InstantHandle] params MailMessage[] messages)
 	{
 		var host = Settings.SmtpHost;
 		if (host.Length is 0)

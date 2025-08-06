@@ -146,10 +146,6 @@ internal sealed partial class GamesForm : Form
 	private void SetScoringSystemChangeability()
 		=> ScoringSystemComboBox.Enabled = Game.Status < Finished;
 
-	private void ComboBox_EnabledChanged(object sender,
-										 EventArgs e)
-		=> sender.ToggleEnabled();
-
 	private void GameDataUpdated(bool allFilledIn)
 	{
 		if (SkippingHandlers)

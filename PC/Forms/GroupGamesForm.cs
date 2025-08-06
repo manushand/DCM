@@ -334,10 +334,6 @@ internal sealed partial class GroupGamesForm : Form
 							Warning);
 	}
 
-	private void ComboBox_EnabledChanged(object sender,
-										 EventArgs e)
-		=> sender.ToggleEnabled();
-
 	//	TODO: This method is duplicated verbatim in GamesForm.cs
 	private void GameInErrorButton_Click(object sender,
 										 EventArgs e)

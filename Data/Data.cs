@@ -28,15 +28,18 @@ using static Tournament;
 
 public static partial class Data
 {
-	private const string Null = nameof (Null);
-	private static string _selectIdentitySql = Empty;
-
 	public enum DatabaseTypes : sbyte
 	{
 		None = default,
 		Access = 1,
 		SqlServer = 2
 	}
+
+	private const string Null = nameof (Null);
+
+	private static string SelectIdentitySql => _connection is SqlConnection
+												   ? "SELECT SCOPE_IDENTITY()"
+												   : "SELECT @@IDENTITY";
 
 	public static void ConnectTo(string connectionString)
 	{
@@ -60,7 +63,6 @@ public static partial class Data
 				_connection = provider(databaseFile);
 				OpenConnection();
 				CloseConnection();
-				_selectIdentitySql = "SELECT @@IDENTITY";
 				return true;
 			}
 			catch // (Exception exception)
@@ -76,7 +78,6 @@ public static partial class Data
 		_connection = new SqlConnection(connectionString);
 		OpenConnection();
 		CloseConnection();
-		_selectIdentitySql = "SELECT SCOPE_IDENTITY()";
 	}
 
 	internal static void StartTransaction()
@@ -113,7 +114,7 @@ public static partial class Data
 			=> OfficeVersionFolders.Any(version => baseKey.OpenSubKey($@"SOFTWARE\{(is64Bit ? null : @"Wow6432Node\")}Microsoft\Office\{version}\Access Connectivity Engine\InstallRoot") is not null);
 	}
 
-	public static bool Any<T>(Func<T, bool>? func = null)
+	public static bool Any<T>([InstantHandle] Func<T, bool>? func = null)
 		where T : IRecord
 		=> Cache.Exists(func);
 
@@ -134,7 +135,7 @@ public static partial class Data
 									 throw new ($"Record insertion failed: {command.CommandText}");
 								 if (record is not IdInfoRecord idInfoRecord)
 									 continue;
-								 command.CommandText = _selectIdentitySql;
+								 command.CommandText = SelectIdentitySql;
 								 idInfoRecord.Id = command.ExecuteScalar().OrThrow().AsInteger();
 							 }
 						 });
@@ -159,7 +160,7 @@ public static partial class Data
 		}
 	}
 
-	internal static IEnumerable<T> CreateMany<T>(IEnumerable<T> records)
+	internal static IEnumerable<T> CreateMany<T>([InstantHandle] IEnumerable<T> records)
 		where T : IRecord
 		=> CreateMany([..records]);
 
@@ -199,7 +200,7 @@ public static partial class Data
 		where T : IRecord
 		=> Cache.FetchAll<T>();
 
-	public static IEnumerable<T> ReadMany<T>(Func<T, bool> func)
+	public static IEnumerable<T> ReadMany<T>([InstantHandle] Func<T, bool> func)
 		where T : IRecord
 		=> Cache.FetchMany(func);
 
@@ -217,29 +218,29 @@ public static partial class Data
 	}
 
 	//	This method cannot be used to change primary key fields on any of the records involved
-	public static void UpdateMany<T>(params IEnumerable<T> records)
+	public static void UpdateMany<T>([InstantHandle] params IEnumerable<T> records)
 		where T : IInfoRecord
 	{
 		RunAsTransaction(() => records.Select(UpdateStatement).Execute());
 		Cache.AddRange(records);
 	}
 
-	public static void Delete<T>(params T[] records)
+	public static void Delete<T>([InstantHandle] params T[] records)
 		where T : IRecord
 	{
 		RunAsTransaction(() => records.Select(static record => $"{DeleteStatement<T>()}{record.WhereClause()}").Execute());
 		Cache.Remove(records);
 	}
 
-	public static void Delete<T>(IEnumerable<T> records)
+	public static void Delete<T>([InstantHandle] IEnumerable<T> records)
 		where T : IRecord
 		=> Delete([..records]);
 
-	public static void Delete<T>(Func<T, bool> func)
+	public static void Delete<T>([InstantHandle] Func<T, bool> func)
 		where T : IRecord
 		=> Delete(Cache.FetchMany(func));
 
-	public static void Clear()
+	public static void DeleteAllData()
 	{
 		StartTransaction();
 		DeleteAll<GamePlayer>();
@@ -288,7 +289,7 @@ public static partial class Data
 		where T : LinkRecord
 		=> linkRecords.Any(linkRecord => linkRecord.PlayerId == playerId);
 
-	public static T ByPlayerId<T>(this IEnumerable<T> linkRecords,
+	public static T ByPlayerId<T>([InstantHandle] this IEnumerable<T> linkRecords,
 								  int playerId)
 		where T : LinkRecord
 		=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
@@ -382,7 +383,9 @@ public static partial class Data
 				   : record.GetDateTime(ordinal);
 	}
 
-	internal static bool GroupSharedBy(this PowerGroups groups, Powers power1, Powers power2)
+	internal static bool GroupSharedBy(this PowerGroups groups,
+									   Powers power1,
+									   Powers power2)
 	{
 		var groupings = (typeof (PowerGroups).GetField(groups.ToString())
 											 ?.GetCustomAttribute(typeof (PowerGroupingsAttribute)) as PowerGroupingsAttribute)
