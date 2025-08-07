@@ -145,7 +145,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(856, 703);
-			this.Controls.Add(this.ConflictsDataGridView);
+			this.Controls.AddRange(this.ConflictsDataGridView);
 			this.Controls.Add(this.NewConflictLabel);
 			this.Controls.Add(this.NewConflictNameComboBox);
 			this.Controls.Add(this.DecreaseButton);

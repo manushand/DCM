@@ -62,7 +62,7 @@ public sealed partial class ScoringSystem
 				//	+ (absolute value of)
 				//	\| (square root of)
 				//	# (center rank could be)
-				//	~  (elimination order could be)
+				//	~ (elimination order could be)
 				//	$ (survivor rank could be)
 				//	@ (won and numWinners is) with @# giving 0 if the player did not win, or Winners if he did
 				[$"{Semicolon}"] = Operators.Reset,
@@ -92,7 +92,7 @@ public sealed partial class ScoringSystem
 		private static readonly SortedDictionary<Operators, Func<double, double, double>> Operate =
 			new ()
 			{
-				[Operators.Reset] = static (result, _) => result, //	Not 0 but terminal semicolon will always give 0
+				[Operators.Reset] = static (result, _) => result, //	Not 0, but terminal semicolon will always give 0
 				[Operators.If] = static (_, term) => term,        //	Pre-calculated (result of one of the clauses)
 				[Operators.Becomes] = static (_, term) => term,   //	Same lambda as Operators.If
 				[Operators.IsError] = static (_, _) => default,   //	Error check failed, proceeding to Reset

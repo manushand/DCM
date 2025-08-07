@@ -14,7 +14,7 @@ internal sealed partial class GroupRatingsForm
 
 		internal int Ranking
 		{
-			set => Rank = value.Dotted();
+			set => Rank = value.Dotted;
 		}
 
 		internal readonly double RatingPoints;

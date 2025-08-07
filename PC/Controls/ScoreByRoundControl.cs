@@ -70,33 +70,33 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 		Show<GamesForm>(() => new (roundScore.Player, roundScore.Game));
 	}
 
-	#region RoundScore class
+	#region RoundScore record
 
 	//	Do not make this a struct; it changes behavior.
 	[PublicAPI]
 	private sealed record RoundScore : IRecord
 	{
 		[DisplayName("#")]
-		public string RoundRank => Rank.Dotted();
+		public string RoundRank => Rank.Dotted;
 
-		public Player Player => GamePlayer.Player;
+		public Player Player => _gamePlayer.Player;
 
 		[DisplayName(nameof (Game))]
 		public int GameNumber => Game.Number;
 
-		public string Power => GamePlayer.PowerName;
+		public string Power => _gamePlayer.PowerName;
 
 		public string Score => Game.ScoringSystem
 								   .FormattedScore(FinalScore);
 
-		internal double FinalScore => GamePlayer.FinalScore;
+		internal double FinalScore => _gamePlayer.FinalScore;
 		internal int Rank { private get; set; }
-		internal Game Game => GamePlayer.Game;
+		internal Game Game => _gamePlayer.Game;
 
-		private GamePlayer GamePlayer { get; }
+		private readonly GamePlayer _gamePlayer;
 
 		internal RoundScore(GamePlayer gamePlayer)
-			=> GamePlayer = gamePlayer;
+			=> _gamePlayer = gamePlayer;
 	}
 
 	#endregion

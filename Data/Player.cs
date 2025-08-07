@@ -12,7 +12,7 @@ public sealed class Player : IdentityRecord<Player>
 
 	public bool IsHuman => char.IsLetter(FirstName.First());
 
-	public ICollection<string> EmailAddresses => EmailAddress.SplitEmailAddresses();
+	public ICollection<string> EmailAddresses => EmailAddress.SplitEmailAddresses;
 
 	public IEnumerable<Game> Games => LinksOfType<GamePlayer>().Select(static gamePlayer => gamePlayer.Game)
 															   .OrderBy(static game => (game.Date, game.Round.Number));

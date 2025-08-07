@@ -84,7 +84,7 @@ internal sealed partial class PlayerListForm : Form
 							Question) is DialogResult.No)
 			return;
 		var addresses = EmailAddressTextBox.Text
-										   .SplitEmailAddresses();
+										   .SplitEmailAddresses;
 		if (addresses.Length != 0)
 		{
 			var badAddress = addresses.FirstOrDefault(static email => !email.IsValidEmail());

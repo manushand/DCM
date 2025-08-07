@@ -30,23 +30,15 @@ public static partial class DCM
 		where T : class
 		=> @this ?? throw new InvalidOperationException(message);
 
+	public static int AsInteger<T>(this T @this)
+		=> ToInt32(@this);
+
 	public static void FillWith<T>(this List<T> @this,
 								   [InstantHandle] IEnumerable<T> items)
 	{
 		@this.Clear();
 		@this.AddRange(items);
 	}
-
-	public static void ForEach<T>([InstantHandle] this IEnumerable<T> @this,
-								  [InstantHandle] Action<T> action)
-		=> @this.ToList()
-				.ForEach(action);
-
-	public static void ForSome<T>([InstantHandle] this IEnumerable<T> @this,
-								  [InstantHandle] Func<T, bool> func,
-								  [InstantHandle] Action<T> action)
-		=> @this.Where(func)
-				.ForEach(action);
 
 	public static TValue GetOrSet<TKey, TValue>(this IDictionary<TKey, TValue> @this,
 												TKey key,
@@ -55,98 +47,111 @@ public static partial class DCM
 			   ? result
 			   : @this[key] = func(key);
 
-	public static string BulletList([InstantHandle] this IEnumerable<object> @this,
-									string intro)
-		=> $"{intro}:{Bullet}{Join(Bullet, @this)}";
-
-	public static string InCaps(this Enum @this)
-		=> $"{@this}".ToUpper();
-
-	public static char Abbreviation(this Enum @this)
-		=> $"{@this}".First();
-
-	public static T As<T>(this int @this)
-		where T : Enum
-		=> (T)Enum.ToObject(typeof (T), @this);
-
-	public static double AsDouble(this string @this)
-		=> double.Parse(@this);
-
-	public static int? AsNullableInteger(this string @this)
-		=> @this.Length is 0
-			   ? null
-			   : @this.AsInteger();
-
-	public static int AsInteger(this object @this)
-		=> ToInt32(@this);
-
-	public static int AsInteger(this string @this)
-		=> int.Parse(@this);
-
-	public static int AsInteger(this Enum @this)
-		=> (int)ChangeType(@this, typeof (int));
-
-	public static string Dotted(this int @this)
-		=> $"{@this}.";
-
-	public static int NegatedIf(this int @this,
-								bool negator)
-		=> negator
-			   ? -@this
-			   : @this;
-
-	public static string Points<T>(this T @this)
+	extension<T>(T @this)
 		where T : INumber<T>
-		=> $"{"pt".Pluralize(@this.AsInteger(), true)}.";
+	{
+		public string Points => $"{"pt".Pluralize(@this.AsInteger(), true)}.";
+	}
 
-	public static bool NotEquals(this double @this,
-								 double other)
-		=> !@this.Equals(other);
+	extension<T>([InstantHandle] IEnumerable<T> @this)
+	{
+		public void ForEach([InstantHandle] Action<T> action)
+			=> @this.ToList()
+					.ForEach(action);
 
-	public static bool IsBetween(this double @this,
-								 double lowerBound,
-								 double upperBound)
-		=> lowerBound <= upperBound
-		&& @this >= lowerBound
-		&& @this <= upperBound;
+		public void ForSome([InstantHandle] Func<T, bool> func,
+							[InstantHandle] Action<T> action)
+			=> @this.Where(func)
+					.ForEach(action);
 
-	public static void Apply<T>([InstantHandle] this IEnumerable<T> @this,
-								[InstantHandle] Action<T, int> func)
-		where T : class
-		=> @this.Select(static (item, index) => (item, index))
-				.ForEach(tuple => func(tuple.item, tuple.index));
+		public string BulletList(string intro)
+			=> $"{intro}:{Bullet}{Join(Bullet, @this)}";
 
-	public static bool Matches(this string @this,
-							   string other)
-		=> @this.Equals(other, InvariantCultureIgnoreCase);
+		public void Apply([InstantHandle] Action<T, int> func)
+			=> @this.Select(static (item, index) => (item, index))
+					.ForEach(tuple => func(tuple.item, tuple.index));
+	}
 
-	public static string Pluralize<T>(this string @this,
-									  IReadOnlyCollection<T> items,
-									  bool provideCount = false)
-		=> @this.Pluralize(items.Count, provideCount);
+	extension(Enum @this)
+	{
+		public string InCaps => $"{@this}".ToUpper();
 
-	public static string Pluralize(this string @this,
-								   int count,
+		public char Abbreviation => $"{@this}".First();
+
+		public int AsInteger()
+			=> (int)ChangeType(@this, typeof (int));
+	}
+
+	extension(double @this)
+	{
+		public bool NotEquals(double other)
+			=> !@this.Equals(other);
+
+		public bool IsBetween(double lowerBound,
+							  double upperBound)
+			=> @this >= lowerBound
+			&& @this <= upperBound;
+	}
+
+	extension(int @this)
+	{
+		public string Dotted => $"{@this}.";
+
+		public T As<T>()
+			where T : Enum
+			=> (T)Enum.ToObject(typeof (T), @this);
+
+		public int NegatedIf(bool negator)
+			=> negator
+				   ? -@this
+				   : @this;
+	}
+
+	extension(string @this)
+	{
+		public string[] SplitEmailAddresses => [..@this.Split(EmailSplitter)
+													   .Select(static email => email.Trim())
+													   // BUG: Must use > instead of "is not" below, or roslyn chokes
+													   .Where(static email => email.Length > 0)];
+
+		//	BUG: If this is made a property, any use of it (as a property) in OTHER assembly does not compile.
+		//	BUG: However, uses of it (as a method) in the OTHER assembly DO compile, and uses of it (either as
+		//	BUG: a method OR as a property) in this current assembly do compile.
+		//	BUG: This seems to be a bug in the Roslyn compiler.
+		public bool IsValidEmail()
+			=> EmailAddressFormat.IsMatch(@this.Trim());
+
+		public double AsDouble()
+			=> double.Parse(@this);
+
+		public int? AsNullableInteger()
+			=> @this.Length is 0
+				   ? null
+				   : @this.AsInteger();
+
+		public int AsInteger()
+			=> int.Parse(@this);
+
+		public bool Matches(string other)
+			=> @this.Equals(other, InvariantCultureIgnoreCase);
+
+		public string Pluralize<T>(IReadOnlyCollection<T> items,
 								   bool provideCount = false)
-		=> $"{(provideCount ? $"{count} " : null)}{@this}{(count is 1 ? null : 's')}";
+			=> @this.Pluralize(items.Count, provideCount);
 
-	public static bool IsValidEmail(this string @this)
-		=> EmailAddressFormat.IsMatch(@this.Trim());
+		public string Pluralize(int count,
+								bool provideCount = false)
+			=> $"{(provideCount ? $"{count} " : null)}{@this}{(count is 1 ? null : 's')}";
 
-	public static T As<T>(this string @this)
-		where T : Enum
-		=> (T)Enum.Parse(typeof (T), @this, true);
+		public T As<T>()
+			where T : Enum
+			=> (T)Enum.Parse(typeof (T), @this, true);
 
-	public static bool Starts(this string @this,
-							  string start,
-							  bool symbol = false)
-		=> @this.StartsWith(start, InvariantCultureIgnoreCase)
-		&& (symbol || @this.Length == start.Length || !char.IsLetterOrDigit(@this[start.Length]));
-
-	public static string[] SplitEmailAddresses(this string @this)
-		=> [..@this.Split(EmailSplitter)
-				   .Select(static email => email.Trim())
-				   .Where(static email => email.Length is not 0)];
+		public bool Starts(string start,
+						   bool symbol = false)
+			=> @this.StartsWith(start, InvariantCultureIgnoreCase)
+			&& (symbol || @this.Length == start.Length || !char.IsLetterOrDigit(@this[start.Length]));
+	}
 
 	#endregion
 
@@ -155,27 +160,25 @@ public static partial class DCM
 	public static void ForRange(int start,
 								int count,
 								[InstantHandle] Action<int> action)
-		=> Range(start, count).ForEach(action);
-
-	public static IEnumerable<int> Range(int start,
-										 int count)
-		=> Enumerable.Range(start, count);
+		=> Enumerable.Range(start, count).ForEach(action);
 
 	public static int RandomNumber(int maxValue = int.MaxValue)
 		=> Random.Next(maxValue);
 
 	#endregion
 
-	#region Generated Regular Expressions
+	#region Generated Regular Expression
 
 	//	TODO: there's a lot of debate about what the best way to validate an email address is
 	//	TODO: I have usually used try { new MailAddress(text); } but it likes things I don't.
+	//	This is later in the same class where the string extension BugIsHere is defined.
 	[GeneratedRegex("^(" +
-					@"[\dA-Z]" +              //	Start with a digit or alphabetic character.
-					@"([\+\-_\.][\dA-Z]+)*" + //	No continuous or ending +-_. chars in email.
+					@"[\dA-Z]" +              // Start with a digit or alphabetic character.
+					@"([\+\-_\.][\dA-Z]+)*" + // No continuous or ending +-_. chars in email.
 					")+" +
 					@"@(([\dA-Z][-\w]*[\dA-Z]*\.)+[\dA-Z]{2,17})$",
 					RegexOptions.IgnoreCase)]
+	//	BUG: This compiles, but Rider (but not VisualStudio!) claims that it does not have an implementation part.
 	private static partial Regex EmailAddressRegex();
 	private static readonly Regex EmailAddressFormat = EmailAddressRegex();
 

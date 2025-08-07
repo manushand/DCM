@@ -30,7 +30,8 @@ internal sealed partial class GameControl : UserControl
 			SetEnabled(value.UsesGameResult || TournamentScoringSystem?.UsesGameResult is true, ResultComboBoxes);
 			SetEnabled(value.UsesCenterCount || TournamentScoringSystem?.UsesCenterCount is true, CentersComboBoxes);
 			SetEnabled(value.UsesYearsPlayed || TournamentScoringSystem?.UsesYearsPlayed is true, YearsComboBoxes);
-			AllComboBoxes.ForSome(static box => !box.Enabled, static box => box.Deselect());
+			AllComboBoxes.ForSome(static box => !box.Enabled,
+								  static box => box.Deselect());
 			SetOtherScoreLabel(value.OtherScoreAlias);
 			OtherTextBoxes.ForEach(box =>
 								   {
@@ -106,7 +107,7 @@ internal sealed partial class GameControl : UserControl
 		//	a PowerName.
 		foreach (var label in Controls.OfType<Label>().Where(static label => label.Tag is not null))
 		{
-			var style = $"{label.Tag}".As<Powers>().CellStyle();
+			var style = $"{label.Tag}".As<Powers>().CellStyle;
 			(label.BackColor, label.ForeColor) = (style.BackColor, style.ForeColor);
 		}
 	}
@@ -129,7 +130,7 @@ internal sealed partial class GameControl : UserControl
 			SkipHandlers(() =>
 						 {
 							 AllComboBoxes.ForEach(static box => box.Deselect());
-							 OtherTextBoxes.ForEach(static textBox => textBox.Text = null);
+							 OtherTextBoxes.ForEach(static textBox => textBox.Clear());
 						 });
 			Active = false;
 			return;
@@ -324,9 +325,9 @@ internal sealed partial class GameControl : UserControl
 						 {
 							 var centersBox = CentersBoxFor(resultBox);
 							 resultBox.Items[1] = ScoringSystem.DrawPermissions is not None
-												  || numWinners is 0
-												  || numWinners is 1 && resultBox.SelectedIndex is 1
-												  || SoloConcededCheckBox.Checked
+											   || numWinners is 0
+											   || numWinners is 1 && resultBox.SelectedIndex is 1
+											   || SoloConcededCheckBox.Checked
 													  ? centersBox.SelectedIndex < 18
 															? SoloConcededCheckBox.Checked
 																  ? ConcText
@@ -356,7 +357,8 @@ internal sealed partial class GameControl : UserControl
 		++UpdateDepth;
 		var maxCenters = CentersComboBoxes.Max(static comboBox => comboBox.SelectedIndex);
 		SkipHandlers(FillCenterComboBoxes);
-		CentersComboBoxes.ForSome(static box => box.Items.Count is 1 && box.SelectedItem is null, static centerBox => centerBox.SelectedIndex = 0);
+		CentersComboBoxes.ForSome(static box => box.Items.Count is 1 && box.SelectedItem is null,
+								  static centerBox => centerBox.SelectedIndex = 0);
 		if (ScoringSystem.UsesYearsPlayed && centersComboBox.SelectedIndex > 0)
 			//	Centers are more than 0, so set year to final year
 			YearsBoxFor(centersComboBox).SelectedIndex = YearsComboBoxes.Max(static comboBox => comboBox.SelectedIndex);
@@ -383,7 +385,8 @@ internal sealed partial class GameControl : UserControl
 								 //	and reset any other power's centers if they had claimed 18+.
 								 var ourCount = centersComboBox.SelectedIndex;
 								 ResultComboBoxes.ForEach(comboBox => comboBox.SelectedIndex = (comboBox == resultComboBox).AsInteger());
-								 CentersComboBoxes.ForSome(static box => box.SelectedIndex > 17, static comboBox => comboBox.Deselect());
+								 CentersComboBoxes.ForSome(static box => box.SelectedIndex > 17,
+														   static comboBox => comboBox.Deselect());
 								 centersComboBox.SelectedIndex = ourCount;
 								 resultComboBox.Items[1] = SoloText;
 								 //	Losers don't yet know what kind of loss they experienced.

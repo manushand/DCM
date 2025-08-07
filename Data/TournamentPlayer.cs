@@ -14,7 +14,7 @@ public sealed class TournamentPlayer : LinkRecord, IInfoRecord
 		init => (field, TournamentId) = (value, value.Id);
 	} = Tournament.None;
 
-	public int[] Rounds => [..Range(1, Tournament.TotalRounds).Where(RegisteredForRound)];
+	public int[] Rounds => [..Enumerable.Range(1, Tournament.TotalRounds).Where(RegisteredForRound)];
 
 	public string RoundsRegistered
 	{

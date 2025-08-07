@@ -190,7 +190,8 @@ internal sealed partial class ScoringSystemInfoForm : Form
 				UpdateOne(ScoringSystem);
 			DialogResult = DialogResult.OK;
 			//	TODO: check for errors
-			ScoringSystem.Games.ForSome(static game => game.Scored, static game => game.Scored = false);
+			ScoringSystem.Games.ForSome(static game => game.Scored,
+										static game => game.Scored = false);
 			Close();
 		}
 		else

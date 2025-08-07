@@ -67,7 +67,8 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 		set
 		{
 			field = value;
-			Rounds.ForSome(round => round.ScoringSystemId == ScoringSystemId, round => round.ScoringSystem = value);
+			Rounds.ForSome(round => round.ScoringSystemId == ScoringSystemId,
+						   round => round.ScoringSystem = value);
 			ScoringSystemId = value.Id;
 		}
 	} = ScoringSystem.None;

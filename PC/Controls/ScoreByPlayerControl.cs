@@ -155,23 +155,23 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 														.OrderBy(static game => game.Round.Number)]));
 	}
 
-	#region TournamentScore class
+	#region TournamentScore record
 
 	//	Do not make this a struct; it changes behavior.
 	[PublicAPI]
 	private sealed record TournamentScore : IRecord
 	{
+		internal readonly bool Qualified;
+		internal readonly double Score;
+		internal int Rank;
+
 		private static int _roundsToHaveScoreChanges;
 		private static int _roundsBeforeScoreChanges;
 		private readonly int _totalCenters;
 		private readonly int _totalYears;
-		internal readonly bool Qualified;
-		internal readonly double Score;
-
-		internal int Rank;
 
 		[DisplayName("#")]
-		public string DisplayRank => Rank.Dotted();
+		public string DisplayRank => Rank.Dotted;
 
 		public Player Player { get; }
 

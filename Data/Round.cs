@@ -84,12 +84,13 @@ public sealed class Round : IdentityRecord<Round>
 
 		//	Create the Game objects and store them in the database.
 		var lastSeededGameNumber = Games.Length;
-		var games = CreateMany(Range(1, roundPlayers.Count / 7).Select(number => new Game
-																				 {
-																					 Number = lastSeededGameNumber + number,
-																					 Round = this,
-																					 Status = Seeded
-																				 }));
+		var games = CreateMany(Enumerable.Range(1, roundPlayers.Count / 7)
+										 .Select(number => new Game
+														   {
+															   Number = lastSeededGameNumber + number,
+															   Round = this,
+															   Status = Seeded
+														   }));
 		//	Adding another .ToArray() here (before that last semicolon) is a 5-15% performance hit.  I know, right?
 
 		//	Create all the GamePlayer objects, seeding players into them from best

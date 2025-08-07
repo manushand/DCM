@@ -125,7 +125,7 @@ internal sealed partial class GamesForm : Form
 												   .AsInteger();
 			ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
 			ScoringSystemComboBox.SetSelectedItem(Game.ScoringSystem);
-			var players = GamePlayers.SelectSorted(static gamePlayer => gamePlayer.Player) //	TODO: does this not have/need a by last name option?
+			var players = GamePlayers.SelectSorted(static gamePlayer => gamePlayer.Player) // TODO: does this not have/need a by last name option?
 									 .ToArray();
 			foreach (var (box, power) in PlayerNameComboBoxes.Select(static (box, power) => (box, power.As<Powers>())))
 			{
@@ -206,10 +206,10 @@ internal sealed partial class GamesForm : Form
 				continue;
 			var label = ConflictLabels[gamePlayer.Power.AsInteger()];
 			label.Text = gamePlayer.Conflict
-								   .Points();
+								   .Points;
 			ToolTip.SetToolTip(label, gamePlayer.ConflictDetails.BulletList($"{gamePlayer.Player}"));
 		}
-		TotalConflictsLabel.Text = totalConflict.Points();
+		TotalConflictsLabel.Text = totalConflict.Points;
 	}
 
 	private void PlayerComboBox_SelectedIndexChanged(object sender,

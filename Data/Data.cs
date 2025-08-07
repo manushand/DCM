@@ -391,7 +391,7 @@ public static partial class Data
 											 ?.GetCustomAttribute(typeof (PowerGroupingsAttribute)) as PowerGroupingsAttribute)
 											 ?.Groups
 						?? throw new InvalidOperationException("Missing PowerGroupings attribute");
-		return groupings.Single(group => group.Contains(power1.Abbreviation())) == groupings.Single(group => group.Contains(power2.Abbreviation()));
+		return groupings.Single(group => group.Contains(power1.Abbreviation)) == groupings.Single(group => group.Contains(power2.Abbreviation));
 	}
 
 	#region Private fields, property, and methods

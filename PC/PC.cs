@@ -55,7 +55,7 @@ internal static class PC
 		private set => Settings.DatabaseType = value.AsInteger();
 	}
 	internal static bool SkippingHandlers { get; private set; }
-	internal static int[] Seven => [..Range(0, 7).OrderBy(RandomNumber)];
+	internal static int[] Seven => [..Enumerable.Range(0, 7).OrderBy(RandomNumber)];
 
 	private static readonly SortedDictionary<Powers, DataGridViewCellStyle> PowerColors
 		= new ()
@@ -117,7 +117,7 @@ internal static class PC
 
 	#region Data connection and CRUD methods
 
-	public static DatabaseTypes OpenDatabase()
+	internal static DatabaseTypes OpenDatabase()
 	{
 		switch (DatabaseType)
 		{
@@ -244,79 +244,7 @@ internal static class PC
 
 	#region Extension methods
 
-	internal static void FillRange(this ComboBox comboBox,
-								   int start,
-								   int end)
-		=> comboBox.FillWith(Range(start, ++end - start).Cast<object>());
-
-	internal static void FillWithSortedPlayers(this ListControl listControl,
-											   bool byLastName)
-		=> listControl.FillWith(ReadAll<Player>().Sorted(byLastName));
-
-	internal static void FillWithSortedPlayers(this ListControl listControl,
-											   Func<Player, bool> func)
-		=> listControl.FillWith(ReadMany(func).Sorted());
-
-	internal static void FillWithSorted<T>(this ListControl listControl)
-		where T : IdInfoRecord
-		=> listControl.FillWith(ReadAll<T>().Order());
-
-	internal static void FillWithRecords<T>(this ListControl listControl,
-											IEnumerable<T> items)
-		where T : IRecord
-		=> listControl.FillWith((IEnumerable<object>)items);
-
-	internal static void FillWith(this ListControl listControl,
-								  IEnumerable<object> items)
-		=> listControl.FillWith([..items]);
-
-	internal static void FillWith(this ListControl listControl,
-								  params object[] elements)
-	{
-		//	This is just a neat little trick taking advantage of the fact that although the two types
-		//	don't share an interface, they have identical method signatures for what we want to do.
-		var both = ((dynamic)listControl).Items;
-		both.Clear();
-		both.AddRange(elements);
-	}
-
-	internal static void SetSelectedItem<T>(this ComboBox comboBox,
-											T? record)
-		where T : IdentityRecord<T>, new()
-		=> comboBox.SelectedItem = comboBox.Items
-										   .Cast<T>()
-										   .SingleOrDefault(t => t.Id == (record?.Id ?? 0));
-
-	internal static T GetSelected<T>(this ComboBox comboBox)
-		=> (T)comboBox.SelectedItem.OrThrow();
-
-	internal static void Deselect(this ComboBox comboBox)
-		=> comboBox.SelectedItem = null;
-
-	internal static void Clear(this ListBox listBox)
-		=> listBox.Items.Clear();
-
-	internal static T? GetSelected<T>(this ListBox listBox)
-		where T : class
-		=> listBox.SelectedItem as T;
-
-	internal static List<T> GetMultiSelected<T>(this ListBox listBox)
-		where T : class
-		=> [..listBox.SelectedItems
-					 .Cast<T>()];
-
-	internal static IEnumerable<T> GetAll<T>(this ListBox listBox)
-		where T : IRecord
-		=> listBox.Items
-				  .Cast<T>();
-
-	internal static T? Find<T>(this ListBox listBox,
-							   T? record)
-		where T : IdInfoRecord
-		=> record is null
-			   ? null
-			   : listBox.GetAll<T>()
-						.SingleOrDefault(t => t.Is(record));
+	private static readonly Dictionary<string, Label> ShadowLabels = [];
 
 	internal static List<T> PowerControls<T>(this Panel panel)
 		where T : Control
@@ -324,208 +252,280 @@ internal static class PC
 				   .OfType<T>()
 				   .OrderBy(static control => control.Name)];
 
-	private static IEnumerable<T> GetFromRow<T>(IEnumerable rows)
+	private static IEnumerable<T> GetFromRow<T>(this IEnumerable rows)
 		where T : IRecord
 		=> rows.Cast<DataGridViewRow>()
 			   .Select(static row => row.GetFromRow<T>());
 
-	internal static IEnumerable<T> GetAll<T>(this DataGridView dataGridView)
-		where T : IRecord
-		=> GetFromRow<T>(dataGridView.Rows);
-
-	internal static IEnumerable<T> GetMultiSelected<T>(this DataGridView dataGridView)
-		where T : IRecord
-		=> GetFromRow<T>(dataGridView.SelectedRows);
-
-	internal static T GetSelected<T>(this DataGridView dataGridView)
-		where T : IRecord
-		=> dataGridView.GetMultiSelected<T>()
-					   .Single();
-
-	internal static T GetAtIndex<T>(this DataGridView dataGridView,
-									int index)
-		=> dataGridView.Rows[index]
-					   .GetFromRow<T>();
-
-	internal static void SelectRowWhere<T>(this DataGridView dataGridView,
-										   Func<T, bool> func)
-		=> dataGridView.CurrentCell = dataGridView.Rows
-												  .Cast<DataGridViewRow>()
-												  .Single(row => func(row.GetFromRow<T>()))
-												  .Cells[0];
-
-	internal static void FillWith(this DataGridView dataGridView,
-								  object dataSource)
-	{
-		dataGridView.AutoGenerateColumns = true;
-		dataGridView.AutoSize = false;
-		dataGridView.DataSource = dataSource is IEnumerable<object> list
-									  ? list.ToList()
-									  : dataSource;
-	}
-
-	internal static void Deselect(this DataGridView dataGridView)
-	{
-		//	Some of this may seem like overkill, but it seems it is safest to do all of this
-		dataGridView.ClearSelection();
-		dataGridView.CurrentRow?.Selected = false;
-		dataGridView.CurrentCell = null;
-	}
-
-	internal static void FillColumn(this DataGridView dataGridView,
-									int fillColumnNumber)
-	{
-		var columnNumber = 0;
-		foreach (DataGridViewColumn column in dataGridView.Columns)
-		{
-			column.AutoSizeMode = columnNumber++ == fillColumnNumber
-									  ? DataGridViewAutoSizeColumnMode.Fill
-									  : DataGridViewAutoSizeColumnMode.AllCells;
-			column.SortMode = DataGridViewColumnSortMode.NotSortable;
-		}
-	}
-
-	internal static void AlignColumn(this DataGridView dataGridView,
-									 DataGridViewContentAlignment alignment,
-									 params int[] columns)
-		=> columns.ForEach(column => dataGridView.Columns[column].DefaultCellStyle.Alignment = alignment);
-
-	internal static void PowerCells(this DataGridView dataGridView,
-									int column)
-	{
-		dataGridView.Columns[column].HeaderCell.Style.Alignment = MiddleCenter;
-		foreach (DataGridViewRow row in dataGridView.Rows)
-			row.Cells[column].Style = $"{row.Cells[column].Value}".As<Powers>().CellStyle();
-	}
-
 	internal static T GetFromRow<T>(this DataGridViewRow dataGridViewRow)
 		=> (T)dataGridViewRow.DataBoundItem.OrThrow();
 
-	#region ComboBox-to-Label toggler methods
-
-	private static readonly Dictionary<string, Label> ShadowLabels = [];
-
-	private static string ShadowLabelName(this Control control)
-		=> $"{(control.Parent?.Name).OrThrow()}.{control.Name}.{typeof (Label)}";
-
-	/// <summary>
-	///     Any ComboBox that will use the ToggleEnabled method in its EnabledChanged event
-	///     method should call this method in its SelectedIndexChanged event method.
-	/// </summary>
-	/// <param name="box"></param>
-	internal static void UpdateShadowLabel(this ComboBox box)
-		=> box.UpdateShadowLabel(null);
-
-	private static void UpdateShadowLabel(this ComboBox box,
-										  Label? label)
+	extension(TabControl tabControl)
 	{
-		if (label is null && !ShadowLabels.TryGetValue(box.ShadowLabelName(), out label))
-			return;
-		label.Text = box.Text;
-		label.TextAlign = box.SelectedItem is IRecord
-							  ? ContentAlignment.MiddleLeft
-							  : ContentAlignment.MiddleCenter;
-	}
-
-	//	This method is an event handler for the EnabledChanged event of a ComboBox.
-	//	It makes the ComboBox's label (if it exists) more visible or less visible.
-	internal static void ComboBox_EnabledChanged(this Control _,
-												 object @object,
-												 EventArgs e)
-	{
-		var box = (ComboBox)@object;
-		/*
-		 Another almost-as-good way to make a disabled ComboBox more visible is simply:
-				box.DropDownStyle = box.Enabled
-										? DropDownList
-										: DropDown;
-		*/
-		var name = box.ShadowLabelName();
-		ShadowLabels.TryGetValue(name, out var label);
-		box.Visible = box.Enabled;
-		//	Checking for .IsDisposed is important.  Re-create the Label if it's been Disposed.
-		if (box.Enabled && (label?.IsDisposed ?? true))
+		internal void AddOrRemove(TabPage tabPage,
+								  bool add,
+								  int? position = null)
 		{
-			label?.Hide();
-			return;
+			if (add)
+				tabControl.TabPages.Insert(position ?? tabControl.TabCount, tabPage);
+			else
+				tabControl.TabPages.Remove(tabPage);
 		}
-		//	I think (?) this if-statement is overkill, but in case I'm wrong, it can't hurt.
-		var parent = box.Parent.OrThrow();
-		if (label is not null && parent.Contains(label))
-			parent.Controls.Remove(label);
-		label =
-			ShadowLabels[name] =
-				new ()
-				{
-					Name = name,
-					Location = box.Location,
-					Size = box.Size,
-					Visible = !box.Visible,
-					ForeColor = SystemColors.WindowText,
-					Font = box.Font.Bold //	TODO: Probably never true, so this may actually waste not save cycles
-							   ? box.Font
-							   : BoldFonts.GetOrSet(box.Font, BoldFont),
-					BorderStyle = BorderStyle.FixedSingle
-				};
-		box.UpdateShadowLabel(label);
-		(box.Parent?.Controls).OrThrow().Add(label);
-		//	It took me hours to figure out that this next line was
-		//	what was needed to get the label showing on some Forms!
-		//	And, of course, I thought "maybe it needs BringToFront"
-		//	more than once while continuing to fight it other ways.
-		label.BringToFront();
-	}
 
-	#endregion
-
-	internal static void Print(this DataGridView dataGridView,
-							   string title,
-							   string subtitle)
-	{
-		//	TODO: centering the table cramps the titles and footer text
-		DGVPrinter printer = new ()
-							 {
-								 Title = title,
-								 SubTitle = subtitle,
-								 SubTitleSpacing = 16,
-								 PageNumbers = true,
-								 PageNumberInHeader = false,
-								 TableAlignment = Alignment.Center,
-								 ColumnWidth = ColumnWidthSetting.DataWidth,
-								 Footer = $"{nameof (DCM)} © {DateTime.Now.Year} ARMADA",
-								 FooterSpacing = 15
-							 };
-		foreach (var cellStyle in printer.ColumnStyles.Values)
+		internal void ActivateTab(int tabNumber)
 		{
-			cellStyle.Font = new (cellStyle.Font.FontFamily, 14); //	TODO: seems not to do anything
-			cellStyle.WrapMode = DataGridViewTriState.False;
+			if (tabControl.SelectedIndex == tabNumber)
+				TabSelectionChangedMethod?.Invoke(tabControl, EmptyEventArgs);
+			else
+				tabControl.SelectedIndex = tabNumber;
 		}
-		printer.PrintDialogSettings.AllowPrintToFile = true;
-		printer.PrintDataGridView(dataGridView);
 	}
 
-	internal static void ActivateTab(this TabControl tabControl,
-									 int tabNumber)
+	extension(ComboBox comboBox)
 	{
-		if (tabControl.SelectedIndex == tabNumber)
-			TabSelectionChangedMethod?.Invoke(tabControl, EmptyEventArgs);
-		else
-			tabControl.SelectedIndex = tabNumber;
+		internal void FillRange(int start,
+								int end)
+			=> comboBox.FillWith(Enumerable.Range(start, ++end - start)
+										   .Cast<object>());
+
+		internal void SetSelectedItem<T>(T? record)
+			where T : IdentityRecord<T>, new()
+			=> comboBox.SelectedItem = comboBox.Items
+											   .Cast<T>()
+											   .SingleOrDefault(t => t.Id == (record?.Id ?? 0));
+
+		internal T GetSelected<T>()
+			=> (T)comboBox.SelectedItem.OrThrow();
+
+		internal void Deselect()
+			=> comboBox.SelectedItem = null;
+
+		/// <summary>
+		///     Any ComboBox that will use the ToggleEnabled method in its EnabledChanged event
+		///     method should call this method in its SelectedIndexChanged event method.
+		/// </summary>
+		internal void UpdateShadowLabel()
+			=> comboBox.UpdateShadowLabel(null);
+
+		private void UpdateShadowLabel(Label? label)
+		{
+			if (label is null && !ShadowLabels.TryGetValue(comboBox.ShadowLabelName, out label))
+				return;
+			label.Text = comboBox.Text;
+			label.TextAlign = comboBox.SelectedItem is IRecord
+								  ? ContentAlignment.MiddleLeft
+								  : ContentAlignment.MiddleCenter;
+		}
 	}
 
-	internal static void AddOrRemove(this TabControl tabControl,
-									 TabPage tabPage,
-									 bool add,
-									 int? position = null)
-		=> (add
-            ? page => tabControl.TabPages.Insert(position ?? tabControl.TabCount, page)
-            : (Action<TabPage>)tabControl.TabPages.Remove)(tabPage);
+	extension(ListControl listControl)
+	{
+		internal void FillWithSortedPlayers(bool byLastName)
+			=> listControl.FillWith(ReadAll<Player>().Sorted(byLastName));
 
-	public static DataGridViewCellStyle CellStyle(this Powers power)
-		=> PowerColors[power];
+		internal void FillWithSortedPlayers([InstantHandle] Func<Player, bool> func)
+			=> listControl.FillWith(ReadMany(func).Sorted());
 
-	internal static string Tag(this DataGridViewCellStyle style)
-		=> $"""style="color: {style.ForeColor}; background-color: {style.BackColor};" """;
+		internal void FillWithSorted<T>()
+			where T : IdInfoRecord
+			=> listControl.FillWith(ReadAll<T>().Order());
+
+		internal void FillWithRecords<T>([InstantHandle] IEnumerable<T> items)
+			where T : IRecord
+			=> listControl.FillWith((IEnumerable<object>)items);
+
+		internal void FillWith([InstantHandle] IEnumerable<object> items)
+			=> listControl.FillWith([..items]);
+
+		internal void FillWith(params object[] elements)
+		{
+			//	This is just a neat little trick taking advantage of the fact that although the two types
+			//	don't share an interface, they have identical method signatures for what we want to do.
+			var both = ((dynamic)listControl).Items;
+			both.Clear();
+			both.AddRange(elements);
+		}
+	}
+
+	extension(ListBox listBox)
+	{
+		internal void Clear()
+			=> listBox.Items
+					  .Clear();
+
+		internal T? GetSelected<T>()
+			where T : class
+			=> listBox.SelectedItem as T;
+
+		internal List<T> GetMultiSelected<T>()
+			where T : class
+			=> [..listBox.SelectedItems.Cast<T>()];
+
+		internal IEnumerable<T> GetAll<T>()
+			where T : IRecord
+			=> listBox.Items
+					  .Cast<T>();
+
+		internal T? Find<T>(T? record)
+			where T : IdInfoRecord
+			=> record is null
+				   ? null
+				   : listBox.GetAll<T>()
+							.SingleOrDefault(t => t.Is(record));
+	}
+
+	extension(DataGridView dataGridView)
+	{
+		internal IEnumerable<T> GetAll<T>()
+			where T : IRecord
+			=> dataGridView.Rows.GetFromRow<T>();
+
+		internal IEnumerable<T> GetMultiSelected<T>()
+			where T : IRecord
+			=> dataGridView.SelectedRows
+						   .GetFromRow<T>();
+
+		internal T GetSelected<T>()
+			where T : IRecord
+			=> dataGridView.GetMultiSelected<T>()
+						   .Single();
+
+		internal T GetAtIndex<T>(int index)
+			=> dataGridView.Rows[index]
+						   .GetFromRow<T>();
+
+		internal void SelectRowWhere<T>(Func<T, bool> func)
+			=> dataGridView.CurrentCell = dataGridView.Rows
+													  .Cast<DataGridViewRow>()
+													  .Single(row => func(row.GetFromRow<T>()))
+													  .Cells[0];
+
+		internal void FillWith(object dataSource)
+		{
+			dataGridView.AutoGenerateColumns = true;
+			dataGridView.AutoSize = false;
+			dataGridView.DataSource = dataSource is IEnumerable<object> list
+										  ? list.ToList()
+										  : dataSource;
+		}
+
+		internal void Deselect()
+		{
+			//	Some of this may seem like overkill, but it seems it is safest to do all of this
+			dataGridView.ClearSelection();
+			dataGridView.CurrentRow?.Selected = false;
+			dataGridView.CurrentCell = null;
+		}
+
+		internal void FillColumn(int fillColumnNumber)
+		{
+			var columnNumber = 0;
+			foreach (DataGridViewColumn column in dataGridView.Columns)
+			{
+				column.AutoSizeMode = columnNumber++ == fillColumnNumber
+										  ? DataGridViewAutoSizeColumnMode.Fill
+										  : DataGridViewAutoSizeColumnMode.AllCells;
+				column.SortMode = DataGridViewColumnSortMode.NotSortable;
+			}
+		}
+
+		internal void AlignColumn(DataGridViewContentAlignment alignment,
+								  params int[] columns)
+			=> columns.ForEach(column => dataGridView.Columns[column].DefaultCellStyle.Alignment = alignment);
+
+		internal void PowerCells(int column)
+		{
+			dataGridView.Columns[column].HeaderCell.Style.Alignment = MiddleCenter;
+			foreach (DataGridViewRow row in dataGridView.Rows)
+				row.Cells[column].Style = $"{row.Cells[column].Value}".As<Powers>().CellStyle;
+		}
+
+		internal void Print(string title,
+							string subtitle)
+		{
+			//	TODO: centering the table cramps the titles and footer text
+			DGVPrinter printer = new ()
+								 {
+									 Title = title,
+									 SubTitle = subtitle,
+									 SubTitleSpacing = 16,
+									 PageNumbers = true,
+									 PageNumberInHeader = false,
+									 TableAlignment = Alignment.Center,
+									 ColumnWidth = ColumnWidthSetting.DataWidth,
+									 Footer = $"{nameof (DCM)} © {DateTime.Now.Year} ARMADA",
+									 FooterSpacing = 15
+								 };
+			foreach (var cellStyle in printer.ColumnStyles.Values)
+			{
+				cellStyle.Font = new (cellStyle.Font.FontFamily, 14); // TODO: seems not to do anything
+				cellStyle.WrapMode = DataGridViewTriState.False;
+			}
+			printer.PrintDialogSettings.AllowPrintToFile = true;
+			printer.PrintDataGridView(dataGridView);
+		}
+	}
+
+	extension(DataGridViewCellStyle style)
+	{
+		internal string StyleTag => $"""style="color: {style.ForeColor}; background-color: {style.BackColor};" """;
+	}
+
+	extension(Control control)
+	{
+		private string ShadowLabelName => $"{(control.Parent?.Name).OrThrow()}.{control.Name}.{typeof (Label)}";
+
+		//	This method is an event handler for the EnabledChanged event of a ComboBox.
+		//	It makes the ComboBox's label (if it exists) more visible or less visible.
+		internal void ComboBox_EnabledChanged(object @object,
+											  EventArgs e)
+		{
+			var comboBox = (ComboBox)@object;
+			/*
+			 Another almost-as-good way to make a disabled ComboBox more visible is:
+					if (box.Enabled) box.DropDownStyle = DropDownList else DropDown;
+			*/
+			var name = comboBox.ShadowLabelName;
+			ShadowLabels.TryGetValue(name, out var label);
+			comboBox.Visible = comboBox.Enabled;
+			//	Checking for .IsDisposed is important.  Re-create the Label if it's been Disposed.
+			if (comboBox.Enabled && (label?.IsDisposed ?? true))
+			{
+				label?.Hide();
+				return;
+			}
+			//	I think (?) this if-statement is overkill, but in case I'm wrong, it can't hurt.
+			var parent = comboBox.Parent.OrThrow();
+			if (label is not null && parent.Contains(label))
+				parent.Controls.Remove(label);
+			label =
+				ShadowLabels[name] =
+					new ()
+					{
+						Name = name,
+						Location = comboBox.Location,
+						Size = comboBox.Size,
+						Visible = !comboBox.Visible,
+						ForeColor = SystemColors.WindowText,
+						Font = comboBox.Font.Bold // TODO: Probably never true, so this may actually waste not save cycles
+								   ? comboBox.Font
+								   : BoldFonts.GetOrSet(comboBox.Font, BoldFont),
+						BorderStyle = BorderStyle.FixedSingle
+					};
+			comboBox.UpdateShadowLabel(label);
+			(comboBox.Parent?.Controls).OrThrow().Add(label);
+			//	It took me hours to figure out that this next line was
+			//	what was needed to get the label showing on some Forms!
+			//	And, of course, I thought "maybe it needs BringToFront"
+			//	more than once while continuing to fight it other ways.
+			label.BringToFront();
+		}
+	}
+
+	extension(Powers power)
+	{
+		internal DataGridViewCellStyle CellStyle => PowerColors[power];
+	}
 
 	#endregion
 

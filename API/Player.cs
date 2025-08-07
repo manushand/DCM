@@ -1,8 +1,7 @@
 ﻿using Data;
+using DCM;
 
 namespace API;
-
-using DCM;
 
 [PublicAPI]
 internal class Player : Rest<Player, Data.Player, Player.Detail>
@@ -92,6 +91,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		Record.FirstName = first;
 		Record.LastName = last;
 		var addresses = player.Details?.EmailAddresses ?? [];
+		//	BUG: The IDE claims that the call to IsValidEmail() will not compile, but it does.
 		if (addresses.Any(static address => !address.IsValidEmail()))
 			return ["Invalid player email address."];
 		Record.EmailAddress = Join(",", addresses);
@@ -100,8 +100,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 
 	public override bool Unlink()
 	{
-		var hasPlayedGames = Record.LinksOfType<GamePlayer>().Length is not 0;
-		if (hasPlayedGames)
+		if (Record.LinksOfType<GamePlayer>().Length is not 0)
 			return false;
 		Delete(Record.LinksOfType<GroupPlayer>());
 		Delete(Record.LinksOfType<TeamPlayer>());
@@ -127,7 +126,8 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		var other = RestForId(playerId, false);
 		if (player is null || other is null)
 			return NotFound();
-		var playerConflict = ReadOne<PlayerConflict>(conflict => conflict.Involves(id) && conflict.Involves(playerId));
+		var playerConflict = ReadOne<PlayerConflict>(conflict => conflict.Involves(id)
+															  && conflict.Involves(playerId));
 		Conflict result = new (other, value ?? playerConflict?.Value ?? default);
 		if (value is null)
 			return Ok(result);

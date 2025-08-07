@@ -42,7 +42,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	#region Properties
 
-	public string PowerName => Power.InCaps();
+	public string PowerName => Power.InCaps;
 
 	[UsedImplicitly]
 	public string Status => Game.Status switch
@@ -223,7 +223,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 									   {
 										   var conflict = playerConflict?.Value ?? 0;
 										   if (fillDetails && playerConflict is not null)
-											   ConflictDetails.Add($"{conflict.Points()} for player conflict with {playerConflict.PlayerConflictedWith(PlayerId)}");
+											   ConflictDetails.Add($"{conflict.Points} for player conflict with {playerConflict.PlayerConflictedWith(PlayerId)}");
 										   return conflict;
 									   });
 
@@ -238,7 +238,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 										var conflict = group.Conflict;
 										Conflict += conflict;
 										if (fillDetails)
-											ConflictDetails.Add($"{conflict.Points()} for being in the group {group} with {player}.");
+											ConflictDetails.Add($"{conflict.Points} for being in the group {group} with {player}.");
 									});
 
 		//	Powers-Played-Earlier Conflicts
@@ -258,7 +258,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 												   if (power == Power && Tournament.GroupPowers is not None)
 													   conflict *= 7;
 												   if (fillDetails)
-													   ConflictDetails.Add($"{conflict.Points()} for playing {power} {ThisMany(times)} earlier{
+													   ConflictDetails.Add($"{conflict.Points} for playing {power} {ThisMany(times)} earlier{
 														   (power == Power ? null : $" (same power group as {Power})")}.");
 												   return conflict;
 											   });
@@ -271,7 +271,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 												var times = PlayerIdsPlayedInTournament.Count(playerId => playerId == opponentId);
 												var conflict = Tournament.PlayerConflict * times;
 												if (fillDetails)
-													ConflictDetails.Add($"{conflict.Points()} for playing {
+													ConflictDetails.Add($"{conflict.Points} for playing {
 														opponents.Single(player => player.Id == opponentId)} {ThisMany(times)} earlier.");
 												return conflict;
 											});
@@ -285,7 +285,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 										{
 											var conflict = Tournament.TeamConflict;
 											if (fillDetails)
-												ConflictDetails.Add($"{conflict.Points()} for playing on a team with {
+												ConflictDetails.Add($"{conflict.Points} for playing on a team with {
 													opponents.Single(player => player.Id == opponentId)}.");
 											return conflict;
 										});
@@ -305,7 +305,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 			{
 				Conflict += conflict;
 				if (fillDetails)
-					ConflictDetails.Add($"{conflict.Points()} for being {distanceFromAverage:F2} tournament points off average for game's players.");
+					ConflictDetails.Add($"{conflict.Points} for being {distanceFromAverage:F2} tournament points off average for game's players.");
 			}
 		}
 

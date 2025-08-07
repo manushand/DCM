@@ -3,6 +3,7 @@
 public abstract class IdInfoRecord : IInfoRecord, IComparable<IdInfoRecord>
 {
 	public interface IEvent;
+
 	public int Id;
 	public abstract string FieldValues { get; }
 	public virtual string Name { get; set; } = Empty;

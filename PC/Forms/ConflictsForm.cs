@@ -56,7 +56,7 @@ internal sealed partial class ConflictsForm : Form
 			PlayerConflict = playerConflict;
 			Player = PlayerConflict.PlayerConflictedWith(currentPlayerId);
 			ConflictValue = playerConflict.Value
-										  .Points();
+										  .Points;
 		}
 
 		internal void ModifyConflict(bool decrease)

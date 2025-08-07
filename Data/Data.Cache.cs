@@ -12,18 +12,14 @@ public static partial class Data
 
 		private static CacheType _data = [];
 		private static readonly Dictionary<string, CacheType> Stores = [];
-
+		private static readonly Dictionary<Type[], MethodInfo> LoadMethods = [];
 		private static readonly MethodInfo LoadMethod = typeof (Cache).GetMethod(nameof (Load), Static | NonPublic)
 																	  .OrThrow();
-
-		private static readonly Dictionary<Type[], MethodInfo> LoadMethods = [];
 
 		#endregion
 
 		internal static void Restore(string store)
-			=> _data = Stores.TryGetValue(store, out var held)
-					? held
-					: Stores[store] = [];
+			=> _data = Stores.GetOrSet(store, static _ => []);
 
 		internal static void Flush()
 			=> _data.Clear();

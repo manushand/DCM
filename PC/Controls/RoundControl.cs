@@ -208,7 +208,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 										   .Select(static gamePlayer => new SeededPlayer { GamePlayer = gamePlayer })
 										   .ToList();
 			SeededDataGridView.FillWith(seededPlayers);
-			SeededPlayerCountLabel.Text = $"{seededPlayers.Count} Players in {games.Length} Games; Total Conflict {Round.Conflict.Points()}";
+			SeededPlayerCountLabel.Text = $"{seededPlayers.Count} Players in {games.Length} Games; Total Conflict {Round.Conflict.Points}";
 			SeededDataGridView.Deselect();
         });
 	}
@@ -514,7 +514,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		var allGamesConflict = Round.Conflict;
 		var extraInfo = startedGames is 0
 							? null
-							: $"{NewLine}{NewLine}Conflict for the seeded {GameCount(totalSeededGameCount, false)}: {seededGamesConflict.Points()}";
+							: $"{NewLine}{NewLine}Conflict for the seeded {GameCount(totalSeededGameCount, false)}: {seededGamesConflict.Points}";
 		FillPlayerLists(ListsToFill.Seedable);
 		SetButtonUsability();
 		var timingData = elapsedMilliseconds is null
@@ -524,7 +524,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 							  ? null
 							  : $" and re-seeded {GameCount(preseededGameCount)}";
 		MessageBox.Show($"Seeded {GameCount(seededGameCount)}{preseedInfo}.{extraInfo}{NewLine}{NewLine}" +
-						$"Total conflict for round: {allGamesConflict.Points()}{timingData}",
+						$"Total conflict for round: {allGamesConflict.Points}{timingData}",
 						"Seeding complete",
 						OK,
 						Information);
@@ -610,7 +610,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 					assignments += $"""
 									<tr>
 									    <td>{gamePlayer.Player}</td>
-									    <th {power.CellStyle().Tag()}>{power.InCaps()}</th>
+									    <th {power.CellStyle.StyleTag}>{power.InCaps}</th>
 									</tr>
 									""";
 				}
@@ -810,7 +810,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		internal readonly double ScoreBeforeRound;
 
 		public string PlayerName => $"{Player}{(Preregistered ? " ✅" : null)}"; // or ✔ or ✓
-		public string Score => ScoreBeforeRound.Points();
+		public string Score => ScoreBeforeRound.Points;
 
 		internal int Id => Player.Id;
 
@@ -847,7 +847,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	{
 		public int Game => GamePlayer.Game.Number;
 		public Player Player => GamePlayer.Player;
-		public string Power => GamePlayer.Power.InCaps();
+		public string Power => GamePlayer.Power.InCaps;
 		public string Status => GamePlayer.Status;
 
 		required internal GamePlayer GamePlayer { get; init; }

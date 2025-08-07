@@ -16,8 +16,8 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 			BestGamesTabControl.TabPages
 							   .Add(new TabPage
 									{
-										Text = $" {(power is TBD ? "OVERALL" : power.InCaps())} ",
-										BackColor = power.CellStyle().BackColor
+										Text = $" {(power is TBD ? "OVERALL" : power.InCaps)} ",
+										BackColor = power.CellStyle.BackColor
 									});
 	}
 
@@ -65,7 +65,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 	private void BestGamesTabControl_DrawItem(object sender,
 											  DrawItemEventArgs e)
 	{
-		var style = (e.Index.As<Powers>() - 1).CellStyle();
+		var style = (e.Index.As<Powers>() - 1).CellStyle;
 		e.Graphics.FillRectangle(new SolidBrush(style.BackColor), e.Bounds);
 		e.Bounds.Offset(1, e.State is DrawItemState.Selected
 							   ? -2
@@ -127,7 +127,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		Show<GamesForm>(() => new (bestGame.Player, bestGame.Game));
 	}
 
-	#region BestGame class
+	#region BestGame record
 
 	//	Do not make this a struct; it changes behavior.
 	[PublicAPI]
@@ -136,37 +136,36 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		internal int OverallRank;
 		internal int PowerRank;
 
-		[DisplayName("#")]
-		public string OverallRankForDisplay => OverallRank.Dotted();
+		private readonly GamePlayer _gamePlayer;
 
 		[DisplayName("#")]
-		public string PowerRankForDisplay => PowerRank.Dotted();
+		public string OverallRankForDisplay => OverallRank.Dotted;
 
-		public Player Player => GamePlayer.Player;
+		[DisplayName("#")]
+		public string PowerRankForDisplay => PowerRank.Dotted;
+
+		public Player Player => _gamePlayer.Player;
 
 		public string Score => Game.Tournament
 								   .ScoringSystem
 								   .FormattedScore(GameScore);
 
 		[DisplayName(nameof (Power))]
-		public string PowerName => GamePlayer.PowerName;
+		public string PowerName => _gamePlayer.PowerName;
 
-		public string? Centers => GamePlayer.Centers?.ToString();
+		public string? Centers => _gamePlayer.Centers?.ToString();
 
-		public string? Year => GamePlayer.Years?.ToString();
+		public string? Year => _gamePlayer.Years?.ToString();
 
 		[DisplayName("Round─Game")]
 		public string Round => $"{Game.Round}─{Game.Number}";
 
-		internal Powers Power => GamePlayer.Power;
-		internal double GameScore => GamePlayer.FinalScore;
-
-		private GamePlayer GamePlayer { get; }
-
-		internal Game Game => GamePlayer.Game;
+		internal Game Game => _gamePlayer.Game;
+		internal Powers Power => _gamePlayer.Power;
+		internal double GameScore => _gamePlayer.FinalScore;
 
 		internal BestGame(GamePlayer gamePlayer)
-			=> GamePlayer = gamePlayer;
+			=> _gamePlayer = gamePlayer;
 	}
 
 	#endregion

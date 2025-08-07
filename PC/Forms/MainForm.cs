@@ -4,7 +4,7 @@ using static DatabaseTypes;
 
 internal sealed partial class MainForm : Form
 {
-	private static bool Connected => DatabaseType is Access or SqlServer;
+	private static bool Connected => DatabaseType is not None;
 
 	private IdInfoRecord Event
 	{
