@@ -1,16 +1,10 @@
 ﻿namespace API;
 
 [PublicAPI]
-public sealed record Error
+internal sealed class Error(Exception exception)
 {
-	public string Cause { get; }
-	public string[] Details { get; }
-
-	internal Error(Exception exception)
-	{
-		Cause = exception.Message;
-		Details = exception.Data[nameof (Details)] as string[] ?? [];
-	}
+	public string Cause { get; } = exception.Message;
+	public string[] Details { get; } = exception.Data[nameof (Details)] as string[] ?? [];
 
 	internal static Exception Exception(string message,
 										params IEnumerable<string?> details)

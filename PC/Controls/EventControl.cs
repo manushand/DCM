@@ -13,10 +13,10 @@ internal sealed partial class EventControl : UserControl
 	internal EventControl()
 	{
 		InitializeComponent();
-		PowerGroupComboBox.Items.AddRange(Enum.GetNames<PowerGroups>()
-											  .Select(static object (name) => ((typeof (PowerGroups).GetField(name)?
-																									.GetCustomAttribute(typeof (PowerGroupingsAttribute))
-																					as PowerGroupingsAttribute)?.Text).OrThrow()));
+		PowerGroupComboBox.FillWith(Enum.GetNames<PowerGroups>()
+										.Select(static object (name) => ((typeof (PowerGroups).GetField(name)?
+																							  .GetCustomAttribute(typeof (PowerGroupingsAttribute))
+																			  as PowerGroupingsAttribute)?.Text).OrThrow()));
 	}
 
 	#endregion
@@ -423,7 +423,7 @@ internal sealed partial class EventControl : UserControl
 		//	ScoreConflictCheckBox.Visible = Tournament.ScoringSystem.PointsPerGame is not null;
 		ScoreConflictCheckBox.Checked = Tournament.ScoreConflict is not 0;
 		ProgressiveScoreConflictCheckBox.Checked = Tournament.ProgressiveScoreConflict;
-		ScoreConflictCheckBox_CheckedChanged(); //	TODO: does the line above do this?
+		ScoreConflictCheckBox_CheckedChanged();
 	}
 
 	#endregion

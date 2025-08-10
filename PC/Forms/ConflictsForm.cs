@@ -25,23 +25,16 @@ internal sealed partial class ConflictsForm : Form
 
 	//	Also, do not make this a record struct; that causes it to fail
 	//	(and you won't know it till runtime) when sent to .FillWith().
-	private sealed record ConflictedPlayer
+	private sealed class ConflictedPlayer(PlayerConflict playerConflict,
+										  int currentPlayerId)
 	{
-		public Player Player { get; }
+		public Player Player { get; } = playerConflict.PlayerConflictedWith(currentPlayerId);
 
 		[PublicAPI]
-		public string ConflictValue { get; }
+		public string ConflictValue { get; } = playerConflict.Value
+															 .Points;
 
-		private PlayerConflict PlayerConflict { get; }
-
-		internal ConflictedPlayer(PlayerConflict playerConflict,
-								  int currentPlayerId)
-		{
-			PlayerConflict = playerConflict;
-			Player = PlayerConflict.PlayerConflictedWith(currentPlayerId);
-			ConflictValue = playerConflict.Value
-										  .Points;
-		}
+		private PlayerConflict PlayerConflict { get; } = playerConflict;
 
 		internal void ModifyConflict(bool decrease)
 		{

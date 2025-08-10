@@ -70,18 +70,17 @@ internal static class API
 							  });
 
 		var app = builder.Build();
-		app.Use(Handle);
+		app.Use(Handle)
+		   .UseExceptionHandler(ExceptionHandler);
 		if (app.Environment.IsDevelopment())
 		{
 			app.MapOpenApi();
-			app.UseDeveloperExceptionPage()
-			   .UseSwagger()
+			app.UseSwagger()
 			   .UseSwaggerUI(config => config.SwaggerEndpoint($"./{version}/swagger.json", $"{Title} {version}"));
 		}
 		else
 			app.UseHttpsRedirection()
-			   .UseHsts()
-			   .UseExceptionHandler(ExceptionHandler);
+			   .UseHsts();
 
 		Group.CreateEndpoints(app);
 		Player.CreateEndpoints(app);

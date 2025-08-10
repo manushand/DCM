@@ -896,7 +896,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	[PublicAPI]
 	private sealed class SeededPlayer : IRecord
 	{
-		public int Game => GamePlayer.Game.Number;
+		public char Game => GamePlayer.Game.Letter;
 		public Player Player => GamePlayer.Player;
 		public string Power => GamePlayer.Power.InCaps;
 		public string Status => GamePlayer.Status;

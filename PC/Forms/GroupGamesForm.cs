@@ -32,23 +32,17 @@ internal sealed partial class GroupGamesForm : Form
 	#region Type
 
 	[PublicAPI]
-	private sealed record GroupGame : IRecord
+	private sealed class GroupGame(Game game) : IRecord
 	{
-		public string Date => $"{DateTime:d}";
+		public string Date { get; } = $"{game.Date:d}";
 
-		public string Name => Game.Name;
-
-		[Browsable(false)]
-		internal int Id => Game.Id;
+		public string Name { get; } = game.Name;
 
 		[Browsable(false)]
-		internal DateTime DateTime => Game.Date;
+		internal readonly int Id = game.Id;
 
 		[Browsable(false)]
-		internal readonly Game Game;
-
-		internal GroupGame(Game game)
-			=> Game = game;
+		internal readonly Game Game = game;
 	}
 
 	#endregion

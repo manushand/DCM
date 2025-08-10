@@ -62,19 +62,16 @@ internal sealed partial class RegistrationControl : UserControl
 	//	NOTE: Don't put this in a separate file in another part of this partial class;
 	//	If you do, VS will think it has a visual Form and will set up a designer file.
 
-	private sealed record RegisteredPlayer
+	private sealed record RegisteredPlayer(Player Player, string Rounds = "")
 	{
-		public Player Player { get; }
+		public Player Player { get; } = Player;
 
 		[PublicAPI]
-		public string Rounds { get; set; }
+		public string Rounds { get; set; } = Rounds;
 
 		internal int Id => Player.Id;
 		internal string Name => Player.Name;
 		internal string ByLastName => Player.LastFirst;
-
-		internal RegisteredPlayer(Player player, string rounds = "")
-			=> (Player, Rounds) = (player, rounds);
 	}
 
 	#endregion

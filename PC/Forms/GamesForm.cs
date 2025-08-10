@@ -113,7 +113,7 @@ internal sealed partial class GamesForm : Form
 			Games.ForEach(game => GamesTabControl.TabPages
 												 .Add(Round.IsNone
 														  ? game.FullName
-														  : $"Game {game.Number}"));
+														  : $"Game {game.Letter}"));
         });
 		GameControl.GameDataChangedCallback = GameDataUpdated;
 		//	Set the active tab, which will fire an event setting "Game".

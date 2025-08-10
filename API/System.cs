@@ -133,8 +133,7 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 		{
 			return ["Test Game data is invalid."];
 		}
-		return Record.ScoreWithResults(Record.TestGamePlayers, out var results)
-				   ? []
-				   : [..results.OfType<string>()];
+		Record.ScoreWithResults(Record.TestGamePlayers, out var results);
+		return [..results.OfType<string>()];
 	}
 }

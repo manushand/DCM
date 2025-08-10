@@ -41,7 +41,7 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 
 	//	Do not make this a struct; it changes behavior.
 	[PublicAPI]
-	private sealed record RoundScore : IRecord
+	private sealed record RoundScore(GamePlayer GamePlayer) : IRecord
 	{
 		[DisplayName("#")]
 		public string RoundRank => Rank.Dotted;
@@ -49,7 +49,7 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 		public Player Player => GamePlayer.Player;
 
 		[DisplayName(nameof (Game))]
-		public int GameNumber => Game.Number;
+		public int GameLetter => Game.Letter;
 
 		public string Power => GamePlayer.PowerName;
 
@@ -61,10 +61,7 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 		internal Game Game => GamePlayer.Game;
 		internal double FinalScore => GamePlayer.FinalScore;
 
-		private GamePlayer GamePlayer { get; }
-
-		internal RoundScore(GamePlayer gamePlayer)
-			=> GamePlayer = gamePlayer;
+		private GamePlayer GamePlayer { get; } = GamePlayer;
 	}
 
 	#endregion

@@ -76,7 +76,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 
 	//	Do not make this a struct; it changes behavior.
 	[PublicAPI]
-	private sealed record BestGame : IRecord
+	private sealed record BestGame(GamePlayer GamePlayer) : IRecord
 	{
 		[DisplayName("#")]
 		public string OverallRankForDisplay => OverallRank.Dotted;
@@ -98,7 +98,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		public string? Year => GamePlayer.Years?.ToString();
 
 		[DisplayName("Round─Game")]
-		public string Round => $"{Game.Round}─{Game.Number}";
+		public string Round => $"{Game.Round}─{Game.Letter}";
 
 		internal int OverallRank;
 		internal int PowerRank;
@@ -107,10 +107,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		internal Powers Power => GamePlayer.Power;
 		internal double GameScore => GamePlayer.FinalScore;
 
-		private GamePlayer GamePlayer { get; }
-
-		internal BestGame(GamePlayer gamePlayer)
-			=> GamePlayer = gamePlayer;
+		private GamePlayer GamePlayer { get; } = GamePlayer;
 	}
 
 	#endregion

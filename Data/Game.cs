@@ -9,6 +9,7 @@ public sealed class Game : IdentityRecord<Game>
 	public bool Scored;
 	public Statuses Status;
 	public int RoundId { get; private set; }
+	public char Letter => (char)('@' + Number);
 	public int ScoringSystemId => _scoringSystemId ?? Round.ScoringSystemId;
 
 	public DateTime Date
@@ -20,7 +21,7 @@ public sealed class Game : IdentityRecord<Game>
 	public Tournament Tournament => Round.Tournament;
 
 	public string FullName => Name.Length is 0
-								  ? $"{Tournament} {Round.Number}─{Number}"
+								  ? $"{Tournament} {Round.Number}─{Letter}"
 								  : Name;
 
 	// <summary>
