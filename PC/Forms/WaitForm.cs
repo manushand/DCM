@@ -4,13 +4,19 @@ namespace PC.Forms;
 
 internal sealed partial class WaitForm : Form
 {
-	private readonly Func<int> _function;
+	#region Public interface
+
+	#region Data
 
 	[DesignerSerializationVisibility(Hidden)]
 	internal int Result { get; private set; }
 
 	[DesignerSerializationVisibility(Hidden)]
 	internal long? ElapsedMilliseconds { get; private set; }
+
+	#endregion
+
+	#region Constructor
 
 	internal WaitForm(string caption,
 					  Func<int> function)
@@ -21,6 +27,20 @@ internal sealed partial class WaitForm : Form
 				$"{caption}…";
 		_function = function;
 	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private readonly Func<int> _function;
+
+	#endregion
+
+	#region Event handler
 
 	private void WaitForm_Load(object sender,
 							   EventArgs e)
@@ -37,4 +57,8 @@ internal sealed partial class WaitForm : Form
 							  Close();
 						  }, TaskScheduler.FromCurrentSynchronizationContext());
 	}
+
+	#endregion
+
+	#endregion
 }

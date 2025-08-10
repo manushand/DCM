@@ -2,21 +2,9 @@
 
 internal sealed partial class GroupGamesForm : Form
 {
-	private Group Group { get; }
+	#region Public interface
 
-	private Round HostRound { get; }
-
-	private Game Game { get; set; } = Game.None;
-
-	private List<GamePlayer> GamePlayers => [..Game.GamePlayers];
-
-	private List<ComboBox> PlayerComboBoxes { get; }
-
-	private bool AllPlayersAssigned => PlayerComboBoxes.All(static box => box.SelectedItem is not null);
-
-	private List<Label> ScoreLabels { get; }
-
-	private bool AllFilledIn { get; set; }
+	#region Constructor
 
 	internal GroupGamesForm(Group group)
 	{
@@ -29,10 +17,58 @@ internal sealed partial class GroupGamesForm : Form
 		HostRound = Group.HostRound;
 		PlayerComboBoxes = PlayersPanel.PowerControls<ComboBox>();
 		ScoreLabels = ScoresPanel.PowerControls<Label>();
+		ScoreDisplayControls = [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, ScoresPanel, TotalScoreLabel];
 		DeleteGameButton.Enabled = false;
 		if (scoringSystem.PointsPerGame is 0 || scoringSystem.UsesPlayerAnte)
 			RescoreGamesFrom(default);
 	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Type
+
+	[PublicAPI]
+	private sealed record GroupGame : IRecord
+	{
+		public string Date => $"{DateTime:d}";
+
+		public string Name => Game.Name;
+
+		[Browsable(false)]
+		internal int Id => Game.Id;
+
+		[Browsable(false)]
+		internal DateTime DateTime => Game.Date;
+
+		[Browsable(false)]
+		internal readonly Game Game;
+
+		internal GroupGame(Game game)
+			=> Game = game;
+	}
+
+	#endregion
+
+	#region Data
+
+	private Game Game { get; set; } = Game.None;
+	private bool AllFilledIn { get; set; }
+	private Group Group { get; }
+	private Round HostRound { get; }
+	private Control[] ScoreDisplayControls { get; }
+	private List<Label> ScoreLabels { get; }
+	private List<ComboBox> PlayerComboBoxes { get; }
+
+	private List<GamePlayer> GamePlayers => [..Game.GamePlayers];
+	private bool AllPlayersAssigned => PlayerComboBoxes.All(static box => box.SelectedItem is not null);
+
+	#endregion
+
+	#region Event handlers
 
 	private void GroupGamesForm_Load(object sender,
 									 EventArgs e)
@@ -44,33 +80,13 @@ internal sealed partial class GroupGamesForm : Form
 		FillGameList();
 	}
 
-	private void FillGameList()
-	{
-		GroupGamesDataGridView.FillWith(Group.Games
-											 .Select(static game => new GroupGame(game))
-											 .Reverse());
-		ShowControls(!Game.IsNone);
-		if (Game.IsNone)
-		{
-			GroupGamesDataGridView.Deselect();
-			NewGameButton.Text = "New Game";
-			return;
-		}
-		DeleteGameButton.Text = "Delete Game";
-		GroupGamesDataGridView.Rows
-							  .Cast<DataGridViewRow>()
-							  .Single(each => each.GetFromRow<GroupGame>().Id == Game.Id)
-							  .Selected = true;
-	}
-
 	private void NameRegistrationTabRadioButton_CheckedChanged(object? sender = null,
 															   EventArgs? e = null)
 	{
-		var players = Group.Players
-						   .OrderBy(player => FirstNameRegistrationTabRadioButton.Checked
-												  ? player.Name
-												  : player.LastFirst)
-						   .ToArray();
+		Player[] players = [..Group.Players
+								   .OrderBy(player => FirstNameRegistrationTabRadioButton.Checked
+														  ? player.Name
+														  : player.LastFirst)];
 		PlayerComboBoxes.ForEach(box =>
 								 {
 									 var selected = box.SelectedItem;
@@ -101,33 +117,15 @@ internal sealed partial class GroupGamesForm : Form
 			GameStatusComboBox_SelectedIndexChanged();
 	}
 
-	private void ShowControls(bool visible)
-	{
-		Width = GroupGamesDataGridView.Width + 45 + (visible
-														 ? GameControl.Width + PlayerColumnHeaderLabel.Width
-																			 + ScoreColumnHeaderLabel.Width
-																			 + 25 //	 TODO: check
-														 : 0);
-		SetVisible(visible,
-				   GameControl, GameStatusComboBox, GameDateTimePicker, GameNameTextBox,
-				   PlayerColumnHeaderLabel, GameStatusLabel, GameNameLabel, GameDateLabel);
-		SetEnabled(Game.IsNone, PlayerComboBoxes);
-		var scored = Game.Status is Finished;
-		SetVisible(scored, [ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, ..ScoreLabels]);
-		OrderByNamePanel.Visible = GameStatusComboBox.SelectedIndex < 1;
-	}
-
 	private void NewGameButton_Click(object? sender = null,
 									 EventArgs? e = null)
 	{
 		//	New Game
 		ShowControls(true);
 		GroupGamesDataGridView.Deselect();
-		SetEnabled(false, GroupGamesDataGridView, NewGameButton);
-		SetVisible(false, ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel, GameInErrorButton);
+		Disable(GroupGamesDataGridView, NewGameButton);
+		Conceal([..ScoreDisplayControls, GameInErrorButton]);
 		GameControl.Active = true;
-		//  TODO - Is there some reason that the line above prevents the one below from joining the SetVisible above?
-		SetVisible(false, ScoreLabels);
 		Game = Game.None;
 		GameControl.ClearGame();
 		GameNameTextBox.Clear();
@@ -137,19 +135,10 @@ internal sealed partial class GroupGamesForm : Form
 									 box.Enabled = true;
 								 });
 		GameDateTimePicker.Value = DateTime.Today;
-		OrderByNamePanel.Visible =
-			DeleteGameButton.Enabled =
-				true;
+		Display(OrderByNamePanel);
+		Enable(DeleteGameButton);
 		DeleteGameButton.Text = "Cancel New Game";
 		SetVisible(AllPlayersAssigned, GameStatusLabel, GameStatusComboBox);
-	}
-
-	private void DeleteGame()
-	{
-		Delete(Game.GamePlayers);
-		Delete(Game);
-		Game = Game.None;
-		FillGameList();
 	}
 
 	private void GameStatusComboBox_SelectedIndexChanged(object? sender = null,
@@ -185,16 +174,15 @@ internal sealed partial class GroupGamesForm : Form
 								 Status = status,
 								 Date = GameDateTimePicker.Value
 							 });
-			CreateMany(Seven.Select(index => new GamePlayer
-											 {
-												 Game = Game,
-												 Player = PlayerComboBoxes[index].GetSelected<Player>(),
-												 Power = index.As<Powers>(),
-												 Result = Unknown
-											 })
-							.ToArray());
+			CreateMany([..Seven.Select(index => new GamePlayer
+												{
+													Game = Game,
+													Player = PlayerComboBoxes[index].GetSelected<Player>(),
+													Power = index.As<Powers>(),
+													Result = Unknown
+												})]);
 			FillGameList();
-			SetEnabled(true, NewGameButton, DeleteGameButton, GroupGamesDataGridView);
+			Enable(NewGameButton, DeleteGameButton, GroupGamesDataGridView);
 			DeleteGameButton.Text = "Delete Game";
 			GameControl.LoadGame(GamePlayers);
 			break;
@@ -205,9 +193,9 @@ internal sealed partial class GroupGamesForm : Form
 		default:
 			throw new (); //	TODO
 		}
-		status = GameStatusComboBox.SelectedIndex.As<Statuses>();
-		SetVisible(status is Finished,
-				   ScoresPanel, ScoreColumnHeaderLabel, ScoreTotalBarLabel, TotalScoreTextLabel, TotalScoreLabel);
+		status = GameStatusComboBox.SelectedIndex
+								   .As<Statuses>();
+		SetVisible(status is Finished, ScoreDisplayControls);
 		GameControl.Active = status is Underway;
 		var seeding = status is Seeded;
 		OrderByNamePanel.Visible = seeding;
@@ -222,11 +210,6 @@ internal sealed partial class GroupGamesForm : Form
 		if (status is Finished && Group.ScoringSystem.UsesPlayerAnte)
 			GameDataUpdated(true);
 	}
-
-	private void RescoreGamesFrom(DateTime gameDate)
-		=> Group.Games
-				.Where(scoreable => scoreable.Date >= gameDate)
-				.ForEach(static game => game.Scored = false);
 
 	private void GroupGamesDataGridView_CellClick(object? sender = null,
 												  DataGridViewCellEventArgs? e = null)
@@ -259,7 +242,7 @@ internal sealed partial class GroupGamesForm : Form
 		{
 			//	Cancel New Game
 			ShowControls(false);
-			SetEnabled(true, NewGameButton, GroupGamesDataGridView);
+			Enable(NewGameButton, GroupGamesDataGridView);
 			DeleteGameButton.Text = "Delete Game";
 		}
 		else if (MessageBox.Show($"Do you really want to delete this group game dated {Game.Date:d}?",
@@ -302,6 +285,68 @@ internal sealed partial class GroupGamesForm : Form
 		FillGameList();
 	}
 
+	//	TODO: This method is duplicated verbatim in GamesForm.cs
+	private void GameInErrorButton_Click(object sender,
+										 EventArgs e)
+	{
+		GameControl.FinalGameDataValidation(out var error);
+		MessageBox.Show(error,
+						"Game in Error",
+						OK,
+						Warning);
+	}
+
+	#endregion
+
+	#region Methods
+
+	private void FillGameList()
+	{
+		GroupGamesDataGridView.FillWith(Group.Games
+											 .Select(static game => new GroupGame(game))
+											 .Reverse());
+		ShowControls(!Game.IsNone);
+		if (Game.IsNone)
+		{
+			GroupGamesDataGridView.Deselect();
+			NewGameButton.Text = "New Game";
+			return;
+		}
+		DeleteGameButton.Text = "Delete Game";
+		GroupGamesDataGridView.Rows
+							  .Cast<DataGridViewRow>()
+							  .Single(each => each.GetFromRow<GroupGame>().Id == Game.Id)
+							  .Selected = true;
+	}
+
+	private void ShowControls(bool visible)
+	{
+		Width = GroupGamesDataGridView.Width + 45 + (visible
+														 ? GameControl.Width + PlayerColumnHeaderLabel.Width
+																			 + ScoreColumnHeaderLabel.Width
+																			 + 25 // TODO: check
+														 : 0);
+		SetVisible(visible,
+				   GameControl, GameStatusComboBox, GameDateTimePicker, GameNameTextBox,
+				   PlayerColumnHeaderLabel, GameStatusLabel, GameNameLabel, GameDateLabel);
+		SetEnabled(Game.IsNone, PlayerComboBoxes);
+		SetVisible(Game.Status is Finished, ScoreDisplayControls);
+		OrderByNamePanel.Visible = GameStatusComboBox.SelectedIndex < 1;
+	}
+
+	private void DeleteGame()
+	{
+		Delete(Game.GamePlayers);
+		Delete(Game);
+		Game = Game.None;
+		FillGameList();
+	}
+
+	private void RescoreGamesFrom(DateTime gameDate)
+		=> Group.Games
+				.Where(scoreable => scoreable.Date >= gameDate)
+				.ForEach(static game => game.Scored = false);
+
 	private void GameDataUpdated(bool allFilledIn)
 	{
 		AllFilledIn = allFilledIn;
@@ -315,12 +360,7 @@ internal sealed partial class GroupGamesForm : Form
 		AllFilledIn = allFilledIn && !GameInErrorButton.Visible;
 		var showScores = allFilledIn
 					  && (Game.Status is Finished || Group.ScoringSystem.UsesPlayerAnte is not true);
-		ScoreColumnHeaderLabel.Visible =
-			ScoreTotalBarLabel.Visible =
-				TotalScoreTextLabel.Visible =
-					TotalScoreLabel.Visible =
-						showScores;
-		ScoreLabels.ForEach(label => label.Visible = showScores);
+		SetVisible(showScores, ScoreDisplayControls);
 		if (!showScores)
 			return;
 		//	Calculate the scores
@@ -334,38 +374,7 @@ internal sealed partial class GroupGamesForm : Form
 							Warning);
 	}
 
-	//	TODO: This method is duplicated verbatim in GamesForm.cs
-	private void GameInErrorButton_Click(object sender,
-										 EventArgs e)
-	{
-		GameControl.FinalGameDataValidation(out var error);
-		MessageBox.Show(error,
-						"Game in Error",
-						OK,
-						Warning);
-	}
-
-	#region GroupGame class
-
-	[PublicAPI]
-	private sealed record GroupGame : IRecord
-	{
-		public string Date => $"{DateTime:d}";
-
-		public string Name => Game.Name;
-
-		[Browsable(false)]
-		internal int Id => Game.Id;
-
-		[Browsable(false)]
-		internal DateTime DateTime => Game.Date;
-
-		[Browsable(false)]
-		internal readonly Game Game;
-
-		internal GroupGame(Game game)
-			=> Game = game;
-	}
+	#endregion
 
 	#endregion
 }

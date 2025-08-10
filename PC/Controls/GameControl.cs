@@ -8,17 +8,21 @@ using static ScoringSystem.DrawRules;
 
 internal sealed partial class GameControl : UserControl
 {
-	private const string WinText = "Win",
-						 LossText = "Loss",
-						 SoloText = "Solo",
-						 DrawText = "Draw",
-						 SurvText = "Survived",
-						 ElimText = "Eliminated",
-						 ConcText = "Concession";
+	#region Public interface
 
-	private static readonly Dictionary<Color, SolidBrush> Brushes = [];
+	#region Data
 
-	private static readonly StringFormat Centered = new () { LineAlignment = Center, Alignment = Center };
+	internal delegate void Callback(bool state);
+
+	[DesignerSerializationVisibility(Hidden)]
+	internal Callback? GameDataChangedCallback { private get; set; }
+
+	[DesignerSerializationVisibility(Hidden)]
+	internal bool Active
+	{
+		private get;
+		set => SetEnabled(field = value, [..AllComboBoxes, ..OtherTextBoxes, SoloConcededCheckBox]);
+	}
 
 	[DesignerSerializationVisibility(Hidden)]
 	internal ScoringSystem ScoringSystem
@@ -51,6 +55,9 @@ internal sealed partial class GameControl : UserControl
 	[DesignerSerializationVisibility(Hidden)]
 	internal ScoringSystem? TournamentScoringSystem { private get; set; }
 
+	[DesignerSerializationVisibility(Hidden)]
+	internal Callback? FormEnableCallback { private get; set; }
+
 	internal bool HasData => AllComboBoxes.Any(static box => box.SelectedItem is not null);
 
 	internal bool AllFilledIn => GamePlayers?.All(static gamePlayer => gamePlayer.PlayComplete) is true
@@ -59,27 +66,9 @@ internal sealed partial class GameControl : UserControl
 	[DesignerSerializationVisibility(Hidden)]
 	internal int NumberOfWinners => ResultComboBoxes.Count(static comboBox => comboBox.SelectedIndex.As<Results>() is Win);
 
-	[DesignerSerializationVisibility(Hidden)]
-	internal Callback? FormEnableCallback { private get; set; }
+	#endregion
 
-	[DesignerSerializationVisibility(Hidden)]
-	internal bool Active
-	{
-		private get;
-		set => SetEnabled(field = value, [..AllComboBoxes, ..OtherTextBoxes, SoloConcededCheckBox]);
-	}
-
-	private List<GamePlayer>? GamePlayers { get; set; }
-
-	private List<ComboBox> ResultComboBoxes { get; }
-
-	private List<ComboBox> CentersComboBoxes { get; }
-
-	private List<ComboBox> YearsComboBoxes { get; }
-
-	private List<TextBox> OtherTextBoxes { get; }
-
-	private List<ComboBox> AllComboBoxes { get; }
+	#region Constructor
 
 	internal GameControl()
 	{
@@ -94,23 +83,9 @@ internal sealed partial class GameControl : UserControl
 		OtherTextBoxes = OtherPanel.PowerControls<TextBox>();
 	}
 
-	private void GameControl_Load(object sender,
-								  EventArgs e)
-	{
-		FillResultBoxes();
-		FillCenterComboBoxes();
-		//	Fill YearsComboBoxes this way, not with FillYearsComboBoxes(), because it needs a non-null ScoringSystem.
-		YearsComboBoxes.ForEach(static comboBox => comboBox.FillRange(1901, LatestFinalGameYear));
-		//	Coloring the Labels isn't necessary since this is done in the Form designer
-		//	but is done here anyway to be sure they always match the PowerColor array.
-		//	Note that this only colors labels whose .Tag is set, and it must be set to
-		//	a PowerName.
-		foreach (var label in Controls.OfType<Label>().Where(static label => label.Tag is not null))
-		{
-			var style = $"{label.Tag}".As<Powers>().CellStyle;
-			(label.BackColor, label.ForeColor) = (style.BackColor, style.ForeColor);
-		}
-	}
+	#endregion
+
+	#region Methods
 
 	internal void ClearGame()
 		=> LoadGame(gamePlayers: null);
@@ -147,24 +122,16 @@ internal sealed partial class GameControl : UserControl
 													 && Active;
 						 SoloConcededCheckBox.Checked = concessionPossible
 													 && GamePlayers.Count(static player => player.Result is Win) is 1;
-						 var held = GamePlayers.Select(static player => new
-																		{
-																			player.Result,
-																			player.Centers,
-																			player.Years,
-																			player.Other
-																		})
-											   .ToArray();
-						 held.Apply((player, index) =>
-									{
-										ResultComboBoxes[index].SelectedIndex = player.Result
-																					  .AsInteger();
-										CentersComboBoxes[index].SelectedIndex = player.Centers ?? -1;
-										YearsComboBoxes[index].SelectedIndex = player.Years - 1 ?? -1;
-										OtherTextBoxes[index].Text = ScoringSystem.UsesOtherScore
-																		 ? ScoringSystem.FormattedScore(player.Other, true)
-																		 : null;
-									});
+						 GamePlayers.Apply((gamePlayer, index) =>
+										   {
+											   ResultComboBoxes[index].SelectedIndex = gamePlayer.Result
+																								 .AsInteger();
+											   CentersComboBoxes[index].SelectedIndex = gamePlayer.Centers ?? -1;
+											   YearsComboBoxes[index].SelectedIndex = gamePlayer.Years - 1 ?? -1;
+											   OtherTextBoxes[index].Text = ScoringSystem.UsesOtherScore
+																				? ScoringSystem.FormattedScore(gamePlayer.Other, true)
+																				: null;
+										   });
 						 if (ScoringSystem.UsesOtherScore)
 							SetOtherScoreLabel(ScoringSystem.OtherScoreAlias);
 						 SetVisible(ScoringSystem.UsesOtherScore, [OtherScoreLabel, ..OtherTextBoxes]);
@@ -191,10 +158,6 @@ internal sealed partial class GameControl : UserControl
 		RunGameDataChangedCallback();
 	}
 
-	[GeneratedRegex(@"\s+")]
-	private static partial Regex SpacesRegex();
-	private static readonly Regex Spaces = SpacesRegex();
-
 	internal void SetOtherScoreLabel(string otherScoreAlias)
 		=> OtherScoreLabel.Text = otherScoreAlias.Length is 0
 									  ? "──"
@@ -209,38 +172,343 @@ internal sealed partial class GameControl : UserControl
 													 YearsComboBoxes[power],
 													 OtherTextBoxes[power]))];
 
-	private static GamePlayer PlayerData(Powers power,
-										 ListControl winLossComboBox,
-										 ListControl centersComboBox,
-										 ListControl yearsComboBox,
-										 TextBoxBase otherTextBox)
-		=> new ()
-		   {
-			   Power = power,
-			   Result = winLossComboBox.Enabled
-							? winLossComboBox.SelectedIndex
-											 .As<Results>()
-							: Unknown,
-			   Centers = centersComboBox.Enabled
-							 ? centersComboBox.SelectedIndex is -1
-								   ? null
-								   : centersComboBox.Text
-													.AsInteger()
-							 : null,
-			   Years = yearsComboBox.Enabled
-						   ? yearsComboBox.SelectedIndex is -1
-								 ? null
-								 : yearsComboBox.Text
-												.AsInteger() - 1900
-						   : null,
-			   Other = otherTextBox is { Enabled: true, TextLength: not 0 }
-						   ? otherTextBox.Text
-										 .AsDouble()
-						   : 0
-		   };
+	internal void FillYearComboBoxes()
+		=> YearsComboBoxes.ForEach(comboBox =>
+								   {
+									   comboBox.FillRange(1901, ScoringSystem.FinalGameYear - 1 ?? LatestFinalGameYear);
+									   var index = comboBox.SelectedIndex;
+									   comboBox.SelectedIndex = index < comboBox.Items.Count
+																	? index
+																	: -1;
+								   });
 
-	private void RunGameDataChangedCallback()
-		=> GameDataChangedCallback?.Invoke(AllFilledIn);
+	internal void SetResultComboBoxUsability(bool enabled)
+		=> SetComboBoxUsability(ResultComboBoxes, enabled);
+
+	internal void SetCentersComboBoxUsability(bool enabled)
+		=> SetComboBoxUsability(CentersComboBoxes, enabled);
+
+	internal void SetYearsComboBoxUsability(bool enabled)
+		=> SetComboBoxUsability(YearsComboBoxes, enabled);
+
+	internal void SetOtherTextBoxUsability(bool enabled)
+		=> OtherTextBoxes.ForEach(textBox =>
+								  {
+									  textBox.Enabled = enabled;
+									  textBox.Clear();
+								  });
+
+	internal bool FinalGameDataValidation(out string? error)
+	{
+		error = AllComboBoxes.Any(static comboBox => comboBox is { Enabled: true, SelectedItem: null })
+					? "Game data is incomplete."
+					: null;
+		if (!ScoringSystem.UsesCenterCount)
+			return error is null;
+		var totalCenters = CentersComboBoxes.Sum(static box => box.SelectedIndex);
+		if (totalCenters is < 22 or > 34)
+		{
+			error = "Total number of owned supply centers must be between 22 and 34.";
+			return false;
+		}
+		//	Validate center count to years played.
+		if (ScoringSystem.UsesYearsPlayed)
+			//	By the end of 1901, England, Italy, Russia, and Turkey must have at least
+			//	one center minimum; France, Germany, or Austria may have been eliminated.
+			if (YearsComboBoxes.Any(box => box.SelectedIndex is 0
+										&& CentersBoxFor(box).SelectedIndex is 0
+										&& box != AustriaYearsComboBox
+										&& box != FranceYearsComboBox
+										&& box != GermanyYearsComboBox))
+				error = "Power impossibly eliminated in 1901.";
+			//	Only one power (max) can be eliminated in 1901.
+			else if (YearsComboBoxes.Count(box => box.SelectedIndex is 0
+											   && CentersBoxFor(box).SelectedIndex is 0) > 1)
+				error = "Impossibly too many powers eliminated in 1901.";
+			//	Two powers (minimum) must survive 1902, and if only two
+			//	do so, then it has to be one of six specific power-pairs.
+			else if (TooMany1902Eliminations())
+				error = "Impossibly too many powers eliminated in 1902.";
+			//	By the end of 1901, each power could have 3+3=6, except Russia, who could have 4+4=8.
+			//	By the end of 1902, each power could have 6+6=12, except Russia, who could have 8+8=16.
+			//	By the end of 1903, a non-Russian power can have 30 [(12+3)*2], and Russia can have 34.
+			//	After 1903, all powers can own any number of centers.  Check that the center count of
+			//	any power that only survived until 1903 or earlier is realistic.
+			else if (YearsComboBoxes.Any(box => box.SelectedIndex < 3
+											 && CentersBoxFor(box).SelectedIndex > (box == RussiaYearsComboBox
+																						? 8
+																						: 6)
+																				 * (box.SelectedIndex is 2
+																						? 5
+																						: box.SelectedIndex + 1)))
+				error = "Impossibly too many centers for a pre-1904 survival.";
+		if (ScoringSystem.UsesOtherScore && OtherTextBoxes.Any(static box => box.Text.Trim().Length is 0))
+			error = "Not all player data has been filled in.";
+		if (!ScoringSystem.UsesGameResult)
+			return error is null;
+		var soleWinner = NumberOfWinners is 1;
+		if ((soleWinner && CentersComboBoxes.Max(static comboBox => comboBox.SelectedIndex) < 18) != SoloConcededCheckBox.Checked)
+			error = soleWinner
+						? "Solo must be marked conceded."
+						: "Indicated concession not evident.";
+		return error is null;
+
+		bool TooMany1902Eliminations()
+		{
+			ComboBox[] eliminated = [..YearsComboBoxes.Where(box => box.SelectedIndex is 1
+																 && CentersBoxFor(box).SelectedIndex is 0)];
+			//	If there are fewer than five eliminations (i.e., 3+ survivors), it's all good.
+			//	If there are six or more eliminations (i.e., 22+ center solo?), it's all bad.
+			if (eliminated.Length is not 5)
+				return eliminated.Length > 5;
+			//	Exactly five eliminations means two survivors.  They must be A(FGR) or R(FGI).
+			var austriaSurvived = eliminated.Contains(AustriaYearsComboBox);
+			var russiaSurvived = eliminated.Contains(RussiaYearsComboBox);
+			return !austriaSurvived && !russiaSurvived                              //	AR is good
+				|| (!austriaSurvived || !russiaSurvived)                            //	no A and no R are bad
+				&& !eliminated.Contains(FranceYearsComboBox)                        //	(AR)F is good
+				&& !eliminated.Contains(GermanyYearsComboBox)                       //	(AR)G is good
+				&& (austriaSurvived || !eliminated.Contains(ItalyYearsComboBox));   //	and RI is good
+		}
+	}
+
+	internal void SetConcessionCheckBoxUsability()
+	{
+		SoloConcededCheckBox.Visible = ScoringSystem is { UsesGameResult: true, UsesCenterCount: true };
+		if (!SoloConcededCheckBox.Visible)
+			SoloConcededCheckBox.Checked = false;
+	}
+
+	internal void CreateRandomGame()
+	{
+		//	This should be impossible, because the button should be disabled
+		if (ScoringSystem is { UsesGameResult: false, UsesCenterCount: false, UsesYearsPlayed: false })
+			throw new InvalidOperationException();  //	TODO
+		//	Disable all the buttons while we create a random game.
+		FormEnableCallback?.Invoke(false);
+		//	Clear all the game combo boxes and refill their options.
+		SkipHandlers(() =>
+					 {
+						 AllComboBoxes.ForEach(static comboBox => comboBox.Deselect());
+						 FillResultBoxes();
+						 FillCenterComboBoxes();
+						 FillYearComboBoxes();
+						 SoloConcededCheckBox.Checked = false;
+					 });
+		do
+		{
+			while (ScoringSystem.UsesGameResult && ResultComboBoxes.Any(static comboBox => comboBox.SelectedItem is null)
+				|| ScoringSystem.UsesCenterCount && (CentersComboBoxes.Any(static comboBox => comboBox.SelectedItem is null)
+												 ||  CentersComboBoxes.Sum(static box => box.SelectedIndex) is not 34))
+			{
+				var randomOrder = Seven;
+				var lastInTurn = randomOrder.Last();
+				foreach (var item in randomOrder)
+				{
+					const int maxCenters = 20;  //	still pretty unrealistic
+					if (ScoringSystem.UsesCenterCount)
+					{
+						var centersBox = CentersComboBoxes[item];
+						centersBox.SelectedIndex = item == lastInTurn
+													   ? Min(maxCenters, centersBox.Items.Count - 1)
+													   : Max(0, RandomNumber(Min(maxCenters, centersBox.Items.Count) + 2) - 2);
+					}
+					if (item == lastInTurn && CentersComboBoxes.Sum(static box => box.SelectedIndex) < 34)
+						continue;
+					if (ScoringSystem.UsesGameResult)
+						//	Choose a WIN or LOSS even if the box is already set.  Otherwise, the first
+						//	one to set to Solo will set all others to Loss, and that's all we get.
+						//	But ensure we have at least one winner at all times.
+						ResultComboBoxes[item].SelectedIndex = ResultComboBoxes.All(static box => box.SelectedIndex is 0)
+																   ? 1                // = win
+																   : RandomNumber(2); // = number of choices (loss, win)
+				}
+			}
+
+			//	Years can be set once results and/or centers are decided.
+			if (ScoringSystem.UsesYearsPlayed)
+			{
+				//	The 10 below sets the latest game year for these random games to 1911.
+				var maxYears = Min(10, YearsComboBoxes[0].Items.Count);
+				//	First set random years. But don't use 1901 (hence the +1 below).
+				YearsComboBoxes.ForEach(box => box.SelectedIndex = RandomNumber(maxYears) + 1);
+				var finalYear = YearsComboBoxes.Max(static box => box.SelectedIndex);
+				//	Make sure all winners or survivors played to the final year.
+				YearsComboBoxes.ForSome(comboBox => ScoringSystem.UsesGameResult && ResultBoxFor(comboBox).SelectedIndex is 1
+												 || ScoringSystem.UsesCenterCount && CentersBoxFor(comboBox).SelectedIndex > 0,
+										box => box.SelectedIndex = finalYear);
+			}
+
+			if (!ScoringSystem.UsesCenterCount || !ScoringSystem.UsesGameResult)
+				continue;
+
+			//	TODO: Can we get into these situations, during MANUAL game filling, where things don't make sense?
+			//	TODO: If so, this isn't the right place for this code.
+			var minToWin = CentersComboBoxes.Max(static box => box.SelectedIndex) > 17
+							   ? 18
+							   : 1;
+			SkipHandlers(() =>
+            {
+				if (NumberOfWinners > 1)
+					ResultComboBoxes.ForEach(box => box.SelectedIndex = (CentersBoxFor(box).SelectedIndex >= minToWin).AsInteger());
+
+				//	This is separate from the above. Do not make it an "else if" -- the NumberOfWinners may have changed.
+				//	This code, which just sets the ComboBox item text if there is a sole winner, is (I think) only needed
+				//	here in the test game code; I'm less sure about that for the above code (hence the TODOs up there).
+				var concession = minToWin is 1 && RandomNumber(7) is 0;
+				if (NumberOfWinners is not 1)
+					if (concession)
+					{
+						SoloConcededCheckBox.Checked = true;
+						var bigBoy = CentersComboBoxes.Max(static box => box.SelectedIndex);
+						var lucky = ResultBoxFor(CentersComboBoxes.First(box => box.SelectedIndex == bigBoy));
+						ResultComboBoxes.ForEach(box => box.SelectedIndex = (box == lucky).AsInteger());
+					}
+					else
+						return;
+				//	Must use .Items[box.SelectedIndex] = x; because .SelectedItem = x; does not work
+				ResultComboBoxes.ForEach(box => box.Items[box.SelectedIndex] = box.SelectedIndex is 1
+																				   ? concession
+																						 ? ConcText
+																						 : SoloText
+																				   : CentersBoxFor(box).SelectedIndex is 0
+																					   ? ElimText
+																					   : SurvText);
+            });
+		}
+		while (!FinalGameDataValidation(out _));
+
+		//	Because the test game can be changed, ensure the Concession CheckBox is enabled.
+		SoloConcededCheckBox.Enabled = true;
+
+		//	All done.
+		FormEnableCallback?.Invoke(true);
+	}
+
+	internal void SetWinType(bool allowDraws,
+							 int numWinners)
+	{
+		if (allowDraws)
+			//	Turning ON AllowDraws; set win/loss dropdown text to "SOLO"
+			//	if there is a sole winner, or to "DRAW" otherwise.
+			ResultComboBoxes.ForEach(comboBox => comboBox.Items[1] = numWinners < 2
+																  && (numWinners is 0 || comboBox.SelectedIndex is 1)
+																		 ? SoloText
+																		 : DrawText);
+		else
+			//	Turning OFF AllowDraws; set win/loss dropdown text to "SOLO"
+			//	and change all to Loss if there are more than one winner.
+			//	Yes, event handling must be shut off; I tested it.
+			SkipHandlers(() => ResultComboBoxes.ForEach(comboBox =>
+														{
+															comboBox.Items[1] = SoloText;
+															if (numWinners > 1)
+																comboBox.SelectedIndex = 0;
+														}));
+	}
+
+	internal void SetDiasOptions()
+	{
+		var isSolo = ResultComboBoxes.All(static box => box.SelectedItem is not null)
+				  && NumberOfWinners is 1;
+		foreach (var resultComboBox in ResultComboBoxes)
+		{
+			var centersComboBox = CentersBoxFor(resultComboBox);
+			if (isSolo)
+				resultComboBox.Items[0] = centersComboBox.SelectedIndex is 0
+											  ? ElimText
+											  : SurvText;
+			else
+				switch (resultComboBox.SelectedIndex)
+				{
+				//	Losers cannot have centers
+				case 0:
+					centersComboBox.SelectedIndex = 0;
+					break;
+				//	Winners cannot have zero centers
+				case 1 when centersComboBox.SelectedIndex is 0:
+					centersComboBox.Deselect();
+					break;
+				//	Otherwise, winners are fine
+				case 1:
+					break;
+				//	Players with win/loss not yet known know it based on center count
+				case -1:
+					resultComboBox.SelectedIndex = Sign(centersComboBox.SelectedIndex);
+					break;
+				default:
+					throw new ArgumentOutOfRangeException(); //	TODO
+				}
+		}
+	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private const string WinText = "Win",
+						 LossText = "Loss",
+						 SoloText = "Solo",
+						 DrawText = "Draw",
+						 SurvText = "Survived",
+						 ElimText = "Eliminated",
+						 ConcText = "Concession";
+
+	private static readonly Dictionary<Color, SolidBrush> Brushes = [];
+	private static readonly StringFormat Centered = new () { LineAlignment = Center, Alignment = Center };
+	private static readonly Regex Spaces = SpacesRegex();
+
+	//	Now this works slickly!  Whenever a combobox is updated, we bump the UpdateDepth
+	//	by one, then drop it back down one before returning from the handler.  But since
+	//	the handler will often trigger OTHER handlers (or even re-trigger the same one),
+	//	the bump/drop count automatically calls the GameDataChangedCallback only when the
+	//	UpdateDepth is back to 0.
+	private int UpdateDepth
+	{
+		get;
+		set
+		{
+			field = value;
+			if (!SkippingHandlers && !SkippingCallbacks && UpdateDepth is 0)
+				RunGameDataChangedCallback();
+		}
+	}
+
+	//	This boolean is used to shut off the callback completely, even when the UpdateDepth is 0.
+	private bool SkippingCallbacks { get; set; }
+	private List<GamePlayer>? GamePlayers { get; set; }
+	private List<ComboBox> ResultComboBoxes { get; }
+	private List<ComboBox> CentersComboBoxes { get; }
+	private List<ComboBox> YearsComboBoxes { get; }
+	private List<TextBox> OtherTextBoxes { get; }
+	private List<ComboBox> AllComboBoxes { get; }
+
+	#endregion
+
+	#region Event handlers
+
+	private void GameControl_Load(object sender,
+								  EventArgs e)
+	{
+		FillResultBoxes();
+		FillCenterComboBoxes();
+		//	Fill YearsComboBoxes this way, not with FillYearsComboBoxes(), because it needs a non-null ScoringSystem.
+		YearsComboBoxes.ForEach(static comboBox => comboBox.FillRange(1901, LatestFinalGameYear));
+		//	Coloring the Labels isn't necessary since this is done in the Form designer
+		//	but is done here anyway to be sure they always match the PowerColor array.
+		//	Note that this only colors labels whose .Tag is set, and it must be set to
+		//	a PowerName.
+		foreach (var label in Controls.OfType<Label>().Where(static label => label.Tag is not null))
+		{
+			var style = $"{label.Tag}".As<Powers>()
+									  .CellStyle;
+			(label.BackColor, label.ForeColor) = (style.BackColor, style.ForeColor);
+		}
+	}
 
 	private void ResultComboBox_SelectedIndexChanged(object sender,
 													 EventArgs? e = null)
@@ -483,80 +751,85 @@ internal sealed partial class GameControl : UserControl
 																		 : DrawText);
 	}
 
-	internal bool FinalGameDataValidation(out string? error)
+	private void CenteredComboBox_DrawItem(object sender,
+										   DrawItemEventArgs e)
 	{
-		error = AllComboBoxes.Any(static comboBox => comboBox is { Enabled: true, SelectedItem: null })
-					? "Game data is incomplete."
-					: null;
-		if (!ScoringSystem.UsesCenterCount)
-			return error is null;
-		var totalCenters = CentersComboBoxes.Sum(static box => box.SelectedIndex);
-		if (totalCenters is < 22 or > 34)
-		{
-			error = "Total number of owned supply centers must be between 22 and 34.";
-			return false;
-		}
-		//	Validate center count to years played.
-		if (ScoringSystem.UsesYearsPlayed)
-			//	By the end of 1901, England, Italy, Russia, and Turkey must have at least
-			//	one center minimum; France, Germany, or Austria may have been eliminated.
-			if (YearsComboBoxes.Any(box => box.SelectedIndex is 0
-										&& CentersBoxFor(box).SelectedIndex is 0
-										&& box != AustriaYearsComboBox
-										&& box != FranceYearsComboBox
-										&& box != GermanyYearsComboBox))
-				error = "Power impossibly eliminated in 1901.";
-			//	Only one power (max) can be eliminated in 1901.
-			else if (YearsComboBoxes.Count(box => box.SelectedIndex is 0
-											   && CentersBoxFor(box).SelectedIndex is 0) > 1)
-				error = "Impossibly too many powers eliminated in 1901.";
-			//	Two powers (minimum) must survive 1902, and if only two
-			//	do so, then it has to be one of six specific power-pairs.
-			else if (TooMany1902Eliminations())
-				error = "Impossibly too many powers eliminated in 1902.";
-			//	By the end of 1901, each power could have 3+3=6, except Russia, who could have 4+4=8.
-			//	By the end of 1902, each power could have 6+6=12, except Russia, who could have 8+8=16.
-			//	By the end of 1903, a non-Russian power can have 30 [(12+3)*2], and Russia can have 34.
-			//	After 1903, all powers can own any number of centers.  Check that the center count of
-			//	any power that only survived until 1903 or earlier is realistic.
-			else if (YearsComboBoxes.Any(box => box.SelectedIndex < 3
-											 && CentersBoxFor(box).SelectedIndex > (box == RussiaYearsComboBox
-																						? 8
-																						: 6)
-																				 * (box.SelectedIndex is 2
-																						? 5
-																						: box.SelectedIndex + 1)))
-				error = "Impossibly too many centers for a pre-1904 survival.";
-		if (ScoringSystem.UsesOtherScore && OtherTextBoxes.Any(static box => box.Text.Trim().Length is 0))
-			error = "Not all player data has been filled in.";
-		if (!ScoringSystem.UsesGameResult)
-			return error is null;
-		var soleWinner = NumberOfWinners is 1;
-		if ((soleWinner && CentersComboBoxes.Max(static comboBox => comboBox.SelectedIndex) < 18) != SoloConcededCheckBox.Checked)
-			error = soleWinner
-						? "Solo must be marked conceded."
-						: "Indicated concession not evident.";
-		return error is null;
-
-		bool TooMany1902Eliminations()
-		{
-			var eliminated = YearsComboBoxes.Where(box => box.SelectedIndex is 1
-													   && CentersBoxFor(box).SelectedIndex is 0)
-											.ToArray();
-			//	If there are fewer than five eliminations (i.e., 3+ survivors), it's all good.
-			//	If there are six or more eliminations (i.e., 22+ center solo?), it's all bad.
-			if (eliminated.Length is not 5)
-				return eliminated.Length > 5;
-			//	Exactly five eliminations means two survivors.  They must be A(FGR) or R(FGI).
-			var austriaSurvived = eliminated.Contains(AustriaYearsComboBox);
-			var russiaSurvived = eliminated.Contains(RussiaYearsComboBox);
-			return !austriaSurvived && !russiaSurvived                              //	AR is good
-				|| (!austriaSurvived || !russiaSurvived)                            //	no A and no R are bad
-				&& !eliminated.Contains(FranceYearsComboBox)                        //	(AR)F is good
-				&& !eliminated.Contains(GermanyYearsComboBox)                       //	(AR)G is good
-				&& (austriaSurvived || !eliminated.Contains(ItalyYearsComboBox));   //	and RI is good
-		}
+		e.DrawBackground();
+		if (e.Index is -1)
+			return;
+		var box = (ComboBox)sender;
+		e.Graphics
+		 .DrawString($"{box.Items[e.Index]}",
+					 box.Font,
+					 e.State.HasFlag(DrawItemState.Selected)
+						 ? SystemBrushes.HighlightText
+						 : Brushes.GetOrSet(box.ForeColor, static foreColor => new (foreColor)),
+					 e.Bounds,
+					 Centered);
 	}
+
+	private void GameControl_EnabledChanged(object sender,
+											EventArgs e)
+		=> throw new NotSupportedException($"Coder issue: Use {nameof (GameControl)}.{nameof (Active)} = bool, not {nameof (GameControl)}.Enabled = bool;");
+
+	private void OtherTextBox_TextChanged(object sender,
+										  EventArgs e)
+	{
+		var textBox = (TextBox)sender;
+		double other;
+		if (textBox.TextLength is 0 || textBox.Text is "-" or "." or "-.")
+			other = 0;
+		else if (!double.TryParse(textBox.Text, out other))
+		{
+			MessageBox.Show("Other score must be numeric.",
+							"Error in Other Score Entry",
+							OK,
+							Error);
+			textBox.Text = $"{textBox.Text}"[..(textBox.TextLength - 1)];
+			return;
+		}
+		GamePlayers?[OtherTextBoxes.IndexOf(textBox)].Other = other;
+	}
+
+	#endregion
+
+	#region Other methods
+
+	[GeneratedRegex(@"\s+")]
+	private static partial Regex SpacesRegex();
+
+	private static GamePlayer PlayerData(Powers power,
+										 ListControl winLossComboBox,
+										 ListControl centersComboBox,
+										 ListControl yearsComboBox,
+										 TextBoxBase otherTextBox)
+		=> new ()
+		   {
+			   Power = power,
+			   Result = winLossComboBox.Enabled
+							? winLossComboBox.SelectedIndex
+											 .As<Results>()
+							: Unknown,
+			   Centers = centersComboBox.Enabled
+							 ? centersComboBox.SelectedIndex is -1
+								   ? null
+								   : centersComboBox.Text
+													.AsInteger()
+							 : null,
+			   Years = yearsComboBox.Enabled
+						   ? yearsComboBox.SelectedIndex is -1
+								 ? null
+								 : yearsComboBox.Text
+												.AsInteger() - 1900
+						   : null,
+			   Other = otherTextBox is { Enabled: true, TextLength: not 0 }
+						   ? otherTextBox.Text
+										 .AsDouble()
+						   : 0
+		   };
+
+	private void RunGameDataChangedCallback()
+		=> GameDataChangedCallback?.Invoke(AllFilledIn);
 
 	private int PowerOffsetFor(ComboBox comboBox)
 		=> AllComboBoxes.IndexOf(comboBox) % 7;
@@ -589,16 +862,6 @@ internal sealed partial class GameControl : UserControl
 																	  : -1;
 									 });
 
-	internal void FillYearComboBoxes()
-		=> YearsComboBoxes.ForEach(comboBox =>
-								   {
-									   comboBox.FillRange(1901, ScoringSystem.FinalGameYear - 1 ?? LatestFinalGameYear);
-									   var index = comboBox.SelectedIndex;
-									   comboBox.SelectedIndex = index < comboBox.Items.Count
-																	? index
-																	: -1;
-								   });
-
 	private static void SetComboBoxUsability(List<ComboBox> boxes,
 											 bool enabled)
 		=> boxes.ForEach(comboBox =>
@@ -607,258 +870,7 @@ internal sealed partial class GameControl : UserControl
 							 comboBox.Deselect();
 						 });
 
-	internal void SetResultComboBoxUsability(bool enabled)
-		=> SetComboBoxUsability(ResultComboBoxes, enabled);
-
-	internal void SetCentersComboBoxUsability(bool enabled)
-		=> SetComboBoxUsability(CentersComboBoxes, enabled);
-
-	internal void SetYearsComboBoxUsability(bool enabled)
-		=> SetComboBoxUsability(YearsComboBoxes, enabled);
-
-	internal void SetOtherTextBoxUsability(bool enabled)
-		=> OtherTextBoxes.ForEach(textBox =>
-								  {
-									  textBox.Enabled = enabled;
-									  textBox.Clear();
-								  });
-
-	private void CenteredComboBox_DrawItem(object sender,
-										   DrawItemEventArgs e)
-	{
-		e.DrawBackground();
-		if (e.Index is -1)
-			return;
-		var box = (ComboBox)sender;
-		e.Graphics
-		 .DrawString($"{box.Items[e.Index]}",
-					 box.Font,
-					 e.State.HasFlag(DrawItemState.Selected)
-						 ? SystemBrushes.HighlightText
-						 : Brushes.GetOrSet(box.ForeColor, static foreColor => new (foreColor)),
-					 e.Bounds,
-					 Centered);
-	}
-
-	internal void SetConcessionCheckBoxUsability()
-	{
-		SoloConcededCheckBox.Visible = ScoringSystem is { UsesGameResult: true, UsesCenterCount: true };
-		if (!SoloConcededCheckBox.Visible)
-			SoloConcededCheckBox.Checked = false;
-	}
-
-	internal void CreateRandomGame()
-	{
-		//	This should be impossible, because the button should be disabled
-		if (ScoringSystem is { UsesGameResult: false, UsesCenterCount: false, UsesYearsPlayed: false })
-			throw new InvalidOperationException();  //	TODO
-		//	Disable all the buttons while we create a random game.
-		FormEnableCallback?.Invoke(false);
-		//	Clear all the game combo boxes and refill their options.
-		SkipHandlers(() =>
-					 {
-						 AllComboBoxes.ForEach(static comboBox => comboBox.Deselect());
-						 FillResultBoxes();
-						 FillCenterComboBoxes();
-						 FillYearComboBoxes();
-						 SoloConcededCheckBox.Checked = false;
-					 });
-		do
-		{
-			while (ScoringSystem.UsesGameResult && ResultComboBoxes.Any(static comboBox => comboBox.SelectedItem is null)
-				|| ScoringSystem.UsesCenterCount && (CentersComboBoxes.Any(static comboBox => comboBox.SelectedItem is null)
-												 ||  CentersComboBoxes.Sum(static box => box.SelectedIndex) is not 34))
-			{
-				var randomOrder = Seven;
-				var lastInTurn = randomOrder.Last();
-				foreach (var item in randomOrder)
-				{
-					const int maxCenters = 20;  //	still pretty unrealistic
-					if (ScoringSystem.UsesCenterCount)
-					{
-						var centersBox = CentersComboBoxes[item];
-						centersBox.SelectedIndex = item == lastInTurn
-													   ? Min(maxCenters, centersBox.Items.Count - 1)
-													   : Max(0, RandomNumber(Min(maxCenters, centersBox.Items.Count) + 2) - 2);
-					}
-					if (item == lastInTurn && CentersComboBoxes.Sum(static box => box.SelectedIndex) < 34)
-						continue;
-					if (ScoringSystem.UsesGameResult)
-						//	Choose a WIN or LOSS even if the box is already set.  Otherwise, the first
-						//	one to set to Solo will set all others to Loss, and that's all we get.
-						//	But ensure we have at least one winner at all times.
-						ResultComboBoxes[item].SelectedIndex = ResultComboBoxes.All(static box => box.SelectedIndex is 0)
-																   ? 1                // = win
-																   : RandomNumber(2); // = number of choices (loss, win)
-				}
-			}
-
-			//	Years can be set once results and/or centers are decided.
-			if (ScoringSystem.UsesYearsPlayed)
-			{
-				//	The 10 below sets the latest game year for these random games to 1911.
-				var maxYears = Min(10, YearsComboBoxes[0].Items.Count);
-				//	First set random years. But don't use 1901 (hence the +1 below).
-				YearsComboBoxes.ForEach(box => box.SelectedIndex = RandomNumber(maxYears) + 1);
-				var finalYear = YearsComboBoxes.Max(static box => box.SelectedIndex);
-				//	Make sure all winners or survivors played to the final year.
-				YearsComboBoxes.ForSome(comboBox => ScoringSystem.UsesGameResult && ResultBoxFor(comboBox).SelectedIndex is 1
-												 || ScoringSystem.UsesCenterCount && CentersBoxFor(comboBox).SelectedIndex > 0,
-										box => box.SelectedIndex = finalYear);
-			}
-
-			if (!ScoringSystem.UsesCenterCount || !ScoringSystem.UsesGameResult)
-				continue;
-
-			//	TODO: Can we get into these situations, during MANUAL game filling, where things don't make sense?
-			//	TODO: If so, this isn't the right place for this code.
-			var minToWin = CentersComboBoxes.Max(static box => box.SelectedIndex) > 17
-							   ? 18
-							   : 1;
-			SkipHandlers(() =>
-            {
-				if (NumberOfWinners > 1)
-					ResultComboBoxes.ForEach(box => box.SelectedIndex = (CentersBoxFor(box).SelectedIndex >= minToWin).AsInteger());
-
-				//	This is separate from the above. Do not make it an "else if" -- the NumberOfWinners may have changed.
-				//	This code, which just sets the ComboBox item text if there is a sole winner, is (I think) only needed
-				//	here in the test game code; I'm less sure about that for the above code (hence the TODOs up there).
-				var concession = minToWin is 1 && RandomNumber(7) is 0;
-				if (NumberOfWinners is not 1)
-					if (concession)
-					{
-						SoloConcededCheckBox.Checked = true;
-						var bigBoy = CentersComboBoxes.Max(static box => box.SelectedIndex);
-						var lucky = ResultBoxFor(CentersComboBoxes.First(box => box.SelectedIndex == bigBoy));
-						ResultComboBoxes.ForEach(box => box.SelectedIndex = (box == lucky).AsInteger());
-					}
-					else
-						return;
-				//	Must use .Items[box.SelectedIndex] = x; because .SelectedItem = x; does not work
-				ResultComboBoxes.ForEach(box => box.Items[box.SelectedIndex] = box.SelectedIndex is 1
-																				   ? concession
-																						 ? ConcText
-																						 : SoloText
-																				   : CentersBoxFor(box).SelectedIndex is 0
-																					   ? ElimText
-																					   : SurvText);
-            });
-		}
-		while (!FinalGameDataValidation(out _));
-
-		//	Because the test game can be changed, ensure the Concession CheckBox is enabled.
-		SoloConcededCheckBox.Enabled = true;
-
-		//	All done.
-		FormEnableCallback?.Invoke(true);
-	}
-
-	internal void SetWinType(bool allowDraws,
-							 int numWinners)
-	{
-		if (allowDraws)
-			//	Turning ON AllowDraws; set win/loss dropdown text to "SOLO"
-			//	if there is a sole winner, or to "DRAW" otherwise.
-			ResultComboBoxes.ForEach(comboBox => comboBox.Items[1] = numWinners < 2
-																  && (numWinners is 0 || comboBox.SelectedIndex is 1)
-																		 ? SoloText
-																		 : DrawText);
-		else
-			//	Turning OFF AllowDraws; set win/loss dropdown text to "SOLO"
-			//	and change all to Loss if there are more than one winner.
-			//	Yes, event handling must be shut off; I tested it.
-			SkipHandlers(() => ResultComboBoxes.ForEach(comboBox =>
-														{
-															comboBox.Items[1] = SoloText;
-															if (numWinners > 1)
-																comboBox.SelectedIndex = 0;
-														}));
-	}
-
-	internal void SetDiasOptions()
-	{
-		var isSolo = ResultComboBoxes.All(static box => box.SelectedItem is not null)
-				  && NumberOfWinners is 1;
-		foreach (var resultComboBox in ResultComboBoxes)
-		{
-			var centersComboBox = CentersBoxFor(resultComboBox);
-			if (isSolo)
-				resultComboBox.Items[0] = centersComboBox.SelectedIndex is 0
-											  ? ElimText
-											  : SurvText;
-			else
-				switch (resultComboBox.SelectedIndex)
-				{
-				//	Losers cannot have centers
-				case 0:
-					centersComboBox.SelectedIndex = 0;
-					break;
-				//	Winners cannot have zero centers
-				case 1 when centersComboBox.SelectedIndex is 0:
-					centersComboBox.Deselect();
-					break;
-				//	Otherwise, winners are fine
-				case 1:
-					break;
-				//	Players with win/loss not yet known know it based on center count
-				case -1:
-					resultComboBox.SelectedIndex = Sign(centersComboBox.SelectedIndex);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException(); //	TODO
-				}
-		}
-	}
-
-	private void GameControl_EnabledChanged(object sender,
-											EventArgs e)
-		=> throw new NotSupportedException($"Coder issue: Use {nameof (GameControl)}.{nameof (Active)} = bool, not {nameof (GameControl)}.Enabled = bool;");
-
-	private void OtherTextBox_TextChanged(object sender,
-										  EventArgs e)
-	{
-		var textBox = (TextBox)sender;
-		double other;
-		if (textBox.TextLength is 0 || textBox.Text is "-" or "." or "-.")
-			other = 0;
-		else if (!double.TryParse(textBox.Text, out other))
-		{
-			MessageBox.Show("Other score must be numeric.",
-							"Error in Other Score Entry",
-							OK,
-							Error);
-			textBox.Text = $"{textBox.Text}"[..(textBox.TextLength - 1)];
-			return;
-		}
-		GamePlayers?[OtherTextBoxes.IndexOf(textBox)].Other = other;
-	}
-
-	internal delegate void Callback(bool state);
-
-	#region GameDataChangedCallback support for the parent form
-
-	//	Now this works slickly!  Whenever a combobox is updated, we bump the UpdateDepth
-	//	by one, then drop it back down one before returning from the handler.  But since
-	//	the handler will often trigger OTHER handlers (or even re-trigger the same one),
-	//	the bump/drop count automatically calls the GameDataChangedCallback only when the
-	//	UpdateDepth is back to 0.
-
-	private int UpdateDepth
-	{
-		get;
-		set
-		{
-			field = value;
-			if (!SkippingHandlers && !SkippingCallbacks && UpdateDepth is 0)
-				RunGameDataChangedCallback();
-		}
-	}
-
-	[DesignerSerializationVisibility(Hidden)]
-	internal Callback? GameDataChangedCallback { private get; set; }
-
-	//	This boolean is used to shut off the callback completely, even when the UpdateDepth is 0.
-	private bool SkippingCallbacks { get; set; }
+	#endregion
 
 	#endregion
 }

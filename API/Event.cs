@@ -225,7 +225,7 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 			return BadRequest(InvalidRoundNumber);
 		var roundList = singleRound
 							? round
-							: [..Enumerable.Range(1, tournament.TotalRounds)];
+							: [..Range(1, tournament.TotalRounds)];
 		if (roundList.Any(roundNumber => (singleRound && !register || !round.Contains(roundNumber))
 									  && tournament.Games
 												   .Any(game => game.Round.Number == roundNumber

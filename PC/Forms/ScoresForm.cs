@@ -4,13 +4,29 @@ namespace PC.Forms;
 
 internal sealed partial class ScoresForm : Form
 {
-	private Tournament Tournament { get; }
+	#region Public interface
+
+	#region Constructor
 
 	internal ScoresForm(Tournament tournament)
 	{
 		InitializeComponent();
 		Tournament = tournament;
 	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private Tournament Tournament { get; }
+
+	#endregion
+
+	#region Event handlers
 
 	private void ScoresForm_Load(object sender,
 								 EventArgs e)
@@ -31,4 +47,8 @@ internal sealed partial class ScoresForm : Form
 		ScoresTabControl.Width = scoreControl.Width + 20;
 		Width = ScoresTabControl.Width + 40;
 	}
+
+	#endregion
+
+	#endregion
 }

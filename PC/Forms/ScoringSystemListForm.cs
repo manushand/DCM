@@ -2,22 +2,30 @@
 
 internal sealed partial class ScoringSystemListForm : Form
 {
-	private const string UsedIn = "Used In…";
+	#region Public interface
+
+	#region Constructor
 
 	public ScoringSystemListForm()
 		=> InitializeComponent();
 
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private const string UsedIn = "Used In…";
+
+	#endregion
+
+	#region Event handlers
+
 	private void ScoringSystemListForm_Load(object sender,
 											EventArgs e)
 		=> FillSystemList();
-
-	private void FillSystemList(ScoringSystem? scoringSystem = null)
-	{
-		ScoringSystemListBox.FillWithSorted<ScoringSystem>();
-		if (scoringSystem is not null)
-			ScoringSystemListBox.SelectedItem = ScoringSystemListBox.Find(scoringSystem);
-		SetVisible(ScoringSystemListBox.SelectedItem is not null, OpenButton, DeleteButton);
-	}
 
 	private void ScoringSystemListBox_MouseDoubleClick(object sender,
 													   MouseEventArgs e)
@@ -96,4 +104,20 @@ internal sealed partial class ScoringSystemListForm : Form
 			FillSystemList();
 		}
 	}
+
+	#endregion
+
+	#region Method
+
+	private void FillSystemList(ScoringSystem? scoringSystem = null)
+	{
+		ScoringSystemListBox.FillWithSorted<ScoringSystem>();
+		if (scoringSystem is not null)
+			ScoringSystemListBox.SelectedItem = ScoringSystemListBox.Find(scoringSystem);
+		SetVisible(ScoringSystemListBox.SelectedItem is not null, OpenButton, DeleteButton);
+	}
+
+	#endregion
+
+	#endregion
 }

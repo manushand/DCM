@@ -1,22 +1,36 @@
 ﻿namespace PC.Forms;
 
-internal sealed partial class TournamentListForm : Form
+internal sealed partial class EventListForm : Form
 {
+	#region Exposed property
+
 	[DesignerSerializationVisibility(Hidden)]
 	internal Tournament? Tournament { get; private set; }
 
-	private bool Delete { get; }
+	#endregion
 
-	public TournamentListForm()
+	#region Constructors
+
+	public EventListForm()
 		=> InitializeComponent();
 
-	internal TournamentListForm(bool delete) : this()
-		=> Delete = delete;
+	internal EventListForm(bool delete) : this()
+		=> _delete = delete;
+
+	#endregion
+
+	#region Private field
+
+	private readonly bool _delete;
+
+	#endregion
+
+	#region Event handler methods
 
 	private void TournamentListForm_Load(object sender,
 										 EventArgs e)
 	{
-		Text = Delete
+		Text = _delete
 				   ? "Delete Event"
 				   : "Open Event";
 		TournamentComboBox.FillWith(ReadMany<Tournament>(static tournament => tournament.GroupId is null)
@@ -28,7 +42,7 @@ internal sealed partial class TournamentListForm : Form
 	{
 		if (TournamentComboBox.SelectedItem is not Tournament tournament)
 			return;
-		if (Delete)
+		if (_delete)
 		{
 			if (MessageBox.Show($"Are you absolutely sure you want to delete{NewLine}{tournament}?!?{NewLine}{NewLine}THERE IS NO UNDO!",
 								"Confirm Event Deletion",
@@ -54,4 +68,6 @@ internal sealed partial class TournamentListForm : Form
 		Close();
 		DialogResult = DialogResult.OK;
 	}
+
+	#endregion
 }

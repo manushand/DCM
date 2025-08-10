@@ -2,6 +2,21 @@
 
 internal sealed partial class GroupsForm : Form
 {
+	#region Public interface
+
+	#region Constructor
+
+	public GroupsForm()
+		=> InitializeComponent();
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
 	private Group Group
 	{
 		get;
@@ -16,18 +31,13 @@ internal sealed partial class GroupsForm : Form
 		}
 	} = Group.None;
 
-	public GroupsForm()
-		=> InitializeComponent();
+	#endregion
+
+	#region Event handlers
 
 	private void GroupsForm_Load(object sender,
 								 EventArgs e)
 		=> Group = Group.None;
-
-	private void FillGroupList()
-	{
-		GroupListBox.FillWithSorted<Group>();
-		GroupListBox.SelectedItem = GroupListBox.Find(Group);
-	}
 
 	private void GroupListBox_SelectedIndexChanged(object sender,
 												   EventArgs e)
@@ -75,4 +85,18 @@ internal sealed partial class GroupsForm : Form
 								   if (form.DialogResult is not DialogResult.Cancel)
 									   Group = form.Group;
 							   });
+
+	#endregion
+
+	#region Method
+
+	private void FillGroupList()
+	{
+		GroupListBox.FillWithSorted<Group>();
+		GroupListBox.SelectedItem = GroupListBox.Find(Group);
+	}
+
+	#endregion
+
+	#endregion
 }

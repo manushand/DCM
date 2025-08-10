@@ -86,13 +86,12 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 			//	The format of the TestGameData string is seven vertical-bar
 			//	separated sets of "PowerName,GameResult,Centers,Years,Other".
 			//	For example, Austria,Win,18,10,2.3|England,Loss,0,4,0.1|...
-			//	Use absolute emptiness for null (when game result, centers,
+			//	Use absolute emptiness for null (when the game result, centers,
 			//	years, or other score does not matter in the system).
-			var powers = value.Split(Bar)
-							  .Select(static testData => testData.Split(Comma)
-																 .Select(static s => s.Trim())
-																 .ToArray())
-							  .ToArray();
+			string[][] powers = [..value.Split(Bar)
+										.Select(static testData => testData.Split(Comma)
+																		   .Select(static s => s.Trim())
+																		   .ToArray())];
 			if (powers.Any(static data => data.Length is not 5))
 				throw new InvalidOperationException(); // TODO
 			TestGamePlayers = [
@@ -265,8 +264,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		bool GameDataValid(out List<string?> issues)
 		{
 			issues = [];
-			var powers = gamePlayers.Select(static gamePlayer => gamePlayer.Power)
-									.ToArray();
+			Powers[] powers = [..gamePlayers.Select(static gamePlayer => gamePlayer.Power)];
 			if (powers.Contains(TBD) || powers.Length is not 7)
 				issues.Add("All powers must be assigned.");
 			if (powers.Distinct().Count() is not 7)

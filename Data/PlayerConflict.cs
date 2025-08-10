@@ -2,14 +2,13 @@
 
 public sealed class PlayerConflict : LinkRecord, IInfoRecord
 {
-	private (int playerId, int otherPlayerId) PlayerIds { get; set; } = (default, default);
-
 	public int Value;
+
 	public IEnumerable<int> ConflictedPlayerIds => [PlayerIds.playerId, PlayerIds.otherPlayerId];
-
 	public override int PlayerId => PlayerIds.playerId;
-	private int OtherPlayerId => PlayerIds.otherPlayerId;
 
+	private (int playerId, int otherPlayerId) PlayerIds { get; set; }
+	private int OtherPlayerId => PlayerIds.otherPlayerId;
 	private IEnumerable<Player> Players => ReadMany<Player>(player => Involves(player.Id));
 
 	[UsedImplicitly]

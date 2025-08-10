@@ -16,7 +16,7 @@ public sealed record Error
 										params IEnumerable<string?> details)
 	{
 		var exception = new Exception(message);
-		exception.Data.Add(nameof (Details), details.Where(static text => text?.Length > 0).ToArray());
+		exception.Data.Add(nameof (Details), details.Where(static text => text?.Length > 0));
 		return exception;
 	}
 }

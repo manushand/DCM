@@ -4,69 +4,46 @@ namespace PC.Controls;
 
 internal sealed partial class TeamsControl : UserControl
 {
-	private TournamentInfoForm TournamentInfoForm { get; set; } = TournamentInfoForm.None;
+	#region Public interface
 
-	private Tournament Tournament => TournamentInfoForm.Tournament;
-
-	private Team Team { get; set; } = Team.None;
+	#region Constructor
 
 	internal TeamsControl()
 		=> InitializeComponent();
 
+	#endregion
+
+	#region Method
+
 	//	TODO: Add some code that stops people from creating new teams
 	//	TODO: if the tournament has already advanced too far.
 
-	internal void LoadControl(TournamentInfoForm tournamentInfoForm)
+	internal void LoadControl(EventInfoForm eventInfoForm)
 	{
-		TournamentInfoForm = tournamentInfoForm;
+		EventInfoForm = eventInfoForm;
 		LastNameRadioButton.Checked = true;
-		SetEnabled(false, JoinButton, FormTeamButton);
+		Disable(JoinButton, FormTeamButton);
 		FillTeamList();
 		TeamSizeLabel.Text = $"Maximum{NewLine}Team Size: {Tournament.TeamSize}";
 	}
 
-	private void FillTeamList()
-	{
-		TeamListBox.FillWithRecords(Tournament.Teams.Order());
-		if (!Team.IsNone)
-			TeamListBox.SelectedItem = TeamListBox.Find(Team);
-		FillMembershipLists();
-		if (Team.IsNone)
-			SelectNoTeam();
-	}
+	#endregion
 
-	private void FillMembershipLists(object? sender = null,
-									 EventArgs? e = null)
-	{
-		MemberListBox.Clear();
-		if (Team.IsNone)
-			SelectNoTeam();
-		else
-		{
-			var members = Team.Players
-							  .Sorted(LastNameRadioButton.Checked)
-							  .ToArray();
-			var selectedMember = MemberListBox.GetSelected<Player>();
-			MemberListBox.FillWithRecords(members);
-			if (selectedMember is not null)
-				MemberListBox.SelectedItem = MemberListBox.Find(selectedMember);
-			MembersLabel.Text = "Member".Pluralize(members.Length, true);
-		}
+	#endregion
 
-		//	TODO: Hmm, looks like we only include tournament-registered players in the non-member list?
-		var memberIds = MemberListBox.GetAll<Player>()
-									 .Ids();
-		var selectedNonMember = NonMemberListBox.GetSelected<Player>();
-		var candidatePlayers = WhichPlayersTabControl.SelectedIndex is 0
-								   ? ReadMany<TournamentPlayer>(tp => tp.TournamentId == Tournament.Id).Select(static tp => tp.Player)
-								   : ReadAll<Player>();
-		var nonMembers = candidatePlayers.Where(player => (Tournament.PlayerCanJoinManyTeams || !player.Teams(Tournament).Any())
-													   && !memberIds.Contains(player.Id))
-										 .Sorted(LastNameRadioButton.Checked);
-		NonMemberListBox.FillWith(nonMembers);
-		if (selectedNonMember is not null)
-			NonMemberListBox.SelectedItem = NonMemberListBox.Find(selectedNonMember);
-	}
+	#region Private implementation
+
+	#region Data
+
+	private EventInfoForm EventInfoForm { get; set; } = EventInfoForm.None;
+
+	private Team Team { get; set; } = Team.None;
+
+	private Tournament Tournament => EventInfoForm.Event;
+
+	#endregion
+
+	#region Event handlers
 
 	private void NewTeamNameTextBox_Enter(object sender,
 										  EventArgs e)
@@ -75,14 +52,6 @@ internal sealed partial class TeamsControl : UserControl
 		Team = Team.None;
 		SelectNoTeam();
 		FormTeamButton.Enabled = true;
-	}
-
-	private void SelectNoTeam()
-	{
-		SetEnabled(false, RenameButton, DissolveButton);
-		MemberListBox.Clear();
-		NonMemberListBox.Clear();
-		MembersLabel.Text = "Members";
 	}
 
 	private void JoinButton_Click(object sender,
@@ -139,8 +108,8 @@ internal sealed partial class TeamsControl : UserControl
 						 NonMemberListBox.ClearSelected();
 					 });
 		FillMembershipLists();
-		SetEnabled(true, RenameButton, DissolveButton);
-		JoinButton.Enabled = false;
+		Enable(RenameButton, DissolveButton);
+		Disable(JoinButton);
 	}
 
 	private void FormTeamButton_Click(object sender,
@@ -200,4 +169,62 @@ internal sealed partial class TeamsControl : UserControl
 			FillTeamList();
 		}
 	}
+
+	#endregion
+
+	#region Methods
+
+	private void FillTeamList()
+	{
+		TeamListBox.FillWithRecords(Tournament.Teams.Order());
+		if (!Team.IsNone)
+			TeamListBox.SelectedItem = TeamListBox.Find(Team);
+		FillMembershipLists();
+		if (Team.IsNone)
+			SelectNoTeam();
+	}
+
+	private void FillMembershipLists(object? sender = null,
+									 EventArgs? e = null)
+	{
+		MemberListBox.Clear();
+		if (Team.IsNone)
+			SelectNoTeam();
+		else
+		{
+			Player[] members = [..Team.Players
+									  .Sorted(LastNameRadioButton.Checked)];
+			var selectedMember = MemberListBox.GetSelected<Player>();
+			MemberListBox.FillWithRecords(members);
+			if (selectedMember is not null)
+				MemberListBox.SelectedItem = MemberListBox.Find(selectedMember);
+			MembersLabel.Text = "Member".Pluralize(members.Length, true);
+		}
+
+		//	TODO: Hmm, looks like we only include tournament-registered players in the non-member list?
+		var memberIds = MemberListBox.GetAll<Player>()
+									 .Ids();
+		var selectedNonMember = NonMemberListBox.GetSelected<Player>();
+		var candidatePlayers = WhichPlayersTabControl.SelectedIndex is 0
+								   ? ReadMany<TournamentPlayer>(tp => tp.TournamentId == Tournament.Id).Select(static tp => tp.Player)
+								   : ReadAll<Player>();
+		var nonMembers = candidatePlayers.Where(player => (Tournament.PlayerCanJoinManyTeams || !player.Teams(Tournament).Any())
+														  && !memberIds.Contains(player.Id))
+										 .Sorted(LastNameRadioButton.Checked);
+		NonMemberListBox.FillWith(nonMembers);
+		if (selectedNonMember is not null)
+			NonMemberListBox.SelectedItem = NonMemberListBox.Find(selectedNonMember);
+	}
+
+	private void SelectNoTeam()
+	{
+		Disable(RenameButton, DissolveButton);
+		MemberListBox.Clear();
+		NonMemberListBox.Clear();
+		MembersLabel.Text = "Members";
+	}
+
+	#endregion
+
+	#endregion
 }

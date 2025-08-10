@@ -2,23 +2,9 @@
 
 internal sealed partial class RegistrationControl : UserControl
 {
-	private RoundInfoForm RoundInfoForm
-	{
-		get => field.Tournament.IsNone
-				   ? throw new NullReferenceException(nameof (RoundInfoForm))
-				   : field;
-		set;
-	} = RoundInfoForm.None;
+	#region Public interface
 
-	private List<Player> UnregisteredPlayers { get; } = [];
-
-	private List<RegisteredPlayer> RegisteredPlayers { get; } = [];
-
-	private Tournament Tournament => RoundInfoForm.Tournament;
-
-	private List<CheckBox> RegistrationCheckBoxes { get; }
-
-	private int WidthWithStartRoundButton { get; }
+	#region Constructor
 
 	internal RegistrationControl()
 	{
@@ -31,6 +17,10 @@ internal sealed partial class RegistrationControl : UserControl
 			Round7RegistrationCheckBox, Round8RegistrationCheckBox, Round9RegistrationCheckBox
 		];
 	}
+
+	#endregion
+
+	#region Methods
 
 	internal void LoadControl(RoundInfoForm roundChanger)
 	{
@@ -55,33 +45,60 @@ internal sealed partial class RegistrationControl : UserControl
 		RegisteredDataGridView.Deselect();
 	}
 
-	private void FillLists(bool registeredOnly = false)
-	{
-		if (!registeredOnly)
-		{
-			//	Don't take the advice to use pattern matching here. Also don't move this line below the coming .Fill().
-			var selectedUnregisteredPlayer = UnregisteredListBox.GetSelected<Player>();
-			var unregisteredPlayers = UnregisteredPlayers.OrderBy(player => FirstNameRegistrationTabRadioButton.Checked
-																				? player.Name
-																				: player.LastFirst)
-														 .ToArray();
-			UnregisteredListBox.FillWithRecords(unregisteredPlayers);
-			UnregisteredPlayersLabel.Text = "Unregistered Player".Pluralize(unregisteredPlayers, true);
-			if (selectedUnregisteredPlayer is not null)
-				UnregisteredListBox.SelectedItem = UnregisteredListBox.Find(selectedUnregisteredPlayer);
-		}
+	internal void StartRound()
+		=> SetRoundRegistrationStatus(false);
 
-		var selectedRegisteredPlayer = (RegisteredDataGridView.CurrentRow?.DataBoundItem as RegisteredPlayer)?.Player;
-		var registeredPlayers = RegisteredPlayers.OrderBy(player => FirstNameRegistrationTabRadioButton.Checked
-																		? player.Name
-																		: player.ByLastName)
-												 .ToArray();
-		//  TODO - Is Eventless needed??
-		SkipHandlers(() => RegisteredDataGridView.FillWith(registeredPlayers));
-		RegisteredPlayersLabel.Text = "Registered Player".Pluralize(registeredPlayers, true);
-		if (selectedRegisteredPlayer is not null)
-			SetRegisteredPlayer(selectedRegisteredPlayer);
+	internal void DiscardRound()
+		=> SetRoundRegistrationStatus(true);
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Type
+
+	//	NOTE: Don't put this in a separate file in another part of this partial class;
+	//	If you do, VS will think it has a visual Form and will set up a designer file.
+
+	private sealed record RegisteredPlayer
+	{
+		public Player Player { get; }
+
+		[PublicAPI]
+		public string Rounds { get; set; }
+
+		internal int Id => Player.Id;
+		internal string Name => Player.Name;
+		internal string ByLastName => Player.LastFirst;
+
+		internal RegisteredPlayer(Player player, string rounds = "")
+			=> (Player, Rounds) = (player, rounds);
 	}
+
+	#endregion
+
+	#region Data
+
+	private RoundInfoForm RoundInfoForm
+	{
+		get => field.Tournament.IsNone
+				   ? throw new NullReferenceException(nameof (RoundInfoForm))
+				   : field;
+		set;
+	} = RoundInfoForm.None;
+
+	private List<Player> UnregisteredPlayers { get; } = [];
+	private List<RegisteredPlayer> RegisteredPlayers { get; } = [];
+	private List<CheckBox> RegistrationCheckBoxes { get; }
+	private int WidthWithStartRoundButton { get; }
+
+	private Tournament Tournament => RoundInfoForm.Tournament;
+
+	#endregion
+
+	#region Event handlers
 
 	private void UnregisteredListBox_SelectedIndexChanged(object sender,
 														  EventArgs e)
@@ -121,16 +138,6 @@ internal sealed partial class RegistrationControl : UserControl
 			FillLists();
 			UnregisteredListBox.SelectedItem = UnregisteredListBox.Find(player);
 		}
-	}
-
-	//	ReSharper disable once SuggestBaseTypeForParameter
-	private void SetRegisteredPlayer(Player player)
-	{
-		var tournamentPlayer = Tournament.TournamentPlayers
-										 .ByPlayerId(player.Id);
-		RoundsRegisteredGroupBox.Text = player.Name;
-		SkipHandlers(() => ForRange(0, Tournament.TotalRounds, round => RegistrationCheckBoxes[round].Checked = tournamentPlayer.RegisteredForRound(round + 1)));
-		RegisteredDataGridView.SelectRowWhere<RegisteredPlayer>(rp => rp.Id == player.Id);
 	}
 
 	private void RoundRegistrationCheckBox_CheckedChanged(object sender,
@@ -186,15 +193,6 @@ internal sealed partial class RegistrationControl : UserControl
 											 EventArgs e)
 		=> RoundInfoForm.StartNewRound();
 
-	internal void StartRound()
-		=> SetRoundRegistrationStatus(false);
-
-	internal void DiscardRound()
-		=> SetRoundRegistrationStatus(true);
-
-	private void SetRoundRegistrationStatus(bool enabled)
-		=> RegistrationCheckBoxes[Tournament.Rounds.Length - 1].Enabled = enabled;
-
 	private void NewPlayerButton_Click(object sender, EventArgs e)
 		=> Show<PlayerInfoForm>(form =>
 								{
@@ -203,28 +201,50 @@ internal sealed partial class RegistrationControl : UserControl
 										RegisterPlayerButton_Click(newPlayer);
 								});
 
-	#region RegisteredPlayer class
+	#endregion
 
-	//	NOTE: Don't put this in a separate file in another part of this partial class;
-	//	If you do, VS will think it has a visual Form and will set up a designer file.
+	#region Methods
 
-	private sealed class RegisteredPlayer
+	private void FillLists(bool registeredOnly = false)
 	{
-		public Player Player { get; }
+		if (!registeredOnly)
+		{
+			//	Don't take the advice to use pattern matching here. Also, don't move this line below the coming .Fill().
+			var selectedUnregisteredPlayer = UnregisteredListBox.GetSelected<Player>();
+			Player[] unregisteredPlayers = [..UnregisteredPlayers.OrderBy(player => FirstNameRegistrationTabRadioButton.Checked
+																						? player.Name
+																						: player.LastFirst)];
+			UnregisteredListBox.FillWithRecords(unregisteredPlayers);
+			UnregisteredPlayersLabel.Text = "Unregistered Player".Pluralize(unregisteredPlayers, true);
+			if (selectedUnregisteredPlayer is not null)
+				UnregisteredListBox.SelectedItem = UnregisteredListBox.Find(selectedUnregisteredPlayer);
+		}
 
-		[PublicAPI]
-		public string Rounds { get; set; }
-
-		internal int Id => Player.Id;
-
-		internal string Name => Player.Name;
-
-		internal string ByLastName => Player.LastFirst;
-
-		internal RegisteredPlayer(Player player,
-								  string rounds = "")
-			=> (Player, Rounds) = (player, rounds);
+		var selectedRegisteredPlayer = (RegisteredDataGridView.CurrentRow?.DataBoundItem as RegisteredPlayer)?.Player;
+		RegisteredPlayer[] registeredPlayers = [..RegisteredPlayers.OrderBy(player => FirstNameRegistrationTabRadioButton.Checked
+																						  ? player.Name
+																						  : player.ByLastName)];
+		//  TODO - Is Eventless needed??
+		SkipHandlers(() => RegisteredDataGridView.FillWith(registeredPlayers));
+		RegisteredPlayersLabel.Text = "Registered Player".Pluralize(registeredPlayers, true);
+		if (selectedRegisteredPlayer is not null)
+			SetRegisteredPlayer(selectedRegisteredPlayer);
 	}
+
+	//	ReSharper disable once SuggestBaseTypeForParameter
+	private void SetRegisteredPlayer(Player player)
+	{
+		var tournamentPlayer = Tournament.TournamentPlayers
+										 .ByPlayerId(player.Id);
+		RoundsRegisteredGroupBox.Text = player.Name;
+		SkipHandlers(() => ForRange(0, Tournament.TotalRounds, round => RegistrationCheckBoxes[round].Checked = tournamentPlayer.RegisteredForRound(round + 1)));
+		RegisteredDataGridView.SelectRowWhere<RegisteredPlayer>(rp => rp.Id == player.Id);
+	}
+
+	private void SetRoundRegistrationStatus(bool enabled)
+		=> RegistrationCheckBoxes[Tournament.Rounds.Length - 1].Enabled = enabled;
+
+	#endregion
 
 	#endregion
 }

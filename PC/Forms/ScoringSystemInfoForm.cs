@@ -4,9 +4,9 @@ using static ScoringSystem.DrawRules;
 
 internal sealed partial class ScoringSystemInfoForm : Form
 {
-	//	TODO: Don't the French end in 1905 or 1906?
-	private const int EarliestFinalGameYear = 1907;
-	private ScoringSystem ScoringSystem { get; set; }
+	#region Public interface
+
+	#region Constructor
 
 	internal ScoringSystemInfoForm(ScoringSystem scoringSystem)
 	{
@@ -15,7 +15,29 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		ScoringSystem =
 			GameControl.ScoringSystem =
 				scoringSystem;
+
+		void SetButtonUse(bool enabled)
+			=> SetEnabled(enabled, OkButton, CancelFormButton, NewTestButton, RunTestButton, CopyButton);
 	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	//	TODO: Don't the French end in 1905 or 1906?
+	private const int EarliestFinalGameYear = 1907;
+
+	private static readonly Regex AliasFormat = AliasRegex();
+
+	private ScoringSystem ScoringSystem { get; set; }
+
+	#endregion
+
+	#region Event handlers
 
 	private void ScoringSystemInfoForm_Load(object sender,
 											EventArgs e)
@@ -70,6 +92,15 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		GameControl.LoadGame(ScoringSystem);
 	}
 
+	private void ScoringSystemDetailsForm_FormClosing(object sender,
+													  FormClosingEventArgs e)
+	{
+		if (DialogResult is DialogResult.Cancel && ScoringSystem.Id > 0)
+			//	TODO: maybe ask for confirmation if there are unsaved changes
+			//	Re-load system from disk because mucking with ScoringSystem changed it in the Cache
+			ReadOne(ScoringSystem, false);
+	}
+
 	private void WinLossCheckBox_CheckedChanged(object? sender = null,
 												EventArgs? e = null)
 	{
@@ -116,9 +147,149 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		GameControl.FillYearComboBoxes();
 	}
 
+	private void OkButton_Click(object sender,
+								EventArgs e)
+	{
+		if (ValidateSystem(out var error))
+			if (ScoringSystem.Name.Length is 0)
+				error = "Scoring system must be named.";
+			else if (NameExists(ScoringSystem))
+				error = "A scoring system with this same name exists.";
+			else if (ScoringSystem.TestGamePlayers is not null && !RunTest(out _))
+				error = "Scoring system fails on test game data.";
+		if (error is null)
+		{
+			if (ScoringSystem.Id is 0)
+				CreateOne(ScoringSystem);
+			else
+				UpdateOne(ScoringSystem);
+			DialogResult = DialogResult.OK;
+			//	TODO: check for errors
+			ScoringSystem.Games
+						 .ForSome(static game => game.Scored,
+								  static game => game.Scored = false);
+			Close();
+		}
+		else
+			MessageBox.Show(error,
+							"Invalid Scoring System Details",
+							OK,
+							Error);
+	}
+
+	private void AllowDrawsCheckBox_CheckedChanged(object sender,
+												   EventArgs e)
+	{
+		DiasCheckBox.Visible = AllowDrawsCheckBox.Checked;
+		DiasCheckBox.Checked = true;
+		ScoringSystem.DrawPermissions = AllowDrawsCheckBox.Checked
+											? DIAS
+											: None;
+		GameControl.SetWinType(AllowDrawsCheckBox.Checked,
+							   GameControl.NumberOfWinners);
+	}
+
+	private void DiasCheckBox_CheckedChanged(object sender,
+											 EventArgs e)
+	{
+		ScoringSystem.DrawPermissions = DiasCheckBox.Checked
+											? DIAS
+											: All;
+		//	If NO-DIAS, all bets are off.
+		if (DiasCheckBox.Checked)
+			GameControl.SetDiasOptions();
+	}
+
+	private void SignificantDigitsComboBox_SelectedIndexChanged(object sender,
+																EventArgs e)
+		=> ScoringSystem.SignificantDigits = SignificantDigitsComboBox.SelectedIndex;
+
+	private void CopyButton_Click(object sender,
+								  EventArgs e)
+	{
+		NameTextBox.Text = $"COPY OF {ScoringSystem}";
+		ScoringSystem = new ()
+						{
+							Id = default,
+							Name = NameTextBox.Text,
+							DrawPermissions = ScoringSystem.DrawPermissions,
+							FinalGameYear = ScoringSystem.FinalGameYear,
+							FinalScoreFormula = ScoringSystem.FinalScoreFormula,
+							OtherScoreAlias = ScoringSystem.OtherScoreAlias,
+							PlayerAnteFormula = ScoringSystem.PlayerAnteFormula,
+							PointsPerGame = ScoringSystem.PointsPerGame,
+							ProvisionalScoreFormula = ScoringSystem.ProvisionalScoreFormula,
+							SignificantDigits = ScoringSystem.SignificantDigits,
+							UsesCenterCount = ScoringSystem.UsesCenterCount,
+							UsesGameResult = ScoringSystem.UsesGameResult,
+							UsesYearsPlayed = ScoringSystem.UsesYearsPlayed,
+							TestGamePlayers = ScoringSystem.TestGamePlayers?.ToList()
+						};
+		CopyButton.Hide();
+	}
+
+	private void NewTestButton_Click(object sender,
+									 EventArgs e)
+		=> GameControl.CreateRandomGame();
+
+	private void RunTestButton_Click(object sender,
+									 EventArgs e)
+	{
+		var success = ValidateSystem(out var text);
+		if (success)
+			if (ScoringSystem.TestGamePlayers is null)
+				text = "No test game data provided.";
+			else
+			{
+				success = RunTest(out var results);
+				text = Join(NewLine, results);
+			}
+		MessageBox.Show(text,
+						success
+							? "Test Game Scoring Report"
+							: "Scoring Failed",
+						OK,
+						success
+							? Information
+							: Error);
+	}
+
+	private void TotalPointsFixedCheckBox_CheckedChanged(object? sender = null,
+														 EventArgs? e = null)
+		=> SetVisible(TotalPointsFixedCheckBox.Checked, PointsPerGameLabel, PointsPerGameTextBox);
+
+	private void OtherScoringCheckBox_CheckedChanged(object? sender = null,
+													 EventArgs? e = null)
+	{
+		SetVisible(OtherScoringCheckBox.Checked, OtherAliasLabel, OtherAliasTextBox);
+		OtherAliasTextBox_TextChanged();
+		GameControl.SetOtherTextBoxUsability(OtherScoringCheckBox.Checked);
+	}
+
+	private void OtherAliasTextBox_TextChanged(object? sender = null,
+											   EventArgs? e = null)
+		=> GameControl.SetOtherScoreLabel(OtherAliasLabel.Visible
+											  ? OtherAliasTextBox.Text
+											  : Empty);
+
+	private void UsesProvisionalScoreCheckBox_CheckedChanged(object sender,
+															 EventArgs e)
+		=> FormulaTabs.AddOrRemove(ProvisionalScoreTabPage, UsesProvisionalScoreCheckBox.Checked, 1);
+
+	private void UsesPlayerAnteCheckBox_CheckedChanged(object sender,
+													   EventArgs e)
+	{
+		FormulaTabs.AddOrRemove(PlayerAnteFormulaTabPage, UsesPlayerAnteCheckBox.Checked);
+		if (PlayerAnteFormulaTextBox.TextLength is 0)
+			PlayerAnteFormulaTextBox.Text = $"{nameof (ScoringSystem.PointsPerGame)} / 7";
+	}
+
+	#endregion
+
+	#region Methods
+
 	[GeneratedRegex("^[A-Z_][\\w\\s]*$", RegexOptions.IgnoreCase)]
 	private static partial Regex AliasRegex();
-	private static readonly Regex AliasFormat = AliasRegex();
 
 	private bool ValidateSystem(out string? error)
 	{
@@ -172,96 +343,9 @@ internal sealed partial class ScoringSystemInfoForm : Form
 		}
 	}
 
-	private void OkButton_Click(object sender,
-								EventArgs e)
-	{
-		if (ValidateSystem(out var error))
-			if (ScoringSystem.Name.Length is 0)
-				error = "Scoring system must be named.";
-			else if (NameExists(ScoringSystem))
-				error = "A scoring system with this same name exists.";
-			else if (ScoringSystem.TestGamePlayers is not null && !RunTest(out _))
-				error = "Scoring system fails on test game data.";
-		if (error is null)
-		{
-			if (ScoringSystem.Id is 0)
-				CreateOne(ScoringSystem);
-			else
-				UpdateOne(ScoringSystem);
-			DialogResult = DialogResult.OK;
-			//	TODO: check for errors
-			ScoringSystem.Games.ForSome(static game => game.Scored,
-										static game => game.Scored = false);
-			Close();
-		}
-		else
-			MessageBox.Show(error,
-							"Invalid Scoring System Details",
-							OK,
-							Error);
-	}
-
-	private void AllowDrawsCheckBox_CheckedChanged(object sender,
-												   EventArgs e)
-	{
-		DiasCheckBox.Visible = AllowDrawsCheckBox.Checked;
-		DiasCheckBox.Checked = true;
-		ScoringSystem.DrawPermissions = AllowDrawsCheckBox.Checked
-											? DIAS
-											: None;
-		GameControl.SetWinType(AllowDrawsCheckBox.Checked, GameControl.NumberOfWinners);
-	}
-
-	private void DiasCheckBox_CheckedChanged(object sender,
-											 EventArgs e)
-	{
-		ScoringSystem.DrawPermissions = DiasCheckBox.Checked
-											? DIAS
-											: All;
-		//	If NO-DIAS, all bets are off.
-		if (DiasCheckBox.Checked)
-			GameControl.SetDiasOptions();
-	}
-
-	private void SignificantDigitsComboBox_SelectedIndexChanged(object sender,
-																EventArgs e)
-		=> ScoringSystem.SignificantDigits = SignificantDigitsComboBox.SelectedIndex;
-
-	private void CopyButton_Click(object sender,
-								  EventArgs e)
-	{
-		NameTextBox.Text = $"COPY OF {ScoringSystem}";
-		ScoringSystem = new ()
-						{
-							Id = default,
-							Name = NameTextBox.Text,
-							DrawPermissions = ScoringSystem.DrawPermissions,
-							FinalGameYear = ScoringSystem.FinalGameYear,
-							FinalScoreFormula = ScoringSystem.FinalScoreFormula,
-							OtherScoreAlias = ScoringSystem.OtherScoreAlias,
-							PlayerAnteFormula = ScoringSystem.PlayerAnteFormula,
-							PointsPerGame = ScoringSystem.PointsPerGame,
-							ProvisionalScoreFormula = ScoringSystem.ProvisionalScoreFormula,
-							SignificantDigits = ScoringSystem.SignificantDigits,
-							UsesCenterCount = ScoringSystem.UsesCenterCount,
-							UsesGameResult = ScoringSystem.UsesGameResult,
-							UsesYearsPlayed = ScoringSystem.UsesYearsPlayed,
-							TestGamePlayers = ScoringSystem.TestGamePlayers?.ToList()
-						};
-		CopyButton.Hide();
-	}
-
-	private void ScoringSystemDetailsForm_FormClosing(object sender,
-													  FormClosingEventArgs e)
-	{
-		if (DialogResult is DialogResult.Cancel && ScoringSystem.Id > 0)
-			//	TODO: maybe ask for confirmation if there are unsaved changes
-			//	Re-load system from disk because mucking with ScoringSystem changed it in the Cache
-			ReadOne(ScoringSystem, false);
-	}
-
-	private void SetButtonUse(bool enabled)
-		=> SetEnabled(enabled, OkButton, CancelFormButton, NewTestButton, RunTestButton, CopyButton);
+	private bool RunTest(out List<string?> results)
+		=> ScoringSystem.ScoreWithResults(ScoringSystem.TestGamePlayers.OrThrow(),
+										  out results);
 
 	private void SetTestButtonUsability()
 		=> SetEnabled(ScoringSystem.UsesGameResult
@@ -269,63 +353,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 				   || ScoringSystem.UsesYearsPlayed
 				   || ScoringSystem.UsesOtherScore, NewTestButton, RunTestButton);
 
-	private void NewTestButton_Click(object sender,
-									 EventArgs e)
-		=> GameControl.CreateRandomGame();
+	#endregion
 
-	private void RunTestButton_Click(object sender,
-									 EventArgs e)
-	{
-		var success = ValidateSystem(out var text);
-		if (success)
-			if (ScoringSystem.TestGamePlayers is null)
-				text = "No test game data provided.";
-			else
-			{
-				success = RunTest(out var results);
-				text = Join(NewLine, results);
-			}
-		MessageBox.Show(text,
-						success
-							? "Test Game Scoring Report"
-							: "Scoring Failed",
-						OK,
-						success
-							? Information
-							: Error);
-	}
-
-	private bool RunTest(out List<string?> results)
-		=> ScoringSystem.ScoreWithResults(ScoringSystem.TestGamePlayers.OrThrow(),
-										  out results);
-
-	private void TotalPointsFixedCheckBox_CheckedChanged(object? sender = null,
-														 EventArgs? e = null)
-		=> SetVisible(TotalPointsFixedCheckBox.Checked, PointsPerGameLabel, PointsPerGameTextBox);
-
-	private void OtherScoringCheckBox_CheckedChanged(object? sender = null,
-													 EventArgs? e = null)
-	{
-		SetVisible(OtherScoringCheckBox.Checked, OtherAliasLabel, OtherAliasTextBox);
-		OtherAliasTextBox_TextChanged();
-		GameControl.SetOtherTextBoxUsability(OtherScoringCheckBox.Checked);
-	}
-
-	private void OtherAliasTextBox_TextChanged(object? sender = null,
-											   EventArgs? e = null)
-		=> GameControl.SetOtherScoreLabel(OtherAliasLabel.Visible
-											  ? OtherAliasTextBox.Text
-											  : Empty);
-
-	private void UsesProvisionalScoreCheckBox_CheckedChanged(object sender,
-															 EventArgs e)
-		=> FormulaTabs.AddOrRemove(ProvisionalScoreTabPage, UsesProvisionalScoreCheckBox.Checked, 1);
-
-	private void UsesPlayerAnteCheckBox_CheckedChanged(object sender,
-													   EventArgs e)
-	{
-		FormulaTabs.AddOrRemove(PlayerAnteFormulaTabPage, UsesPlayerAnteCheckBox.Checked);
-		if (PlayerAnteFormulaTextBox.TextLength is 0)
-			PlayerAnteFormulaTextBox.Text = $"{nameof (ScoringSystem.PointsPerGame)} / 7";
-	}
+	#endregion
 }

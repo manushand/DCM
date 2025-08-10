@@ -2,6 +2,7 @@
 global using static System.String;
 global using static Microsoft.AspNetCore.Http.StatusCodes;
 global using static Microsoft.AspNetCore.Http.Results;
+global using static DCM.DCM;
 global using static Data.Data;
 global using static Data.Game;
 global using static Data.Game.Statuses;
@@ -24,7 +25,6 @@ using static System.Threading.Monitor;
 namespace API;
 
 using Data;
-using static DCM.DCM;
 
 internal static class API
 {

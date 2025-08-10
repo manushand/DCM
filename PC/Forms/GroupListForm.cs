@@ -2,11 +2,27 @@
 
 internal sealed partial class GroupListForm : Form
 {
+	#region Public interface
+
+	#region Data
+
 	[DesignerSerializationVisibility(Hidden)]
 	internal Group? Group { get; private set; }
 
+	#endregion
+
+	#region Constructor
+
 	public GroupListForm()
 		=> InitializeComponent();
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Event handlers
 
 	private void GroupListForm_Load(object sender,
 									EventArgs e)
@@ -21,4 +37,8 @@ internal sealed partial class GroupListForm : Form
 		Close();
 		DialogResult = DialogResult.OK;
 	}
+
+	#endregion
+
+	#endregion
 }

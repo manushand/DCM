@@ -4,31 +4,30 @@ namespace PC.Controls;
 
 using static Tournament;
 
-internal sealed partial class TournamentControl : UserControl
+internal sealed partial class EventControl : UserControl
 {
-	private TournamentInfoForm TournamentInfoForm { get; set; } = TournamentInfoForm.None;
+	#region Public interface
 
-	private Tournament Tournament => TournamentInfoForm.Tournament;
+	#region Constructor
 
-	internal TournamentControl()
+	internal EventControl()
 	{
 		InitializeComponent();
 		PowerGroupComboBox.Items.AddRange(Enum.GetNames<PowerGroups>()
 											  .Select(static object (name) => ((typeof (PowerGroups).GetField(name)?
 																									.GetCustomAttribute(typeof (PowerGroupingsAttribute))
-																					as PowerGroupingsAttribute)?.Text).OrThrow())
-											  .ToArray());
+																					as PowerGroupingsAttribute)?.Text).OrThrow()));
 	}
 
-	private void TournamentControl_Load(object sender,
-										EventArgs e)
-		=> TotalRoundsComboBox.FillRange(2, 9); //	TODO: should this be 7 instead of 9 (for the 1 << x in registration)
+	#endregion
 
-	internal void LoadControl(TournamentInfoForm tournamentInfoForm)
+	#region Method
+
+	internal void LoadControl(EventInfoForm eventInfoForm)
 	{
 		SkipHandlers(() =>
         {
-			TournamentInfoForm = tournamentInfoForm;
+			EventInfoForm = eventInfoForm;
 			ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
 			MinimumRoundsComboBox.FillRange(1, 9);
 			if (Tournament.IsNone)
@@ -51,7 +50,7 @@ internal sealed partial class TournamentControl : UserControl
 			else
 			{
 				ScoringSystemComboBox.SetSelectedItem(Tournament.ScoringSystem);
-				TournamentInfoForm.SetFormTitle();
+				EventInfoForm.SetFormTitle();
 				NameTextBox.Text = Tournament.Name;
 				DescriptionTextBox.Text = Tournament.Description;
 				TotalRoundsComboBox.SelectedIndex = Tournament.TotalRounds - 2;
@@ -90,13 +89,33 @@ internal sealed partial class TournamentControl : UserControl
 		SetScoreConflictDetails();
 	}
 
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private EventInfoForm EventInfoForm { get; set; } = EventInfoForm.None;
+
+	private Tournament Tournament => EventInfoForm.Event;
+
+	#endregion
+
+	#region Event handlers
+
+	private void TournamentControl_Load(object sender,
+										EventArgs e)
+		=> TotalRoundsComboBox.FillRange(2, 9); //	TODO: should this be 7 instead of 9 (for the 1 << x in registration)
+
 	private void TotalRoundsComboBox_SelectedIndexChanged(object sender,
 														  EventArgs e)
 	{
 		var totalRounds =
 			Tournament.TotalRounds =
 				TotalRoundsComboBox.SelectedIndex + 2;
-		SetEnabled(true, MinimumRoundsComboBox, RoundsToDropComboBox, RoundsToScaleComboBox);
+		Enable(MinimumRoundsComboBox, RoundsToDropComboBox, RoundsToScaleComboBox);
 		//	Hold the ComboBox's SelectedIndex before refilling it
 		var minimumRounds = MinimumRoundsComboBox.SelectedIndex;
 		MinimumRoundsComboBox.FillRange(1, totalRounds);
@@ -132,13 +151,8 @@ internal sealed partial class TournamentControl : UserControl
 
 	private void PowerAssignmentComboBox_SelectedIndexChanged(object sender,
 															  EventArgs e)
-		=> Tournament.AssignPowers =
-			   PowerGroupLabel.Visible =
-				   PowerGroupComboBox.Visible =
-					   RepeatingPowerLabel.Visible =
-						   PowerConflictTextBox.Visible =
-							   PowerConflictPointsLabel.Visible =
-								   PowerAssignmentComboBox.SelectedIndex is 0;
+		=> SetVisible(Tournament.AssignPowers = PowerAssignmentComboBox.SelectedIndex is 0,
+					  PowerGroupLabel, PowerGroupComboBox, RepeatingPowerLabel, PowerConflictTextBox, PowerConflictPointsLabel);
 
 	private void PowerGroupComboBox_SelectedIndexChanged(object sender,
 														 EventArgs e)
@@ -189,7 +203,7 @@ internal sealed partial class TournamentControl : UserControl
 		if (Tournament.HasTeamTournament
 		&&  TeamScoringComboBox.SelectedItem is null)
 			TeamScoringComboBox.SelectedIndex = 0;
-		TournamentInfoForm.SetTeamsTabVisibility();
+		EventInfoForm.SetTeamsTabVisibility();
 	}
 
 	private void TeamRoundComboBox_SelectedIndexChanged(object? sender = null,
@@ -227,10 +241,8 @@ internal sealed partial class TournamentControl : UserControl
 		if (Tournament.Id > 0)
 			UpdateOne(Tournament);
 		SetScoreConflictDetails();
-		if (finishedGames.Length is 0)
-			return;
-		finishedGames.ForEach(static game => game.Status = Underway);
-		UpdateMany(finishedGames);
+		if (finishedGames.Length > 0)
+			UpdateMany(finishedGames.Modify(static game => game.Status = Underway));
 	}
 
 	private void DropCheckBox_CheckedChanged(object? sender = null,
@@ -254,9 +266,6 @@ internal sealed partial class TournamentControl : UserControl
 			RoundsToDropComboBox.SelectedIndex = 0;
 	}
 
-	private void SetScaleCheckBoxText(bool drop)
-		=> ScaleCheckBox.Text = $"Scale {(drop ? "next" : "the")} lowest";
-
 	private void RoundsToDropComboBox_SelectedIndexChanged(object sender,
 														   EventArgs e)
 	{
@@ -265,18 +274,6 @@ internal sealed partial class TournamentControl : UserControl
 				RoundsToDropComboBox.SelectedIndex + 1;
 		RoundsToDropLabel.Text = "score".Pluralize(selected);
 		FillRoundsToScaleComboBox(true);
-	}
-
-	private void FillRoundsToScaleComboBox(bool restoreSelected)
-	{
-		var selectedIndex = restoreSelected
-								? RoundsToScaleComboBox.SelectedIndex
-								: 0;
-		RoundsToScaleComboBox.FillRange(1, Tournament.TotalRounds
-										 - Tournament.RoundsToDrop
-										 - 1);
-		if (selectedIndex > -1 && selectedIndex < RoundsToScaleComboBox.Items.Count)
-			RoundsToScaleComboBox.SelectedIndex = selectedIndex;
 	}
 
 	private void ScaleCheckBox_CheckedChanged(object? sender = null,
@@ -372,7 +369,7 @@ internal sealed partial class TournamentControl : UserControl
 				CreateOne(Tournament);
 			else
 				UpdateOne(Tournament);
-			TournamentInfoForm.CloseForm();
+			EventInfoForm.CloseForm();
 			return;
 		}
 		MessageBox.Show(error,
@@ -401,6 +398,25 @@ internal sealed partial class TournamentControl : UserControl
 										 : "Score Conflict?";
 	}
 
+	#endregion
+
+	#region Methods
+
+	private void SetScaleCheckBoxText(bool drop)
+		=> ScaleCheckBox.Text = $"Scale {(drop ? "next" : "the")} lowest";
+
+	private void FillRoundsToScaleComboBox(bool restoreSelected)
+	{
+		var selectedIndex = restoreSelected
+								? RoundsToScaleComboBox.SelectedIndex
+								: 0;
+		RoundsToScaleComboBox.FillRange(1, Tournament.TotalRounds
+										 - Tournament.RoundsToDrop
+										 - 1);
+		if (selectedIndex > -1 && selectedIndex < RoundsToScaleComboBox.Items.Count)
+			RoundsToScaleComboBox.SelectedIndex = selectedIndex;
+	}
+
 	private void SetScoreConflictDetails()
 	{
 		//	TODO: The restriction below (to allow seed-by-score only in fixed-point-per-game systems) is commented out.  Okay?
@@ -409,4 +425,8 @@ internal sealed partial class TournamentControl : UserControl
 		ProgressiveScoreConflictCheckBox.Checked = Tournament.ProgressiveScoreConflict;
 		ScoreConflictCheckBox_CheckedChanged(); //	TODO: does the line above do this?
 	}
+
+	#endregion
+
+	#endregion
 }

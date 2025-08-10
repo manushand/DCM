@@ -4,15 +4,35 @@ using static DatabaseTypes;
 
 internal sealed partial class MainForm : Form
 {
-	private static bool Connected => DatabaseType is not None;
+	#region Public interface
+
+	#region Constructor
+
+	internal MainForm()
+	{
+		InitializeComponent();
+		ConfigurationMenuItem.DropDown.Closing += static (_, e) => e.Cancel = e.CloseReason is ToolStripDropDownCloseReason.ItemClicked;
+		StartPosition = FormStartPosition.CenterScreen;
+		var dbType = OpenDatabase();
+		AccessToolStripMenuItem.Checked = dbType is Access;
+		SqlServerToolStripMenuItem.Checked = dbType is SqlServer;
+	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
 
 	private IdInfoRecord Event
 	{
 		get
 		{
 			var eventId = Connected
-				? Settings.EventId
-				: 0;
+							  ? Settings.EventId
+							  : 0;
 			return eventId is 0
 					   ? Tournament.None
 					   : Settings.EventIsGroup
@@ -26,32 +46,25 @@ internal sealed partial class MainForm : Form
 		}
 	}
 
-	internal MainForm()
-	{
-		InitializeComponent();
-		ConfigurationMenuItem.DropDown.Closing += static (_, e) => e.Cancel = e.CloseReason is ToolStripDropDownCloseReason.ItemClicked;
-		StartPosition = FormStartPosition.CenterScreen;
-		var dbType = OpenDatabase();
-		AccessToolStripMenuItem.Checked = dbType is Access;
-		SqlServerToolStripMenuItem.Checked = dbType is SqlServer;
-	}
+	private static bool Connected => DatabaseType is not None;
+
+	#endregion
+
+	#region Event handlers
+
+	#region Form event handlers
 
 	private void MainForm_Load(object? sender = null,
 							   EventArgs? e = null)
 	{
 		Activate();
 		var connected = Connected;
-		PlayersToolStripMenuItem.Visible =
-			GroupToolStripMenuItem.Visible =
-				ScoringToolStripMenuItem.Visible =
-					TournamentToolStripMenuItem.Visible =
-						connected;
+		SetVisible(connected, PlayersToolStripMenuItem, GroupToolStripMenuItem, ScoringToolStripMenuItem, TournamentToolStripMenuItem);
 		ShowTimingToolStripMenuItem.Checked =
 			ScoringSystem.ShowTimingData =
 				Settings.ShowTimingData;
-		OpenTournamentMenuItem.Enabled =
-			DeleteTournamentMenuItem.Enabled =
-				connected && Any<Tournament>(static tournament => tournament.GroupId is null);
+		SetEnabled(connected && Any<Tournament>(static tournament => tournament.IsEvent),
+				   OpenTournamentMenuItem, DeleteTournamentMenuItem);
 		OpenGroupMenuItem.Enabled = connected && Any<Group>();
 		PlayerConflictsToolStripMenuItem.Enabled = connected && ReadAll<Player>().Count() > 1;
 		ButtonPanel.Visible = connected && Settings.EventId > 0;
@@ -87,11 +100,11 @@ internal sealed partial class MainForm : Form
 										: $"Rounds and{NewLine}Registration";
 			MiddleButton.Enabled = true;
 			RightButton.Text = "Scores";
-			RightButton.Enabled = tournament.Games //	This could be .FinishedGames but it wastes time doing .ToList()
+			RightButton.Enabled = tournament.Games // This could be .FinishedGames, but it wastes time doing .ToList()
 											.Any(static game => game.Status is Finished);
 			break;
 		default:
-			throw new InvalidOperationException(); //	TODO
+			throw new InvalidOperationException(); // TODO
 		}
 	}
 
@@ -102,15 +115,9 @@ internal sealed partial class MainForm : Form
 									  YesNo,
 									  Question) is DialogResult.No;
 
-	#region Scoring menu item event handler
-
-	private void ScoringSystemsMenuItem_Click(object sender,
-											  EventArgs e)
-		=> Show<ScoringSystemListForm>();
-
 	#endregion
 
-	#region Tournament/Group button event handlers
+	#region Opened Event/Group button event handlers
 
 	private void LeftButton_Click(object sender,
 								  EventArgs e)
@@ -118,8 +125,8 @@ internal sealed partial class MainForm : Form
 		switch (Event)
 		{
 		case Tournament tournament:
-			Show<TournamentInfoForm>(() => new (tournament),
-									 form => Event = form.Tournament);
+			Show<EventInfoForm>(() => new (tournament),
+								form => Event = form.Event);
 			break;
 		case Group group:
 			Show<GroupInfoForm>(() => new (group),
@@ -185,7 +192,7 @@ internal sealed partial class MainForm : Form
 
 	#endregion
 
-	#region Group menu item event handler
+	#region Group menu item event handlers
 
 	private void OpenGroupMenuItem_Click(object sender,
 										 EventArgs e)
@@ -206,31 +213,39 @@ internal sealed partial class MainForm : Form
 
 	#endregion
 
-	#region Tournament menu item event handlers
+	#region Event menu item event handlers
 
-	private void OpenTournamentMenuItem_Click(object sender,
-											  EventArgs e)
-		=> Show<TournamentListForm>(form =>
+	private void OpenEventMenuItem_Click(object sender,
+										 EventArgs e)
+		=> Show<EventListForm>(form =>
+							   {
+								   if (form.Tournament is not null)
+									   Event = form.Tournament;
+							   });
+
+	private void NewEventMenuItem_Click(object sender,
+										EventArgs e)
+		=> Show<EventInfoForm>(form =>
 									{
-										if (form.Tournament is not null)
-											Event = form.Tournament;
+										if (form.Event.Id > 0)
+											Event = form.Event;
 									});
 
-	private void NewTournamentMenuItem_Click(object sender,
-											 EventArgs e)
-		=> Show<TournamentInfoForm>(form =>
-									{
-										if (form.Tournament.Id > 0)
-											Event = form.Tournament;
-									});
-
-	private void DeleteTournamentMenuItem_Click(object sender,
-												EventArgs e)
+	private void DeleteEventMenuItem_Click(object sender,
+										   EventArgs e)
 	{
-		Show<TournamentListForm>(static () => new (true));
+		Show<EventListForm>(static () => new (true));
 		if (Event is Tournament tournament)
 			Event = ReadOne(tournament) ?? Tournament.None;
 	}
+
+	#endregion
+
+	#region Scoring menu item event handler
+
+	private void ScoringSystemsMenuItem_Click(object sender,
+											  EventArgs e)
+		=> Show<ScoringSystemListForm>();
 
 	#endregion
 
@@ -328,15 +343,19 @@ internal sealed partial class MainForm : Form
 												  EventArgs e)
 	{
 		const string copyright = "Copyright © 2018";
-		const string companyName = "ARMADA (The Association of Rocky Mountain Area Diplomacy Adversaries) and Manus Hand";
-		const string comments = $"Contact the ARMADA at https://www.armada-dip.com where the latest version of the {nameof (DCM)} can be found and downloaded.";
+		const string holderName = "ARMADA (The Association of Rocky Mountain Area Diplomacy Adversaries) and Manus Hand";
+		const string comments = $"Contact the ARMADA at https://www.armada-dip.com where the latest version of the {nameof (DCM)} can be downloaded.";
 
 		MessageBox.Show($"The Diplomacy Competition Manager ({nameof (DCM)}) is {copyright}-{DateTime.Now.Year} " +
-						$"{companyName}.{NewLine}{NewLine}{comments}{NewLine}{NewLine}This version: {PC.Version}",
+						$"{holderName}.{NewLine}{NewLine}{comments}{NewLine}{NewLine}This version: {PC.Version}",
 						$"About the {nameof (DCM)}",
 						OK,
 						Information);
 	}
+
+	#endregion
+
+	#endregion
 
 	#endregion
 }

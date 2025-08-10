@@ -2,41 +2,25 @@
 
 internal sealed partial class ConflictsForm : Form
 {
-	#region Form event handler
+	#region Public interface
 
-	private void ConflictsForm_Load(object sender,
-									EventArgs e)
-	{
-		//	TODO: add ability to order by last name??
-		PlayerNameComboBox.FillWithSorted<Player>();
-		SetVisible(false, IncreaseButton, DecreaseButton);
-		SetVisible(Player is not null, NewConflictLabel, NewConflictNameComboBox);
-		PlayerNameComboBox.SetSelectedItem(Player);
-	}
+	#region Constructors
+
+	public ConflictsForm()
+		=> InitializeComponent();
+
+	internal ConflictsForm(Player player) : this()
+		=> Player = player;
 
 	#endregion
 
-	#region Utility method
-
-	private void UpdateConflictInfo()
-		=> SkipHandlers(() =>
-						{
-							var player = Player.OrThrow();
-							var playerId = player.Id;
-							var conflicts = player.PlayerConflicts;
-							int[] conflictedIds = [..conflicts.SelectMany(static conflict => conflict.ConflictedPlayerIds)];
-							//	TODO: This sorts by first name only
-							NewConflictNameComboBox.FillWithSortedPlayers(other => !conflictedIds.Contains(other.Id)
-																				&& other.Id != playerId);
-							ConflictsDataGridView.FillWith(conflicts.Select(conflict => new ConflictedPlayer(conflict, playerId))
-																	.OrderBy(static conflictedPlayer => $"{conflictedPlayer.Player}"));
-						});
-
 	#endregion
 
-	#region ConflictedPlayer struct
+	#region Private implementation
 
-	//	NOTE: Don't put this in a separate file in another part of this partial class;
+	#region Type
+
+	//	NOTE: Don't move this to a separate file in another part of this partial class;
 	//	If you do, VS will think it has a visual Form and will set up a designer file.
 
 	//	Also, do not make this a record struct; that causes it to fail
@@ -73,7 +57,7 @@ internal sealed partial class ConflictsForm : Form
 
 	#endregion
 
-	#region Fields and Properties
+	#region Data
 
 	private Player? Player
 	{
@@ -83,10 +67,10 @@ internal sealed partial class ConflictsForm : Form
 			field = value;
 			if (value is null)
 				return;
-			SetVisible(true, NewConflictLabel, NewConflictNameComboBox);
+			Display(NewConflictLabel, NewConflictNameComboBox);
 			UpdateConflictInfo();
 			ConflictsDataGridView.Deselect();
-			SetVisible(false, IncreaseButton, DecreaseButton);
+			Conceal(IncreaseButton, DecreaseButton);
 		}
 	}
 
@@ -94,17 +78,17 @@ internal sealed partial class ConflictsForm : Form
 
 	#endregion
 
-	#region Constructors
+	#region Event handlers
 
-	public ConflictsForm()
-		=> InitializeComponent();
-
-	internal ConflictsForm(Player player) : this()
-		=> Player = player;
-
-	#endregion
-
-	#region Control event handlers
+	private void ConflictsForm_Load(object sender,
+									EventArgs e)
+	{
+		//	TODO: add ability to order by last name??
+		PlayerNameComboBox.FillWithSorted<Player>();
+		Conceal(IncreaseButton, DecreaseButton);
+		SetVisible(Player is not null, NewConflictLabel, NewConflictNameComboBox);
+		PlayerNameComboBox.SetSelectedItem(Player);
+	}
 
 	private void PlayerNameComboBox_SelectedIndexChanged(object sender,
 														 EventArgs e)
@@ -155,6 +139,26 @@ internal sealed partial class ConflictsForm : Form
 		Conflictee = (ConflictedPlayer?)ConflictsDataGridView.CurrentRow?.DataBoundItem;
 		SetVisible(Conflictee is not null, IncreaseButton, DecreaseButton);
 	}
+
+	#endregion
+
+	#region Method
+
+	private void UpdateConflictInfo()
+		=> SkipHandlers(() =>
+						{
+							var player = Player.OrThrow();
+							var playerId = player.Id;
+							var conflicts = player.PlayerConflicts;
+							int[] conflictedIds = [..conflicts.SelectMany(static conflict => conflict.ConflictedPlayerIds)];
+							//	TODO: This sorts by first name only
+							NewConflictNameComboBox.FillWithSortedPlayers(other => !conflictedIds.Contains(other.Id)
+																				   && other.Id != playerId);
+							ConflictsDataGridView.FillWith(conflicts.Select(conflict => new ConflictedPlayer(conflict, playerId))
+																	.OrderBy(static conflictedPlayer => $"{conflictedPlayer.Player}"));
+						});
+
+	#endregion
 
 	#endregion
 }

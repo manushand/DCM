@@ -17,9 +17,7 @@ public sealed class Round : IdentityRecord<Round>
 	public override string Name => $"{Number}";
 
 	public Game[] SeededGames => [..Games.Where(static game => game.Status is Seeded)];
-
 	public Game[] StartedGames => [..Games.Where(static game => game.Status is not Seeded)];
-
 	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 
 	public bool GamesSeeded => SeededGames.Length is not 0;
@@ -84,7 +82,7 @@ public sealed class Round : IdentityRecord<Round>
 
 		//	Create the Game objects and store them in the database.
 		var lastSeededGameNumber = Games.Length;
-		var games = CreateMany(Enumerable.Range(1, roundPlayers.Count / 7)
+		var games = CreateMany(Range(1, roundPlayers.Count / 7)
 										 .Select(number => new Game
 														   {
 															   Number = lastSeededGameNumber + number,
@@ -125,14 +123,12 @@ public sealed class Round : IdentityRecord<Round>
 
 		//	Now add in for optimization all the existing players in seeded but not started games
 
-		var preSeeded = SeededGames.SelectMany(static game => game.GamePlayers)
-								   .ToArray();
+		GamePlayer[] preSeeded = [..SeededGames.SelectMany(static game => game.GamePlayers)];
 		gamePlayers.AddRange(preSeeded);
 		Delete(preSeeded);
 
 		//	Create the list of seeding GamePlayers and prepare them all for seeding
-		var seeding = gamePlayers.Select(static gamePlayer => gamePlayer.PrepareForSeeding())
-								 .ToArray();
+		GamePlayer[] seeding = [..gamePlayers.Select(static gamePlayer => gamePlayer.PrepareForSeeding())];
 
 		//	TODO: here is where we could maybe CalculateConflict(seeding) in order to
 		//	TODO: let the user decline optimization or know how much it improves things
@@ -175,11 +171,8 @@ public sealed class Round : IdentityRecord<Round>
 			//	over every time a swap improves the total conflicts to beat.
 			var playerCount = seeding.Length;
 			var swapperCount = playerCount - 1;
-			for (var lastSeeded = 0; lastSeeded < swapperCount; ++lastSeeded)
+			for (var lastSeeded = 0; lastSeeded < swapperCount && (totalConflict is not 0 || canBeatZero); ++lastSeeded)
 			{
-				//	If we're sure that it's as good as it can get, we're done here.
-				if (totalConflict is 0 && !canBeatZero)
-					break;
 				//	When beginning (or re-beginning) at the top of the list,
 				//	ensure that it is ordered from most conflict to least.
 				if (lastSeeded is 0)

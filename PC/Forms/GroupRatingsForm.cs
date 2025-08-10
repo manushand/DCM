@@ -5,13 +5,29 @@ using static Group.GamesToRate;
 
 internal sealed partial class GroupRatingsForm : Form
 {
-	private Group Group { get; }
+	#region Public interface
+
+	#region Constructor
 
 	internal GroupRatingsForm(Group group)
 	{
 		InitializeComponent();
 		Group = group;
 	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private Group Group { get; }
+
+	#endregion
+
+	#region Event handlers
 
 	private void GroupRatingsForm_Load(object sender,
 									   EventArgs e)
@@ -43,8 +59,7 @@ internal sealed partial class GroupRatingsForm : Form
 								.OrderByDescending(static player => player.Rating)
 								.Select(static player => new RatingInfo(player.Player, player.Rating, player.Games))
 								.ToList();
-		groupPlayers.ForEach(player => player.Ranking = groupPlayers.Count(ratingInfo => ratingInfo.RatingPoints > player.RatingPoints) + 1);
-		RatingsDataGridView.FillWith(groupPlayers);
+		RatingsDataGridView.FillWith(groupPlayers.Modify(player => player.Ranking = groupPlayers.Count(ratingInfo => ratingInfo.RatingPoints > player.RatingPoints) + 1));
 		RatedGamesLabel.Text = gamesToRate switch
 							   {
 								   GroupGamesOnly                   => $"All {Group} Group Games",
@@ -65,4 +80,8 @@ internal sealed partial class GroupRatingsForm : Form
 													.Where(game => Group.IsRatable(game, gamesToRate))
 													.OrderBy(static game => game.Date)]));
 	}
+
+	#endregion
+
+	#endregion
 }

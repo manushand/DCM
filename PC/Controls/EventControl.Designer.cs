@@ -1,6 +1,6 @@
 ﻿namespace PC.Controls
 {
-	partial class TournamentControl
+	partial class EventControl
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -628,7 +628,7 @@
 			this.Controls.Add(this.NameTextBox);
 			this.Controls.Add(this.TournamentNameLabel);
 			this.Margin = new System.Windows.Forms.Padding(1);
-			this.Name = "TournamentControl";
+			this.Name = "EventControl";
 			this.Size = new System.Drawing.Size(691, 384);
 			this.Load += new System.EventHandler(this.TournamentControl_Load);
 			this.TeamDetailsGroupBox.ResumeLayout(false);

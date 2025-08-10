@@ -55,7 +55,7 @@ internal static class PC
 		private set => Settings.DatabaseType = value.AsInteger();
 	}
 	internal static bool SkippingHandlers { get; private set; }
-	internal static int[] Seven => [..Enumerable.Range(0, 7).OrderBy(RandomNumber)];
+	internal static int[] Seven => [..Range(0, 7).OrderBy(RandomNumber)];
 
 	private static readonly SortedDictionary<Powers, DataGridViewCellStyle> PowerColors
 		= new ()
@@ -94,12 +94,14 @@ internal static class PC
 						  ForeColor = SystemColors.WindowText
 					  }
 		  };
-	private static readonly MethodInfo? TabSelectionChangedMethod = typeof (TabControl).GetMethod("OnSelectedIndexChanged", NonPublic | Instance);
 	private static readonly object[] EmptyEventArgs = [EventArgs.Empty];
 	private static readonly string[] DatabaseFileExtensions = [".dcm", ".mdb", ".accdb"];
 	private static readonly string[] SmtpHostNotSet = ["SMTP (email) host is not set."];
 	private static readonly string FileExtensionPatterns = Join(';', DatabaseFileExtensions.Select(static ext => $"*{ext}"));
 	private static readonly string DatabaseFileDialogFilter = $"DCM Data File ({FileExtensionPatterns})|{FileExtensionPatterns}";
+	private static readonly Dictionary<string, Label> ShadowLabels = [];
+	private static readonly MethodInfo? TabSelectionChangedMethod = typeof (TabControl).GetMethod("OnSelectedIndexChanged",
+																								  NonPublic | Instance);
 
 	#endregion
 
@@ -184,8 +186,7 @@ internal static class PC
 		//	Otherwise, if there is one and only one file in
 		//	the CurrentDirectory with one of the extensions
 		//	we like, use it. Otherwise, make the user surf.
-		var files = GetFiles(GetCurrentDirectory()).Where(static name => DatabaseFileExtensions.Contains(Path.GetExtension(name)))
-												   .ToArray();
+		string[] files = [..GetFiles(GetCurrentDirectory()).Where(static name => DatabaseFileExtensions.Contains(Path.GetExtension(name)))];
 		return files.Length is 1
 				   ? files.Single()
 				   : null;
@@ -244,8 +245,6 @@ internal static class PC
 
 	#region Extension methods
 
-	private static readonly Dictionary<string, Label> ShadowLabels = [];
-
 	internal static List<T> PowerControls<T>(this Panel panel)
 		where T : Control
 		=> [..panel.Controls
@@ -285,8 +284,7 @@ internal static class PC
 	{
 		internal void FillRange(int start,
 								int end)
-			=> comboBox.FillWith(Enumerable.Range(start, ++end - start)
-										   .Cast<object>());
+			=> comboBox.FillWith(Range(start, ++end - start).Cast<object>());
 
 		internal void SetSelectedItem<T>(T? record)
 			where T : IdentityRecord<T>, new()
@@ -295,7 +293,8 @@ internal static class PC
 											   .SingleOrDefault(t => t.Id == (record?.Id ?? 0));
 
 		internal T GetSelected<T>()
-			=> (T)comboBox.SelectedItem.OrThrow();
+			=> (T)comboBox.SelectedItem
+						  .OrThrow();
 
 		internal void Deselect()
 			=> comboBox.SelectedItem = null;
@@ -339,11 +338,13 @@ internal static class PC
 
 		internal void FillWith(params object[] elements)
 		{
-			//	This is just a neat little trick taking advantage of the fact that although the two types
-			//	don't share an interface, they have identical method signatures for what we want to do.
-			var both = ((dynamic)listControl).Items;
-			both.Clear();
-			both.AddRange(elements);
+			//	The instance on which this method is called derives from ListControl; it will be either
+			//	a ComboBox or a ListBox.  We use "dynamic" here as a neat little trick taking advantage
+			//	of the fact that although the two types don't share an interface, they have methods with
+			//	identical signatures for doing what we want to do.
+			var items = ((dynamic)listControl).Items;
+			items.Clear();
+			items.AddRange(elements);
 		}
 	}
 
@@ -495,7 +496,8 @@ internal static class PC
 				return;
 			}
 			//	I think (?) this if-statement is overkill, but in case I'm wrong, it can't hurt.
-			var parent = comboBox.Parent.OrThrow();
+			var parent = comboBox.Parent
+								 .OrThrow();
 			if (label is not null && parent.Contains(label))
 				parent.Controls.Remove(label);
 			label =
@@ -513,7 +515,8 @@ internal static class PC
 						BorderStyle = BorderStyle.FixedSingle
 					};
 			comboBox.UpdateShadowLabel(label);
-			(comboBox.Parent?.Controls).OrThrow().Add(label);
+			(comboBox.Parent?.Controls).OrThrow()
+									   .Add(label);
 			//	It took me hours to figure out that this next line was
 			//	what was needed to get the label showing on some Forms!
 			//	And, of course, I thought "maybe it needs BringToFront"
@@ -555,12 +558,32 @@ internal static class PC
 	internal static Font BoldFont(Font font)
 		=> new (font, FontStyle.Bold);
 
+	internal static void Conceal([InstantHandle] params IEnumerable<Control> controls)
+		=> SetVisible(false, controls);
+
+	internal static void Display([InstantHandle] params IEnumerable<Control> controls)
+		=> SetVisible(true, controls);
+
 	internal static void SetVisible(bool visible,
 									[InstantHandle] params IEnumerable<Control> controls)
 		=> controls.ForEach(control => control.Visible = visible);
 
+	internal static void SetVisible(bool visible,
+									[InstantHandle] params IEnumerable<ToolStripMenuItem> toolStripMenuItems)
+		=> toolStripMenuItems.ForEach(control => control.Visible = visible);
+
+	internal static void Enable([InstantHandle] params IEnumerable<Control> controls)
+		=> SetEnabled(true, controls);
+
+	internal static void Disable([InstantHandle] params IEnumerable<Control> controls)
+		=> SetEnabled(false, controls);
+
 	internal static void SetEnabled(bool enabled,
-									[InstantHandle] params IEnumerable<Control> controls)
+									 params IEnumerable<Control> controls)
+		=> controls.ForEach(control => control.Enabled = enabled);
+
+	internal static void SetEnabled(bool enabled,
+									[InstantHandle] params IEnumerable<ToolStripMenuItem> controls)
 		=> controls.ForEach(control => control.Enabled = enabled);
 
 	#endregion

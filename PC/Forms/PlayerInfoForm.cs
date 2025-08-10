@@ -2,7 +2,15 @@
 
 internal sealed partial class PlayerInfoForm : Form
 {
+	#region Public interface
+
+	#region Data
+
 	internal Player Player { get; }
+
+	#endregion
+
+	#region Constructors
 
 	public PlayerInfoForm() : this(null) { }
 
@@ -17,6 +25,14 @@ internal sealed partial class PlayerInfoForm : Form
 		EmailAddressTextBox.Text = player.EmailAddress;
 	}
 
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Event handler
+
 	private void OkButton_Click(object sender,
 								EventArgs e)
 	{
@@ -25,7 +41,7 @@ internal sealed partial class PlayerInfoForm : Form
 		var lastName = LastNameTextBox.Text
 									  .Trim();
 		var name = $"{firstName} {lastName}";
-		var players = ReadMany<Player>(player => player.Name.Matches(name)).ToArray();
+		Player[] players = [..ReadMany<Player>(player => player.Name.Matches(name))];
 		if (players.Any(player => player.IsNot(Player))
 		&&  MessageBox.Show($"Player named {name} already exists.  Use this same name?",
 							"Confirm Duplicate Player Name",
@@ -42,9 +58,8 @@ internal sealed partial class PlayerInfoForm : Form
 				error = "Invalid email address.";
 			else if (!emailAddress.Matches(Player.EmailAddress))
 			{
-				var playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses
-																			.Any(emailAddress.Matches))
-                                                                            .ToArray();
+				Player[] playersWithThisEmail = [..ReadMany<Player>(player => player.EmailAddresses
+																					.Any(emailAddress.Matches))];
 				if (playersWithThisEmail.Length is not 0
 				&& MessageBox.Show(playersWithThisEmail.BulletList($"The email address {emailAddress} is already being used by") +
 																   "Have this player use the same address?",
@@ -71,4 +86,8 @@ internal sealed partial class PlayerInfoForm : Form
 						OK,
 						Error);
 	}
+
+	#endregion
+
+	#endregion
 }

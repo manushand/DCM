@@ -45,6 +45,15 @@
         <Compile Update="Forms\Group.RatingInfo.cs">
           <DependentUpon>GroupRatingsForm.cs</DependentUpon>
         </Compile>
+        <Compile Update="Controls\ScoreByPlayerControl.cs">
+          <DependentUpon>IScoreControl.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\ScoreByPowerControl.cs">
+          <DependentUpon>IScoreControl.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Controls\ScoreByRoundControl.cs">
+          <DependentUpon>IScoreControl.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
     <ItemGroup>
         <Content Include="DCM.ico" />

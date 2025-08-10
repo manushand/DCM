@@ -1,6 +1,6 @@
 ﻿namespace PC.Forms
 {
-	internal sealed partial class TournamentListForm
+	internal sealed partial class EventListForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -28,7 +28,7 @@
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TournamentListForm));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EventListForm));
 			this.TournamentNameLabel = new System.Windows.Forms.Label();
 			this.TournamentComboBox = new System.Windows.Forms.ComboBox();
 			this.SuspendLayout();
@@ -63,7 +63,7 @@
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "TournamentListForm";
+			this.Name = "EventListForm";
 			this.ShowIcon = false;
 			this.Text = "Open Event";
 			this.Load += new System.EventHandler(this.TournamentListForm_Load);

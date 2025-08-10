@@ -2,6 +2,8 @@
 
 internal sealed partial class EmailSettingsForm : Form
 {
+	#region Public interface
+
 	#region Constructor
 
 	public EmailSettingsForm()
@@ -9,7 +11,36 @@ internal sealed partial class EmailSettingsForm : Form
 
 	#endregion
 
-	#region Form event handler
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private static readonly string[] TemplateLegend = ["Available", "Fill-Ins:", Empty, "{TournamentName}", "{PlayerName}"];
+
+	private static readonly string AssignmentTemplateLegend = Join(NewLine, [..TemplateLegend,
+																				"{PowerName}", "{GameNumber}",
+																				"{RoundNumber}", "{Assignments}"]);
+
+	private static readonly string AnnouncementTemplateLegend = Join(NewLine, [..TemplateLegend, "{MessageText}"]);
+
+	private bool SettingsSaved => HostTextBox.Text.Matches(Settings.SmtpHost)
+							   && PortTextBox.Text == $"{Settings.SmtpPort}"
+							   && UseSslCheckBox.Checked == Settings.SmtpSsl
+							   && UsernameTextBox.Text.Matches(Settings.SmtpUsername)
+							   && PasswordTextBox.Text == Settings.SmtpPassword
+							   && TestEmailTextBox.Text.Matches(Settings.TestEmailAddress)
+							   && MailFromTextBox.Text.Matches(Settings.FromEmailAddress)
+							   && FromNameTextBox.Text.Matches(Settings.FromEmailName)
+							   && OnlySendToTestCheckBox.Checked == Settings.TestEmailOnly;
+
+	private bool TemplatesSaved => AssignmentTemplateTextBox.Text.Matches(Settings.AssignmentEmailTemplate)
+								&& AnnouncementTemplateTextBox.Text.Matches(Settings.AnnouncementEmailTemplate);
+
+	#endregion
+
+	#region Event handlers
 
 	private void EmailSettingsForm_Load(object sender,
 										EventArgs e)
@@ -29,35 +60,6 @@ internal sealed partial class EmailSettingsForm : Form
 		TemplateTextBox_TextChanged();
 		TemplatesTabControl_SelectedIndexChanged();
 	}
-
-	#endregion
-
-	#region Fields and properties
-
-	private static readonly string[] TemplateLegend = ["Available", "Fill-Ins:", Empty, "{TournamentName}", "{PlayerName}"];
-
-	private static readonly string AssignmentTemplateLegend = Join(NewLine,
-																   [..TemplateLegend,
-																   "{PowerName}", "{GameNumber}", "{RoundNumber}", "{Assignments}"]);
-
-	private static readonly string AnnouncementTemplateLegend = Join(NewLine, [..TemplateLegend, "{MessageText}"]);
-
-	private bool SettingsSaved => HostTextBox.Text.Matches(Settings.SmtpHost)
-							   && PortTextBox.Text == $"{Settings.SmtpPort}"
-							   && UseSslCheckBox.Checked == Settings.SmtpSsl
-							   && UsernameTextBox.Text.Matches(Settings.SmtpUsername)
-							   && PasswordTextBox.Text == Settings.SmtpPassword
-							   && TestEmailTextBox.Text.Matches(Settings.TestEmailAddress)
-							   && MailFromTextBox.Text.Matches(Settings.FromEmailAddress)
-							   && FromNameTextBox.Text.Matches(Settings.FromEmailName)
-							   && OnlySendToTestCheckBox.Checked == Settings.TestEmailOnly;
-
-	private bool TemplatesSaved => AssignmentTemplateTextBox.Text.Matches(Settings.AssignmentEmailTemplate)
-								&& AnnouncementTemplateTextBox.Text.Matches(Settings.AnnouncementEmailTemplate);
-
-	#endregion
-
-	#region Control event handlers
 
 	private void SaveAndSendButton_Click(object sender,
 										 EventArgs e)
@@ -136,6 +138,8 @@ internal sealed partial class EmailSettingsForm : Form
 	private void Settings_Changed(object? sender = null,
 								  EventArgs? e = null)
 		=> SaveButton.Visible = !SettingsSaved && HostTextBox.TextLength is not 0;
+
+	#endregion
 
 	#endregion
 }

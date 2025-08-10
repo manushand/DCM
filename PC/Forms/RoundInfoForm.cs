@@ -2,14 +2,66 @@
 
 internal sealed partial class RoundInfoForm : Form
 {
+	#region Public interface
+
+	#region Data
+
 	internal static readonly RoundInfoForm None = new (Tournament.None);
 	internal readonly Tournament Tournament;
+
+	#endregion
+
+	#region Constructor
 
 	internal RoundInfoForm(Tournament tournament)
 	{
 		InitializeComponent();
 		Tournament = tournament;
 	}
+
+	#endregion
+
+	#region Methods
+
+	internal void StartNewRound()
+	{
+		var roundNumber = RoundsTabControl.SelectedIndex + 1;
+		if (MessageBox.Show($"Start Round {roundNumber}?{NewLine}{NewLine}Pre-registration for that round will be closed.",
+							"Confirm Start Next Round",
+							YesNo,
+							Question) is DialogResult.No)
+			return;
+		Tournament.CreateRound();
+		RoundsTabControl.TabPages
+						.Add($"Round {roundNumber}");
+		RegistrationControl.StartRound();
+		RoundsTabControl.ActivateTab(roundNumber);
+		SetFormTitle();
+	}
+
+	internal void DiscardRound()
+	{
+		var roundNumber = RoundsTabControl.SelectedIndex;
+		if (MessageBox.Show($"Discard Round {roundNumber} to start fresh?",
+							"Confirm Discard Round",
+							YesNo,
+							Question) is DialogResult.No)
+			return;
+		RegistrationControl.DiscardRound();
+		RoundControl.DiscardRound();
+		SetFormTitle();
+		RoundsTabControl.TabPages
+						.RemoveAt(roundNumber);
+		RoundsTabControl.ActivateTab(--roundNumber);
+	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Event handlers
 
 	private void RoundInfoForm_Load(object sender,
 									EventArgs e)
@@ -32,9 +84,6 @@ internal sealed partial class RoundInfoForm : Form
         });
 		RoundsTabControl.ActivateTab(roundNumber);
 	}
-
-	private void SetFormTitle()
-		=> Text = $"{Tournament} ─ {(Tournament.Rounds.Length is 0 ? null : "Rounds and ")}Registration";
 
 	private void RoundsTabControl_SelectedIndexChanged(object sender,
 													   EventArgs e)
@@ -61,35 +110,14 @@ internal sealed partial class RoundInfoForm : Form
 		Width = RoundsTabControl.Width + (margin << 1);
 	}
 
-	public void StartNewRound()
-	{
-		var roundNumber = RoundsTabControl.SelectedIndex + 1;
-		if (MessageBox.Show($"Start Round {roundNumber}?{NewLine}{NewLine}Pre-registration for that round will be closed.",
-							"Confirm Start Next Round",
-							YesNo,
-							Question) is DialogResult.No)
-			return;
-		Tournament.CreateRound();
-		RoundsTabControl.TabPages
-						.Add($"Round {roundNumber}");
-		RegistrationControl.StartRound();
-		RoundsTabControl.ActivateTab(roundNumber);
-		SetFormTitle();
-	}
+	#endregion
 
-	public void DiscardRound()
-	{
-		var roundNumber = RoundsTabControl.SelectedIndex;
-		if (MessageBox.Show($"Discard Round {roundNumber} to start fresh?",
-							"Confirm Discard Round",
-							YesNo,
-							Question) is DialogResult.No)
-			return;
-		RegistrationControl.DiscardRound();
-		RoundControl.DiscardRound();
-		SetFormTitle();
-		RoundsTabControl.TabPages
-						.RemoveAt(roundNumber);
-		RoundsTabControl.ActivateTab(--roundNumber);
-	}
+	#region Method
+
+	private void SetFormTitle()
+		=> Text = $"{Tournament} ─ {(Tournament.Rounds.Length is 0 ? null : "Rounds and ")}Registration";
+
+	#endregion
+
+	#endregion
 }

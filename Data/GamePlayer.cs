@@ -182,11 +182,10 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 						   .Number;
 		PlayerConflicts.FillWith(Player.PlayerConflicts);
 		var tournamentId = Tournament.Id;
-		var gamePlayersInTournamentGames = Player.Games
-												 .Where(game => game.Round.TournamentId == tournamentId
-															 && game.Round.Number < _roundNumber)
-												 .SelectMany(static game => game.GamePlayers)
-												 .ToArray();
+		GamePlayer[] gamePlayersInTournamentGames = [..Player.Games
+															 .Where(game => game.Round.TournamentId == tournamentId
+																		 && game.Round.Number < _roundNumber)
+															 .SelectMany(static game => game.GamePlayers)];
 		PowersPlayedInTournament.FillWith(gamePlayersInTournamentGames.WithPlayerId(PlayerId)
 																	  .Select(static gamePlayer => gamePlayer.Power)
 																	  .Where(static power => power is not TBD));
@@ -210,10 +209,9 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 			PrepareForSeeding();
 		if (fillDetails)
 			ConflictDetails.Clear();
-		var opponents = seeding.Where(gamePlayer => gamePlayer.GameId == GameId
-												 && gamePlayer.PlayerId != PlayerId)
-							   .Select(static gamePlayer => gamePlayer.Player)
-							   .ToArray();
+		Player[] opponents = [..seeding.Where(gamePlayer => gamePlayer.GameId == GameId
+														 && gamePlayer.PlayerId != PlayerId)
+									   .Select(static gamePlayer => gamePlayer.Player)];
 		int[] opponentIds = [..opponents.Ids()];
 
 		//	Player-Personal conflicts
@@ -244,8 +242,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		//	Powers-Played-Earlier Conflicts
 		if (Power is not TBD)
 		{
-			var powerConflicts = PowersPlayedInTournament.Where(power => Tournament.GroupPowers.GroupSharedBy(power, Power))
-														 .ToArray();
+			Powers[] powerConflicts = [..PowersPlayedInTournament.Where(power => Tournament.GroupPowers.GroupSharedBy(power, Power))];
 			if (powerConflicts.Length is not 0)
 				Conflict += powerConflicts.Distinct()
 										  .Sum(power =>

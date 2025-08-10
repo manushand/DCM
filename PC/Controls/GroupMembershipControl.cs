@@ -2,6 +2,10 @@
 
 internal sealed partial class GroupMembershipControl : UserControl
 {
+	#region Public interface
+
+	#region Data
+
 	[DesignerSerializationVisibility(Hidden)]
 	internal Group Group
 	{
@@ -9,16 +13,36 @@ internal sealed partial class GroupMembershipControl : UserControl
 		set
 		{
 			field = value;
-			SetEnabled(false, JoinButton, MembershipsButton);
+			Disable(JoinButton, MembershipsButton);
 			FillMembershipLists();
 		}
 	} = Group.None;
 
+	#endregion
+
+	#region Constructor
+
 	internal GroupMembershipControl()
 		=> InitializeComponent();
 
+	#endregion
+
+	#region Method
+
 	internal void ClearMemberList()
 		=> MemberListBox.Clear();
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Event handlers
+
+	private void GroupMembershipControl_Load(object sender,
+											 EventArgs e)
+		=> LastNameRadioButton.Checked = true;
 
 	private void JoinButton_Click(object sender,
 								  EventArgs e)
@@ -41,34 +65,6 @@ internal sealed partial class GroupMembershipControl : UserControl
 			FillMembershipLists();
 			leavingPlayers.ForEach(NonMemberListBox.SelectedItems.Add);
 		}
-	}
-
-	private void FillMembershipLists(object? sender = null,
-									 EventArgs? e = null)
-	{
-		if (Group.IsNone)
-		{
-			MemberListBox.Clear();
-			NonMemberListBox.Clear();
-			MembersLabel.Text = "Members";
-			return;
-		}
-		var members = Group.Players
-						   .Sorted(LastNameRadioButton.Checked)
-						   .ToArray();
-		var memberCount = members.Length;
-		var memberPlayerIds = members.Ids();
-		var selectedMember = MemberListBox.GetSelected<Player>();
-		MemberListBox.FillWithRecords(members);
-		if (selectedMember is not null)
-			MemberListBox.SelectedItem = MemberListBox.Find(selectedMember);
-		MembersLabel.Text = "Member".Pluralize(memberCount, true);
-
-		var selectedNonMember = NonMemberListBox.GetSelected<Player>();
-		var nonMembers = ReadMany<Player>(player => !memberPlayerIds.Contains(player.Id)).Sorted(LastNameRadioButton.Checked);
-		NonMemberListBox.FillWith(nonMembers);
-		if (selectedNonMember is not null)
-			NonMemberListBox.SelectedItem = NonMemberListBox.Find(selectedNonMember);
 	}
 
 	private void MembershipsButton_Click(object sender,
@@ -99,7 +95,38 @@ internal sealed partial class GroupMembershipControl : UserControl
 		JoinButton.Text = "Leave ─────▶";
 	}
 
-	private void GroupMembershipControl_Load(object sender,
-											 EventArgs e)
-		=> LastNameRadioButton.Checked = true;
+	#endregion
+
+	#region Other method
+
+	private void FillMembershipLists(object? sender = null,
+									 EventArgs? e = null)
+	{
+		if (Group.IsNone)
+		{
+			MemberListBox.Clear();
+			NonMemberListBox.Clear();
+			MembersLabel.Text = "Members";
+			return;
+		}
+		Player[] members = [..Group.Players
+								   .Sorted(LastNameRadioButton.Checked)];
+		var memberCount = members.Length;
+		var memberPlayerIds = members.Ids();
+		var selectedMember = MemberListBox.GetSelected<Player>();
+		MemberListBox.FillWithRecords(members);
+		if (selectedMember is not null)
+			MemberListBox.SelectedItem = MemberListBox.Find(selectedMember);
+		MembersLabel.Text = "Member".Pluralize(memberCount, true);
+
+		var selectedNonMember = NonMemberListBox.GetSelected<Player>();
+		var nonMembers = ReadMany<Player>(player => !memberPlayerIds.Contains(player.Id)).Sorted(LastNameRadioButton.Checked);
+		NonMemberListBox.FillWith(nonMembers);
+		if (selectedNonMember is not null)
+			NonMemberListBox.SelectedItem = NonMemberListBox.Find(selectedNonMember);
+	}
+
+	#endregion
+
+	#endregion
 }

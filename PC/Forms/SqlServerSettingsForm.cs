@@ -4,8 +4,20 @@ namespace PC.Forms;
 
 internal sealed partial class SqlServerSettingsForm : Form
 {
+	#region Public interface
+
+	#region Constructor
+
 	public SqlServerSettingsForm()
 		=> InitializeComponent();
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Event handlers
 
 	private void SqlServerSettingsForm_Load(object sender, EventArgs e)
 	{
@@ -40,4 +52,8 @@ internal sealed partial class SqlServerSettingsForm : Form
 			MessageBox.Show($"Connection failed: {exception.Message}", "SQL Server Connection Error", OK, Error);
 		}
 	}
+
+	#endregion
+
+	#endregion
 }

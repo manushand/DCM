@@ -77,21 +77,21 @@
 			OpenTournamentMenuItem.Name = "OpenTournamentMenuItem";
 			OpenTournamentMenuItem.Size = new Size(116, 22);
 			OpenTournamentMenuItem.Text = "&Open…";
-			OpenTournamentMenuItem.Click += OpenTournamentMenuItem_Click;
+			OpenTournamentMenuItem.Click += OpenEventMenuItem_Click;
 			//
 			// NewTournamentToolStripMenuItem
 			//
 			NewTournamentToolStripMenuItem.Name = "NewTournamentToolStripMenuItem";
 			NewTournamentToolStripMenuItem.Size = new Size(116, 22);
 			NewTournamentToolStripMenuItem.Text = "&New…";
-			NewTournamentToolStripMenuItem.Click += NewTournamentMenuItem_Click;
+			NewTournamentToolStripMenuItem.Click += NewEventMenuItem_Click;
 			//
 			// DeleteTournamentMenuItem
 			//
 			DeleteTournamentMenuItem.Name = "DeleteTournamentMenuItem";
 			DeleteTournamentMenuItem.Size = new Size(116, 22);
 			DeleteTournamentMenuItem.Text = "&Delete…";
-			DeleteTournamentMenuItem.Click += DeleteTournamentMenuItem_Click;
+			DeleteTournamentMenuItem.Click += DeleteEventMenuItem_Click;
 			//
 			// PlayersToolStripMenuItem
 			//

@@ -2,19 +2,33 @@
 
 internal sealed partial class PlayerListForm : Form
 {
-	private const string GamesText = "Games";
+	#region Public interface
 
-	private const string EmailLabelToolTipText = "Separate multiple addresses using comma or semicolon.";
-
-	private static readonly string FirstNameLabelToolTipText = $"If player First Name does not begin with a letter,{NewLine}" +
-															    "event and group rankings will be hidden.";
-
-	private Player Player { get; set; } = Player.None;
-
-	private string? SavedEmail { get; set; }
+	#region Constructor
 
 	public PlayerListForm()
 		=> InitializeComponent();
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private const string GamesText = "Games";
+	private const string EmailLabelToolTipText = "Separate multiple addresses using comma or semicolon.";
+
+	private static readonly string FirstNameLabelToolTipText = $"If player First Name does not begin with a letter,{NewLine}" +
+															   "event and group rankings will be hidden.";
+
+	private Player Player { get; set; } = Player.None;
+	private string? SavedEmail { get; set; }
+
+	#endregion
+
+	#region Event handlers
 
 	private void PlayerListForm_Load(object sender,
 									 EventArgs e)
@@ -25,14 +39,6 @@ internal sealed partial class PlayerListForm : Form
 		AddPlayerButton.Enabled = false;
 		Refill();
 		PlayerListBox_SelectedIndexChanged(); //	TODO: Seems to be needed to disable buttons??
-	}
-
-	private void Refill(object? sender = null,
-						EventArgs? e = null)
-	{
-		PlayerListBox.FillWithSortedPlayers(LastNameRadioButton.Checked);
-		PlayerListBox.SelectedItem = PlayerListBox.Find(Player);
-		SetEnabled(false, EmailLabel, EmailAddressTextBox);
 	}
 
 	private void NewPlayerTextBoxes_GotFocus(object sender,
@@ -84,7 +90,7 @@ internal sealed partial class PlayerListForm : Form
 							Question) is DialogResult.No)
 			return;
 		var addresses = EmailAddressTextBox.Text
-										   .SplitEmailAddresses;
+										   .AsEmailAddresses;
 		if (addresses.Length != 0)
 		{
 			var badAddress = addresses.FirstOrDefault(static email => !email.IsValidEmail());
@@ -99,7 +105,7 @@ internal sealed partial class PlayerListForm : Form
 
 			if (addresses.Select(static email =>
 								 {
-									 var playersWithThisEmail = ReadMany<Player>(player => player.EmailAddresses.Any(email.Matches)).ToArray();
+									 Player[] playersWithThisEmail = [..ReadMany<Player>(player => player.EmailAddresses.Any(email.Matches))];
 									 return playersWithThisEmail.Length is not 0
 										 && MessageBox.Show(playersWithThisEmail.BulletList($"The email address {email} is already being used by") +
 															"Add another player with this same address?",
@@ -192,4 +198,20 @@ internal sealed partial class PlayerListForm : Form
 		else if (!wasEnabled)
 			EmailAddressTextBox.Text = SavedEmail;
 	}
+
+	#endregion
+
+	#region Method
+
+	private void Refill(object? sender = null,
+						EventArgs? e = null)
+	{
+		PlayerListBox.FillWithSortedPlayers(LastNameRadioButton.Checked);
+		PlayerListBox.SelectedItem = PlayerListBox.Find(Player);
+		Disable(EmailLabel, EmailAddressTextBox);
+	}
+
+	#endregion
+
+	#endregion
 }

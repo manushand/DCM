@@ -2,12 +2,16 @@
 
 internal sealed partial class GroupInfoForm : Form
 {
+	#region Public interface
+
+	#region Data
+
 	[DesignerSerializationVisibility(Hidden)]
 	internal Group Group { get; private set; } = Group.None;
 
-	private bool DetailsOnly { get; }
+	#endregion
 
-	private bool GroupHasGames => Group is { IsNone: false, Games.Length: > 0 };
+	#region Constructors
 
 	public GroupInfoForm()
 		=> InitializeComponent();
@@ -15,6 +19,22 @@ internal sealed partial class GroupInfoForm : Form
 	internal GroupInfoForm(Group group,
 						   bool detailsOnly = false) : this()
 		=> (Group, DetailsOnly) = (group, detailsOnly);
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private bool DetailsOnly { get; }
+
+	private bool GroupHasGames => Group is { IsNone: false, Games.Length: > 0 };
+
+	#endregion
+
+	#region Event handlers
 
 	private void GroupInfoForm_Load(object sender,
 									EventArgs e)
@@ -53,7 +73,7 @@ internal sealed partial class GroupInfoForm : Form
 		//	This next "if" should never be true, since the No-Scoring-System option isn't shown if GroupHasGames.
 		//	But in case somehow (or someday, if that option IS restored when a GroupHasGames) this is happening,
 		//	the user should know what will happen if they make the Group one that doesn't have a ScoringSystem.
-		//  (Actually, I believe this could happen even now after a setting the system for the first time ever,
+		//  (Actually, I believe this could happen even now after setting the system for the first time ever,
 		//  which doesn't remove the None option, then creating a game all in the same run of this Form.)
 		if (scoringSystem.IsNone
 		&&  GroupHasGames
@@ -129,4 +149,8 @@ internal sealed partial class GroupInfoForm : Form
 													? "Sum of Game Scores"
 													: "Average of Game Scores";
 	}
+
+	#endregion
+
+	#endregion
 }

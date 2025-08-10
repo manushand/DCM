@@ -2,7 +2,7 @@
 
 namespace PC.Forms
 {
-	partial class TournamentInfoForm
+	partial class EventInfoForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -30,14 +30,14 @@ namespace PC.Forms
 		/// </summary>
 		private void InitializeComponent()
 		{
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TournamentInfoForm));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EventInfoForm));
 			this.DetailsTabControl = new System.Windows.Forms.TabControl();
 			this.DetailsTabPage = new System.Windows.Forms.TabPage();
 			this.TeamsTabPage = new System.Windows.Forms.TabPage();
 			this.DetailsTabControl.SuspendLayout();
 			this.DetailsTabPage.SuspendLayout();
 			this.TeamsTabPage.SuspendLayout();
-			this.TournamentControl = new TournamentControl();
+			this.EventControl = new EventControl();
 			this.TeamsControl = new TeamsControl();
 			this.SuspendLayout();
 			//
@@ -55,7 +55,7 @@ namespace PC.Forms
 			// DetailsTabPage
 			//
 			this.DetailsTabPage.BackColor = System.Drawing.SystemColors.Control;
-			this.DetailsTabPage.Controls.Add(this.TournamentControl);
+			this.DetailsTabPage.Controls.Add(this.EventControl);
 			this.DetailsTabPage.Location = new System.Drawing.Point(4, 22);
 			this.DetailsTabPage.Margin = new System.Windows.Forms.Padding(1, 1, 1, 1);
 			this.DetailsTabPage.Name = "DetailsTabPage";
@@ -66,11 +66,11 @@ namespace PC.Forms
 			//
 			// TournamentControl
 			//
-			this.TournamentControl.Location = new System.Drawing.Point(5, 5);
-			this.TournamentControl.Margin = new System.Windows.Forms.Padding(0);
-			this.TournamentControl.Name = "TournamentControl";
-			this.TournamentControl.Size = new System.Drawing.Size(691, 383);
-			this.TournamentControl.TabIndex = 0;
+			this.EventControl.Location = new System.Drawing.Point(5, 5);
+			this.EventControl.Margin = new System.Windows.Forms.Padding(0);
+			this.EventControl.Name = "EventControl";
+			this.EventControl.Size = new System.Drawing.Size(691, 383);
+			this.EventControl.TabIndex = 0;
 			//
 			// TeamsTabPage
 			//
@@ -102,7 +102,7 @@ namespace PC.Forms
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MaximizeBox = false;
 			this.MinimizeBox = false;
-			this.Name = "TournamentInfoForm";
+			this.Name = "EventInfoForm";
 			this.ShowIcon = false;
 			this.Text = "Event Settings";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TournamentInfoForm_FormClosing);
@@ -119,7 +119,7 @@ namespace PC.Forms
 		private TabControl DetailsTabControl;
 		private TabPage DetailsTabPage;
 		private TabPage TeamsTabPage;
-		private TournamentControl TournamentControl;
+		private EventControl EventControl;
 		private TeamsControl TeamsControl;
 	}
 }

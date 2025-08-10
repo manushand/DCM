@@ -88,22 +88,21 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 		var scoringSystem = ScoringSystem.OrThrow();
 		var playerId = player.Id;
 		var comparer = includeTheBeforeGame.AsInteger();
-		var scores = ReadMany<Game>(game => IsRatable(game, gamesToRate)
-										 && (beforeThisGame is null
-										 || (game.Date, game.Round.Number, game.Number).CompareTo((beforeThisGame.Date,
-																								   beforeThisGame.Round.Number,
-																								   beforeThisGame.Number)) < comparer))
-					.OrderBy(static game => game.Date)
-					.Where(game => (game.Scored && game.ScoringSystemId == ScoringSystemId
-									|| game.CalculateScores(scoringSystem))
-								//  Make sure this last clause is the final one in the &&-chain,
-								//  because to get accurate antes, we need to calculate ALL prior
-								//  games, whether this player played in them or not.
-								&& game.GamePlayers.HasPlayerId(playerId))
-					.Select(game => game.GamePlayers
-										.ByPlayerId(playerId)
-										.FinalScore)
-					.ToArray();
+		double[] scores = [..ReadMany<Game>(game => IsRatable(game, gamesToRate)
+												 && (beforeThisGame is null
+												 || (game.Date, game.Round.Number, game.Number).CompareTo((beforeThisGame.Date,
+																										   beforeThisGame.Round.Number,
+																										   beforeThisGame.Number)) < comparer))
+							 .OrderBy(static game => game.Date)
+							 .Where(game => (game.Scored && game.ScoringSystemId == ScoringSystemId
+										 || game.CalculateScores(scoringSystem))
+											//  Make sure this last clause is the final one in the &&-chain,
+											//  because to get accurate antes, we need to calculate ALL prior
+											//  games, whether this player played in them or not.
+										 && game.GamePlayers.HasPlayerId(playerId))
+							 .Select(game => game.GamePlayers
+												 .ByPlayerId(playerId)
+												 .FinalScore)];
 		return scores.Length is 0
 				   ? null
 				   : new RatingRecord(player,

@@ -2,10 +2,16 @@
 
 internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 {
-	private Tournament Tournament { get; set; } = Tournament.None;
+	#region Public interface
+
+	#region Constructor
 
 	public ScoreByRoundControl()
 		=> InitializeComponent();
+
+	#endregion
+
+	#region Method
 
 	public void LoadControl(Tournament tournament)
 	{
@@ -15,16 +21,61 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 		Tournament = tournament;
 		RoundScoresTabControl.TabPages
 							 .Clear();
-		var roundNumbers = Tournament.FinishedGames
-									 .SelectSorted(static game => game.Round.Number)
-									 .Distinct();
-		roundNumbers.ForEach(roundNumber => RoundScoresTabControl.TabPages
-																 .Add($"Round {roundNumber}"));
 		Tournament.FinishedGames
-				  .ForEach(static game => game.CalculateScores());
+				  .Modify(static game => game.CalculateScores())
+				  .SelectSorted(static game => game.Round.Number)
+				  .Distinct()
+				  .ForEach(roundNumber => RoundScoresTabControl.TabPages
+															   .Add($"Round {roundNumber}"));
 		RoundScoresTabControl.SelectedIndex = RoundScoresTabControl.TabCount - 1;
 		RoundScoresTabControl_SelectedIndexChanged();
 	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Type
+
+	//	Do not make this a struct; it changes behavior.
+	[PublicAPI]
+	private sealed record RoundScore : IRecord
+	{
+		[DisplayName("#")]
+		public string RoundRank => Rank.Dotted;
+
+		public Player Player => GamePlayer.Player;
+
+		[DisplayName(nameof (Game))]
+		public int GameNumber => Game.Number;
+
+		public string Power => GamePlayer.PowerName;
+
+		public string Score => Game.ScoringSystem
+								   .FormattedScore(FinalScore);
+
+		internal int Rank { private get; set; }
+
+		internal Game Game => GamePlayer.Game;
+		internal double FinalScore => GamePlayer.FinalScore;
+
+		private GamePlayer GamePlayer { get; }
+
+		internal RoundScore(GamePlayer gamePlayer)
+			=> GamePlayer = gamePlayer;
+	}
+
+	#endregion
+
+	#region Data
+
+	private Tournament Tournament { get; set; } = Tournament.None;
+
+	#endregion
+
+	#region Event handlers
 
 	private void RoundScoresTabControl_SelectedIndexChanged(object? sender = null,
 															EventArgs? e = null)
@@ -45,8 +96,7 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 									.Select(static gamePlayer => new RoundScore(gamePlayer))
 									.ToList();
 		//	Ties are not broken in individual round scores
-		roundScores.ForEach(score => score.Rank = roundScores.Count(better => better.FinalScore > score.FinalScore) + 1);
-		ScoresByRoundDataGridView.FillWith(roundScores);
+		ScoresByRoundDataGridView.FillWith(roundScores.Modify(score => score.Rank = roundScores.Count(better => better.FinalScore > score.FinalScore) + 1));
 	}
 
 	private void ScoresByRoundDataGridView_DataBindingComplete(object sender,
@@ -70,34 +120,7 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 		Show<GamesForm>(() => new (roundScore.Player, roundScore.Game));
 	}
 
-	#region RoundScore record
-
-	//	Do not make this a struct; it changes behavior.
-	[PublicAPI]
-	private sealed record RoundScore : IRecord
-	{
-		[DisplayName("#")]
-		public string RoundRank => Rank.Dotted;
-
-		public Player Player => _gamePlayer.Player;
-
-		[DisplayName(nameof (Game))]
-		public int GameNumber => Game.Number;
-
-		public string Power => _gamePlayer.PowerName;
-
-		public string Score => Game.ScoringSystem
-								   .FormattedScore(FinalScore);
-
-		internal double FinalScore => _gamePlayer.FinalScore;
-		internal int Rank { private get; set; }
-		internal Game Game => _gamePlayer.Game;
-
-		private readonly GamePlayer _gamePlayer;
-
-		internal RoundScore(GamePlayer gamePlayer)
-			=> _gamePlayer = gamePlayer;
-	}
+	#endregion
 
 	#endregion
 }

@@ -17,13 +17,11 @@ public static partial class DCM
 	public const char Colon = ':';
 	public const char Semicolon = ';';
 
+	public static readonly Func<int, int, IEnumerable<int>> Range = Enumerable.Range;
+
 	#endregion
 
 	#region Extension methods
-
-	private static readonly string Bullet = $"{NewLine}    • ";
-	private static readonly char[] EmailSplitter = [Comma, Semicolon];
-	private static readonly Random Random = new ();
 
 	public static T OrThrow<T>(this T? @this,
 							   string? message = null)
@@ -67,6 +65,13 @@ public static partial class DCM
 		public string BulletList(string intro)
 			=> $"{intro}:{Bullet}{Join(Bullet, @this)}";
 
+		public IEnumerable<T> Modify([InstantHandle] Action<T> func)
+			=> @this.Select(item =>
+							{
+								func(item);
+								return item;
+							});
+
 		public void Apply([InstantHandle] Action<T, int> func)
 			=> @this.Select(static (item, index) => (item, index))
 					.ForEach(tuple => func(tuple.item, tuple.index));
@@ -109,10 +114,10 @@ public static partial class DCM
 
 	extension(string @this)
 	{
-		public string[] SplitEmailAddresses => [..@this.Split(EmailSplitter)
-													   .Select(static email => email.Trim())
-													   // BUG: Must use > instead of "is not" below, or roslyn chokes
-													   .Where(static email => email.Length > 0)];
+		public string[] AsEmailAddresses => [..@this.Split(EmailSplitter)
+													.Select(static email => email.Trim())
+													// BUG: Must use > instead of "is not" below, or roslyn chokes
+													.Where(static email => email.Length > 0)];
 
 		//	BUG: If this is made a property, any use of it (as a property) in OTHER assembly does not compile.
 		//	BUG: However, uses of it (as a method) in the OTHER assembly DO compile, and uses of it (either as
@@ -155,23 +160,27 @@ public static partial class DCM
 
 	#endregion
 
-	#region Other utility methods
+	#region Utility methods
 
 	public static void ForRange(int start,
 								int count,
 								[InstantHandle] Action<int> action)
-		=> Enumerable.Range(start, count).ForEach(action);
+		=> Range(start, count).ForEach(action);
 
 	public static int RandomNumber(int maxValue = int.MaxValue)
 		=> Random.Next(maxValue);
 
 	#endregion
 
-	#region Generated Regular Expression
+	#region Private fields and method
+
+	private static readonly string Bullet = $"{NewLine}    • ";
+	private static readonly char[] EmailSplitter = [Comma, Semicolon];
+	private static readonly Random Random = new ();
+	private static readonly Regex EmailAddressFormat = EmailAddressRegex();
 
 	//	TODO: there's a lot of debate about what the best way to validate an email address is
 	//	TODO: I have usually used try { new MailAddress(text); } but it likes things I don't.
-	//	This is later in the same class where the string extension BugIsHere is defined.
 	[GeneratedRegex("^(" +
 					@"[\dA-Z]" +              // Start with a digit or alphabetic character.
 					@"([\+\-_\.][\dA-Z]+)*" + // No continuous or ending +-_. chars in email.
@@ -180,7 +189,6 @@ public static partial class DCM
 					RegexOptions.IgnoreCase)]
 	//	BUG: This compiles, but Rider (but not VisualStudio!) claims that it does not have an implementation part.
 	private static partial Regex EmailAddressRegex();
-	private static readonly Regex EmailAddressFormat = EmailAddressRegex();
 
 	#endregion
 }

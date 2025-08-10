@@ -2,9 +2,9 @@
 
 internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 {
-	private Tournament Tournament { get; set; } = Tournament.None;
+	#region Public interface
 
-	private List<BestGame> BestGames { get; } = [];
+	#region Constructor
 
 	internal ScoreByPowerControl()
 	{
@@ -20,6 +20,10 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 										BackColor = power.CellStyle.BackColor
 									});
 	}
+
+	#endregion
+
+	#region Method
 
 	public void LoadControl(Tournament tournament)
 	{
@@ -61,6 +65,65 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		BestGamesTabControl.SelectedIndex = 0;
 		BestGamesTabControl_SelectedIndexChanged();
 	}
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Type
+
+	//	Do not make this a struct; it changes behavior.
+	[PublicAPI]
+	private sealed record BestGame : IRecord
+	{
+		[DisplayName("#")]
+		public string OverallRankForDisplay => OverallRank.Dotted;
+
+		[DisplayName("#")]
+		public string PowerRankForDisplay => PowerRank.Dotted;
+
+		public Player Player => GamePlayer.Player;
+
+		public string Score => Game.Tournament
+								   .ScoringSystem
+								   .FormattedScore(GameScore);
+
+		[DisplayName(nameof (Power))]
+		public string PowerName => GamePlayer.PowerName;
+
+		public string? Centers => GamePlayer.Centers?.ToString();
+
+		public string? Year => GamePlayer.Years?.ToString();
+
+		[DisplayName("Round─Game")]
+		public string Round => $"{Game.Round}─{Game.Number}";
+
+		internal int OverallRank;
+		internal int PowerRank;
+
+		internal Game Game => GamePlayer.Game;
+		internal Powers Power => GamePlayer.Power;
+		internal double GameScore => GamePlayer.FinalScore;
+
+		private GamePlayer GamePlayer { get; }
+
+		internal BestGame(GamePlayer gamePlayer)
+			=> GamePlayer = gamePlayer;
+	}
+
+	#endregion
+
+	#region Data
+
+	private Tournament Tournament { get; set; } = Tournament.None;
+
+	private List<BestGame> BestGames { get; } = [];
+
+	#endregion
+
+	#region Event handlers
 
 	private void BestGamesTabControl_DrawItem(object sender,
 											  DrawItemEventArgs e)
@@ -127,46 +190,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		Show<GamesForm>(() => new (bestGame.Player, bestGame.Game));
 	}
 
-	#region BestGame record
-
-	//	Do not make this a struct; it changes behavior.
-	[PublicAPI]
-	private sealed record BestGame : IRecord
-	{
-		internal int OverallRank;
-		internal int PowerRank;
-
-		private readonly GamePlayer _gamePlayer;
-
-		[DisplayName("#")]
-		public string OverallRankForDisplay => OverallRank.Dotted;
-
-		[DisplayName("#")]
-		public string PowerRankForDisplay => PowerRank.Dotted;
-
-		public Player Player => _gamePlayer.Player;
-
-		public string Score => Game.Tournament
-								   .ScoringSystem
-								   .FormattedScore(GameScore);
-
-		[DisplayName(nameof (Power))]
-		public string PowerName => _gamePlayer.PowerName;
-
-		public string? Centers => _gamePlayer.Centers?.ToString();
-
-		public string? Year => _gamePlayer.Years?.ToString();
-
-		[DisplayName("Round─Game")]
-		public string Round => $"{Game.Round}─{Game.Number}";
-
-		internal Game Game => _gamePlayer.Game;
-		internal Powers Power => _gamePlayer.Power;
-		internal double GameScore => _gamePlayer.FinalScore;
-
-		internal BestGame(GamePlayer gamePlayer)
-			=> _gamePlayer = gamePlayer;
-	}
+	#endregion
 
 	#endregion
 }
