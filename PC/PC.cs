@@ -41,11 +41,10 @@ internal static class PC
 {
 	#region Fields and Properties
 
-	internal static readonly string Version = Assembly.GetEntryAssembly()
-													  ?.GetCustomAttribute<AssemblyFileVersionAttribute>()
-													  ?.Version
+	internal static readonly string Version = Assembly.GetEntryAssembly()?
+													  .GetCustomAttribute<AssemblyFileVersionAttribute>()?
+													  .Version
 													  ?? "??";
-
 	internal static readonly Settings Settings = Settings.Default;
 	internal static readonly Dictionary<Font, Font> BoldFonts = [];
 
@@ -55,6 +54,7 @@ internal static class PC
 		private set => Settings.DatabaseType = value.AsInteger();
 	}
 	internal static bool SkippingHandlers { get; private set; }
+
 	internal static int[] Seven => [..Range(0, 7).OrderBy(RandomNumber)];
 
 	private static readonly SortedDictionary<Powers, DataGridViewCellStyle> PowerColors
@@ -115,135 +115,7 @@ internal static class PC
 
 	#endregion
 
-	#region Methods
-
-	#region Data connection and CRUD methods
-
-	internal static DatabaseTypes OpenDatabase()
-	{
-		switch (DatabaseType)
-		{
-		case Access:
-			//  Be sure the proper database driver is installed on this host computer.
-			try
-			{
-				CheckDriver();
-				//	Get the db file name from saved settings if possible.
-				var dbFileName = GetAccessDatabaseFile();
-				if (OpenAccessDatabase(dbFileName))
-					return DatabaseType;
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(ex.Message, "Data Driver Error", OK, Error);
-			}
-			break;
-		case SqlServer:
-			var connectionString = Settings.DatabaseConnectionString;
-			if (OpenSqlServerDatabase(connectionString))
-				return DatabaseType;
-			break;
-		case None:
-			return DatabaseType;
-		default:
-			throw new NotImplementedException($"Invalid Database Type ({DatabaseType}");
-		}
-		DatabaseType = default;
-		Settings.Save();
-		return default;
-	}
-
-	internal static bool OpenAccessDatabase(string? dbFileName = null)
-	{
-		while (dbFileName is null || !ConnectToAccessDatabase(dbFileName))
-		{
-			if (dbFileName is not null)
-				MessageBox.Show("Failed to connect to database file.",
-								"Data Connection Failed");
-			using OpenFileDialog dialog = new ();
-			dialog.Title = "Choose DCM Data File";
-			dialog.Filter = DatabaseFileDialogFilter;
-			dialog.FileName = Settings.DatabaseFile;
-			if (dialog.ShowDialog() is not DialogResult.OK)
-				return false;
-			dbFileName = dialog.FileName;
-		}
-		if (DatabaseType is Access && dbFileName == Settings.DatabaseFile)
-			return true;
-		FlushCache();
-		DatabaseType = Access;
-		Settings.DatabaseFile = dbFileName;
-		SetEvent();
-		return true;
-	}
-
-	private static string? GetAccessDatabaseFile()
-	{
-		//	If a db file has been saved in Settings, use that.
-		if (File.Exists(Settings.DatabaseFile))
-			return Settings.DatabaseFile;
-
-		//	Otherwise, if there is one and only one file in
-		//	the CurrentDirectory with one of the extensions
-		//	we like, use it. Otherwise, make the user surf.
-		string[] files = [..GetFiles(GetCurrentDirectory()).Where(static name => DatabaseFileExtensions.Contains(Path.GetExtension(name)))];
-		return files.Length is 1
-				   ? files.Single()
-				   : null;
-	}
-
-	internal static void SaveAccessDatabase()
-	{
-		using SaveFileDialog dialog = new ();
-		dialog.Title = "Save DCM Data File As…";
-		dialog.Filter = DatabaseFileDialogFilter;
-		dialog.RestoreDirectory = true;
-		if (dialog.ShowDialog() is not DialogResult.OK)
-			return;
-		File.Copy(Settings.DatabaseFile, dialog.FileName);
-		Settings.DatabaseFile = dialog.FileName;
-		Settings.Save();
-	}
-
-	internal static bool OpenSqlServerDatabase(string connectionString)
-	{
-		try
-		{
-			ConnectToSqlServerDatabase(connectionString);
-		}
-		catch (Exception ex)
-		{
-			MessageBox.Show($"Could not connect to SQL Server: {ex.Message}", "Data Connection Failed", OK, Error);
-			return false;
-		}
-		if (DatabaseType is SqlServer && Settings.DatabaseConnectionString == connectionString)
-			return true;
-		FlushCache();
-		DatabaseType = SqlServer;
-		Settings.DatabaseConnectionString = connectionString;
-		SetEvent();
-		return true;
-	}
-
-	internal static void ClearDatabase()
-	{
-		DeleteAllData();
-		if (Settings.EventId > 0)
-			SetEvent();
-	}
-
-	internal static void SetEvent(IdInfoRecord? eventRecord = null)
-	{
-		if (eventRecord is not null and not IdInfoRecord.IEvent)
-			throw new ArgumentException($"Invalid EventRecord type ({eventRecord.GetType().Name}).");
-		Settings.EventId = eventRecord?.Id ?? 0;
-		Settings.EventIsGroup = eventRecord is Group;
-		Settings.Save();
-	}
-
-	#endregion
-
-	#region Extension methods
+	#region Extensions
 
 	internal static List<T> PowerControls<T>(this Panel panel)
 		where T : Control
@@ -271,6 +143,8 @@ internal static class PC
 				tabControl.TabPages.Remove(tabPage);
 		}
 
+		//	BUG: Rider (but not VS's ReSharper) wrongly claims that this method (and others) can be static.
+		//		 https://youtrack.jetbrains.com/issue/RIDER-128618
 		internal void ActivateTab(int tabNumber)
 		{
 			if (tabControl.SelectedIndex == tabNumber)
@@ -338,10 +212,10 @@ internal static class PC
 
 		internal void FillWith(params object[] elements)
 		{
-			//	The instance on which this method is called derives from ListControl; it will be either
-			//	a ComboBox or a ListBox.  We use "dynamic" here as a neat little trick taking advantage
-			//	of the fact that although the two types don't share an interface, they have methods with
-			//	identical signatures for doing what we want to do.
+			//	The instance on which this method is called will be either a ComboBox or a ListBox.
+			//	We use "dynamic" here as a neat little trick taking advantage of the fact that
+			//	although the two types don't share an interface, they have methods with identical
+			//	signatures for doing what we want to do.
 			var items = ((dynamic)listControl).Items;
 			items.Clear();
 			items.AddRange(elements);
@@ -532,6 +406,134 @@ internal static class PC
 
 	#endregion
 
+	#region Methods
+
+	#region Data connection and CRUD methods
+
+	internal static DatabaseTypes OpenDatabase()
+	{
+		switch (DatabaseType)
+		{
+		case Access:
+			//  Be sure the proper database driver is installed on this host computer.
+			try
+			{
+				CheckDriver();
+				//	Get the db file name from saved settings if possible.
+				var dbFileName = GetAccessDatabaseFile();
+				if (OpenAccessDatabase(dbFileName))
+					return DatabaseType;
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, "Data Driver Error", OK, Error);
+			}
+			break;
+		case SqlServer:
+			var connectionString = Settings.DatabaseConnectionString;
+			if (OpenSqlServerDatabase(connectionString))
+				return DatabaseType;
+			break;
+		case None:
+			return DatabaseType;
+		default:
+			throw new NotImplementedException($"Invalid Database Type ({DatabaseType}");
+		}
+		DatabaseType = default;
+		Settings.Save();
+		return default;
+	}
+
+	internal static bool OpenAccessDatabase(string? dbFileName = null)
+	{
+		while (dbFileName is null || !ConnectToAccessDatabase(dbFileName))
+		{
+			if (dbFileName is not null)
+				MessageBox.Show("Failed to connect to database file.",
+								"Data Connection Failed");
+			using OpenFileDialog dialog = new ();
+			dialog.Title = "Choose DCM Data File";
+			dialog.Filter = DatabaseFileDialogFilter;
+			dialog.FileName = Settings.DatabaseFile;
+			if (dialog.ShowDialog() is not DialogResult.OK)
+				return false;
+			dbFileName = dialog.FileName;
+		}
+		if (DatabaseType is Access && dbFileName == Settings.DatabaseFile)
+			return true;
+		FlushCache();
+		DatabaseType = Access;
+		Settings.DatabaseFile = dbFileName;
+		SetEvent();
+		return true;
+	}
+
+	private static string? GetAccessDatabaseFile()
+	{
+		//	If a db file has been saved in Settings, use that.
+		if (File.Exists(Settings.DatabaseFile))
+			return Settings.DatabaseFile;
+
+		//	Otherwise, if there is one and only one file in
+		//	the CurrentDirectory with one of the extensions
+		//	we like, use it. Otherwise, make the user surf.
+		string[] files = [..GetFiles(GetCurrentDirectory()).Where(static name => DatabaseFileExtensions.Contains(Path.GetExtension(name)))];
+		return files.Length is 1
+				   ? files.Single()
+				   : null;
+	}
+
+	internal static void SaveAccessDatabase()
+	{
+		using SaveFileDialog dialog = new ();
+		dialog.Title = "Save DCM Data File As…";
+		dialog.Filter = DatabaseFileDialogFilter;
+		dialog.RestoreDirectory = true;
+		if (dialog.ShowDialog() is not DialogResult.OK)
+			return;
+		File.Copy(Settings.DatabaseFile, dialog.FileName);
+		Settings.DatabaseFile = dialog.FileName;
+		Settings.Save();
+	}
+
+	internal static bool OpenSqlServerDatabase(string connectionString)
+	{
+		try
+		{
+			ConnectToSqlServerDatabase(connectionString);
+		}
+		catch (Exception ex)
+		{
+			MessageBox.Show($"Could not connect to SQL Server: {ex.Message}", "Data Connection Failed", OK, Error);
+			return false;
+		}
+		if (DatabaseType is SqlServer && Settings.DatabaseConnectionString == connectionString)
+			return true;
+		FlushCache();
+		DatabaseType = SqlServer;
+		Settings.DatabaseConnectionString = connectionString;
+		SetEvent();
+		return true;
+	}
+
+	internal static void ClearDatabase()
+	{
+		DeleteAllData();
+		if (Settings.EventId > 0)
+			SetEvent();
+	}
+
+	internal static void SetEvent(IdInfoRecord? eventRecord = null)
+	{
+		if (eventRecord is not null and not IdInfoRecord.IEvent)
+			throw new ArgumentException($"Invalid EventRecord type ({eventRecord.GetType().Name}).");
+		Settings.EventId = eventRecord?.Id ?? 0;
+		Settings.EventIsGroup = eventRecord is Group;
+		Settings.Save();
+	}
+
+	#endregion
+
 	#region UI utility methods
 
 	internal static void SkipHandlers([InstantHandle] Action action)
@@ -556,7 +558,7 @@ internal static class PC
 	}
 
 	internal static Font BoldFont(Font font)
-		=> new (font, FontStyle.Bold);
+		=> BoldFonts.GetOrSet(font, static f => new (f, FontStyle.Bold));
 
 	internal static void Conceal([InstantHandle] params IEnumerable<Control> controls)
 		=> SetVisible(false, controls);

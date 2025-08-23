@@ -100,7 +100,6 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	#region IComparable interface implementation
 
-	//	TODO: In C# 11, the parameter can be "other!!" and the null check/throw removed
 	public int CompareTo(GamePlayer? other)
 		=> other is null
 			   ? throw new ()

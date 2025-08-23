@@ -1,6 +1,6 @@
 ﻿namespace Data;
 
-public sealed class Game : IdentityRecord<Game>
+public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 {
 	private DateTime? _date;
 	private int? _scoringSystemId;
@@ -149,6 +149,13 @@ public sealed class Game : IdentityRecord<Game>
 												 Name.ForSql(),
 												 _scoringSystemId.ForSql(),
 												 _date.ForSql());
+
+	#endregion
+
+	#region IComparable<Game> interface implementation
+
+	public int CompareTo(Game? other)
+		=> Number.CompareTo(other?.Number);
 
 	#endregion
 }

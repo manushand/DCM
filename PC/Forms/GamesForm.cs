@@ -302,11 +302,7 @@ internal sealed partial class GamesForm : Form
 		if (!ConflictsPanel.Visible)
 			return;
 		SetVisible(!AnyPowerUnassigned, ConflictsColumnHeaderLabel, TotalConflictsLabel, ConflictsTotalBarLabel);
-		ConflictLabels.ForEach(label =>
-							   {
-								   label.Text = Empty;
-								   label.Enabled = !AnyPowerUnassigned;
-							   });
+		ConflictLabels.ForEach(label => (label.Text, label.Enabled) = (Empty, !AnyPowerUnassigned));
 		if (AnyPowerUnassigned)
 			return;
 		var totalConflict = 0;

@@ -87,7 +87,7 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 	public bool HasTeamTournament => TeamSize > 0;
 	public TournamentPlayer[] TournamentPlayers => [..ReadMany<TournamentPlayer>(tournamentPlayer => tournamentPlayer.TournamentId == Id)];
 	public Team[] Teams => [..ReadMany<Team>(team => team.TournamentId == Id)];
-	public Round[] Rounds => [..ReadMany<Round>(round => round.TournamentId == Id).OrderBy(static round => round.Number)];
+	public Round[] Rounds => [..ReadMany<Round>(round => round.TournamentId == Id).Order()];
 	public Game[] Games => [..Rounds.SelectMany(static round => round.Games)];
 	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 

@@ -267,7 +267,7 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		var tournament = RestForId(id)?.Record;
 		return tournament is null
 			? NotFound()
-			: Ok(Round.RestFrom(tournament.Rounds.OrderBy(static round => round.Number)));
+			: Ok(Round.RestFrom(tournament.Rounds.Order()));
 	}
 
 	public static IResult GetRound(int id,
@@ -289,7 +289,7 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 								 .SingleOrDefault(round => round.Number == roundNumber);
 		return round is null
 				   ? NotFound()
-				   : Ok(Game.RestFrom(round.Games.OrderBy(static game => game.Number)));
+				   : Ok(Game.RestFrom(round.Games.Order()));
 	}
 
 	public static IResult GetGame(int id,

@@ -81,12 +81,12 @@ internal sealed partial class GroupGamesForm : Form
 								   .OrderBy(player => FirstNameRegistrationTabRadioButton.Checked
 														  ? player.Name
 														  : player.LastFirst)];
-		PlayerComboBoxes.ForEach(box =>
-								 {
-									 var selected = box.SelectedItem;
-									 box.FillWithRecords(players);
-									 box.SelectedItem = selected;
-								 });
+		foreach (var box in PlayerComboBoxes)
+		{
+			var selected = box.SelectedItem;
+			box.FillWithRecords(players);
+			box.SelectedItem = selected;
+		}
 	}
 
 	private void PlayerComboBox_SelectedIndexChanged(object sender,
@@ -123,11 +123,11 @@ internal sealed partial class GroupGamesForm : Form
 		Game = Game.None;
 		GameControl.ClearGame();
 		GameNameTextBox.Clear();
-		PlayerComboBoxes.ForEach(static box =>
-								 {
-									 box.Deselect();
-									 box.Enabled = true;
-								 });
+		foreach (var box in PlayerComboBoxes)
+		{
+			box.Deselect();
+			box.Enabled = true;
+		}
 		GameDateTimePicker.Value = DateTime.Today;
 		Display(OrderByNamePanel);
 		Enable(DeleteGameButton);

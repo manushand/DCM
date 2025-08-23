@@ -1,6 +1,6 @@
 ﻿namespace Data;
 
-public sealed class Round : IdentityRecord<Round>
+public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 {
 	public int Number;
 
@@ -65,7 +65,7 @@ public sealed class Round : IdentityRecord<Round>
 		internal init => (field, TournamentId) = (value, value.Id);
 	} = Tournament.None;
 
-	public Game[] Games => [..ReadMany<Game>(game => game.RoundId == Id).OrderBy(static game => game.Number)];
+	public Game[] Games => [..ReadMany<Game>(game => game.RoundId == Id).Order()];
 
 	public RoundPlayer[] RoundPlayers => [..ReadMany<RoundPlayer>(roundPlayer => roundPlayer.RoundId == Id)];
 
@@ -315,6 +315,13 @@ public sealed class Round : IdentityRecord<Round>
 												 Number,
 												 TournamentId,
 												 _scoringSystemId.ForSql());
+
+	#endregion
+
+	#region IComparable<Round> interface implementation
+
+	public int CompareTo(Round? other)
+		=> Number.CompareTo(other?.Number);
 
 	#endregion
 }

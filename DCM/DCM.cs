@@ -10,7 +10,7 @@ namespace DCM;
 
 public static partial class DCM
 {
-	#region Constant values
+	#region Constants
 
 	public const int LatestFinalGameYear = 1918;
 	public const char Comma = ',';
@@ -21,7 +21,7 @@ public static partial class DCM
 
 	#endregion
 
-	#region Extension methods
+	#region Extensions
 
 	public static T OrThrow<T>(this T? @this,
 							   string? message = null)
@@ -114,15 +114,16 @@ public static partial class DCM
 
 	extension(string @this)
 	{
+		// BUG: Must use > instead of "is not" below, or roslyn compile chokes
+		//		https://youtrack.jetbrains.com/issue/RIDER-128554
 		public string[] AsEmailAddresses => [..@this.Split(EmailSplitter)
 													.Select(static email => email.Trim())
-													// BUG: Must use > instead of "is not" below, or roslyn chokes
 													.Where(static email => email.Length > 0)];
 
 		//	BUG: If this is made a property, any use of it (as a property) in OTHER assembly does not compile.
-		//	BUG: However, uses of it (as a method) in the OTHER assembly DO compile, and uses of it (either as
-		//	BUG: a method OR as a property) in this current assembly do compile.
-		//	BUG: This seems to be a bug in the Roslyn compiler.
+		//		 However, uses of it (as a method) in the OTHER assembly DO compile, and uses of it (either as
+		//		 a method OR as a property) in this current assembly do compile.
+		//		 This seems to be a bug in the Roslyn compiler (also reported in the bug linked above).
 		public bool IsValidEmail()
 			=> EmailAddressFormat.IsMatch(@this.Trim());
 
@@ -188,6 +189,7 @@ public static partial class DCM
 					@"@(([\dA-Z][-\w]*[\dA-Z]*\.)+[\dA-Z]{2,17})$",
 					RegexOptions.IgnoreCase)]
 	//	BUG: This compiles, but Rider (but not VisualStudio!) claims that it does not have an implementation part.
+	//		 https://youtrack.jetbrains.com/issue/RIDER-129206
 	private static partial Regex EmailAddressRegex();
 
 	#endregion

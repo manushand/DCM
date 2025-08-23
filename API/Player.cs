@@ -91,7 +91,6 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		Record.FirstName = first;
 		Record.LastName = last;
 		var addresses = player.Details?.EmailAddresses ?? [];
-		//	BUG: The IDE claims that the call to IsValidEmail() will not compile, but it does.
 		if (addresses.Any(static address => !address.IsValidEmail()))
 			return ["Invalid player email address."];
 		Record.EmailAddress = Join(",", addresses);

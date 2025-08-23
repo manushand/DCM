@@ -37,20 +37,20 @@ internal sealed partial class GameControl : UserControl
 			AllComboBoxes.ForSome(static box => !box.Enabled,
 								  static box => box.Deselect());
 			SetOtherScoreLabel(value.OtherScoreAlias);
-			OtherTextBoxes.ForEach(box =>
-								   {
-									   box.Enabled = value.UsesOtherScore || TournamentScoringSystem?.UsesOtherScore is true;
-									   if (!box.Enabled)
-										   box.Text = null;
-								   });
+			foreach (var box in OtherTextBoxes)
+			{
+				box.Enabled = value.UsesOtherScore || TournamentScoringSystem?.UsesOtherScore is true;
+				if (!box.Enabled)
+					box.Clear();
+			}
 		}
 	} = ScoringSystem.None;
 
 	/// <summary>
 	///     Holds the main Scoring System for a Tournament so that all necessary ComboBoxes are enabled
 	///		even if the game overrides the scoring system with one that doesn't think it needs certain
-	///		things (i.e., game result, center count, or year). In a test game (on the ScoringSystemInfoForm)
-	///     this field is left null.
+	///		things (i.e., game result, center count, or year). In a test game (on ScoringSystemInfoForm),
+	///     this property is left null.
 	/// </summary>
 	[DesignerSerializationVisibility(Hidden)]
 	internal ScoringSystem? TournamentScoringSystem { private get; set; }
@@ -75,7 +75,6 @@ internal sealed partial class GameControl : UserControl
 		InitializeComponent();
 		AllComboBoxes =
 		[
-			//	IMPORTANT: Keep them loading into AllComboBoxes in THIS ORDER
 			..CentersComboBoxes = CentersPanel.PowerControls<ComboBox>(),
 			..ResultComboBoxes = ResultPanel.PowerControls<ComboBox>(),
 			..YearsComboBoxes = YearsPanel.PowerControls<ComboBox>()
@@ -124,8 +123,7 @@ internal sealed partial class GameControl : UserControl
 													 && GamePlayers.Count(static player => player.Result is Win) is 1;
 						 GamePlayers.Apply((gamePlayer, index) =>
 										   {
-											   ResultComboBoxes[index].SelectedIndex = gamePlayer.Result
-																								 .AsInteger();
+											   ResultComboBoxes[index].SelectedIndex = gamePlayer.Result.AsInteger();
 											   CentersComboBoxes[index].SelectedIndex = gamePlayer.Centers ?? -1;
 											   YearsComboBoxes[index].SelectedIndex = gamePlayer.Years - 1 ?? -1;
 											   OtherTextBoxes[index].Text = ScoringSystem.UsesOtherScore
@@ -143,11 +141,11 @@ internal sealed partial class GameControl : UserControl
 				CentersComboBoxes.ForEach(box => CentersComboBox_SelectedIndexChanged(box));
 			else
 			{
-				var numWinners = ResultComboBoxes.Count(static box => box.SelectedIndex.As<Results>() is Win);
-				//	Must use .Items[box.SelectedIndex] = x; because .SelectedItem = x; does not work
+				var solo = ResultComboBoxes.Count(static box => box.SelectedIndex.As<Results>() is Win) is 1;
+				//	Use .Items[box.SelectedIndex] = x, because .Text = x doesn't work
 				ResultComboBoxes.ForEach(box => box.Items[box.SelectedIndex] = box.SelectedIndex.As<Results>() is Loss
 																				   ? LossText
-																				   : numWinners is 1
+																				   : solo
 																					   ? SoloText
 																					   : ScoringSystem.DrawPermissions is None
 																						   ? WinText
@@ -305,23 +303,22 @@ internal sealed partial class GameControl : UserControl
 				var lastInTurn = randomOrder.Last();
 				foreach (var item in randomOrder)
 				{
-					const int maxCenters = 20;  //	still pretty unrealistic
 					if (ScoringSystem.UsesCenterCount)
 					{
+						const int maxCenters = 20;  //	still pretty unrealistic
 						var centersBox = CentersComboBoxes[item];
 						centersBox.SelectedIndex = item == lastInTurn
 													   ? Min(maxCenters, centersBox.Items.Count - 1)
 													   : Max(0, RandomNumber(Min(maxCenters, centersBox.Items.Count) + 2) - 2);
 					}
-					if (item == lastInTurn && CentersComboBoxes.Sum(static box => box.SelectedIndex) < 34)
-						continue;
-					if (ScoringSystem.UsesGameResult)
+					if (ScoringSystem.UsesGameResult
+					&& (item < lastInTurn || CentersComboBoxes.Sum(static box => box.SelectedIndex) is 34))
 						//	Choose a WIN or LOSS even if the box is already set.  Otherwise, the first
 						//	one to set to Solo will set all others to Loss, and that's all we get.
 						//	But ensure we have at least one winner at all times.
 						ResultComboBoxes[item].SelectedIndex = ResultComboBoxes.All(static box => box.SelectedIndex is 0)
-																   ? 1                // = win
-																   : RandomNumber(2); // = number of choices (loss, win)
+																   ? Win.AsInteger()
+																   : RandomNumber(2); // = win or loss
 				}
 			}
 
@@ -334,9 +331,9 @@ internal sealed partial class GameControl : UserControl
 				YearsComboBoxes.ForEach(box => box.SelectedIndex = RandomNumber(maxYears) + 1);
 				var finalYear = YearsComboBoxes.Max(static box => box.SelectedIndex);
 				//	Make sure all winners or survivors played to the final year.
-				YearsComboBoxes.ForSome(comboBox => ScoringSystem.UsesGameResult && ResultBoxFor(comboBox).SelectedIndex is 1
-												 || ScoringSystem.UsesCenterCount && CentersBoxFor(comboBox).SelectedIndex > 0,
-										box => box.SelectedIndex = finalYear);
+				YearsComboBoxes.ForSome(yearBox => ScoringSystem.UsesGameResult && ResultBoxFor(yearBox).SelectedIndex is 1
+												|| ScoringSystem.UsesCenterCount && CentersBoxFor(yearBox).SelectedIndex > 0,
+										yearBox => yearBox.SelectedIndex = finalYear);
 			}
 
 			if (!ScoringSystem.UsesCenterCount || !ScoringSystem.UsesGameResult)
@@ -348,7 +345,7 @@ internal sealed partial class GameControl : UserControl
 							   ? 18
 							   : 1;
 			SkipHandlers(() =>
-            {
+			{
 				if (NumberOfWinners > 1)
 					ResultComboBoxes.ForEach(box => box.SelectedIndex = (CentersBoxFor(box).SelectedIndex >= minToWin).AsInteger());
 
@@ -366,7 +363,7 @@ internal sealed partial class GameControl : UserControl
 					}
 					else
 						return;
-				//	Must use .Items[box.SelectedIndex] = x; because .SelectedItem = x; does not work
+				//	Use .Items[box.SelectedIndex] = x, because .Text = x doesn't work
 				ResultComboBoxes.ForEach(box => box.Items[box.SelectedIndex] = box.SelectedIndex is 1
 																				   ? concession
 																						 ? ConcText
@@ -374,7 +371,7 @@ internal sealed partial class GameControl : UserControl
 																				   : CentersBoxFor(box).SelectedIndex is 0
 																					   ? ElimText
 																					   : SurvText);
-            });
+			});
 		}
 		while (!FinalGameDataValidation(out _));
 
@@ -419,21 +416,21 @@ internal sealed partial class GameControl : UserControl
 											  ? ElimText
 											  : SurvText;
 			else
-				switch (resultComboBox.SelectedIndex)
+				switch (resultComboBox.SelectedIndex.As<Results>())
 				{
 				//	Losers cannot have centers
-				case 0:
+				case Loss:
 					centersComboBox.SelectedIndex = 0;
 					break;
 				//	Winners cannot have zero centers
-				case 1 when centersComboBox.SelectedIndex is 0:
+				case Win when centersComboBox.SelectedIndex is 0:
 					centersComboBox.Deselect();
 					break;
 				//	Otherwise, winners are fine
-				case 1:
+				case Win:
 					break;
 				//	Players with win/loss not yet known know it based on center count
-				case -1:
+				case Unknown:
 					resultComboBox.SelectedIndex = Sign(centersComboBox.SelectedIndex);
 					break;
 				default:
@@ -481,11 +478,11 @@ internal sealed partial class GameControl : UserControl
 	//	This boolean is used to shut off the callback completely, even when the UpdateDepth is 0.
 	private bool SkippingCallbacks { get; set; }
 	private List<GamePlayer>? GamePlayers { get; set; }
+	private List<ComboBox> AllComboBoxes { get; }
 	private List<ComboBox> ResultComboBoxes { get; }
 	private List<ComboBox> CentersComboBoxes { get; }
 	private List<ComboBox> YearsComboBoxes { get; }
 	private List<TextBox> OtherTextBoxes { get; }
-	private List<ComboBox> AllComboBoxes { get; }
 
 	#endregion
 
@@ -527,24 +524,24 @@ internal sealed partial class GameControl : UserControl
 		var winners = NumberOfWinners;
 		SkipHandlers(() =>
 					 {
-						 ResultComboBoxes.ForEach(comboBox =>
-												  {
-													  //	If draws are allowed, set multiple winners' text to Draw, else Solo
-													  if (ScoringSystem.DrawsAllowed)
-														  comboBox.Items[1] = winners is 0
-																		   || winners is 1 && comboBox.SelectedIndex.As<Results>() is Win
-																				  ? SoloText
-																				  : DrawText;
-													  //	If there's one winner and this isn't it, he's a loser.
-													  if (winners is 1 && comboBox.SelectedIndex < 1)
-														  comboBox.SelectedIndex = 0;
-												  });
+						 foreach (var comboBox in ResultComboBoxes)
+						 {
+							 //	If draws are allowed, set multiple winners' text to Draw, else Solo
+							 if (ScoringSystem.DrawsAllowed)
+								 comboBox.Items[1] = winners is 0
+												  || winners is 1 && comboBox.SelectedIndex.As<Results>() is Win
+														 ? SoloText
+														 : DrawText;
+							 //	If there's one winner and this isn't it, he's a loser.
+							 if (winners is 1 && comboBox.SelectedIndex < 1)
+								 comboBox.SelectedIndex = 0;
+						 }
 						 if (!ScoringSystem.UsesCenterCount)
 							 return;
 						 var centersComboBox = CentersBoxFor(resultComboBox);
-						 switch (resultComboBox.SelectedIndex)
+						 switch (resultComboBox.SelectedIndex.As<Results>())
 						 {
-						 case 0 when ScoringSystem.DrawsIncludeAllSurvivors && !SoloConcededCheckBox.Checked:
+						 case Loss when ScoringSystem.DrawsIncludeAllSurvivors && !SoloConcededCheckBox.Checked:
 							 //	If win/loss is loss and this is not a conceded solo, set centers to 0
 							 resultComboBox.Items[centersComboBox.SelectedIndex = 0] = ElimText;
 							 var centersBox = CentersBoxFor(resultComboBox);
@@ -562,7 +559,7 @@ internal sealed partial class GameControl : UserControl
 										 resultBox.Items[resultBox.SelectedIndex = 1] = DrawText;
 								 }
 							 break;
-						 case 0:
+						 case Loss:
 							 resultComboBox.Items[0] = SurvText;
 							 //	If this claims to be a conceded solo, and only
 							 //	one power has centers, set that power to Win.
@@ -570,21 +567,21 @@ internal sealed partial class GameControl : UserControl
 							 && CentersComboBoxes.Count(box => box != centersComboBox && box.SelectedIndex > 0) is 1)
 								 ResultBoxFor(CentersComboBoxes.Single(box => box != centersComboBox && box.SelectedIndex > 0)).SelectedIndex = 1;
 							 break;
-						 case 1 when centersComboBox.SelectedIndex is 0:
+						 case Win when centersComboBox.SelectedIndex is 0:
 							 //	If win/loss is win and the center count is 0, clear the centers (can't be true!)
 							 centersComboBox.Deselect();
-							 goto case 1;
-						 case 1:
+							 goto case Win;
+						 case Win:
 							 //	If some other power holds 18+, empty his center count (can't be true!)
 							 CentersComboBoxes.ForSome(comboBox => comboBox != centersComboBox && comboBox.SelectedIndex > 17,
 													   static comboBox => comboBox.Deselect());
 							 if (SoloConcededCheckBox.Checked)
 								 ResultComboBoxes.ForEach(comboBox => comboBox.SelectedIndex = (comboBox == resultComboBox).AsInteger());
 							 break;
-						 case -1:
+						 case Unknown:
 							 break;
 						 default:
-							 throw new (); //	TODO
+							 throw new (); // TODO
 						 }
 
 						 //	Change win/loss dropdown text to "SOLO" if no victor or for a single victor, otherwise to "DRAW"
@@ -625,7 +622,7 @@ internal sealed partial class GameControl : UserControl
 		++UpdateDepth;
 		var maxCenters = CentersComboBoxes.Max(static comboBox => comboBox.SelectedIndex);
 		SkipHandlers(FillCenterComboBoxes);
-		CentersComboBoxes.ForSome(static box => box.Items.Count is 1 && box.SelectedItem is null,
+		CentersComboBoxes.ForSome(static centerBox => centerBox.Items.Count is 1 && centerBox.SelectedItem is null,
 								  static centerBox => centerBox.SelectedIndex = 0);
 		if (ScoringSystem.UsesYearsPlayed && centersComboBox.SelectedIndex > 0)
 			//	Centers are more than 0, so set year to final year
@@ -705,29 +702,24 @@ internal sealed partial class GameControl : UserControl
 		GamePlayers?[PowerOffsetFor(yearsComboBox)].Years = yearsComboBox.SelectedIndex is -1
 																? null
 																: yearsComboBox.SelectedIndex + 1;
-		++UpdateDepth;
 		var resultComboBox = ResultBoxFor(yearsComboBox);
 		var centersComboBox = CentersBoxFor(yearsComboBox);
-		if ((ScoringSystem.UsesGameResult || ScoringSystem.UsesCenterCount)
-		&& (resultComboBox.SelectedItem is not null || centersComboBox.SelectedItem is not null))
-		{
-			var won = ScoringSystem.UsesGameResult
-						  ? resultComboBox.SelectedIndex is 1
-						  : centersComboBox.SelectedIndex > 0;
-			var ourYear = yearsComboBox.SelectedIndex;
-			ResultComboBoxes.ForEach(resultBox =>
-									 {
-										 var yearBox = YearsBoxFor(resultBox);
-										 var centerBox = CentersBoxFor(resultBox);
-										 //	If setting the year of a winner, make sure losers are no later
-										 //	than this year, and that all winners/survivors share this same year.
-										 if (won
-										 && (yearBox.SelectedIndex > ourYear || resultBox.SelectedIndex is 1 || centerBox.SelectedIndex > 0)
-											 //	...or if setting the year of a loser, make sure all winners' years are this year or later
-										 ||  !won && resultBox.SelectedIndex is 1 && yearBox.SelectedIndex < ourYear)
-											 yearBox.SelectedIndex = ourYear;
-									 });
-		}
+		if (ScoringSystem is { UsesGameResult: false, UsesCenterCount: false }
+		|| resultComboBox.SelectedItem is null && centersComboBox.SelectedItem is null)
+			return;
+		++UpdateDepth;
+		var won = ScoringSystem.UsesGameResult
+					  ? resultComboBox.SelectedIndex is 1
+					  : centersComboBox.SelectedIndex > 0;
+		var ourYear = yearsComboBox.SelectedIndex;
+		foreach (var (yearBox, resultBox, centerBox) in YearsComboBoxes.Zip(ResultComboBoxes, CentersComboBoxes))
+			//	If setting the year of a winner, make sure the losers lasted no later
+			//	than this year, and that all winners/survivors share this same year.
+			if (won && (yearBox.SelectedIndex > ourYear || resultBox.SelectedIndex is 1 || centerBox.SelectedIndex > 0)
+				//	Or, if setting the year of a loser, make sure all winners'
+				//	years are no later than this year.
+			|| !won && resultBox.SelectedIndex is 1 && yearBox.SelectedIndex < ourYear)
+				yearBox.SelectedIndex = ourYear;
 		--UpdateDepth;
 	}
 
@@ -802,7 +794,7 @@ internal sealed partial class GameControl : UserControl
 										 ListControl winLossComboBox,
 										 ListControl centersComboBox,
 										 ListControl yearsComboBox,
-										 TextBoxBase otherTextBox)
+										 TextBox otherTextBox)
 		=> new ()
 		   {
 			   Power = power,
@@ -835,13 +827,13 @@ internal sealed partial class GameControl : UserControl
 		=> AllComboBoxes.IndexOf(comboBox) % 7;
 
 	private ComboBox CentersBoxFor(ComboBox comboBox)
-		=> AllComboBoxes[0 + PowerOffsetFor(comboBox)];
+		=> CentersComboBoxes[PowerOffsetFor(comboBox)];
 
 	private ComboBox ResultBoxFor(ComboBox comboBox)
-		=> AllComboBoxes[7 + PowerOffsetFor(comboBox)];
+		=> ResultComboBoxes[PowerOffsetFor(comboBox)];
 
 	private ComboBox YearsBoxFor(ComboBox comboBox)
-		=> AllComboBoxes[14 + PowerOffsetFor(comboBox)];
+		=> YearsComboBoxes[PowerOffsetFor(comboBox)];
 
 	private void FillResultBoxes()
 		=> ResultComboBoxes.ForEach(static comboBox => comboBox.FillWith(LossText, WinText));
