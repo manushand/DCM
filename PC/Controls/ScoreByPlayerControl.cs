@@ -150,7 +150,7 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 				_roundsBeforeScoreChanges = value.RoundsToDrop is 0
 												? value.RoundsToScale
 												: value.TotalRounds
-												  - value.DropBeforeFinalRound.AsInteger()
+												  - value.DropBeforeFinalRound.AsInteger
 												  - 1;
 			}
 		} = Tournament.None;

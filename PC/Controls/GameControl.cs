@@ -123,7 +123,7 @@ internal sealed partial class GameControl : UserControl
 													 && GamePlayers.Count(static player => player.Result is Win) is 1;
 						 GamePlayers.Apply((gamePlayer, index) =>
 										   {
-											   ResultComboBoxes[index].SelectedIndex = gamePlayer.Result.AsInteger();
+											   ResultComboBoxes[index].SelectedIndex = gamePlayer.Result.AsInteger;
 											   CentersComboBoxes[index].SelectedIndex = gamePlayer.Centers ?? -1;
 											   YearsComboBoxes[index].SelectedIndex = gamePlayer.Years - 1 ?? -1;
 											   OtherTextBoxes[index].Text = ScoringSystem.UsesOtherScore
@@ -317,7 +317,7 @@ internal sealed partial class GameControl : UserControl
 						//	one to set to Solo will set all others to Loss, and that's all we get.
 						//	But ensure we have at least one winner at all times.
 						ResultComboBoxes[item].SelectedIndex = ResultComboBoxes.All(static box => box.SelectedIndex is 0)
-																   ? Win.AsInteger()
+																   ? Win.AsInteger
 																   : RandomNumber(2); // = win or loss
 				}
 			}
@@ -347,7 +347,7 @@ internal sealed partial class GameControl : UserControl
 			SkipHandlers(() =>
 			{
 				if (NumberOfWinners > 1)
-					ResultComboBoxes.ForEach(box => box.SelectedIndex = (CentersBoxFor(box).SelectedIndex >= minToWin).AsInteger());
+					ResultComboBoxes.ForEach(box => box.SelectedIndex = (CentersBoxFor(box).SelectedIndex >= minToWin).AsInteger);
 
 				//	This is separate from the above. Do not make it an "else if" -- the NumberOfWinners may have changed.
 				//	This code, which just sets the ComboBox item text if there is a sole winner, is (I think) only needed
@@ -359,7 +359,7 @@ internal sealed partial class GameControl : UserControl
 						SoloConcededCheckBox.Checked = true;
 						var bigBoy = CentersComboBoxes.Max(static box => box.SelectedIndex);
 						var lucky = ResultBoxFor(CentersComboBoxes.First(box => box.SelectedIndex == bigBoy));
-						ResultComboBoxes.ForEach(box => box.SelectedIndex = (box == lucky).AsInteger());
+						ResultComboBoxes.ForEach(box => box.SelectedIndex = (box == lucky).AsInteger);
 					}
 					else
 						return;
@@ -576,7 +576,7 @@ internal sealed partial class GameControl : UserControl
 							 CentersComboBoxes.ForSome(comboBox => comboBox != centersComboBox && comboBox.SelectedIndex > 17,
 													   static comboBox => comboBox.Deselect());
 							 if (SoloConcededCheckBox.Checked)
-								 ResultComboBoxes.ForEach(comboBox => comboBox.SelectedIndex = (comboBox == resultComboBox).AsInteger());
+								 ResultComboBoxes.ForEach(comboBox => comboBox.SelectedIndex = (comboBox == resultComboBox).AsInteger);
 							 break;
 						 case Unknown:
 							 break;
@@ -639,7 +639,7 @@ internal sealed partial class GameControl : UserControl
 								 resultComboBox.SelectedIndex = 0;
 								 resultComboBox.Items[0] = ElimText;
 								 if (SoloConcededCheckBox.Checked && CentersComboBoxes.Count(static box => box.SelectedIndex > 0) is 1)
-									 ResultComboBoxes.ForEach(resultBox => resultBox.SelectedIndex = (CentersBoxFor(resultBox).SelectedIndex > 0).AsInteger());
+									 ResultComboBoxes.ForEach(resultBox => resultBox.SelectedIndex = (CentersBoxFor(resultBox).SelectedIndex > 0).AsInteger);
 								 else if (NumberOfWinners is 1)
 									 ResultComboBoxes.Single(static box => box.SelectedIndex is 1).Items[1] = maxCenters > 17
 																												  ? SoloText
@@ -649,7 +649,7 @@ internal sealed partial class GameControl : UserControl
 								 //	If centers are 18+, set this win/loss to WIN and all others to LOSS
 								 //	and reset any other power's centers if they had claimed 18+.
 								 var ourCount = centersComboBox.SelectedIndex;
-								 ResultComboBoxes.ForEach(comboBox => comboBox.SelectedIndex = (comboBox == resultComboBox).AsInteger());
+								 ResultComboBoxes.ForEach(comboBox => comboBox.SelectedIndex = (comboBox == resultComboBox).AsInteger);
 								 CentersComboBoxes.ForSome(static box => box.SelectedIndex > 17,
 														   static comboBox => comboBox.Deselect());
 								 centersComboBox.SelectedIndex = ourCount;
@@ -806,17 +806,17 @@ internal sealed partial class GameControl : UserControl
 							 ? centersComboBox.SelectedIndex is -1
 								   ? null
 								   : centersComboBox.Text
-													.AsInteger()
+													.AsInteger
 							 : null,
 			   Years = yearsComboBox.Enabled
 						   ? yearsComboBox.SelectedIndex is -1
 								 ? null
 								 : yearsComboBox.Text
-												.AsInteger() - 1900
+												.AsInteger - 1900
 						   : null,
 			   Other = otherTextBox is { Enabled: true, TextLength: not 0 }
 						   ? otherTextBox.Text
-										 .AsDouble()
+										 .AsDouble
 						   : 0
 		   };
 
@@ -842,7 +842,7 @@ internal sealed partial class GameControl : UserControl
 		=> CentersComboBoxes.ForEach(comboBox =>
 									 {
 										 var index = comboBox.SelectedIndex;
-										 var available = Min(34 >> SoloConcededCheckBox.Checked.AsInteger(),
+										 var available = Min(34 >> SoloConcededCheckBox.Checked.AsInteger,
 															 34 - CentersComboBoxes.Sum(static box => Max(0, box.SelectedIndex))
 																+ Max(0, index));
 										 //	The Max(0...) call below isn't just superfluous.

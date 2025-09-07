@@ -83,15 +83,13 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 
 	private protected override string[] UpdateRecordForDatabase(Player player)
 	{
-		var first = player.FirstName.Trim();
-		var last = player.LastName.Trim();
-		if (first.Length is 0 || last.Length is 0)
+		var (first, last) = (player.FirstName.Trim(), player.LastName.Trim());
+		if (first.Length * last.Length is 0)
 			return ["Player first and last names are required."];
 
-		Record.FirstName = first;
-		Record.LastName = last;
+		(Record.FirstName, Record.LastName) = (first, last);
 		var addresses = player.Details?.EmailAddresses ?? [];
-		if (addresses.Any(static address => !address.IsValidEmail()))
+		if (addresses.Any(static address => !address.IsValidEmail))
 			return ["Invalid player email address."];
 		Record.EmailAddress = Join(",", addresses);
 		return [];
@@ -107,9 +105,6 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 		Delete(Record.LinksOfType<TournamentPlayer>());
 		return true;
 	}
-
-	[PublicAPI]
-	private sealed record Conflict(Player Player, int Value);
 
 	public static IResult GetConflicts(int id)
 		=> RestForId(id) is null
@@ -142,4 +137,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 			CreateOne(new PlayerConflict(id, playerId) { Value = value.Value });
 		return Ok(result);
 	}
+
+	[PublicAPI]
+	private sealed record Conflict(Player Player, int Value);
 }

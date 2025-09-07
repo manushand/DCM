@@ -54,7 +54,7 @@ internal sealed partial class PlayerInfoForm : Form
 		if (firstName.Length * lastName.Length is 0)
 			error = "Player First and Last Names are required.";
 		else if (emailAddress.Length is not 0)
-			if (!emailAddress.IsValidEmail())
+			if (!emailAddress.IsValidEmail)
 				error = "Invalid email address.";
 			else if (!emailAddress.Matches(Player.EmailAddress))
 			{

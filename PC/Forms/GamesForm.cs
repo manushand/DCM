@@ -135,7 +135,7 @@ internal sealed partial class GamesForm : Form
 		SkipHandlers(() =>
         {
 			GameStatusComboBox.SelectedIndex = Game.Status
-												   .AsInteger();
+												   .AsInteger;
 			ScoringSystemComboBox.FillWithSorted<ScoringSystem>();
 			ScoringSystemComboBox.SetSelectedItem(Game.ScoringSystem);
 			Player[] players = [..GamePlayers.SelectSorted(static gamePlayer => gamePlayer.Player)]; // TODO: does this not have/need a by last name option?
@@ -253,7 +253,7 @@ internal sealed partial class GamesForm : Form
 							OK,
 							Hand);
 			GameStatusComboBox.SelectedIndex = Game.Status
-												   .AsInteger();
+												   .AsInteger;
 			return;
 		case Underway:
 		case Seeded:
@@ -311,7 +311,7 @@ internal sealed partial class GamesForm : Form
 			totalConflict += gamePlayer.CalculateConflict(true); //	TODO: was seededPlayers, true
 			if (gamePlayer.Power is TBD)
 				continue;
-			var label = ConflictLabels[gamePlayer.Power.AsInteger()];
+			var label = ConflictLabels[gamePlayer.Power.AsInteger];
 			label.Text = gamePlayer.Conflict
 								   .Points;
 			ToolTip.SetToolTip(label, gamePlayer.ConflictDetails.BulletList($"{gamePlayer.Player}"));

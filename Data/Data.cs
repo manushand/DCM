@@ -28,6 +28,10 @@ using static Tournament;
 
 public static partial class Data
 {
+	#region Public interface
+
+	#region Type
+
 	public enum DatabaseTypes : sbyte
 	{
 		None = default,
@@ -35,11 +39,9 @@ public static partial class Data
 		SqlServer = 2
 	}
 
-	private const string Null = nameof (Null);
+	#endregion
 
-	private static string SelectIdentitySql => _connection is SqlConnection
-												   ? "SELECT SCOPE_IDENTITY()"
-												   : "SELECT @@IDENTITY";
+	#region Methods
 
 	public static void ConnectTo(string connectionString)
 	{
@@ -50,7 +52,7 @@ public static partial class Data
 				ConnectToSqlServerDatabase(connectionString);
 			else
 				ConnectToAccessDatabase(connectionString);
-			Connections[connectionString] = _connection ?? throw new ("Connection Failed");
+			Connections[connectionString] = _connection.OrThrow("Connection Failed");
 		}
 		Cache.Restore(connectionString);
 	}
@@ -77,22 +79,6 @@ public static partial class Data
 		//	NOTE: This method may throw.  Don't worry; the caller catches the exception
 		_connection = new SqlConnection(connectionString);
 		OpenConnection();
-		CloseConnection();
-	}
-
-	internal static void StartTransaction()
-	{
-		if (_transaction is not null)
-			return;
-		OpenConnection();
-		_transaction = Connection.BeginTransaction();
-	}
-
-	internal static void EndTransaction()
-	{
-		_transaction.OrThrow()
-					.Commit();
-		_transaction = null;
 		CloseConnection();
 	}
 
@@ -136,7 +122,7 @@ public static partial class Data
 								 if (record is not IdInfoRecord idInfoRecord)
 									 continue;
 								 command.CommandText = SelectIdentitySql;
-								 idInfoRecord.Id = command.ExecuteScalar().OrThrow().AsInteger();
+								 idInfoRecord.Id = command.ExecuteScalar().OrThrow().AsInteger;
 							 }
 						 });
 		Cache.AddRange(records);
@@ -159,10 +145,6 @@ public static partial class Data
 			        """;
 		}
 	}
-
-	internal static IEnumerable<T> CreateMany<T>([InstantHandle] IEnumerable<T> records)
-		where T : IRecord
-		=> CreateMany([..records]);
 
 	public static T? ReadOne<T>(Func<T, bool> func)
 		where T : IRecord
@@ -236,7 +218,7 @@ public static partial class Data
 		where T : IRecord
 		=> Delete([..records]);
 
-	public static void Delete<T>([InstantHandle] Func<T, bool> func)
+	internal static void Delete<T>([InstantHandle] Func<T, bool> func)
 		where T : IRecord
 		=> Delete(Cache.FetchMany(func));
 
@@ -279,11 +261,6 @@ public static partial class Data
 		where T : IdInfoRecord, new()
 		=> records.Select(static record => record.Id);
 
-	internal static IEnumerable<T> WithPlayerId<T>(this IEnumerable<T> linkRecords,
-												   int playerId)
-		where T : LinkRecord
-		=> linkRecords.Where(linkRecord => linkRecord.PlayerId == playerId);
-
 	public static bool HasPlayerId<T>(this IEnumerable<T> linkRecords,
 									  int playerId)
 		where T : LinkRecord
@@ -293,6 +270,31 @@ public static partial class Data
 								  int playerId)
 		where T : LinkRecord
 		=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
+
+	internal static void StartTransaction()
+	{
+		if (_transaction is not null)
+			return;
+		OpenConnection();
+		_transaction = Connection.BeginTransaction();
+	}
+
+	internal static void EndTransaction()
+	{
+		_transaction.OrThrow()
+					.Commit();
+		_transaction = null;
+		CloseConnection();
+	}
+
+	internal static IEnumerable<T> CreateMany<T>([InstantHandle] IEnumerable<T> records)
+		where T : IRecord
+		=> CreateMany([..records]);
+
+	internal static IEnumerable<T> WithPlayerId<T>(this IEnumerable<T> linkRecords,
+												   int playerId)
+		where T : LinkRecord
+		=> linkRecords.Where(linkRecord => linkRecord.PlayerId == playerId);
 
 	internal static void CheckDataType<T>(this DbDataReader reader)
 		where T : IRecord
@@ -314,7 +316,7 @@ public static partial class Data
 
 	internal static int ForSql<T>(this T value)
 		where T : Enum
-		=> value.AsInteger();
+		=> value.AsInteger;
 
 	internal static string ForSql(this DateTime value)
 		=> $"'{value:d}'";
@@ -324,7 +326,7 @@ public static partial class Data
 		?? Null;
 
 	internal static int ForSql(this bool value)
-		=> value.AsInteger();
+		=> value.AsInteger;
 
 	internal static bool Boolean(this IDataRecord record,
 								 string columnName)
@@ -394,7 +396,15 @@ public static partial class Data
 		return groupings.Single(group => group.Contains(power1.Abbreviation)) == groupings.Single(group => group.Contains(power2.Abbreviation));
 	}
 
-	#region Private fields, property, and methods
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private const string Null = nameof (Null);
 
 	private static readonly Func<string, DbConnection>[] Providers =
 	[
@@ -415,21 +425,20 @@ public static partial class Data
 
 	private static readonly string[] OfficeVersionFolders = ["14.0", "16.0"];
 	private static readonly string FieldValuesLineSplitter = $"{Comma}{NewLine}";
+	private static readonly Dictionary<string, DbConnection> Connections = new ();
 
 	private static DbConnection? _connection;
 	private static DbTransaction? _transaction;
-	private static readonly Dictionary<string, DbConnection> Connections = new ();
 
 	private static DbConnection Connection => _connection.OrThrow();
 
-	private static DbCommand Command(string? sql = null)
-		=> Connection switch
-		   {
-			   SqlConnection sqlConnection   => new SqlCommand(sql, sqlConnection, _transaction as SqlTransaction),
-			   OdbcConnection odbcConnection => new OdbcCommand(sql, odbcConnection, _transaction as OdbcTransaction),
-			   OleDbConnection oleConnection => new OleDbCommand(sql, oleConnection, _transaction as OleDbTransaction),
-			   _                             => throw new ()
-		   };
+	private static string SelectIdentitySql => _connection is SqlConnection
+												   ? "SELECT SCOPE_IDENTITY()"
+												   : "SELECT @@IDENTITY";
+
+	#endregion
+
+	#region Methods
 
 	private static void OpenConnection()
 	{
@@ -468,9 +477,14 @@ public static partial class Data
 		}
 	}
 
-	private static string TableName<T>()
-		where T : IRecord
-		=> $"[{typeof (T).Name}]";
+	private static DbCommand Command(string? sql = null)
+		=> Connection switch
+		   {
+			   SqlConnection sqlConnection   => new SqlCommand(sql, sqlConnection, _transaction as SqlTransaction),
+			   OdbcConnection odbcConnection => new OdbcCommand(sql, odbcConnection, _transaction as OdbcTransaction),
+			   OleDbConnection oleConnection => new OleDbCommand(sql, oleConnection, _transaction as OleDbTransaction),
+			   _                             => throw new ()
+		   };
 
 	//	It is up to the caller to Add any returned record(s) to the Cache
 	private static List<T> Read<T>(T? record = null)
@@ -487,6 +501,10 @@ public static partial class Data
 		CloseConnection();
 		return records;
 	}
+
+	private static string TableName<T>()
+		where T : IRecord
+		=> $"[{typeof (T).Name}]";
 
 	private static string UpdateStatement<T>(T record)
 		where T : IInfoRecord
@@ -510,6 +528,8 @@ public static partial class Data
 	private static void DeleteAll<T>()
 		where T : IRecord
 		=> Execute(DeleteStatement<T>());
+
+	#endregion
 
 	#endregion
 }

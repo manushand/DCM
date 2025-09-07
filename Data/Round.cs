@@ -2,17 +2,11 @@
 
 public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 {
+	#region Public interface
+
+	#region Data
+
 	public int Number;
-
-	private int? _scoringSystemId;
-
-	/// <summary>
-	///     Holds calculated scores (sum of scores in prior rounds of the same tournament) for a given round.
-	///     These are held in this cache because they are expensive and are often requested during seeding.
-	/// </summary>
-	private Dictionary<int, List<double>> PreRoundGames { get; } = [];
-
-	internal int TournamentId { get; private set; }
 
 	public override string Name => $"{Number}";
 
@@ -41,6 +35,10 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 	public bool ScoringSystemIsDefault => _scoringSystemId is null;
 
+	public Game[] Games => _games ??= [..ReadMany<Game>(game => game.RoundId == Id).Order()];
+
+	public RoundPlayer[] RoundPlayers => _roundPlayers ??= [..ReadMany<RoundPlayer>(roundPlayer => roundPlayer.RoundId == Id)];
+
 	public ScoringSystem ScoringSystem
 	{
 		get => field.Id == ScoringSystemId
@@ -65,12 +63,18 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 		internal init => (field, TournamentId) = (value, value.Id);
 	} = Tournament.None;
 
-	public Game[] Games => [..ReadMany<Game>(game => game.RoundId == Id).Order()];
+	internal int TournamentId { get; private set; }
 
-	public RoundPlayer[] RoundPlayers => [..ReadMany<RoundPlayer>(roundPlayer => roundPlayer.RoundId == Id)];
+	#endregion
 
-	public void AddPlayer(Player player)
-		=> CreateOne(new RoundPlayer { Round = this, Player = player });
+	#region Methods
+
+	public static Round operator +(Round round, Player player)
+	{
+		CreateOne(new RoundPlayer { Round = round, Player = player });
+		round._roundPlayers = null;
+		return round;
+	}
 
 	public int Seed(List<RoundPlayer> roundPlayers,
 					bool assignPowers)
@@ -82,13 +86,16 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 		//	Create the Game objects and store them in the database.
 		var lastSeededGameNumber = Games.Length;
-		var games = CreateMany(Range(1, roundPlayers.Count / 7)
-										 .Select(number => new Game
-														   {
-															   Number = lastSeededGameNumber + number,
-															   Round = this,
-															   Status = Seeded
-														   }));
+		var games = CreateMany(Range(1, roundPlayers.Count / 7).Select(number => new Game
+																				 {
+																					 Number = lastSeededGameNumber + number,
+																					 Round = this,
+																					 Status = Seeded
+																				 }));
+		// Invalidate cached Games to reflect newly created games within this round
+		_games = null;
+		// Also invalidate Tournament-level cached Games aggregation
+		Tournament.InvalidateGamesCache();
 		//	Adding another .ToArray() here (before that last semicolon) is a 5-15% performance hit.  I know, right?
 
 		//	Create all the GamePlayer objects, seeding players into them from best
@@ -237,26 +244,26 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 		}
 	}
 
-	private List<double> PriorGameScores(GamePlayer gamePlayer)
-		=> PreRoundGames.GetOrSet(gamePlayer.PlayerId,
-								  playerId =>
-								  {
-									  var roundsPrior = Tournament.IsEvent
-															? Number - 1
-															: 1;
-									  var scores = Tournament.Rounds
-															 .Take(roundsPrior)
-															 .SelectMany(static r => r.FinishedGames)
-															 .Where(game => (Tournament.IsEvent || game.Date < gamePlayer.Game.Date)
-																			&& game.GamePlayers.HasPlayerId(playerId))
-															 .Select(game => game.GamePlayers.ByPlayerId(playerId).FinalScore)
-															 //	Leave this .DefaultIfEmpty; it's important that at least one score is in the List
-															 .DefaultIfEmpty(Tournament.UnplayedScore)
-															 .ToList();
-									  while (scores.Count < roundsPrior)
-										  scores.Add(Tournament.UnplayedScore);
-									  return scores;
-								  });
+	/// <summary>
+	///     Returns the sum of a player's scores from all prior rounds in the tournament or, if
+	///     this is a Group, the player's group rating, calculating (then caching) it if necessary.
+	/// </summary>
+	/// <param name="gamePlayer">The player whose score is being requested.</param>
+	/// <returns>The sum of the player's game scores in all prior tournament rounds.</returns>
+	public double PreRoundScore(GamePlayer gamePlayer)
+		=> PriorGameAggregates(gamePlayer).Sum;
+
+	public double PreRoundScore(Player player)
+		=> PriorGameAggregates(new () { Player = player }).Sum;
+
+	/// <summary>
+	///     When a GamePlayer.FinalScore is changed for a game in a prior round in this Round's
+	///     Tournament, this method should be called to ensure that the next time a RunningScore
+	///     is needed for this player, it is recalculated.
+	/// </summary>
+	/// <param name="player">The player whose FinalScore is changing.</param>
+	internal void ClearPreRoundScore(Player player)
+		=> PreRoundAggregates.Remove(player.Id);
 
 	/// <summary>
 	///     Returns the average of a player's game scores from all prior rounds in
@@ -266,32 +273,16 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 	/// <param name="gamePlayer">The player whose average score is being requested.</param>
 	/// <returns>The average of the player's game scores in all prior tournament rounds.</returns>
 	internal double PreGameAverage(GamePlayer gamePlayer)
-		=> PriorGameScores(gamePlayer).Average();
+	{
+		var agg = PriorGameAggregates(gamePlayer);
+		return agg.Sum / agg.Count;
+	}
 
-	/// <summary>
-	///     Returns the sum of a player's scores from all prior rounds in the tournament or, if
-	///     this is a Group, the player's group rating, calculating (then caching) it if necessary.
-	/// </summary>
-	/// <param name="gamePlayer">The player whose score is being requested.</param>
-	/// <returns>The sum of the player's game scores in all prior tournament rounds.</returns>
-	public double PreRoundScore(GamePlayer gamePlayer)
-		=> PriorGameScores(gamePlayer).Sum();
+	#endregion
 
-	public double PreRoundScore(Player player)
-		=> PriorGameScores(new () { Player = player }).Sum();
+	#region IInfoRecord implementation
 
-	/// <summary>
-	///     When a GamePlayer.FinalScore is changed for a game in a prior round in this Round's
-	///     Tournament, this method should be called to ensure that the next time a RunningScore
-	///     is needed for this player, it is recalculated.
-	/// </summary>
-	/// <param name="player">The player whose FinalScore is changing.</param>
-	internal void ClearPreRoundScore(Player player)
-		=> PreRoundGames.Remove(player.Id);
-
-	#region IInfoRecord interface implementation
-
-	#region IRecord interface implementation
+	#region IRecord implementation
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -305,23 +296,71 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 	#endregion
 
-	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (Number)}}] = {0},
-	                                           [{{nameof (TournamentId)}}] = {1},
-	                                           [{{nameof (ScoringSystemId)}}] = {2}
-	                                           """;
-
-	public override string FieldValues => Format(FieldValuesFormat,
+	public override string FieldValues => Format($$"""
+												   [{{nameof (Number)}}] = {0},
+												   [{{nameof (TournamentId)}}] = {1},
+												   [{{nameof (ScoringSystemId)}}] = {2}
+												   """,
 												 Number,
 												 TournamentId,
 												 _scoringSystemId.ForSql());
 
 	#endregion
 
-	#region IComparable<Round> interface implementation
+	#region IComparable<Round> implementation
 
 	public int CompareTo(Round? other)
 		=> Number.CompareTo(other?.Number);
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private int? _scoringSystemId;
+	private Game[]? _games;
+	private RoundPlayer[]? _roundPlayers;
+
+	/// <summary>
+	///     Holds calculated scores (sum of scores in prior rounds of the same tournament) for a given round.
+	///     These are held in this cache because they are expensive and are often requested during seeding.
+	/// </summary>
+	private Dictionary<int, (double Sum, int Count)> PreRoundAggregates { get; } = [];
+
+	#endregion
+
+	#region Method
+
+	private (double Sum, int Count) PriorGameAggregates(GamePlayer gamePlayer)
+		=> PreRoundAggregates.GetOrSet(gamePlayer.PlayerId,
+									   playerId =>
+									   {
+										   var roundsPrior = Tournament.IsEvent
+																 ? Number - 1
+																 : 1;
+										   var targetCount = Math.Max(roundsPrior, 1);
+										   var count = 0;
+										   var sum = 0d;
+										   foreach (var game in Tournament.Rounds
+																		  .Take(roundsPrior)
+																		  .SelectMany(static r => r.FinishedGames)
+																		  .Where(game => game.GamePlayers.HasPlayerId(playerId)
+																						 && (Tournament.IsEvent || game.Date < gamePlayer.Game.Date)))
+										   {
+											   sum += game.GamePlayers
+														  .ByPlayerId(playerId)
+														  .FinalScore;
+											   ++count;
+										   }
+										   return count < targetCount
+													  ? (sum + (targetCount - count) * Tournament.UnplayedScore, targetCount)
+													  : (sum, count);
+									   });
+
+	#endregion
 
 	#endregion
 }

@@ -153,7 +153,7 @@ internal sealed partial class GroupGamesForm : Form
 			NewGameButton_Click();
 			break;
 		case Finished when Game.IsNone || !AllFilledIn:
-			SkipHandlers(() => GameStatusComboBox.SelectedIndex = Underway.AsInteger());
+			SkipHandlers(() => GameStatusComboBox.SelectedIndex = Underway.AsInteger);
 			if (Game.IsNone)
 				goto CreateGame;
 			break;
@@ -215,7 +215,7 @@ internal sealed partial class GroupGamesForm : Form
 						 GameDateTimePicker.Value = Game.Date;
 						 GameNameTextBox.Text = Game.Name;
 						 GameStatusComboBox.SelectedIndex = Game.Status
-																.AsInteger();
+																.AsInteger;
 						 PlayerComboBoxes.Apply((box, index) => box.SetSelectedItem(GamePlayers[index].Player));
 					 });
 		ShowControls(true);

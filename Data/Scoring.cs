@@ -6,57 +6,11 @@ using Power = Powers;
 [PublicAPI]
 public sealed partial class Scoring
 {
-	internal static readonly Scoring None = new (ScoringSystem.None, []);
-	internal bool IsNone => ScoringSystem.IsNone;
+	#region Public interface
 
-	private ScoringSystem ScoringSystem { get; }
-	private Dictionary<Power, GamePlayer> GamePlayers { get; }
+	#region Data
 
-	internal Power PlayerPower
-	{
-		private get;
-		set;
-	} = TBD;
-
-	//	For hacking the aliasing into C# scoring formulae by replacing each of the aliases with these.
-	internal static readonly string[] OtherScoreAliases =
-	[
-		//	Ordered by descending length
-		nameof (SumOfEveryOtherScore),
-		nameof (AverageOtherScore),
-		nameof (HighestOtherScore),
-		nameof (LowestOtherScore),
-		nameof (SumOfOtherScores),
-		nameof (OtherScoreValid),
-		nameof (OtherScore)
-	];
-
-	private Scoring() : this(ScoringSystem.None, []) { }
-
-	internal Scoring(ScoringSystem scoringSystem,
-					 IReadOnlyCollection<GamePlayer> gamePlayers)
-	{
-		ScoringSystem = scoringSystem;
-		GamePlayers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, static gamePlayer => gamePlayer);
-		Powers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, gamePlayer => new PowerData(this, gamePlayer));
-	}
-
-	internal void UpdateProvisionalScores()
-		=> Powers.ForEach(power => power.Value.ProvisionalScore = GamePlayers[power.Key].ProvisionalScore);
-
-	internal void UpdatePlayerAntes()
-		=> Powers.ForEach(power => power.Value.PlayerAnte = GamePlayers[power.Key].PlayerAnte);
-
-	private static InvalidOperationException ScoringException(string reference = nameof (OtherScore))
-		=> new ($"Reference to data not collected for scoring ({reference}).");
-
-	#region Scoring fields and properties
-
-	private IEnumerable<double> AllProvisionalScores => Powers.Select(static power => power.Value.ProvisionalScore);
-	private IEnumerable<double> AllPlayerAntes => Powers.Select(static power => power.Value.PlayerAnte);
-	private IEnumerable<double> RunningScores => Powers.Select(static power => power.Value.RunningScore);
-	private IEnumerable<double> AverageGameScores => Powers.Select(static power => power.Value.AverageGameScore);
-	private IEnumerable<double> AllOtherScores => Powers.Select(static power => power.Value.OtherScore);
+	#region Scoring properties
 
 	#region Scoring properties shared by all players
 
@@ -161,6 +115,89 @@ public sealed partial class Scoring
 	public double RunningScore => Player.RunningScore;
 	public double PlayerAnte => Player.PlayerAnte;
 	public double OtherScore => Player.OtherScore;
+
+	#endregion
+
+	#endregion
+
+	#region Supporting (non-public) data
+
+	internal static readonly Scoring None = new (ScoringSystem.None, []);
+
+	internal Power PlayerPower
+	{
+		private get;
+		set;
+	} = TBD;
+
+	//	For hacking the aliasing into C# scoring formulae by replacing each of the aliases with these.
+	internal static readonly string[] OtherScoreAliases =
+	[
+		//	Ordered by descending length
+		nameof (SumOfEveryOtherScore),
+		nameof (AverageOtherScore),
+		nameof (HighestOtherScore),
+		nameof (LowestOtherScore),
+		nameof (SumOfOtherScores),
+		nameof (OtherScoreValid),
+		nameof (OtherScore)
+	];
+
+	internal bool IsNone => ScoringSystem.IsNone;
+
+	#endregion
+
+	#endregion
+
+	#region Constructor
+
+	internal Scoring(ScoringSystem scoringSystem,
+					 IReadOnlyCollection<GamePlayer> gamePlayers)
+	{
+		ScoringSystem = scoringSystem;
+		GamePlayers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, static gamePlayer => gamePlayer);
+		Powers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, gamePlayer => new PowerData(this, gamePlayer));
+	}
+
+	#endregion
+
+	#region Methods
+
+	internal void UpdateProvisionalScores()
+		=> Powers.ForEach(power => power.Value.ProvisionalScore = GamePlayers[power.Key].ProvisionalScore);
+
+	internal void UpdatePlayerAntes()
+		=> Powers.ForEach(power => power.Value.PlayerAnte = GamePlayers[power.Key].PlayerAnte);
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private IEnumerable<double> AllProvisionalScores => Powers.Select(static power => power.Value.ProvisionalScore);
+	private IEnumerable<double> AllPlayerAntes => Powers.Select(static power => power.Value.PlayerAnte);
+	private IEnumerable<double> RunningScores => Powers.Select(static power => power.Value.RunningScore);
+	private IEnumerable<double> AverageGameScores => Powers.Select(static power => power.Value.AverageGameScore);
+	private IEnumerable<double> AllOtherScores => Powers.Select(static power => power.Value.OtherScore);
+
+	private ScoringSystem ScoringSystem { get; }
+	private Dictionary<Power, GamePlayer> GamePlayers { get; }
+
+	#endregion
+
+	#region Constructor
+
+	private Scoring() : this(ScoringSystem.None, []) { }
+
+	#endregion
+
+	#region Method
+
+	private static InvalidOperationException ScoringException(string reference = nameof (OtherScore))
+		=> new ($"Reference to data not collected for scoring ({reference}).");
 
 	#endregion
 

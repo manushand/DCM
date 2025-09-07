@@ -2,8 +2,6 @@
 
 namespace API;
 
-using DCM;
-
 [PublicAPI]
 internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 {
@@ -117,10 +115,10 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 		if (member == group.HasPlayer(playerId))
 			return NoContent();
 		if (member)
-			CreateOne(new GroupPlayer { Group = group.Record, Player = player.Record });
+			group.Record += player.Record;
 		else
 			//	TODO - Hmm.  Can a player be dropped even if they've played games that are group games?
-			Delete(ReadOne<GroupPlayer>(groupPlayer => groupPlayer.GroupId == id && groupPlayer.PlayerId == playerId).OrThrow());
+			group.Record -= player.Record;
 		return Ok();
 	}
 

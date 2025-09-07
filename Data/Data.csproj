@@ -74,16 +74,15 @@
         </Compile>
     </ItemGroup>
     <ItemGroup>
-      <PackageReference Include="JetBrains.Annotations" Version="2025.1.0-eap1" />
+      <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
       <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="5.0.0-1.25277.114">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
       <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.14.0" />
-      <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-      <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
-      <PackageReference Include="System.Data.Odbc" Version="9.0.7" />
-      <PackageReference Include="System.Data.OleDb" Version="9.0.7" />
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
+      <PackageReference Include="System.Data.Odbc" Version="9.0.8" />
+      <PackageReference Include="System.Data.OleDb" Version="9.0.8" />
       <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     </ItemGroup>
     <ItemGroup>

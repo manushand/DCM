@@ -8,15 +8,9 @@ public static partial class Data
 {
 	private static class Cache
 	{
-		#region Fields
+		#region Public interface
 
-		private static CacheType _data = [];
-		private static readonly Dictionary<string, CacheType> Stores = [];
-		private static readonly Dictionary<Type[], MethodInfo> LoadMethods = [];
-		private static readonly MethodInfo LoadMethod = typeof (Cache).GetMethod(nameof (Load), Static | NonPublic)
-																	  .OrThrow();
-
-		#endregion
+		#region Methods
 
 		internal static void Restore(string store)
 			=> _data = Stores.GetOrSet(store, static _ => []);
@@ -51,7 +45,7 @@ public static partial class Data
 		internal static IEnumerable<T> FetchAll<T>()
 			where T : IRecord
 			=> Get<T>().Values
-					   .Cast<T>(); //	Adding .ToArray() here slows seeding down a lot
+					   .Cast<T>(); // Adding .ToArray() here slows seeding down a lot
 
 		internal static T? FetchOne<T>(Func<T, bool> func)
 			where T : IRecord
@@ -67,7 +61,23 @@ public static partial class Data
 			where T : IRecord
 			=> FetchAll<T>().Where(func);
 
-		#region Private methods
+		#endregion
+
+		#endregion
+
+		#region Private implementation
+
+		#region Data
+
+		private static CacheType _data = [];
+		private static readonly Dictionary<string, CacheType> Stores = [];
+		private static readonly Dictionary<Type[], MethodInfo> LoadMethods = [];
+		private static readonly MethodInfo LoadMethod = typeof (Cache).GetMethod(nameof (Load), Static | NonPublic)
+																	  .OrThrow();
+
+		#endregion
+
+		#region Methods
 
 		private static SortedDictionary<string, IRecord> Get<T>()
 			where T : IRecord
@@ -83,6 +93,8 @@ public static partial class Data
 			where T : class, IRecord, new()
 			=> _data[typeof (T)] = new (Read<T>().Cast<IRecord>()
 												 .ToDictionary(static record => record.PrimaryKey));
+
+		#endregion
 
 		#endregion
 	}

@@ -2,6 +2,10 @@
 
 public sealed class GroupPlayer : LinkRecord
 {
+	#region Public interface
+
+	#region Data
+
 	public int GroupId { get; private set; }
 
 	public Group Group
@@ -10,11 +14,12 @@ public sealed class GroupPlayer : LinkRecord
 		init => GroupId = value.Id;
 	}
 
-	#region IRecord interface implementation
+	#endregion
 
-	private const string LinkKeyFormat = $"[{nameof (GroupId)}] = {{0}}";
+	#region IRecord implementation
 
-	protected override string LinkKey => Format(LinkKeyFormat, GroupId);
+	protected override string LinkKey => Format($"[{nameof (GroupId)}] = {{0}}",
+												GroupId);
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -23,6 +28,8 @@ public sealed class GroupPlayer : LinkRecord
 		PlayerId = record.Integer(nameof (PlayerId));
 		return this;
 	}
+
+	#endregion
 
 	#endregion
 }

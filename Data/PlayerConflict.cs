@@ -2,14 +2,18 @@
 
 public sealed class PlayerConflict : LinkRecord, IInfoRecord
 {
+	#region Public interface
+
+	#region Data
+
 	public int Value;
 
 	public IEnumerable<int> ConflictedPlayerIds => [PlayerIds.playerId, PlayerIds.otherPlayerId];
 	public override int PlayerId => PlayerIds.playerId;
 
-	private (int playerId, int otherPlayerId) PlayerIds { get; set; }
-	private int OtherPlayerId => PlayerIds.otherPlayerId;
-	private IEnumerable<Player> Players => ReadMany<Player>(player => Involves(player.Id));
+	#endregion
+
+	#region Constructors
 
 	[UsedImplicitly]
 	public PlayerConflict() { }
@@ -25,15 +29,21 @@ public sealed class PlayerConflict : LinkRecord, IInfoRecord
 		PlayerIds = (Math.Min(playerId, conflictedPlayerId), Math.Max(playerId, conflictedPlayerId));
 	}
 
+	#endregion
+
+	#region Methods
+
 	public Player PlayerConflictedWith(int playerId)
 		=> Players.Single(player => player.Id != playerId);
 
 	public bool Involves(int playerId)
 		=> playerId == PlayerIds.playerId || OtherPlayerId == playerId;
 
-	#region IInfoRecord interface implementation
+	#endregion
 
-	#region IRecord interface implementation
+	#region IInfoRecord implementation
+
+	#region IRecord implementation
 
 	protected override string PlayerIdColumnName => "player1";
 	protected override string LinkKey => $"[{OtherPlayerColumnName}] = {OtherPlayerId}";
@@ -46,15 +56,27 @@ public sealed class PlayerConflict : LinkRecord, IInfoRecord
 		return this;
 	}
 
-	private const string OtherPlayerColumnName = "player2";
+	#endregion
+
+	public string FieldValues => Format($$"""
+										  [{{nameof (Value)}}] = {0}
+										  """, Value);
 
 	#endregion
 
-	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (Value)}}] = {0}
-	                                           """;
+	#endregion
 
-	public string FieldValues => Format(FieldValuesFormat, Value);
+	#region Private implementation
+
+	#region Data
+
+	private const string OtherPlayerColumnName = "player2";
+
+	private (int playerId, int otherPlayerId) PlayerIds { get; set; }
+	private int OtherPlayerId => PlayerIds.otherPlayerId;
+	private IEnumerable<Player> Players => ReadMany<Player>(player => Involves(player.Id));
+
+	#endregion
 
 	#endregion
 }

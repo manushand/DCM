@@ -146,7 +146,7 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 			return;
 		var overall = index is 0;
 		BestPowersDataGridView.FillWith(BestGames.Where(game => overall
-															 || index - 1 == game.Power.AsInteger())
+															 || index - 1 == game.Power.AsInteger)
 												 .OrderBy(game => overall
 																	  ? game.OverallRank
 																	  : game.PowerRank));

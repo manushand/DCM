@@ -91,9 +91,9 @@ internal sealed partial class PlayerListForm : Form
 			return;
 		var addresses = EmailAddressTextBox.Text
 										   .AsEmailAddresses;
-		if (addresses.Length != 0)
+		if (addresses.Length > 0)
 		{
-			var badAddress = addresses.FirstOrDefault(static email => !email.IsValidEmail());
+			var badAddress = addresses.FirstOrDefault(static email => !email.IsValidEmail);
 			if (badAddress is not null)
 			{
 				MessageBox.Show($"Invalid email address ({badAddress}) provided.",

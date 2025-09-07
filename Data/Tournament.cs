@@ -5,15 +5,19 @@ namespace Data;
 
 public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecord.IEvent
 {
+	#region Public interface
+
+	#region Attribute and Types
+
 	[AttributeUsage(AttributeTargets.Field)]
 	public sealed partial class PowerGroupingsAttribute(PowerGroups name, string groups) : Attribute
 	{
 		public readonly string Text = $"{GroupName.Replace($"{name}", "$1-$2").ToUpper(),-11}({groups})";
 		internal readonly string[] Groups = groups.Split('-');
+		private static readonly Regex GroupName = GroupNameRegex();
 
 		[GeneratedRegex("(.)([A-Z])")]
 		private static partial Regex GroupNameRegex();
-		private static readonly Regex GroupName = GroupNameRegex();
 	}
 
 	[PublicAPI] // to prevent R# complaining of unused enum values
@@ -34,6 +38,10 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 		[PowerGroupings(Lepanto, "AIT-EG-FR")]
 		Lepanto
 	}
+
+	#endregion
+
+	#region Data
 
 	public DateTime Date;
 	public PowerGroups GroupPowers;
@@ -59,6 +67,14 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 	public int ScoringSystemId { get; private set; }
 	public int? GroupId { get; private set; }
 
+	public bool IsEvent => Group.IsNone;
+	public bool HasTeamTournament => TeamSize > 0;
+	public TournamentPlayer[] TournamentPlayers => [..ReadMany<TournamentPlayer>(tournamentPlayer => tournamentPlayer.TournamentId == Id)];
+	public Team[] Teams => [..ReadMany<Team>(team => team.TournamentId == Id)];
+	public Round[] Rounds => [..ReadMany<Round>(round => round.TournamentId == Id).Order()];
+	public Game[] Games => _games ??= [..Rounds.SelectMany(static round => round.Games)];
+	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
+
 	public ScoringSystem ScoringSystem
 	{
 		get => field.Id == ScoringSystemId
@@ -77,19 +93,15 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 	{
 		get => GroupId > 0
 				   ? field.Id != GroupId
-					   ? field = ReadById<Group>(GroupId.Value)
-					   : field
+						 ? field = ReadById<Group>(GroupId.Value)
+						 : field
 				   : Group.None;
 		internal init => (field, GroupId) = (value, value.Id);
 	} = Group.None;
 
-	public bool IsEvent => Group.IsNone;
-	public bool HasTeamTournament => TeamSize > 0;
-	public TournamentPlayer[] TournamentPlayers => [..ReadMany<TournamentPlayer>(tournamentPlayer => tournamentPlayer.TournamentId == Id)];
-	public Team[] Teams => [..ReadMany<Team>(team => team.TournamentId == Id)];
-	public Round[] Rounds => [..ReadMany<Round>(round => round.TournamentId == Id).Order()];
-	public Game[] Games => [..Rounds.SelectMany(static round => round.Games)];
-	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
+	#endregion
+
+	#region Methods
 
 	public TournamentPlayer AddPlayer(Player player)
 		=> CreateOne(new TournamentPlayer { Tournament = this, Player = player });
@@ -111,9 +123,12 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 		return round;
 	}
 
-	#region IInfoRecord interface implementation
+	internal void InvalidateGamesCache()
+		=> _games = null;
 
-	#region IRecord interface implementation
+	#region IInfoRecord implementation
+
+	#region IRecord implementation
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -137,8 +152,8 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 		RoundsToDrop = Abs(roundsToDrop);
 		DropBeforeFinalRound = roundsToDrop < 0;
 		var scalePercentage = record.Decimal(nameof (ScalePercentage));
-		RoundsToScale = (int)scalePercentage;
-		ScalePercentage = (int)(scalePercentage % 1m * 100);
+		RoundsToScale = scalePercentage.AsInteger;
+		ScalePercentage = (scalePercentage % 1m * 100).AsInteger;
 		var teamSize = record.Integer(nameof (TeamSize));
 		TeamSize = Abs(teamSize);
 		PlayerCanJoinManyTeams = teamSize < 0;
@@ -153,28 +168,26 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 
 	#endregion
 
-	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (Name)}}] = {0},
-	                                           [{{nameof (Description)}}] = {1},
-	                                           [{{nameof (Date)}}] = {2},
-	                                           [{{nameof (ScoringSystemId)}}] = {3},
-	                                           [{{nameof (TeamConflict)}}] = {4},
-	                                           [{{nameof (PlayerConflict)}}] = {5},
-	                                           [{{nameof (PowerConflict)}}] = {6},
-	                                           [{{nameof (TotalRounds)}}] = {7},
-	                                           [{{nameof (MinimumRounds)}}] = {8},
-	                                           [{{nameof (AssignPowers)}}] = {9},
-	                                           [{{nameof (GroupPowers)}}] = {10},
-	                                           [{{nameof (UnplayedScore)}}] = {11},
-	                                           [{{nameof (RoundsToDrop)}}] = {12},
-	                                           [{{nameof (ScalePercentage)}}] = {13}.{14},
-	                                           [{{nameof (TeamSize)}}] = {15},
-	                                           [{{nameof (TeamRound)}}] = {16},
-	                                           [{{nameof (ScoreConflict)}}] = {17},
-	                                           [{{nameof (GroupId)}}] = {18}
-	                                           """;
-
-	public override string FieldValues => Format(FieldValuesFormat,
+	public override string FieldValues => Format($$"""
+												   [{{nameof (Name)}}] = {0},
+												   [{{nameof (Description)}}] = {1},
+												   [{{nameof (Date)}}] = {2},
+												   [{{nameof (ScoringSystemId)}}] = {3},
+												   [{{nameof (TeamConflict)}}] = {4},
+												   [{{nameof (PlayerConflict)}}] = {5},
+												   [{{nameof (PowerConflict)}}] = {6},
+												   [{{nameof (TotalRounds)}}] = {7},
+												   [{{nameof (MinimumRounds)}}] = {8},
+												   [{{nameof (AssignPowers)}}] = {9},
+												   [{{nameof (GroupPowers)}}] = {10},
+												   [{{nameof (UnplayedScore)}}] = {11},
+												   [{{nameof (RoundsToDrop)}}] = {12},
+												   [{{nameof (ScalePercentage)}}] = {13}.{14},
+												   [{{nameof (TeamSize)}}] = {15},
+												   [{{nameof (TeamRound)}}] = {16},
+												   [{{nameof (ScoreConflict)}}] = {17},
+												   [{{nameof (GroupId)}}] = {18}
+												   """,
 												 Name.ForSql(),
 												 Description.ForSql(),
 												 Date.ForSql(),
@@ -193,6 +206,16 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 												 TeamRound.NegatedIf(TeamsPlayMultipleRounds),
 												 ScoreConflict.NegatedIf(ProgressiveScoreConflict),
 												 GroupId.ForSql());
+
+	#endregion
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	private Game[]? _games;
 
 	#endregion
 }

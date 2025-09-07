@@ -60,14 +60,14 @@ internal sealed partial class TeamsControl : UserControl
 		if (NonMemberListBox.SelectedItem is Player joiningPlayer)
 		{
 			SkipHandlers(NonMemberListBox.ClearSelected);
-			Team.AddPlayer(joiningPlayer);
+			Team += joiningPlayer;
 			FillMembershipLists();
 			MemberListBox.SelectedItem = MemberListBox.Find(joiningPlayer);
 		}
 		else if (MemberListBox.SelectedItem is Player leavingPlayer)
 		{
 			SkipHandlers(MemberListBox.ClearSelected);
-			Delete(Team.TeamPlayers.ByPlayerId(leavingPlayer.Id));
+			Team -= leavingPlayer;
 			FillMembershipLists();
 			NonMemberListBox.SelectedItem = NonMemberListBox.Find(leavingPlayer);
 		}

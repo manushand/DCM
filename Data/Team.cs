@@ -2,18 +2,37 @@
 
 public sealed class Team : IdentityRecord<Team>
 {
+	#region Public interface
+
+	#region Data
+
 	public int TournamentId;
 
 	public TeamPlayer[] TeamPlayers => [..ReadMany<TeamPlayer>(teamPlayer => teamPlayer.TeamId == Id)];
 
 	public Player[] Players => [..TeamPlayers.Select(static teamPlayer => teamPlayer.Player)];
 
-	public void AddPlayer(Player player)
-		=> CreateOne(new TeamPlayer { Team = this, Player = player });
+	#endregion
 
-	#region IInfoRecord interface implementation
+	#region Methods
 
-	#region IRecord interface implementation
+	public static Team operator +(Team team, Player player)
+	{
+		CreateOne(new TeamPlayer { Team = team, Player = player });
+		return team;
+	}
+
+	public static Team operator -(Team team, Player player)
+	{
+		Delete(team.TeamPlayers.ByPlayerId(player.Id));
+		return team;
+	}
+
+	#endregion
+
+	#region IInfoRecord implementation
+
+	#region IRecord implementation
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -26,14 +45,14 @@ public sealed class Team : IdentityRecord<Team>
 
 	#endregion
 
-	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (Name)}}] = {0},
-	                                           [{{nameof (TournamentId)}}] = {1}
-	                                           """;
-
-	public override string FieldValues => Format(FieldValuesFormat,
+	public override string FieldValues => Format($$"""
+												   [{{nameof (Name)}}] = {0},
+												   [{{nameof (TournamentId)}}] = {1}
+												   """,
 												 Name.ForSql(),
 												 TournamentId);
+
+	#endregion
 
 	#endregion
 }

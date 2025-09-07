@@ -26,6 +26,7 @@ global using Group = Data.Group;
 //
 using System.Net;
 using DGVPrinterHelper;
+using static System.Drawing.Color;
 using static System.IO.Directory;
 using static System.Reflection.BindingFlags;
 using static System.Threading.Tasks.Task;
@@ -39,6 +40,19 @@ using static DatabaseTypes;
 
 internal static class PC
 {
+	#region Type
+
+	private sealed class PowerColor : DataGridViewCellStyle
+	{
+		public PowerColor(Color backColor)
+			=> (BackColor, ForeColor) = (backColor, Contrast(backColor));
+
+		private static Color Contrast(Color color)
+			=> (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255 > 0.5 ? Black : White;
+	}
+
+	#endregion
+
 	#region Fields and Properties
 
 	internal static readonly string Version = Assembly.GetEntryAssembly()?
@@ -51,48 +65,23 @@ internal static class PC
 	internal static DatabaseTypes DatabaseType
 	{
 		get => Settings.DatabaseType.As<DatabaseTypes>();
-		private set => Settings.DatabaseType = value.AsInteger();
+		private set => Settings.DatabaseType = value.AsInteger;
 	}
 	internal static bool SkippingHandlers { get; private set; }
 
 	internal static int[] Seven => [..Range(0, 7).OrderBy(RandomNumber)];
 
-	private static readonly SortedDictionary<Powers, DataGridViewCellStyle> PowerColors
+	private static readonly SortedDictionary<Powers, PowerColor> PowerColors
 		= new ()
 		  {
-			  [Austria] = new ()
-						  {
-							  BackColor = Color.Red,
-							  ForeColor = Color.White
-						  },
-			  [England] = new ()
-						  {
-							  BackColor = Color.RoyalBlue,
-							  ForeColor = Color.White
-						  },
-			  [France] = new ()
-						 {
-							 BackColor = Color.SkyBlue
-						 },
-			  [Germany] = new ()
-						  {
-							  BackColor = Color.Black,
-							  ForeColor = Color.White
-						  },
-			  [Italy] = new ()
-						{
-							BackColor = Color.Lime
-						},
-			  [Russia] = new (),
-			  [Turkey] = new ()
-						 {
-							 BackColor = Color.Yellow
-						 },
-			  [TBD] = new ()
-					  {
-						  BackColor = SystemColors.Control,
-						  ForeColor = SystemColors.WindowText
-					  }
+			  [Austria] = new (Red),
+			  [England] = new (RoyalBlue),
+			  [France] = new (SkyBlue),
+			  [Germany] = new (Black),
+			  [Italy] = new (Lime),
+			  [Russia] = new (White),
+			  [Turkey] = new (Yellow),
+			  [TBD] = new (SystemColors.Control)
 		  };
 	private static readonly object[] EmptyEventArgs = [EventArgs.Empty];
 	private static readonly string[] DatabaseFileExtensions = [".dcm", ".mdb", ".accdb"];
@@ -143,7 +132,7 @@ internal static class PC
 				tabControl.TabPages.Remove(tabPage);
 		}
 
-		//	BUG: Rider (but not VS's ReSharper) wrongly claims that this method (and others) can be static.
+		//	BUG: Rider (and VS's ReSharper) wrongly claims that this method (and others) can be static.
 		//		 https://youtrack.jetbrains.com/issue/RIDER-128618
 		internal void ActivateTab(int tabNumber)
 		{
@@ -216,9 +205,12 @@ internal static class PC
 			//	We use "dynamic" here as a neat little trick taking advantage of the fact that
 			//	although the two types don't share an interface, they have methods with identical
 			//	signatures for doing what we want to do.
-			var items = ((dynamic)listControl).Items;
+			dynamic control = listControl;
+			control.BeginUpdate();
+			var items = control.Items;
 			items.Clear();
 			items.AddRange(elements);
+			control.EndUpdate();
 		}
 	}
 
@@ -304,10 +296,6 @@ internal static class PC
 			}
 		}
 
-		internal void AlignColumn(DataGridViewContentAlignment alignment,
-								  params int[] columns)
-			=> columns.ForEach(column => dataGridView.Columns[column].DefaultCellStyle.Alignment = alignment);
-
 		internal void PowerCells(int column)
 		{
 			dataGridView.Columns[column].HeaderCell.Style.Alignment = MiddleCenter;
@@ -340,6 +328,12 @@ internal static class PC
 			printer.PrintDataGridView(dataGridView);
 		}
 	}
+
+	//	BUG: (in C# 14 extension blocks) -- if this is added to the block, it becomes "params int[]? columns" (!)
+	internal static void AlignColumn(this DataGridView dataGridView,
+									 DataGridViewContentAlignment alignment,
+									 params int[] columns)
+		=> columns.ForEach(column => dataGridView.Columns[column].DefaultCellStyle.Alignment = alignment);
 
 	extension(DataGridViewCellStyle style)
 	{
@@ -543,18 +537,18 @@ internal static class PC
 		SkippingHandlers = false;
 	}
 
-	internal static void Show<T>([InstantHandle] Action<T>? after = null)
+	internal static void Show<T>([InstantHandle] Action<T>? afterAction = null)
 		where T : Form, new()
-		=> Show(static () => new (), after);
+		=> Show(static () => new (), afterAction);
 
 	internal static void Show<T>([InstantHandle] Func<T> constructor,
-								 [InstantHandle] Action<T>? after = null)
+								 [InstantHandle] Action<T>? afterAction = null)
 		where T : Form
 	{
 		using var form = constructor();
 		form.StartPosition = FormStartPosition.CenterScreen;
 		form.ShowDialog();
-		after?.Invoke(form);
+		afterAction?.Invoke(form);
 	}
 
 	internal static Font BoldFont(Font font)

@@ -4,6 +4,10 @@ using static Group.GamesToRate;
 
 public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 {
+	#region Public interface
+
+	#region Types
+
 	public sealed record RatingRecord(Player Player, double Rating, int Games);
 
 	public enum GamesToRate : byte
@@ -14,6 +18,10 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 		AllGamesScoreableWithGroupSystem = 2
 	}
 
+	#endregion
+
+	#region Data
+
 	public int Conflict;
 
 	public string Description = Empty;
@@ -21,6 +29,11 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 	public int ScoringSystemId => HostRound.IsNone ? default : HostRound.ScoringSystemId;
 
 	public IEnumerable<Player> Players => ReadMany<GroupPlayer>(groupPlayer => groupPlayer.GroupId == Id).Select(static groupPlayer => groupPlayer.Player);
+
+	public Game[] Games => [..HostRound.Games
+									   .OrderBy(static game => game.Date)];
+
+	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
 
 	//  HostRound for Group games (which are modeled as a single-round Tournament)
 	public Round HostRound
@@ -64,10 +77,22 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 		}
 	}
 
-	public Game[] Games => [..HostRound.Games
-									   .OrderBy(static game => game.Date)];
+	#endregion
 
-	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
+	#region Methods
+
+	public static Group operator +(Group group, Player player)
+	{
+		CreateOne(new GroupPlayer { Group = group, Player = player });
+		return group;
+	}
+
+	public static Group operator -(Group group, Player player)
+	{
+		Delete<GroupPlayer>(groupPlayer => groupPlayer.GroupId == group.Id
+										&& groupPlayer.PlayerId == player.Id);
+		return group;
+	}
 
 	public bool IsRatable(Game game,
 						  GamesToRate gamesToRate)
@@ -87,7 +112,7 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 	{
 		var scoringSystem = ScoringSystem.OrThrow();
 		var playerId = player.Id;
-		var comparer = includeTheBeforeGame.AsInteger();
+		var comparer = includeTheBeforeGame.AsInteger;
 		double[] scores = [..ReadMany<Game>(game => IsRatable(game, gamesToRate)
 												 && (beforeThisGame is null
 												 || (game.Date, game.Round.Number, game.Number).CompareTo((beforeThisGame.Date,
@@ -112,9 +137,11 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 									  scores.Length);
 	}
 
-	#region IInfoRecord interface implementation
+	#endregion
 
-	#region IRecord interface implementation
+	#region IInfoRecord implementation
+
+	#region IRecord implementation
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -128,16 +155,16 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 
 	#endregion
 
-	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (Name)}}] = {0},
-	                                           [{{nameof (Description)}}] = {1},
-	                                           [{{nameof (Conflict)}}] = {2}
-	                                           """;
-
-	public override string FieldValues => Format(FieldValuesFormat,
+	public override string FieldValues => Format($$"""
+												   [{{nameof (Name)}}] = {0},
+												   [{{nameof (Description)}}] = {1},
+												   [{{nameof (Conflict)}}] = {2}
+												   """,
 												 Name.ForSql(),
 												 Description.ForSql(),
 												 Conflict);
+
+	#endregion
 
 	#endregion
 }

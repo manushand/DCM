@@ -12,6 +12,10 @@ public sealed partial class ScoringSystem
 {
 	private sealed partial class Calculator
 	{
+		#region Public interface
+
+		#region Data
+
 		internal static Scoring Scoring
 		{
 			get => field.IsNone
@@ -20,9 +24,26 @@ public sealed partial class ScoringSystem
 			set;
 		} = Scoring.None;
 
-		private readonly PowerData _powerData;
-		private string _formula;
-		private double _term;
+		#endregion
+
+		#region Method
+
+		internal static double Calculate(string formula)
+		{
+			Aliases.Clear();
+#if Routines
+			Routines.Clear();
+#endif
+			return Calculate(formula, Scoring.Player);
+		}
+
+		#endregion
+
+		#endregion
+
+		#region Private implementation
+
+		#region Type
 
 		private enum Operators : byte
 		{
@@ -52,6 +73,22 @@ public sealed partial class ScoringSystem
 			Min,
 			Max
 		}
+
+		#endregion
+
+		#region Data
+
+		private const char RepeatQuote = '`';
+
+#if Routines
+		private const string RoutineQuotes = "\"'";
+#else
+		private const string RoutineQuotes = "";
+#endif
+
+		private static readonly Regex Alias = AliasRegex();
+
+		private static readonly Regex Number = NumberRegex();
 
 		private static readonly SortedDictionary<string, Operators> ShorthandLookups =
 			new ()
@@ -105,28 +142,20 @@ public sealed partial class ScoringSystem
 				[Operators.CeilingOver] = static (result, term) => term is 0 ? 0 : Ceiling(result / term),
 				[Operators.FloorOver] = static (result, term) => term is 0 ? 0 : Floor(result / term),
 				[Operators.Mod] = static (result, term) => term is 0 ? 0 : result % term,
-				[Operators.ToPower] = static (result, term) => result < 0 && term.NotEquals(Truncate(term)) || result is 0 && term < 0
+				[Operators.ToPower] = static (result, term) => result < 0 && term.DoesNotEqual(Truncate(term)) || result is 0 && term < 0
 																   ? 0
 																   : Math.Pow(result, term),
-				[Operators.LessThan] = static (result, term) => (result < term).AsInteger(),
-				[Operators.Exceeds] = static (result, term) => (result > term).AsInteger(),
-				[Operators.Is] = static (result, term) => result.Equals(term).AsInteger(),
-				[Operators.IsNot] = static (result, term) => result.NotEquals(term).AsInteger(),
-				[Operators.ExceedsOrIs] = static (result, term) => (result >= term).AsInteger(),
-				[Operators.LessOrEqual] = static (result, term) => (result <= term).AsInteger(),
+				[Operators.LessThan] = static (result, term) => (result < term).AsInteger,
+				[Operators.Exceeds] = static (result, term) => (result > term).AsInteger,
+				[Operators.Is] = static (result, term) => result.Equals(term).AsInteger,
+				[Operators.IsNot] = static (result, term) => result.DoesNotEqual(term).AsInteger,
+				[Operators.ExceedsOrIs] = static (result, term) => (result >= term).AsInteger,
+				[Operators.LessOrEqual] = static (result, term) => (result <= term).AsInteger,
 				[Operators.And] = static (result, term) => Math.Abs(Math.Sign(result * term)),
 				[Operators.Or] = static (result, term) => Math.Sign(Math.Abs(result) + Math.Abs(term)),
 				[Operators.Min] = Math.Max, //	Yes, min means get max of the two,
 				[Operators.Max] = Math.Min  //	and vice-versa. I.e., 60 max 40 = 40
 			};
-
-		[GeneratedRegex(@"^[a-z][a-z\d]*", RegexOptions.IgnoreCase)]
-		private static partial Regex AliasRegex();
-		private static readonly Regex Alias = AliasRegex();
-
-		[GeneratedRegex(@"^(?=-?\.?\d)-?\d*\.?\d*")]
-		private static partial Regex NumberRegex();
-		private static readonly Regex Number = NumberRegex();
 
 		//	The Operator*hands collections must be ordered arrays, due to things like = vs. == and Is vs. IsNot.
 		//	These are detected using .FirstOrDefault(Formula.Starts()), which provides the case-insensitivity.
@@ -151,12 +180,7 @@ public sealed partial class ScoringSystem
 
 #if Routines
 		private static readonly SortedDictionary<string, string> Routines = new (OrdinalIgnoreCase);
-
-		private const string RoutineQuotes = "\"'";
-#else
-		private const string RoutineQuotes = "";
 #endif
-		private const char RepeatQuote = '`';
 
 		private static readonly string AllQuotes = $"{RoutineQuotes}{RepeatQuote}";
 
@@ -200,21 +224,21 @@ public sealed partial class ScoringSystem
 			new (OrdinalIgnoreCase)
 			{
 				//	Booleans (integer 1 or 0)
-				[nameof (Scoring)] = static powerData => (Scoring.Player.Power == powerData.Power).AsInteger(),
-				[nameof (Scoring.Won)] = static powerData => powerData.Won.AsInteger(),
-				[nameof (Scoring.WonAlone)] = static powerData => powerData.WonAlone.AsInteger(),
-				[nameof (Scoring.WonSolo)] = static powerData => powerData.WonSolo.AsInteger(),
-				[nameof (Scoring.WonConcession)] = static powerData => powerData.WonConcession.AsInteger(),
-				[nameof (Scoring.WonDraw)] = static powerData => powerData.WonDraw.AsInteger(),
-				[nameof (Scoring.Lost)] = static powerData => powerData.Lost.AsInteger(),
-				[nameof (Scoring.Survived)] = static powerData => powerData.Survived.AsInteger(),
-				[nameof (Scoring.SurvivedSolo)] = static powerData => powerData.SurvivedSolo.AsInteger(),
-				[nameof (Scoring.SurvivedConcession)] = static powerData => powerData.SurvivedConcession.AsInteger(),
-				[nameof (Scoring.SurvivedDraw)] = static powerData => powerData.SurvivedDraw.AsInteger(),
-				[nameof (Scoring.Conceded)] = static powerData => powerData.Conceded.AsInteger(),
-				[nameof (Scoring.Eliminated)] = static powerData => powerData.Eliminated.AsInteger(),
-				[nameof (Scoring.Uneliminated)] = static powerData => powerData.Uneliminated.AsInteger(),
-				[nameof (Scoring.WasLeader)] = static powerData => powerData.WasLeader.AsInteger(),
+				[nameof (Scoring)] = static powerData => (Scoring.Player.Power == powerData.Power).AsInteger,
+				[nameof (Scoring.Won)] = static powerData => powerData.Won.AsInteger,
+				[nameof (Scoring.WonAlone)] = static powerData => powerData.WonAlone.AsInteger,
+				[nameof (Scoring.WonSolo)] = static powerData => powerData.WonSolo.AsInteger,
+				[nameof (Scoring.WonConcession)] = static powerData => powerData.WonConcession.AsInteger,
+				[nameof (Scoring.WonDraw)] = static powerData => powerData.WonDraw.AsInteger,
+				[nameof (Scoring.Lost)] = static powerData => powerData.Lost.AsInteger,
+				[nameof (Scoring.Survived)] = static powerData => powerData.Survived.AsInteger,
+				[nameof (Scoring.SurvivedSolo)] = static powerData => powerData.SurvivedSolo.AsInteger,
+				[nameof (Scoring.SurvivedConcession)] = static powerData => powerData.SurvivedConcession.AsInteger,
+				[nameof (Scoring.SurvivedDraw)] = static powerData => powerData.SurvivedDraw.AsInteger,
+				[nameof (Scoring.Conceded)] = static powerData => powerData.Conceded.AsInteger,
+				[nameof (Scoring.Eliminated)] = static powerData => powerData.Eliminated.AsInteger,
+				[nameof (Scoring.Uneliminated)] = static powerData => powerData.Uneliminated.AsInteger,
+				[nameof (Scoring.WasLeader)] = static powerData => powerData.WasLeader.AsInteger,
 				//	Integers
 				[nameof (Scoring.Years)] = static powerData => powerData.Years,
 				[nameof (Scoring.Centers)] = static powerData => powerData.Centers,
@@ -239,7 +263,16 @@ public sealed partial class ScoringSystem
 				[nameof (Scoring.OtherScore)] = static powerData => powerData.OtherScore
 			};
 
+		private readonly PowerData _powerData;
+
+		private string _formula;
+		private double _term;
+
 		private double Result { get; }
+
+		#endregion
+
+		#region Constructors
 
 		static Calculator()
 			=> ReservedAliases.UnionWith([
@@ -250,19 +283,6 @@ public sealed partial class ScoringSystem
 											 ..PowerNames,
 											 ..OperatorLonghands
 										 ]);
-
-		internal static double Calculate(string formula)
-		{
-			Aliases.Clear();
-#if Routines
-			Routines.Clear();
-#endif
-			return Calculate(formula, Scoring.Player);
-		}
-
-		private static double Calculate(string formula,
-										PowerData contextPlayer)
-			=> new Calculator(formula, contextPlayer).Result;
 
 		private Calculator(string formula,
 						   PowerData contextPlayer)
@@ -446,7 +466,7 @@ public sealed partial class ScoringSystem
 					return;
 				//	!n == logical negative of n (0 or 1)
 				case '!':
-					_term = (GetUnaryTerm() is 0).AsInteger();
+					_term = (GetUnaryTerm() is 0).AsInteger;
 					return;
 				//	+n == absolute value of n
 				case '+':
@@ -462,23 +482,22 @@ public sealed partial class ScoringSystem
 				//	@n == true (1) if the player participated in an n-way draw, else false (0)
 				case '@':
 					//	Don't reverse the order of the && or the GetUnaryTerm may not get parsed past!
-					_term = (Scoring.Winners == (int)GetUnaryTerm()
-						 &&  _powerData.Won).AsInteger();
+					_term = (Scoring.Winners == GetUnaryTerm().AsInteger && _powerData.Won).AsInteger;
 					return;
 				//	#n == true (1) if the player's center rank might be n, else false (0)
 				case '#':
 					_term = GetUnaryTerm().IsBetween(_powerData.BestCenterRank, _powerData.WorstCenterRank)
-										  .AsInteger();
+										  .AsInteger;
 					return;
 				//	$n == true (1) if the player's survivor rank might be n, else false (0)
 				case '$':
 					_term = GetUnaryTerm().IsBetween(_powerData.BestSurvivorRank, _powerData.WorstSurvivorRank)
-										  .AsInteger();
+										  .AsInteger;
 					return;
 				//	~n == true (1) if the player's elimination order might be n, else false (0)
 				case '~':
 					_term = GetUnaryTerm().IsBetween(_powerData.WorstEliminationOrder, _powerData.BestEliminationOrder)
-										  .AsInteger();
+										  .AsInteger;
 					return;
 				//	\|n == square root of n
 				case '\\' when _formula.Starts(@"\|"):
@@ -638,11 +657,29 @@ public sealed partial class ScoringSystem
 										   .Value;
 					if (stringTerm.Length is 0)
 						return false;
-					_term = stringTerm.AsDouble();
+					_term = stringTerm.AsDouble;
 					DropText(stringTerm);
 					return true;
 				}
 			}
 		}
+
+		#endregion
+
+		#region Methods
+
+		private static double Calculate(string formula,
+										PowerData contextPlayer)
+			=> new Calculator(formula, contextPlayer).Result;
+
+		[GeneratedRegex(@"^[a-z][a-z\d]*", RegexOptions.IgnoreCase)]
+		private static partial Regex AliasRegex();
+
+		[GeneratedRegex(@"^(?=-?\.?\d)-?\d*\.?\d*")]
+		private static partial Regex NumberRegex();
+
+		#endregion
+
+		#endregion
 	}
 }

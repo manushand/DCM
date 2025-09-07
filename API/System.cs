@@ -12,6 +12,7 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 	public enum Languages : byte
 	{
 		DCM,
+
 		[EnumMember(Value = "C#")]
 		CSharp
 	}
@@ -36,7 +37,7 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 	}
 
 	[PublicAPI]
-	public sealed class Tester(Game.GamePlayer gamePlayer)
+	internal sealed class Tester(Game.GamePlayer gamePlayer)
 	{
 		public Powers Power { get; init; } = gamePlayer.Power;
 		public GameResults Result { get; init; } = gamePlayer.Result;
@@ -63,6 +64,9 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 
 		private static Data.Game _testGame = new ();
 	}
+
+	internal static void CreateEndpoints(WebApplication app)
+		=> CreateCrudEndpoints(app);
 
 	private protected override void LoadFromDataRecord(ScoringSystem record)
 		=> Info = new ()
@@ -92,9 +96,6 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 										 ? Record.TestGamePlayers.Select(gamePlayer => new Tester(new (gamePlayer, Record)))
 										 : throw Error.Exception($"Error scoring system {Record}", errors)
 				  };
-
-	internal static void CreateEndpoints(WebApplication app)
-		=> CreateCrudEndpoints(app);
 
 	private protected override string[] UpdateRecordForDatabase(System system)
 	{

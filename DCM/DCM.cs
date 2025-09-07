@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 using static System.Convert;
 using static System.Environment;
+using static System.Math;
 using static System.String;
 using static System.StringComparison;
 
@@ -28,9 +29,6 @@ public static partial class DCM
 		where T : class
 		=> @this ?? throw new InvalidOperationException(message);
 
-	public static int AsInteger<T>(this T @this)
-		=> ToInt32(@this);
-
 	public static void FillWith<T>(this List<T> @this,
 								   [InstantHandle] IEnumerable<T> items)
 	{
@@ -46,9 +44,20 @@ public static partial class DCM
 			   : @this[key] = func(key);
 
 	extension<T>(T @this)
+	{
+		public int AsInteger => ToInt32(@this switch
+										{
+											decimal @decimal => Truncate(@decimal),
+											double @double   => Truncate(@double),
+											string @string   => int.Parse(@string),
+											_                => @this
+										});
+	}
+
+	extension<T>(T @this)
 		where T : INumber<T>
 	{
-		public string Points => $"{"pt".Pluralize(@this.AsInteger(), true)}.";
+		public string Points => $"{"pt".Pluralize(@this.AsInteger, true)}.";
 	}
 
 	extension<T>([InstantHandle] IEnumerable<T> @this)
@@ -62,81 +71,34 @@ public static partial class DCM
 			=> @this.Where(func)
 					.ForEach(action);
 
-		public string BulletList(string intro)
-			=> $"{intro}:{Bullet}{Join(Bullet, @this)}";
-
-		public IEnumerable<T> Modify([InstantHandle] Action<T> func)
+		public IEnumerable<T> Modify([InstantHandle] Action<T> action)
 			=> @this.Select(item =>
 							{
-								func(item);
+								action(item);
 								return item;
 							});
 
-		public void Apply([InstantHandle] Action<T, int> func)
+		public void Apply([InstantHandle] Action<T, int> action)
 			=> @this.Select(static (item, index) => (item, index))
-					.ForEach(tuple => func(tuple.item, tuple.index));
-	}
+					.ForEach(tuple => action(tuple.item, tuple.index));
 
-	extension(Enum @this)
-	{
-		public string InCaps => $"{@this}".ToUpper();
-
-		public char Abbreviation => $"{@this}".First();
-
-		public int AsInteger()
-			=> (int)ChangeType(@this, typeof (int));
-	}
-
-	extension(double @this)
-	{
-		public bool NotEquals(double other)
-			=> !@this.Equals(other);
-
-		public bool IsBetween(double lowerBound,
-							  double upperBound)
-			=> @this >= lowerBound
-			&& @this <= upperBound;
-	}
-
-	extension(int @this)
-	{
-		public string Dotted => $"{@this}.";
-
-		public T As<T>()
-			where T : Enum
-			=> (T)Enum.ToObject(typeof (T), @this);
-
-		public int NegatedIf(bool negator)
-			=> negator
-				   ? -@this
-				   : @this;
+		public string BulletList(string intro)
+			=> $"{intro}:{Bullet}{Join(Bullet, @this)}";
 	}
 
 	extension(string @this)
 	{
-		// BUG: Must use > instead of "is not" below, or roslyn compile chokes
-		//		https://youtrack.jetbrains.com/issue/RIDER-128554
 		public string[] AsEmailAddresses => [..@this.Split(EmailSplitter)
 													.Select(static email => email.Trim())
-													.Where(static email => email.Length > 0)];
+													.Where(static email => email.Length is not 0)];
 
-		//	BUG: If this is made a property, any use of it (as a property) in OTHER assembly does not compile.
-		//		 However, uses of it (as a method) in the OTHER assembly DO compile, and uses of it (either as
-		//		 a method OR as a property) in this current assembly do compile.
-		//		 This seems to be a bug in the Roslyn compiler (also reported in the bug linked above).
-		public bool IsValidEmail()
-			=> EmailAddressFormat.IsMatch(@this.Trim());
+		public bool IsValidEmail => EmailAddressFormat.IsMatch(@this.Trim());
 
-		public double AsDouble()
-			=> double.Parse(@this);
+		public double AsDouble => double.Parse(@this);
 
-		public int? AsNullableInteger()
-			=> @this.Length is 0
-				   ? null
-				   : @this.AsInteger();
-
-		public int AsInteger()
-			=> int.Parse(@this);
+		public int? AsNullableInteger => @this.Length is 0
+											 ? null
+											 : @this.AsInteger;
 
 		public bool Matches(string other)
 			=> @this.Equals(other, InvariantCultureIgnoreCase);
@@ -157,6 +119,38 @@ public static partial class DCM
 						   bool symbol = false)
 			=> @this.StartsWith(start, InvariantCultureIgnoreCase)
 			&& (symbol || @this.Length == start.Length || !char.IsLetterOrDigit(@this[start.Length]));
+	}
+
+	extension(Enum @this)
+	{
+		public string InCaps => $"{@this}".ToUpper();
+
+		public char Abbreviation => $"{@this}".First();
+	}
+
+	extension(double @this)
+	{
+		public bool DoesNotEqual(double other)
+			=> !@this.Equals(other);
+
+		public bool IsBetween(double lowerBound,
+							  double upperBound)
+			=> @this >= lowerBound
+			&& @this <= upperBound;
+	}
+
+	extension(int @this)
+	{
+		public string Dotted => $"{@this}.";
+
+		public T As<T>()
+			where T : Enum
+			=> (T)Enum.ToObject(typeof (T), @this);
+
+		public int NegatedIf(bool negator)
+			=> negator
+				   ? -@this
+				   : @this;
 	}
 
 	#endregion
@@ -180,8 +174,8 @@ public static partial class DCM
 	private static readonly Random Random = new ();
 	private static readonly Regex EmailAddressFormat = EmailAddressRegex();
 
-	//	TODO: there's a lot of debate about what the best way to validate an email address is
-	//	TODO: I have usually used try { new MailAddress(text); } but it likes things I don't.
+	//	TODO: There's a lot of debate about what the best way to validate an email address is.
+	//		  I have usually used try { new MailAddress(text); } but it likes things I don't.
 	[GeneratedRegex("^(" +
 					@"[\dA-Z]" +              // Start with a digit or alphabetic character.
 					@"([\+\-_\.][\dA-Z]+)*" + // No continuous or ending +-_. chars in email.

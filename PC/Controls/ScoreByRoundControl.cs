@@ -84,7 +84,7 @@ internal sealed partial class ScoreByRoundControl : UserControl, IScoreControl
 		var roundNumber = tabPage.Text
 								 .Split()
 								 .Last()
-								 .AsInteger();
+								 .AsInteger;
 		var roundScores = Tournament.FinishedGames
 									.Where(game => game.Round.Number == roundNumber)
 									.SelectMany(static game => game.GamePlayers)

@@ -30,7 +30,7 @@ internal sealed partial class EventInfoForm : Form
 
 	internal void SetTeamsTabVisibility()
 	{
-		if (DetailsTabControl.TabCount == 2 - Event.HasTeamTournament.AsInteger())
+		if (DetailsTabControl.TabCount == 2 - Event.HasTeamTournament.AsInteger)
 			DetailsTabControl.AddOrRemove(TeamsTabPage, Event.HasTeamTournament);
 		SetFormTitle();
 	}
@@ -52,7 +52,7 @@ internal sealed partial class EventInfoForm : Form
 		TeamsControl.LoadControl(this);
 		SetTeamsTabVisibility();
 		DetailsTabControl.SelectedIndex = Event.HasTeamTournament
-											   .AsInteger();
+											   .AsInteger;
 	}
 
 	private void TournamentInfoForm_FormClosing(object sender,

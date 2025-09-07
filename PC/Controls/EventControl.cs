@@ -59,13 +59,13 @@ internal sealed partial class EventControl : UserControl
 				DropCheckBox.Checked = Tournament.RoundsToDrop is not 0;
 				RoundsToDropComboBox.SelectedIndex = Abs(Tournament.RoundsToDrop) - 1;
 				DropWhenComboBox.SelectedIndex = Tournament.DropBeforeFinalRound
-														   .AsInteger();
+														   .AsInteger;
 				ScaleCheckBox.Checked = Tournament.RoundsToScale is not 0;
 				RoundsToScaleComboBox.SelectedIndex = Abs(Tournament.RoundsToScale) - 1;
 				ScaleFactorTextBox.Text = $"{Tournament.ScalePercentage}";
 				PowerGroupComboBox.SelectedIndex = Tournament.GroupPowers
-															 .AsInteger();
-				PowerAssignmentComboBox.SelectedIndex = (!Tournament.AssignPowers).AsInteger();
+															 .AsInteger;
+				PowerAssignmentComboBox.SelectedIndex = (!Tournament.AssignPowers).AsInteger;
 				PlayerConflictTextBox.Text = $"{Tournament.PlayerConflict}";
 				PowerConflictTextBox.Text = $"{Tournament.PowerConflict}";
 				ScoreConflictTextBox.Text = $"{Tournament.ScoreConflict}";
@@ -76,7 +76,7 @@ internal sealed partial class EventControl : UserControl
 				TeamMemberConflictTextBox.Text = $"{Tournament.TeamConflict}";
 				TeamRoundComboBox.SelectedIndex = Tournament.TeamRound - 1;
 				TeamScoringComboBox.SelectedIndex = Tournament.TeamsPlayMultipleRounds
-															  .AsInteger();
+															  .AsInteger;
 				MultiTeamMembershipCheckBox.Checked = Tournament.PlayerCanJoinManyTeams;
 			}
         });

@@ -2,7 +2,9 @@
 
 public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer>
 {
-	#region Enumerations
+	#region Public interface
+
+	#region Types
 
 	public enum Powers : sbyte
 	{
@@ -27,7 +29,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	#endregion
 
-	#region Fields
+	#region Data
 
 	public int? Centers;
 	public int? Years;
@@ -36,13 +38,9 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 	public Powers Power;
 	public Results Result;
 
-	private double? _finalScore;
-
-	#endregion
-
-	#region Properties
-
 	public string PowerName => Power.InCaps;
+
+	public bool PlayComplete => !PlayIncomplete;
 
 	[UsedImplicitly]
 	public string Status => Game.Status switch
@@ -87,76 +85,6 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	public double ProvisionalScore { get; internal set; }
 
-	public bool PlayComplete => !PlayIncomplete;
-
-	private bool PlayIncomplete => Power is TBD
-								|| Game.ScoringSystem.UsesGameResult && Result is Unknown
-								|| Game.ScoringSystem.UsesCenterCount && Centers is null
-								|| Game.ScoringSystem.UsesYearsPlayed && Years is null;
-
-	private Tournament Tournament => Game.Tournament;
-
-	#endregion
-
-	#region IComparable interface implementation
-
-	public int CompareTo(GamePlayer? other)
-		=> other is null
-			   ? throw new ()
-			   : (GameId | other.GameId) is 0
-				   ? Power.CompareTo(other.Power)
-				   : (Game.Number, Power, Player.Name).CompareTo((other.Game.Number, other.Power, other.Player.Name));
-
-	#endregion
-
-	#region IInfoRecord interface implementation
-
-	#region IRecord interface implementation
-
-	private const string LinkKeyFormat = $"[{nameof (GameId)}] = {{0}}";
-
-	protected override string LinkKey => Format(LinkKeyFormat, GameId);
-
-	public override IRecord Load(DbDataReader record)
-	{
-		record.CheckDataType<GamePlayer>();
-		GameId = record.Integer(nameof (GameId));
-		PlayerId = record.Integer(nameof (PlayerId));
-		Power = record.IntegerAs<Powers>(nameof (Power));
-		Result = record.IntegerAs<Results>(nameof (Result));
-		Years = record.NullableInteger(nameof (Years));
-		Centers = record.NullableInteger(nameof (Centers));
-		Other = record.Double(nameof (Other));
-		return this;
-	}
-
-	#endregion
-
-	//	The PlayerId usually won't change, but in the case of the ReplaceButton it will, so it must be listed.
-	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (PlayerId)}}] = {0},
-	                                           [{{nameof (Power)}}] = {1},
-	                                           [{{nameof (Result)}}] = {2},
-	                                           [{{nameof (Years)}}] = {3},
-	                                           [{{nameof (Centers)}}] = {4},
-	                                           [{{nameof (Other)}}] = {5}
-	                                           """;
-
-	public string FieldValues => Format(FieldValuesFormat,
-										PlayerId,
-										Power.ForSql(),
-										Result.ForSql(),
-										Years.ForSql(),
-										Centers.ForSql(),
-										Other);
-
-	#endregion
-
-	#region Seeding data and code
-
-	private int? _roundNumber;
-	private int? _conflict;
-
 	public int Conflict
 	{
 		get => _conflict ??= CalculateConflict();
@@ -165,11 +93,9 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	public List<string> ConflictDetails { get; } = [];
 
-	private List<PlayerConflict> PlayerConflicts { get; } = [];
-	private List<Powers> PowersPlayedInTournament { get; } = [];
-	private List<int> PlayerIdsPlayedInTournament { get; } = [];
-	private List<int> TournamentTeamPlayerIds { get; } = [];
-	private Dictionary<Group, int[]> PlayerGroups { get; } = [];
+	#endregion
+
+	#region Methods
 
 	//	It is VERY important to pre-set all these things before seeding since they
 	//	will be re-referenced a lot during seeding when swaps are made and unmade.
@@ -296,7 +222,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 			if (divisor < 1)
 				divisor = 1;
 			var distanceFromAverage = Math.Abs(Game.AveragePreGameScore - Game.PreGameScore(this));
-			var conflict = (int)distanceFromAverage / divisor;
+			var conflict = (distanceFromAverage / divisor).AsInteger;
 			if (conflict > 0)
 			{
 				Conflict += conflict;
@@ -318,6 +244,84 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 				   _ => $"{times} times"
 			   };
 	}
+
+	#endregion
+
+	#region IComparable implementation
+
+	public int CompareTo(GamePlayer? other)
+		=> other is null
+			   ? throw new ()
+			   : (GameId | other.GameId) is 0
+				   ? Power.CompareTo(other.Power)
+				   : (Game.Number, Power, Player.Name).CompareTo((other.Game.Number, other.Power, other.Player.Name));
+
+	#endregion
+
+	#region IInfoRecord implementation
+
+	#region IRecord implementation
+
+	protected override string LinkKey => Format($"[{nameof (GameId)}] = {{0}}",
+												GameId);
+
+	public override IRecord Load(DbDataReader record)
+	{
+		record.CheckDataType<GamePlayer>();
+		GameId = record.Integer(nameof (GameId));
+		PlayerId = record.Integer(nameof (PlayerId));
+		Power = record.IntegerAs<Powers>(nameof (Power));
+		Result = record.IntegerAs<Results>(nameof (Result));
+		Years = record.NullableInteger(nameof (Years));
+		Centers = record.NullableInteger(nameof (Centers));
+		Other = record.Double(nameof (Other));
+		return this;
+	}
+
+	#endregion
+
+	//	The PlayerId usually won't change, but in the case of the ReplaceButton it will, so it must be listed.
+	public string FieldValues => Format($$"""
+										  [{{nameof (PlayerId)}}] = {0},
+										  [{{nameof (Power)}}] = {1},
+										  [{{nameof (Result)}}] = {2},
+										  [{{nameof (Years)}}] = {3},
+										  [{{nameof (Centers)}}] = {4},
+										  [{{nameof (Other)}}] = {5}
+										  """,
+										PlayerId,
+										Power.ForSql(),
+										Result.ForSql(),
+										Years.ForSql(),
+										Centers.ForSql(),
+										Other);
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private int? _roundNumber;
+	private int? _conflict;
+	private double? _finalScore;
+
+	private bool PlayIncomplete => Power is TBD
+								|| Game.ScoringSystem.UsesGameResult && Result is Unknown
+								|| Game.ScoringSystem.UsesCenterCount && Centers is null
+								|| Game.ScoringSystem.UsesYearsPlayed && Years is null;
+
+	private Tournament Tournament => Game.Tournament;
+
+	private List<PlayerConflict> PlayerConflicts { get; } = [];
+	private List<Powers> PowersPlayedInTournament { get; } = [];
+	private List<int> PlayerIdsPlayedInTournament { get; } = [];
+	private List<int> TournamentTeamPlayerIds { get; } = [];
+	private Dictionary<Group, int[]> PlayerGroups { get; } = [];
+
+	#endregion
 
 	#endregion
 }

@@ -2,18 +2,22 @@
 
 public sealed class RoundPlayer : LinkRecord
 {
-	internal int RoundId { get; private set; }
+	#region Public interface
+
+	#region Data
 
 	public Round Round
 	{
 		init => RoundId = value.Id;
 	}
 
-	#region IRecord interface implementation
+	internal int RoundId { get; private set; }
 
-	private const string LinkKeyFormat = $"[{nameof (RoundId)}] = {{0}}";
+	#endregion
 
-	protected override string LinkKey => Format(LinkKeyFormat, RoundId);
+	#region IRecord implementation
+
+	protected override string LinkKey => Format($"[{nameof (RoundId)}] = {{0}}", RoundId);
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -22,6 +26,8 @@ public sealed class RoundPlayer : LinkRecord
 		PlayerId = record.Integer(nameof (PlayerId));
 		return this;
 	}
+
+	#endregion
 
 	#endregion
 }

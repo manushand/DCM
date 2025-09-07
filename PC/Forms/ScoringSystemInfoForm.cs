@@ -71,7 +71,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 			AllowDrawsCheckBox.Checked = ScoringSystem.DrawsAllowed;
 			DiasCheckBox.Checked = ScoringSystem.DrawsIncludeAllSurvivors;
 			FinalGameYearComboBox.SelectedIndex = ScoringSystem.FinalGameYear - EarliestFinalGameYear + 1 ?? default;
-			FormulaTypeComboBox.SelectedIndex = ScoringSystem.UsesCompiledFormulas.AsInteger();
+			FormulaTypeComboBox.SelectedIndex = ScoringSystem.UsesCompiledFormulas.AsInteger;
 			ProvisionalScoreFormulaTextBox.Text = ScoringSystem.ProvisionalScoreFormula;
 			FinalScoreFormulaTextBox.Text = ScoringSystem.FinalScoreFormula;
 			PlayerAnteFormulaTextBox.Text = ScoringSystem.PlayerAnteFormula;

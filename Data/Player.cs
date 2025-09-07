@@ -2,6 +2,10 @@
 
 public sealed class Player : IdentityRecord<Player>
 {
+	#region Public interface
+
+	#region Data
+
 	public string EmailAddress = Empty;
 	public string FirstName = Empty;
 	public string LastName = Empty;
@@ -33,6 +37,10 @@ public sealed class Player : IdentityRecord<Player>
 		}
 	}
 
+	#endregion
+
+	#region Methods
+
 	public T[] LinksOfType<T>()
 		where T : LinkRecord, new()
 		=> [..ReadMany<T>(linkRecord => linkRecord.PlayerId == Id)];
@@ -48,9 +56,11 @@ public sealed class Player : IdentityRecord<Player>
 	public void AddPlayerConflict(Player player)
 		=> CreateOne(new PlayerConflict(Id, player.Id));
 
-	#region IInfoRecord interface implementation
+	#endregion
 
-	#region IRecord interface implementation
+	#region IInfoRecord implementation
+
+	#region IRecord implementation
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -64,16 +74,16 @@ public sealed class Player : IdentityRecord<Player>
 
 	#endregion
 
-	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (FirstName)}}] = {0},
-	                                           [{{nameof (LastName)}}] = {1},
-	                                           [{{nameof (EmailAddress)}}] = {2}
-	                                           """;
-
-	public override string FieldValues => Format(FieldValuesFormat,
+	public override string FieldValues => Format($$"""
+												   [{{nameof (FirstName)}}] = {0},
+												   [{{nameof (LastName)}}] = {1},
+												   [{{nameof (EmailAddress)}}] = {2}
+												   """,
 												 FirstName.ForSql(),
 												 LastName.ForSql(),
 												 EmailAddress.ForSql());
+
+	#endregion
 
 	#endregion
 }

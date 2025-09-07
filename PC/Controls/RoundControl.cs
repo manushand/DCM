@@ -351,7 +351,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		//	If for some reason the seeded player has no RoundPlayer
 		//	record (legacy only!), create the RoundPlayer record.
 		if (Round.RoundPlayers.All(roundPlayer => roundPlayer.PlayerId != gamePlayerId))
-			Round.AddPlayer(gamePlayer.Player);
+			Round += gamePlayer.Player;
 		UpdateOne(gamePlayer, formerPrimaryKey);
 		FillPlayerLists(ListsToFill.Seedable);
 		foreach (DataGridViewRow row in RegisteredDataGridView.Rows)
@@ -763,7 +763,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	private void RegisterPlayers(IEnumerable<SeedablePlayer>? players = null)
 	{
 		SeedablePlayer[] registeringPlayers = [..players ?? UnregisteredDataGridView.GetAll<SeedablePlayer>()];
-		registeringPlayers.ForEach(seedable => Round.AddPlayer(seedable.Player));
+		registeringPlayers.ForEach(seedable => Round += seedable.Player);
 		FillPlayerLists(ListsToFill.Unseeded);
 		if (players is null)
 			UnregisterAllButton.Focus();

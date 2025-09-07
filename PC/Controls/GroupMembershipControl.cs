@@ -50,7 +50,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 		if (NonMemberListBox.SelectedItems.Count is not 0)
 		{
 			var joiningPlayers = NonMemberListBox.GetMultiSelected<Player>();
-			CreateMany([..joiningPlayers.Select(player => new GroupPlayer { Group = Group, Player = player })]);
+			joiningPlayers.ForEach(player => Group += player);
 			SkipHandlers(NonMemberListBox.ClearSelected);
 			FillMembershipLists();
 			joiningPlayers.ForEach(MemberListBox.SelectedItems.Add);
@@ -58,9 +58,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 		else if (MemberListBox.SelectedItems.Count is not 0)
 		{
 			var leavingPlayers = MemberListBox.GetMultiSelected<Player>();
-			int[] playerIds = [..leavingPlayers.Ids()];
-			Delete<GroupPlayer>(groupPlayer => groupPlayer.GroupId == Group.Id
-											&& playerIds.Contains(groupPlayer.PlayerId));
+			leavingPlayers.ForEach(player => Group -= player);
 			SkipHandlers(MemberListBox.ClearSelected);
 			FillMembershipLists();
 			leavingPlayers.ForEach(NonMemberListBox.SelectedItems.Add);

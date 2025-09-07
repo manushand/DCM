@@ -2,21 +2,28 @@
 
 public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 {
-	private DateTime? _date;
-	private int? _scoringSystemId;
+	#region Public interface
+
+	#region Type
+
+	public enum Statuses : byte
+	{
+		//	IMPORTANT: Must be 0, 1, 2 to match ComboBox item order
+		Seeded = 0,
+		Underway = 1,
+		Finished = 2
+	}
+
+	#endregion
+
+	#region Data
 
 	public int Number;
 	public bool Scored;
 	public Statuses Status;
-	public int RoundId { get; private set; }
+
 	public char Letter => (char)('@' + Number);
 	public int ScoringSystemId => _scoringSystemId ?? Round.ScoringSystemId;
-
-	public DateTime Date
-	{
-		get => _date ?? Tournament.Date;
-		set => _date = value;
-	}
 
 	public Tournament Tournament => Round.Tournament;
 
@@ -35,6 +42,23 @@ public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 	//	TODO: yes, it is time-consuming in seeding, but since players swap in and out of games, can we hold it private?
 	public IEnumerable<GamePlayer> GamePlayers => ReadMany<GamePlayer>(gamePlayer => gamePlayer.GameId == Id).Order();
 
+	public IEnumerable<int> PlayerIds => GamePlayers.Select(static gamePlayer => gamePlayer.PlayerId);
+
+	internal double AveragePreGameScore => GamePlayers.Select(PreGameScore)
+													  .ToArray() //	These two .ToArray() call aren't needed, ...
+													  .DefaultIfEmpty(Tournament.UnplayedScore)
+													  .ToArray() //	...but for some reason they increase speed big-time
+													  .Average();
+
+	internal int Conflict => GamePlayers.Sum(static game => game.Conflict);
+
+	public int RoundId { get; private set; }
+	public DateTime Date
+	{
+		get => _date ?? Tournament.Date;
+		set => _date = value;
+	}
+
 	public Round Round
 	{
 		get => field.Id == RoundId
@@ -51,15 +75,9 @@ public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 		set => (field, _scoringSystemId) = (value, value.Id == Round.ScoringSystemId ? null : value.Id);
 	} = ScoringSystem.None;
 
-	public IEnumerable<int> PlayerIds => GamePlayers.Select(static gamePlayer => gamePlayer.PlayerId);
+	#endregion
 
-	internal double AveragePreGameScore => GamePlayers.Select(PreGameScore)
-													  .ToArray() //	These two .ToArray() call aren't needed, ...
-													  .DefaultIfEmpty(Tournament.UnplayedScore)
-													  .ToArray() //	...but for some reason they increase speed big-time
-													  .Average();
-
-	internal int Conflict => GamePlayers.Sum(static game => game.Conflict);
+	#region Methods
 
 	/// <summary>
 	///     Returns the tournament score (sum of previous rounds' games) or group rating score (using prior
@@ -106,17 +124,11 @@ public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 								ScoringSystem? scoringSystem = null)
 		=> Scored = (scoringSystem ?? ScoringSystem).ScoreWithResults([..GamePlayers], out errors);
 
-	public enum Statuses : byte
-	{
-		//	IMPORTANT: Must be 0, 1, 2 to match ComboBox item order
-		Seeded = 0,
-		Underway = 1,
-		Finished = 2
-	}
+	#endregion
 
-	#region IInfoRecord interface implementation
+	#region IInfoRecord implementation
 
-	#region IRecord interface implementation
+	#region IRecord implementation
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -133,16 +145,14 @@ public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 
 	#endregion
 
-	private const string FieldValuesFormat = $$"""
-	                                           [{{nameof (Number)}}] = {0},
-	                                           [{{nameof (Status)}}] = {1},
-	                                           [{{nameof (RoundId)}}] = {2},
-	                                           [{{nameof (Name)}}] = {3},
-	                                           [{{nameof (ScoringSystemId)}}] = {4},
-	                                           [{{nameof (Date)}}] = {5}
-	                                           """;
-
-	public override string FieldValues => Format(FieldValuesFormat,
+	public override string FieldValues => Format($$"""
+												   [{{nameof (Number)}}] = {0},
+												   [{{nameof (Status)}}] = {1},
+												   [{{nameof (RoundId)}}] = {2},
+												   [{{nameof (Name)}}] = {3},
+												   [{{nameof (ScoringSystemId)}}] = {4},
+												   [{{nameof (Date)}}] = {5}
+												   """,
 												 Number,
 												 Status.ForSql(),
 												 RoundId,
@@ -152,10 +162,23 @@ public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 
 	#endregion
 
-	#region IComparable<Game> interface implementation
+	#region IComparable<Game> implementation
 
 	public int CompareTo(Game? other)
 		=> Number.CompareTo(other?.Number);
+
+	#endregion
+
+	#endregion
+
+	#region Private implementation
+
+	#region Data
+
+	private DateTime? _date;
+	private int? _scoringSystemId;
+
+	#endregion
 
 	#endregion
 }

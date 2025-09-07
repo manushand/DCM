@@ -18,11 +18,7 @@ internal sealed partial class EmailSettingsForm : Form
 	#region Data
 
 	private static readonly string[] TemplateLegend = ["Available", "Fill-Ins:", Empty, "{TournamentName}", "{PlayerName}"];
-
-	private static readonly string AssignmentTemplateLegend = Join(NewLine, [..TemplateLegend,
-																				"{PowerName}", "{GameNumber}",
-																				"{RoundNumber}", "{Assignments}"]);
-
+	private static readonly string AssignmentTemplateLegend = Join(NewLine, [..TemplateLegend, "{PowerName}", "{GameNumber}", "{RoundNumber}", "{Assignments}"]);
 	private static readonly string AnnouncementTemplateLegend = Join(NewLine, [..TemplateLegend, "{MessageText}"]);
 
 	private bool SettingsSaved => HostTextBox.Text.Matches(Settings.SmtpHost)
@@ -70,9 +66,9 @@ internal sealed partial class EmailSettingsForm : Form
 			error = "Host name is invalid.";
 		else if (PortTextBox.TextLength is not 0 && (!int.TryParse(PortTextBox.Text, out port) || port is < 1 or > 65535))
 			error = "Port must be a number in the range 1 to 65535.";
-		else if (MailFromTextBox.TextLength is 0 || !MailFromTextBox.Text.IsValidEmail())
+		else if (MailFromTextBox.TextLength is 0 || !MailFromTextBox.Text.IsValidEmail)
 			error = "From email address is missing or invalid.";
-		else if (TestEmailTextBox.TextLength is 0 || !TestEmailTextBox.Text.IsValidEmail())
+		else if (TestEmailTextBox.TextLength is 0 || !TestEmailTextBox.Text.IsValidEmail)
 			error = "Test email address is missing or invalid.";
 		if (error.Length is not 0)
 		{

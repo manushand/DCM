@@ -9,6 +9,10 @@ namespace Data;
 
 public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 {
+	#region Public interface
+
+	#region Type
+
 	public enum DrawRules : byte
 	{
 		//	IMPORTANT: Must be 0, 1, 2 to match SQL storage
@@ -16,6 +20,10 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		All = 1,
 		DIAS = 2
 	}
+
+	#endregion
+
+	#region Data
 
 	public static bool ShowTimingData { private get; set; }
 
@@ -31,12 +39,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 	public bool UsesGameResult;
 	public bool UsesYearsPlayed;
 
-	public string FinalScoreFormula
-	{
-		get => _finalScoreFormula.TrimEnd(CompiledFormulaSuffix);
-		set => _finalScoreFormula = value;
-	}
-
+	public string ScoreFormat => $"F{SignificantDigits}";
 	public bool UsesProvisionalScore => ProvisionalScoreFormula.Length is not 0;
 	public bool UsesPlayerAnte => PlayerAnteFormula.Length is not 0;
 	public bool FinalScoreFormulaMissing => RemoveComments(FinalScoreFormula).Length is 0;
@@ -50,76 +53,16 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 																			  || tournament.Games.Any(game => game.ScoringSystemId == Id))];
 
 	public IEnumerable<Game> Games => [..ReadMany<Game>(game => game.ScoringSystemId == Id)];
-	public string ScoreFormat => $"F{SignificantDigits}";
 
-	private enum FormulaType : byte
+	public string FinalScoreFormula
 	{
-		FinalScore,
-		ProvisionalScore,
-		PlayerAnte
+		get => _finalScoreFormula.TrimEnd(CompiledFormulaSuffix);
+		set => _finalScoreFormula = value;
 	}
 
-	private const char Bar = '|';
+	#endregion
 
-	private static readonly TimeSpan ScriptTimeout = TimeSpan.FromSeconds(7);
-
-	private string _finalScoreFormula = Empty;
-
-	private string TestGameData
-	{
-		get => TestGamePlayers is null
-				   ? Empty
-				   : Join(Bar,
-						  TestGamePlayers.Select(static player => Join(Comma,
-																	   player.Power,
-																	   player.Result,
-																	   player.Centers,
-																	   player.Years,
-																	   player.Other)));
-		set
-		{
-			if (value.Length is 0)
-			{
-				TestGamePlayers = null;
-				return;
-			}
-			//	The format of the TestGameData string is seven vertical-bar
-			//	separated sets of "PowerName,GameResult,Centers,Years,Other".
-			//	For example, Austria,Win,18,10,2.3|England,Loss,0,4,0.1|...
-			//	Use absolute emptiness for null (when the game result, centers,
-			//	years, or other score does not matter in the system).
-			string[][] powers = [..value.Split(Bar)
-										.Select(static testData => testData.Split(Comma)
-																		   .Select(static s => s.Trim())
-																		   .ToArray())];
-			if (powers.Any(static data => data.Length is not 5))
-				throw new InvalidOperationException(); // TODO
-			TestGamePlayers = [
-								..powers.Select(static data => new GamePlayer
-															   {
-																   Power = data[0].As<Powers>(),
-																   Result = data[1].Length is 0
-																				? Unknown
-																				: data[1].As<Results>(),
-																   Centers = data[2].AsNullableInteger(),
-																   Years = data[3].AsNullableInteger(),
-																   Other = data[4].AsDouble()
-															   })
-										.Order()
-							  ];
-			//	TODO: Could add a lot more checks, like that winners all play to the final
-			//	TODO: game-year, or that no Centers are given if the scoring system doesn't
-			//	TODO: call for them, etc., or that if it does call for Centers, all seven
-			//	TODO: players provide it, or that the total center count is between 22 andAddRe
-			//	TODO: 34, etc., etc.  However, the only strings coming in here should come
-			//	TODO: from test games; they have all this validation already.
-			if (TestGamePlayers.Any(static gamePlayer => gamePlayer.Power is TBD)
-			||  TestGamePlayers.Select(static gamePlayer => gamePlayer.Power)
-							   .Distinct()
-							   .Count() < 7)
-				throw new InvalidOperationException(); // TODO
-		}
-	}
+	#region Methods
 
 	public string FormattedScore(double score,
 								 bool trim = false)
@@ -235,9 +178,9 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		var expectedTotal = calculateAnte
 								? 0
 								: PointsPerGame;
-		var error = expectedTotal != (int)roundedTotal
+		var error = expectedTotal != roundedTotal.AsInteger
 						? $"Total did not match expected points per game of {expectedTotal}."
-						: UsesPlayerAnte && (int)roundedAntes != PointsPerGame
+						: UsesPlayerAnte && roundedAntes.AsInteger != PointsPerGame
 							? $"Player antes did not total to expected points per game of {PointsPerGame}."
 							: null;
 		var status = error is null;
@@ -365,9 +308,11 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		}
 	}
 
-	#region IInfoRecord interface implementation
+	#endregion
 
-	#region IRecord interface implementation
+	#region IInfoRecord implementation
+
+	#region IRecord implementation
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -391,23 +336,21 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 
 	#endregion
 
-	private const string FieldValuesFormat = $$"""
-											   [{{nameof (Name)}}] = {0},
-											   [{{nameof (DrawPermissions)}}] = {1},
-											   [{{nameof (UsesGameResult)}}] = {2},
-											   [{{nameof (UsesCenterCount)}}] = {3},
-											   [{{nameof (UsesYearsPlayed)}}] = {4},
-											   [{{nameof (FinalGameYear)}}] = {5},
-											   [{{nameof (PointsPerGame)}}] = {6},
-											   [{{nameof (ProvisionalScoreFormula)}}] = {7},
-											   [{{nameof (FinalScoreFormula)}}] = {8},
-											   [{{nameof (TestGameData)}}] = {9},
-											   [{{nameof (SignificantDigits)}}] = {10},
-											   [{{nameof (OtherScoreAlias)}}] = {11},
-											   [{{nameof (PlayerAnteFormula)}}] = {12}
-											   """;
-
-	public override string FieldValues => Format(FieldValuesFormat,
+	public override string FieldValues => Format($$"""
+												   [{{nameof (Name)}}] = {0},
+												   [{{nameof (DrawPermissions)}}] = {1},
+												   [{{nameof (UsesGameResult)}}] = {2},
+												   [{{nameof (UsesCenterCount)}}] = {3},
+												   [{{nameof (UsesYearsPlayed)}}] = {4},
+												   [{{nameof (FinalGameYear)}}] = {5},
+												   [{{nameof (PointsPerGame)}}] = {6},
+												   [{{nameof (ProvisionalScoreFormula)}}] = {7},
+												   [{{nameof (FinalScoreFormula)}}] = {8},
+												   [{{nameof (TestGameData)}}] = {9},
+												   [{{nameof (SignificantDigits)}}] = {10},
+												   [{{nameof (OtherScoreAlias)}}] = {11},
+												   [{{nameof (PlayerAnteFormula)}}] = {12}
+												   """,
 												 Name.ForSql(),
 												 DrawPermissions.ForSql(),
 												 UsesGameResult.ForSql(),
@@ -424,10 +367,28 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 
 	#endregion
 
-	#region Formula Calculation
+	#endregion
+
+	#region Private implementation
+
+	#region Type
+
+	private enum FormulaType : byte
+	{
+		FinalScore,
+		ProvisionalScore,
+		PlayerAnte
+	}
+
+	#endregion
+
+	#region Data
 
 	private const string DocumentCommentSplitter = "**";
 	private const char CompiledFormulaSuffix = '\a'; //	Cannot be 0, as this truncates the SQL insert
+	private const char Bar = '|';
+
+	private static readonly TimeSpan ScriptTimeout = TimeSpan.FromSeconds(7);
 
 	private static readonly ScriptOptions Options = ScriptOptions.Default
 																 .WithReferences(GetAssembly(typeof (Enumerable)).OrThrow(),
@@ -447,17 +408,80 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 	/// </summary>
 	private static readonly SortedDictionary<string, Script<double>> Scripts = [];
 
+	private static readonly Regex Stripper = StripperRegex();
+	private static readonly Regex OtherScores = OtherScoresRegex();
+	private static readonly Regex InsignificantDigits = InsignificantDigitsRegex();
+
+	private string _finalScoreFormula = Empty;
+
+	private string TestGameData
+	{
+		get => TestGamePlayers is null
+				   ? Empty
+				   : Join(Bar,
+						  TestGamePlayers.Select(static player => Join(Comma,
+																	   player.Power,
+																	   player.Result,
+																	   player.Centers,
+																	   player.Years,
+																	   player.Other)));
+		set
+		{
+			if (value.Length is 0)
+			{
+				TestGamePlayers = null;
+				return;
+			}
+			//	The format of the TestGameData string is seven vertical-bar
+			//	separated sets of "PowerName,GameResult,Centers,Years,Other".
+			//	For example, Austria,Win,18,10,2.3|England,Loss,0,4,0.1|...
+			//	Use absolute emptiness for null (when the game result, centers,
+			//	years, or other score does not matter in the system).
+			string[][] powers = [..value.Split(Bar)
+										.Select(static testData => testData.Split(Comma)
+																		   .Select(static s => s.Trim())
+																		   .ToArray())];
+			if (powers.Any(static data => data.Length is not 5))
+				throw new InvalidOperationException(); // TODO
+			TestGamePlayers = [
+								..powers.Select(static data => new GamePlayer
+															   {
+																   Power = data[0].As<Powers>(),
+																   Result = data[1].Length is 0
+																				? Unknown
+																				: data[1].As<Results>(),
+																   Centers = data[2].AsNullableInteger,
+																   Years = data[3].AsNullableInteger,
+																   Other = data[4].AsDouble
+															   })
+										.Order()
+							  ];
+			//	TODO: Could add a lot more checks, like that winners all play to the final
+			//	TODO: game-year, or that no Centers are given if the scoring system doesn't
+			//	TODO: call for them, etc., or that if it does call for Centers, all seven
+			//	TODO: players provide it, or that the total center count is between 22 andAddRe
+			//	TODO: 34, etc., etc.  However, the only strings coming in here should come
+			//	TODO: from test games; they have all this validation already.
+			if (TestGamePlayers.Any(static gamePlayer => gamePlayer.Power is TBD)
+			||  TestGamePlayers.Select(static gamePlayer => gamePlayer.Power)
+							   .Distinct()
+							   .Count() < 7)
+				throw new InvalidOperationException(); // TODO
+		}
+	}
+
+	#endregion
+
+	#region Methods
+
 	[GeneratedRegex(@"[\s_]")]
 	private static partial Regex StripperRegex();
-	private static readonly Regex Stripper = StripperRegex();
 
 	[GeneratedRegex("OtherScores?")]
 	private static partial Regex OtherScoresRegex();
-	private static readonly Regex OtherScores = OtherScoresRegex();
 
 	[GeneratedRegex("[.]0*$")]
 	private static partial Regex InsignificantDigitsRegex();
-	private static readonly Regex InsignificantDigits = InsignificantDigitsRegex();
 
 	private string RemoveComments(string formula)
 	{
@@ -514,6 +538,8 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 			//	The spaces we added on either end of "{formula}" should be removed; the caller will do it
 		}
 	}
+
+	#endregion
 
 	#endregion
 }

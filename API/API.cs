@@ -24,6 +24,7 @@ using static System.Threading.Monitor;
 
 namespace API;
 
+using DCM;
 using Data;
 
 internal static class API
@@ -31,14 +32,15 @@ internal static class API
 	private const string Title = "DCM API";
 	private const int Version = 1;
 	private const string SettingsFile = "appSettings.json";
+
 	private static readonly IConfigurationRoot Configuration = new ConfigurationBuilder().AddJsonFile(SettingsFile)
 																						 .Build();
 	private static readonly Dictionary<string, string> Users = Configuration.GetSection(nameof (Users))
-																			.Get<Dictionary<string, string>>()?
+																			.Get<Dictionary<string, string>>()
+																			.OrThrow($"No API Users in {SettingsFile}")
 																			.ToDictionary(static pair => pair.Key,
 																						  static pair => Configuration.GetConnectionString(pair.Value)
-																										 ?? throw new ($"Bad Connection for User {pair.Key}"))
-															   ?? throw new ($"No API Users in {SettingsFile}");
+																													  .OrThrow($"Bad Connection for User {pair.Key}"));
 
 	internal static void Startup()
 	{
@@ -90,14 +92,14 @@ internal static class API
 		app.Run();
 
 		static void ExceptionHandler(IApplicationBuilder app)
-			=> app.Run(static async context =>
+			=> app.Run(static context =>
 					   {
 						   var response = context.Response;
-						   response.StatusCode = HttpStatusCode.InternalServerError.AsInteger();
+						   response.StatusCode = HttpStatusCode.InternalServerError.AsInteger;
 						   response.ContentType = "application/json";
 						   var handler = context.Features.Get<IExceptionHandlerPathFeature>();
-						   Error error = new (handler?.Error ?? new ("Unknown error"));
-						   await response.WriteAsync(Serialize(error));
+						   Error error = new (handler.OrThrow("Unknown error").Error);
+						   return response.WriteAsync(Serialize(error));
 					   });
 	}
 

@@ -2,7 +2,9 @@
 
 public sealed class TeamPlayer : LinkRecord
 {
-	internal int TeamId { get; private set; }
+	#region Public interface
+
+	#region Data
 
 	public Team Team
 	{
@@ -12,11 +14,13 @@ public sealed class TeamPlayer : LinkRecord
 		internal init => (field, TeamId) = (value, value.Id);
 	} = Team.None;
 
-	#region IRecord interface implementation
+	internal int TeamId { get; private set; }
 
-	private const string LinkKeyFormat = $"[{nameof (TeamId)}] = {{0}}";
+	#endregion
 
-	protected override string LinkKey => Format(LinkKeyFormat, TeamId);
+	#region IRecord implementation
+
+	protected override string LinkKey => Format($"[{nameof (TeamId)}] = {{0}}", TeamId);
 
 	public override IRecord Load(DbDataReader record)
 	{
@@ -25,6 +29,8 @@ public sealed class TeamPlayer : LinkRecord
 		PlayerId = record.Integer(nameof (PlayerId));
 		return this;
 	}
+
+	#endregion
 
 	#endregion
 }

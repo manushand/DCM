@@ -11,6 +11,8 @@ internal abstract class Rest<T1, T2, T3> : IRest
 	where T2 : IdInfoRecord, new()
 	where T3 : Rest<T1, T2, T3>.DetailClass
 {
+	internal abstract class DetailClass;
+
 	public int Id { get; set; }
 	public string Name { get; set; } = string.Empty;
 	public T3? Details
@@ -19,7 +21,6 @@ internal abstract class Rest<T1, T2, T3> : IRest
 		set => Info = value.OrThrow();
 	}
 
-	internal abstract class DetailClass;
 	internal T2 Record { get; set; } = new ();
 
 	private protected bool Detailed { private get; set; }
