@@ -170,6 +170,8 @@ public sealed class GroupTests
 		var sc = new ScoringSystem { Id = 9, PointsPerGame = 0, PlayerAnteFormula = string.Empty };
 		var player = new Player { Id = 111, Name = "P" };
 
+		// Attach HostRound directly to avoid dereferencing Round.None.Tournament
+		SetPrivateField(group, "<HostRound>k__BackingField", r);
 		using (SeedCache(map =>
 						{
 							AddOne(map, typeof (Group), group);
@@ -218,6 +220,8 @@ public sealed class GroupTests
 			gamePlayers.Add(gp);
 		}
 
+		// Attach HostRound directly
+		SetPrivateField(group, "<HostRound>k__BackingField", r);
 		using (SeedCache(map =>
 						{
 							AddOne(map, typeof (Group), group);
