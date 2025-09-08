@@ -28,22 +28,32 @@ public sealed class DataSqlBuilderTests
 													   && m.GetParameters().Length is 1
 													   && m.GetParameters()[0].ParameterType == typeof (string));
 
-		var p = new Player { Id = 10, FirstName = "Bob", LastName = "Builder", EmailAddress = "b@x.com" };
+		var p = new Player
+				{
+					Id = 10,
+					FirstName = "Bob",
+					LastName = "Builder",
+					EmailAddress = "b@x.com"
+				};
 		var currentPk = p.PrimaryKey;
 
-		var updateSql = (string)updateStatement2.Invoke(null, [currentPk, p]).OrThrow();
+		var updateSql = (string)updateStatement2.Invoke(null, [currentPk, p])
+												.OrThrow();
 		Assert.StartsWith("UPDATE [Player] SET ", updateSql);
 		Assert.Contains("[FirstName] = 'Bob'", updateSql);
 		Assert.Contains("[LastName] = 'Builder'", updateSql);
 		Assert.Contains(" WHERE [Id] = 10", updateSql);
 
-		var delSql = (string)deleteStatement.Invoke(null, null).OrThrow();
+		var delSql = (string)deleteStatement.Invoke(null, null)
+											.OrThrow();
 		Assert.Equal("DELETE FROM [Player]", delSql);
 
-		var wcRecord = (string)whereClauseForRecord.Invoke(null, [p]).OrThrow();
+		var wcRecord = (string)whereClauseForRecord.Invoke(null, [p])
+												   .OrThrow();
 		Assert.Equal(" WHERE [Id] = 10", wcRecord);
 
-		var wcKey = (string)whereClauseForKey.Invoke(null, ["[Id] = 11"]).OrThrow();
+		var wcKey = (string)whereClauseForKey.Invoke(null, ["[Id] = 11"])
+											 .OrThrow();
 		Assert.Equal(" WHERE [Id] = 11", wcKey);
 	}
 }

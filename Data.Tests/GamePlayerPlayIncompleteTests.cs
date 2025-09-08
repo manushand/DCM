@@ -4,6 +4,10 @@ using Xunit;
 
 namespace Data.Tests;
 
+using static Game.Statuses;
+using static GamePlayer.Powers;
+using static GamePlayer.Results;
+
 [PublicAPI]
 public sealed class GamePlayerPlayIncompleteTests
 {
@@ -12,9 +16,14 @@ public sealed class GamePlayerPlayIncompleteTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = true }, Game.Statuses.Underway),
-			Power = GamePlayer.Powers.Austria,
-			Result = GamePlayer.Results.Unknown
+			Game = CreateGameWithSystem(new ()
+										{
+											Id = 0,
+											UsesGameResult = true
+										},
+										Underway),
+			Power = Austria,
+			Result = Unknown
 		};
 		// Underway + requires result but unknown => Status should be open circle (incomplete)
 		Assert.Equal("◯", gp.Status);
@@ -25,10 +34,15 @@ public sealed class GamePlayerPlayIncompleteTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new () { Id = 0, UsesCenterCount = true }, Game.Statuses.Underway),
-			Power = GamePlayer.Powers.Austria,
+			Game = CreateGameWithSystem(new ()
+										{
+											Id = 0,
+											UsesCenterCount = true
+										},
+										Underway),
+			Power = Austria,
 			Centers = null,
-			Result = GamePlayer.Results.Unknown
+			Result = Unknown
 		};
 		Assert.Equal("◯", gp.Status);
 	}
@@ -38,10 +52,15 @@ public sealed class GamePlayerPlayIncompleteTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new () { Id = 0, UsesYearsPlayed = true }, Game.Statuses.Underway),
-			Power = GamePlayer.Powers.Austria,
+			Game = CreateGameWithSystem(new ()
+										{
+											Id = 0,
+											UsesYearsPlayed = true
+										},
+										Underway),
+			Power = Austria,
 			Years = null,
-			Result = GamePlayer.Results.Unknown
+			Result = Unknown
 		};
 		Assert.Equal("◯", gp.Status);
 	}
@@ -51,9 +70,16 @@ public sealed class GamePlayerPlayIncompleteTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = false, UsesCenterCount = false, UsesYearsPlayed = false }, Game.Statuses.Underway),
-			Power = GamePlayer.Powers.England,
-			Result = GamePlayer.Results.Unknown
+			Game = CreateGameWithSystem(new ()
+										{
+											Id = 0,
+											UsesGameResult = false,
+											UsesCenterCount = false,
+											UsesYearsPlayed = false
+										},
+										Underway),
+			Power = England,
+			Result = Unknown
 		};
 		Assert.Equal("⬤", gp.Status);
 	}

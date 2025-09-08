@@ -11,7 +11,7 @@ using DCM;
 using Helpers;
 
 [PublicAPI]
-public sealed class GamePlayerConflictTests
+public sealed class GamePlayerConflictTests : TestBase
 {
 	[Fact]
 	public void CalculateConflict_Includes_PlayerPersonal_Group_Power_Player_Team_And_Score_Conflicts()
@@ -33,10 +33,10 @@ public sealed class GamePlayerConflictTests
 		};
 		var r1 = new Round { Id = 10, Number = 1 };
 		var r2 = new Round { Id = 11, Number = 2 };
-		SetNonPublic(r1, "TournamentId", t.Id);
-		SetNonPublic(r2, "TournamentId", t.Id);
-		SetPrivate(r1, "<Tournament>k__BackingField", t);
-		SetPrivate(r2, "<Tournament>k__BackingField", t);
+		SetProperty(r1, "TournamentId", t.Id);
+		SetProperty(r2, "TournamentId", t.Id);
+		SetField(r1, "<Tournament>k__BackingField", t);
+		SetField(r2, "<Tournament>k__BackingField", t);
 
 		// Group with group conflict
 		var g = new Group { Id = 5, Name = "Club", Conflict = 4 };
@@ -64,9 +64,9 @@ public sealed class GamePlayerConflictTests
 		var prevGb = new GamePlayer { Game = gPrev, Player = b, Power = GamePlayer.Powers.Russia, Result = GamePlayer.Results.Unknown };
 		var prevGc = new GamePlayer { Game = gPrev, Player = c, Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown };
 		// Give A a prior FinalScore to create distance from average in next round
-		SetPrivate(prevGa, "_finalScore", 10.0);
-		SetPrivate(prevGb, "_finalScore", 0.0);
-		SetPrivate(prevGc, "_finalScore", 0.0);
+		SetField(prevGa, "_finalScore", 10.0);
+		SetField(prevGb, "_finalScore", 0.0);
+		SetField(prevGc, "_finalScore", 0.0);
 
 		// Current round game: r2
 		var gNow = new Game { Id = 2001, Round = r2, Status = Game.Statuses.Seeded, Number = 2 };
@@ -121,8 +121,8 @@ public sealed class GamePlayerConflictTests
 	{
 		var t = new Tournament { Id = 300, Name = "T", UnplayedScore = 0, TotalRounds = 1, GroupPowers = Tournament.PowerGroups.None };
 		var r = new Round { Id = 30, Number = 1 };
-		SetNonPublic(r, "TournamentId", t.Id);
-		SetPrivate(r, "<Tournament>k__BackingField", t);
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
 		var g = new Game { Id = 4001, Round = r, Status = Game.Statuses.Seeded, Number = 1 };
 		var p1 = new Player { Id = 1, FirstName = "A", LastName = "A" };
 		var p2 = new Player { Id = 2, FirstName = "B", LastName = "B" };
@@ -161,17 +161,6 @@ public sealed class GamePlayerConflictTests
 		return tp;
 	}
 
-	private static void SetNonPublic(object target, string prop, object? value)
-		=> target.GetType()
-				 .GetProperty(prop, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				 .OrThrow().SetValue(target, value);
-
-	private static void SetPrivate(object target, string field, object? value)
-		=> target.GetType()
-				 .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)
-				 .OrThrow()
-				 .SetValue(target, value);
-
 	private static CacheScope SeedCache(Action<object> fill)
 	{
 		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
@@ -182,11 +171,6 @@ public sealed class GamePlayerConflictTests
 		fill(typeMap);
 		field.SetValue(null, typeMap);
 		return new (original, field);
-	}
-
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose() => Field.SetValue(null, Original);
 	}
 
 	private static void AddMany(object typeMap, Type type, params object[] records)

@@ -4,6 +4,10 @@ using Xunit;
 
 namespace Data.Tests;
 
+using static Game.Statuses;
+using static GamePlayer.Powers;
+using static GamePlayer.Results;
+
 [PublicAPI]
 public sealed class GamePlayerStatusTests
 {
@@ -12,9 +16,16 @@ public sealed class GamePlayerStatusTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = false, UsesCenterCount = false, UsesYearsPlayed = false }, Game.Statuses.Seeded),
-			Power = GamePlayer.Powers.Austria,
-			Result = GamePlayer.Results.Unknown
+			Game = CreateGameWithSystem(new ()
+										{
+											Id = 0,
+											UsesGameResult = false,
+											UsesCenterCount = false,
+											UsesYearsPlayed = false
+										},
+										Seeded),
+			Power = Austria,
+			Result = Unknown
 		};
 		Assert.Equal(string.Empty, gp.Status);
 	}
@@ -24,9 +35,14 @@ public sealed class GamePlayerStatusTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = true }, Game.Statuses.Underway),
-			Power = GamePlayer.Powers.Austria,
-			Result = GamePlayer.Results.Unknown // Incomplete because UsesGameResult=true and Result=Unknown
+			Game = CreateGameWithSystem(new ()
+										{
+											Id = 0,
+											UsesGameResult = true
+										},
+										Underway),
+			Power = Austria,
+			Result = Unknown // Incomplete because UsesGameResult=true and Result=Unknown
 		};
 		Assert.Equal("◯", gp.Status);
 	}
@@ -36,9 +52,16 @@ public sealed class GamePlayerStatusTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = false, UsesCenterCount = false, UsesYearsPlayed = false }, Game.Statuses.Underway),
-			Power = GamePlayer.Powers.Austria,
-			Result = GamePlayer.Results.Unknown // Complete because system doesn't require result/centers/years and power not TBD
+			Game = CreateGameWithSystem(new ()
+										{
+											Id = 0,
+											UsesGameResult = false,
+											UsesCenterCount = false,
+											UsesYearsPlayed = false
+										},
+										Underway),
+			Power = Austria,
+			Result = Unknown // Complete because system doesn't require result/centers/years and power not TBD
 		};
 		Assert.Equal("⬤", gp.Status);
 	}
@@ -48,9 +71,9 @@ public sealed class GamePlayerStatusTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = true }, Game.Statuses.Finished),
-			Power = GamePlayer.Powers.Austria,
-			Result = GamePlayer.Results.Unknown
+			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = true }, Finished),
+			Power = Austria,
+			Result = Unknown
 		};
 		Assert.Equal("✔", gp.Status);
 	}
@@ -66,11 +89,11 @@ public sealed class GamePlayerStatusTests
 					  .OrThrow()
 					  .SetValue(r, t);
 		return new ()
-				{
-					Id = 13,
-					Round = r,
-					Status = status,
-					ScoringSystem = system
-				};
+			   {
+				   Id = 13,
+				   Round = r,
+				   Status = status,
+				   ScoringSystem = system
+			   };
 	}
 }

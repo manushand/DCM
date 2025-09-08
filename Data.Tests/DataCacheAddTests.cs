@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using JetBrains.Annotations;
 using Xunit;
+using static System.Reflection.BindingFlags;
 
 namespace Data.Tests;
 
@@ -15,9 +15,9 @@ public sealed class DataCacheAddTests
 	public void Cache_Add_And_AddRange_Insert_Into_Existing_Map_Without_Load()
 	{
 		// Arrange: access nested private Cache and its _data store
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic)
 									 .OrThrow("Cache type not found");
-		var dataField = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+		var dataField = cacheType.GetField("_data", NonPublic | Static)
 								 .OrThrow("Cache._data not found");
 		var original = dataField.GetValue(null)
 								.OrThrow();
@@ -34,9 +34,9 @@ public sealed class DataCacheAddTests
 		try
 		{
 			// Get Add<T> and AddRange<T>
-			var addMethod = cacheType.GetMethod("Add", BindingFlags.NonPublic | BindingFlags.Static).OrThrow().MakeGenericMethod(typeof (Player));
-			var addRangeMethod = cacheType.GetMethod("AddRange", BindingFlags.NonPublic | BindingFlags.Static).OrThrow().MakeGenericMethod(typeof (Player));
-			var fetchAll = cacheType.GetMethod("FetchAll", BindingFlags.NonPublic | BindingFlags.Static).OrThrow().MakeGenericMethod(typeof (Player));
+			var addMethod = cacheType.GetMethod("Add", NonPublic | Static).OrThrow().MakeGenericMethod(typeof (Player));
+			var addRangeMethod = cacheType.GetMethod("AddRange", NonPublic | Static).OrThrow().MakeGenericMethod(typeof (Player));
+			var fetchAll = cacheType.GetMethod("FetchAll", NonPublic | Static).OrThrow().MakeGenericMethod(typeof (Player));
 
 			// Act: add one, then a range
 			var a = new Player { Id = 1, FirstName = "Ann", LastName = "A" };
@@ -49,9 +49,9 @@ public sealed class DataCacheAddTests
 			// Assert: underlying dictionary now has three entries
 			var all = ((System.Collections.IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>().ToList();
 			Assert.Equal(3, all.Count);
-			Assert.Contains(all, static p => p.Id == 1);
-			Assert.Contains(all, static p => p.Id == 2);
-			Assert.Contains(all, static p => p.Id == 3);
+			Assert.Contains(all, static p => p.Id is 1);
+			Assert.Contains(all, static p => p.Id is 2);
+			Assert.Contains(all, static p => p.Id is 3);
 		}
 		finally
 		{

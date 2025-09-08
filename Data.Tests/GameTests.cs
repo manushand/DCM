@@ -11,7 +11,7 @@ using DCM;
 using Helpers;
 
 [PublicAPI]
-public sealed class GameTests
+public sealed class GameTests : TestBase
 {
 	[Fact]
 	public void Load_Sets_Fields_And_Defaulters()

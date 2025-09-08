@@ -11,7 +11,7 @@ namespace Data.Tests;
 using DCM;
 
 [PublicAPI]
-public sealed class DataUtilityTests
+public sealed class DataUtilityTests : TestBase
 {
 	private static readonly string[] Expected = ["Alpha", "Zulu"];
 	private static readonly int[] ExpectedArray = [7, 10];
@@ -96,26 +96,21 @@ public sealed class DataUtilityTests
 		var tp = new TeamPlayer();
 		var values = new Dictionary<string, object?>
 		{
-			{ "TeamId", teamId },
-			{ "PlayerId", playerId }
+			["TeamId"] = teamId,
+			["PlayerId"] = playerId
 		};
 		using var reader = new Helpers.FakeDbDataReader("TeamPlayer", values);
 		tp.Load(reader);
 		return tp;
 	}
 
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose() => Field.SetValue(null, Original);
-	}
-
 	private static CacheScope SeedCache(Action<object> fill)
 	{
 		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
-					 ?? throw new InvalidOperationException("Cache type not found");
+									 .OrThrow("Cache type not found");
 		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
-				 ?? throw new InvalidOperationException("Cache._data field not found");
-		var original = field.GetValue(null) ?? throw new NullReferenceException();
+							 .OrThrow("Cache._data field not found");
+		var original = field.GetValue(null).OrThrow();
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var typeMap = CreateInstance(typeMapType).OrThrow();
 		fill(typeMap);

@@ -5,9 +5,17 @@ using Xunit;
 
 namespace Data.Tests;
 
+using static GamePlayer;
+using static GamePlayer.Powers;
+using static GamePlayer.Results;
+
 public sealed class PowerDataTests
 {
-	private readonly record struct PlayerData(GamePlayer.Powers Power, GamePlayer.Results Result, int Centers, int Years, double Other);
+	private readonly record struct PlayerData(Powers Power,
+											  Results Result,
+											  int Centers,
+											  int Years,
+											  double Other);
 
 	private static Scoring BuildScoring(IEnumerable<PlayerData> players,
 										Action<ScoringSystem>? configure = null)
@@ -32,19 +40,35 @@ public sealed class PowerDataTests
 						 Other = other
 					 });
 		// Ensure all 7 powers exist (fill any missing with neutral losses)
-		for (var pow = GamePlayer.Powers.Austria; pow <= GamePlayer.Powers.Turkey; ++pow)
-		{
+		for (var pow = Austria; pow <= Turkey; ++pow)
 			if (list.All(gp => gp.Power != pow))
-				list.Add(new () { Power = pow, Result = GamePlayer.Results.Loss, Centers = 0, Years = 0, Other = 0 });
-		}
+				list.Add(new ()
+						 {
+							 Power = pow,
+							 Result = Loss,
+							 Centers = 0,
+							 Years = 0,
+							 Other = 0
+						 });
 		return new (system, list);
 	}
 
 	[Fact]
 	public void Constructor_Throws_When_Power_TBD()
 	{
-		var system = new ScoringSystem { UsesGameResult = true, UsesCenterCount = true, UsesYearsPlayed = true };
-		var gp = new GamePlayer { Power = GamePlayer.Powers.TBD, Result = GamePlayer.Results.Win, Centers = 18, Years = 10 };
+		var system = new ScoringSystem
+					 {
+						 UsesGameResult = true,
+						 UsesCenterCount = true,
+						 UsesYearsPlayed = true
+					 };
+		var gp = new GamePlayer
+				 {
+					 Power = TBD,
+					 Result = Win,
+					 Centers = 18,
+					 Years = 10
+				 };
 		Assert.Throws<ArgumentException>(() => new Scoring(system, [gp]));
 	}
 
@@ -52,13 +76,13 @@ public sealed class PowerDataTests
 	public void Solo_Win_Flags_Work()
 	{
 		var scoring = BuildScoring([
-									   new (GamePlayer.Powers.Austria, GamePlayer.Results.Win, 18, 10, 1.0),
-									   new (GamePlayer.Powers.England, GamePlayer.Results.Loss, 0, 5, 0),
-									   new (GamePlayer.Powers.France, GamePlayer.Results.Loss, 0, 4, 0),
-									   new (GamePlayer.Powers.Germany, GamePlayer.Results.Loss, 0, 3, 0),
-									   new (GamePlayer.Powers.Italy, GamePlayer.Results.Loss, 0, 2, 0),
-									   new (GamePlayer.Powers.Russia, GamePlayer.Results.Loss, 0, 3, 0),
-									   new (GamePlayer.Powers.Turkey, GamePlayer.Results.Loss, 0, 2, 0)
+									   new (Austria, Win, 18, 10, 1.0),
+									   new (England, Loss, 0, 5, 0),
+									   new (France, Loss, 0, 4, 0),
+									   new (Germany, Loss, 0, 3, 0),
+									   new (Italy, Loss, 0, 2, 0),
+									   new (Russia, Loss, 0, 3, 0),
+									   new (Turkey, Loss, 0, 2, 0)
 								   ]);
 
 		var pd = scoring.Austria;
@@ -78,13 +102,13 @@ public sealed class PowerDataTests
 	{
 		// Winner has < 18 centers and is sole winner => concession
 		var scoring = BuildScoring([
-									   new (GamePlayer.Powers.England, GamePlayer.Results.Win, 17, 10, 0),
-									   new (GamePlayer.Powers.Austria, GamePlayer.Results.Loss, 0, 5, 0),
-									   new (GamePlayer.Powers.France, GamePlayer.Results.Loss, 0, 4, 0),
-									   new (GamePlayer.Powers.Germany, GamePlayer.Results.Loss, 0, 3, 0),
-									   new (GamePlayer.Powers.Italy, GamePlayer.Results.Loss, 0, 2, 0),
-									   new (GamePlayer.Powers.Russia, GamePlayer.Results.Loss, 0, 3, 0),
-									   new (GamePlayer.Powers.Turkey, GamePlayer.Results.Loss, 0, 2, 0)
+									   new (England, Win, 17, 10, 0),
+									   new (Austria, Loss, 0, 5, 0),
+									   new (France, Loss, 0, 4, 0),
+									   new (Germany, Loss, 0, 3, 0),
+									   new (Italy, Loss, 0, 2, 0),
+									   new (Russia, Loss, 0, 3, 0),
+									   new (Turkey, Loss, 0, 2, 0)
 								   ]);
 		var pd = scoring.England;
 		Assert.True(pd.Won);
@@ -99,13 +123,13 @@ public sealed class PowerDataTests
 	{
 		// Two winners sharing top centers => draw
 		var scoring = BuildScoring([
-									   new (GamePlayer.Powers.France, GamePlayer.Results.Win, 12, 10, 0),
-									   new (GamePlayer.Powers.Germany, GamePlayer.Results.Win, 12, 10, 0),
-									   new (GamePlayer.Powers.Austria, GamePlayer.Results.Loss, 6, 8, 0),
-									   new (GamePlayer.Powers.England, GamePlayer.Results.Loss, 2, 6, 0),
-									   new (GamePlayer.Powers.Italy, GamePlayer.Results.Loss, 0, 5, 0),
-									   new (GamePlayer.Powers.Russia, GamePlayer.Results.Loss, 0, 4, 0),
-									   new (GamePlayer.Powers.Turkey, GamePlayer.Results.Loss, 0, 3, 0)
+									   new (France, Win, 12, 10, 0),
+									   new (Germany, Win, 12, 10, 0),
+									   new (Austria, Loss, 6, 8, 0),
+									   new (England, Loss, 2, 6, 0),
+									   new (Italy, Loss, 0, 5, 0),
+									   new (Russia, Loss, 0, 4, 0),
+									   new (Turkey, Loss, 0, 3, 0)
 								   ]);
 		Assert.True(scoring.France.WonDraw);
 		Assert.True(scoring.Germany.WonDraw);
@@ -118,13 +142,13 @@ public sealed class PowerDataTests
 	public void Survivor_And_Eliminated_Flags_Work()
 	{
 		var scoring = BuildScoring([
-									   new (GamePlayer.Powers.Austria, GamePlayer.Results.Loss, 5, 8, 0),
-									   new (GamePlayer.Powers.England, GamePlayer.Results.Loss, 0, 5, 0),
-									   new (GamePlayer.Powers.France, GamePlayer.Results.Win, 18, 10, 0),
-									   new (GamePlayer.Powers.Germany, GamePlayer.Results.Loss, 3, 7, 0),
-									   new (GamePlayer.Powers.Italy, GamePlayer.Results.Loss, 0, 4, 0),
-									   new (GamePlayer.Powers.Russia, GamePlayer.Results.Loss, 2, 6, 0),
-									   new (GamePlayer.Powers.Turkey, GamePlayer.Results.Loss, 0, 3, 0)
+									   new (Austria, Loss, 5, 8, 0),
+									   new (England, Loss, 0, 5, 0),
+									   new (France, Win, 18, 10, 0),
+									   new (Germany, Loss, 3, 7, 0),
+									   new (Italy, Loss, 0, 4, 0),
+									   new (Russia, Loss, 2, 6, 0),
+									   new (Turkey, Loss, 0, 3, 0)
 								   ]);
 		Assert.True(scoring.Austria.Survived);
 		Assert.False(scoring.Austria.Eliminated);
@@ -136,13 +160,13 @@ public sealed class PowerDataTests
 	public void Ranks_And_Sharers_Work_With_Ties()
 	{
 		var scoring = BuildScoring([
-									   new (GamePlayer.Powers.Austria, GamePlayer.Results.Loss, 6, 8, 0),
-									   new (GamePlayer.Powers.England, GamePlayer.Results.Loss, 6, 8, 0),
-									   new (GamePlayer.Powers.France, GamePlayer.Results.Loss, 3, 7, 0),
-									   new (GamePlayer.Powers.Germany, GamePlayer.Results.Loss, 3, 6, 0),
-									   new (GamePlayer.Powers.Italy, GamePlayer.Results.Win, 8, 10, 0),
-									   new (GamePlayer.Powers.Russia, GamePlayer.Results.Loss, 0, 4, 0),
-									   new (GamePlayer.Powers.Turkey, GamePlayer.Results.Loss, 0, 3, 0)
+									   new (Austria, Loss, 6, 8, 0),
+									   new (England, Loss, 6, 8, 0),
+									   new (France, Loss, 3, 7, 0),
+									   new (Germany, Loss, 3, 6, 0),
+									   new (Italy, Win, 8, 10, 0),
+									   new (Russia, Loss, 0, 4, 0),
+									   new (Turkey, Loss, 0, 3, 0)
 								   ]);
 		var pdA = scoring.Austria;
 		// Centers 8 (winner), 6, 6, 3, 3, 0, 0
@@ -156,13 +180,13 @@ public sealed class PowerDataTests
 	{
 		// Years: earlier elimination smaller years; survivors have centers > 0
 		var scoring = BuildScoring([
-									   new (GamePlayer.Powers.Austria, GamePlayer.Results.Win, 12, 10, 0), // winner
-									   new (GamePlayer.Powers.England, GamePlayer.Results.Loss, 4, 9, 0),  // survivor
-									   new (GamePlayer.Powers.France, GamePlayer.Results.Loss, 0, 5, 0),   // eliminated year 5
-									   new (GamePlayer.Powers.Germany, GamePlayer.Results.Loss, 0, 7, 0),  // eliminated year 7
-									   new (GamePlayer.Powers.Italy, GamePlayer.Results.Loss, 0, 7, 0),    // eliminated year 7 (tie)
-									   new (GamePlayer.Powers.Russia, GamePlayer.Results.Loss, 0, 3, 0),   // eliminated year 3
-									   new (GamePlayer.Powers.Turkey, GamePlayer.Results.Loss, 2, 8, 0)    // survivor
+									   new (Austria, Win, 12, 10, 0), // winner
+									   new (England, Loss, 4, 9, 0),  // survivor
+									   new (France, Loss, 0, 5, 0),   // eliminated year 5
+									   new (Germany, Loss, 0, 7, 0),  // eliminated year 7
+									   new (Italy, Loss, 0, 7, 0),    // eliminated year 7 (tie)
+									   new (Russia, Loss, 0, 3, 0),   // eliminated year 3
+									   new (Turkey, Loss, 2, 8, 0)    // survivor
 								   ]);
 		var pdWinner = scoring.Austria;
 		var pdSurvivor = scoring.England; // survived
@@ -184,7 +208,8 @@ public sealed class PowerDataTests
 		Assert.Equal(2, pdElim5.WorstEliminationOrder);    // Worst = <= year (3 and 5 itself)
 		Assert.Equal(1, pdElim5.EliminatedEarlier);
 
-		// Eliminated at year 7: earlier eliminated are years < 7 (3 and 5) = 2; worst includes those at same year (Germany & Italy) = 4
+		// Eliminated at year 7: earlier eliminated are years < 7 (3 and 5) = 2;
+		// worst includes those at same year (Germany & Italy) = 4
 		Assert.Equal(3, pdElim7.BestEliminationOrder);
 		Assert.Equal(4, pdElim7.WorstEliminationOrder);
 		Assert.Equal(2, pdElim7.EliminatedEarlier);
@@ -194,13 +219,13 @@ public sealed class PowerDataTests
 	public void OtherScore_Accessible_When_Configured()
 	{
 		var scoring = BuildScoring([
-									   new (GamePlayer.Powers.Austria, GamePlayer.Results.Loss, 1, 1, 2.5),
-									   new (GamePlayer.Powers.England, GamePlayer.Results.Loss, 1, 1, 1.5),
-									   new (GamePlayer.Powers.France, GamePlayer.Results.Loss, 0, 1, 0),
-									   new (GamePlayer.Powers.Germany, GamePlayer.Results.Loss, 0, 1, 0),
-									   new (GamePlayer.Powers.Italy, GamePlayer.Results.Loss, 0, 1, 0),
-									   new (GamePlayer.Powers.Russia, GamePlayer.Results.Loss, 0, 1, 0),
-									   new (GamePlayer.Powers.Turkey, GamePlayer.Results.Loss, 0, 1, 0)
+									   new (Austria, Loss, 1, 1, 2.5),
+									   new (England, Loss, 1, 1, 1.5),
+									   new (France, Loss, 0, 1, 0),
+									   new (Germany, Loss, 0, 1, 0),
+									   new (Italy, Loss, 0, 1, 0),
+									   new (Russia, Loss, 0, 1, 0),
+									   new (Turkey, Loss, 0, 1, 0)
 								   ],
 								   static s => s.OtherScoreAlias = "Other");
 		Assert.Equal(2.5, scoring.Austria.OtherScore);

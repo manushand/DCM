@@ -12,7 +12,7 @@ using DCM;
 using Helpers;
 
 [PublicAPI]
-public sealed class GroupTests
+public sealed class GroupTests : TestBase
 {
 	[Fact]
 	public void Load_Sets_Fields()
@@ -45,9 +45,9 @@ public sealed class GroupTests
 		var p1 = new Player { Id = 10, Name = "Ann" };
 		var p2 = new Player { Id = 11, Name = "Bob" };
 		var gp1 = new GroupPlayer { Player = p1 };
-		SetNonPublicProperty(gp1, "GroupId", group.Id);
+		SetProperty(gp1, "GroupId", group.Id);
 		var gp2 = new GroupPlayer { Player = p2 };
-		SetNonPublicProperty(gp2, "GroupId", group.Id);
+		SetProperty(gp2, "GroupId", group.Id);
 
 		using (SeedCache(map =>
 						{
@@ -67,15 +67,15 @@ public sealed class GroupTests
 	{
 		var group = new Group { Id = 5, Name = "Group" };
 		var t = new Tournament { Id = 50, Name = "T" };
-		SetNonPublicProperty(t, "GroupId", group.Id);
+		SetProperty(t, "GroupId", group.Id);
 		var r = new Round { Id = 500, Number = 1 };
-		SetNonPublicProperty(r, "TournamentId", t.Id);
+		SetProperty(r, "TournamentId", t.Id);
 		// Ensure Round.Tournament points to our tournament without DB/cache fallback
-		SetPrivateField(r, "<Tournament>k__BackingField", t);
+		SetField(r, "<Tournament>k__BackingField", t);
 		// Give the round its own scoring system id
-		SetPrivateField(r, "_scoringSystemId", 9);
+		SetField(r, "_scoringSystemId", 9);
 		// Also attach as HostRound to avoid accessing Round.None.Tournament
-		SetPrivateField(group, "<HostRound>k__BackingField", r);
+		SetField(group, "<HostRound>k__BackingField", r);
 
 		using (SeedCache(map =>
 						{
@@ -99,12 +99,12 @@ public sealed class GroupTests
 	{
 		var group = new Group { Id = 6, Name = "G" };
 		var t = new Tournament { Id = 60, Name = "T" };
-		SetNonPublicProperty(t, "GroupId", group.Id);
+		SetProperty(t, "GroupId", group.Id);
 		var r = new Round { Id = 600, Number = 1 };
-		SetNonPublicProperty(r, "TournamentId", t.Id);
-		SetPrivateField(r, "<Tournament>k__BackingField", t);
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
 		// Attach HostRound directly to avoid extra cache lookup work
-		SetPrivateField(group, "<HostRound>k__BackingField", r);
+		SetField(group, "<HostRound>k__BackingField", r);
 		var g1 = new Game { Id = 1001, Round = r, Status = Game.Statuses.Finished, Date = new (2024, 1, 2) };
 		var g2 = new Game { Id = 1002, Round = r, Status = Game.Statuses.Underway, Date = new (2024, 1, 1) };
 
@@ -131,12 +131,12 @@ public sealed class GroupTests
 	{
 		var group = new Group { Id = 7, Name = "G" };
 		var t = new Tournament { Id = 70, Name = "T" };
-		SetNonPublicProperty(t, "GroupId", group.Id);
+		SetProperty(t, "GroupId", group.Id);
 		var r = new Round { Id = 700, Number = 1 };
-		SetNonPublicProperty(r, "TournamentId", t.Id);
-		SetPrivateField(r, "<Tournament>k__BackingField", t);
-		SetPrivateField(r, "_scoringSystemId", 9);
-		SetPrivateField(group, "<HostRound>k__BackingField", r);
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
+		SetField(r, "_scoringSystemId", 9);
+		SetField(group, "<HostRound>k__BackingField", r);
 		var g = new Game { Id = 2000, Round = r, Status = Game.Statuses.Finished, ScoringSystem = new () { Id = 9 } };
 
 		using (SeedCache(map =>
@@ -162,16 +162,16 @@ public sealed class GroupTests
 	{
 		var group = new Group { Id = 8, Name = "G" };
 		var t = new Tournament { Id = 80, Name = "T" };
-		SetNonPublicProperty(t, "GroupId", group.Id);
+		SetProperty(t, "GroupId", group.Id);
 		var r = new Round { Id = 800, Number = 1 };
-		SetNonPublicProperty(r, "TournamentId", t.Id);
-		SetPrivateField(r, "<Tournament>k__BackingField", t);
-		SetPrivateField(r, "_scoringSystemId", 9);
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
+		SetField(r, "_scoringSystemId", 9);
 		var sc = new ScoringSystem { Id = 9, PointsPerGame = 0, PlayerAnteFormula = string.Empty };
 		var player = new Player { Id = 111, Name = "P" };
 
 		// Attach HostRound directly to avoid dereferencing Round.None.Tournament
-		SetPrivateField(group, "<HostRound>k__BackingField", r);
+		SetField(group, "<HostRound>k__BackingField", r);
 		using (SeedCache(map =>
 						{
 							AddOne(map, typeof (Group), group);
@@ -190,11 +190,11 @@ public sealed class GroupTests
 	{
 		var group = new Group { Id = 9, Name = "G" };
 		var t = new Tournament { Id = 90, Name = "T" };
-		SetNonPublicProperty(t, "GroupId", group.Id);
+		SetProperty(t, "GroupId", group.Id);
 		var r = new Round { Id = 900, Number = 1 };
-		SetNonPublicProperty(r, "TournamentId", t.Id);
-		SetPrivateField(r, "<Tournament>k__BackingField", t);
-		SetPrivateField(r, "_scoringSystemId", 9);
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
+		SetField(r, "_scoringSystemId", 9);
 		var sc = new ScoringSystem { Id = 9, PointsPerGame = 0, PlayerAnteFormula = string.Empty };
 		var player = new Player { Id = 222, Name = "P" };
 		var g1 = new Game { Id = 3001, Round = r, Status = Game.Statuses.Finished, Scored = true };
@@ -208,7 +208,7 @@ public sealed class GroupTests
 			var p = i is 0 ? player : new () { Id = 1000 + i, Name = $"P{i}" };
 			var gp = new GamePlayer { Game = g1, Player = p, Power = powers[i], Result = GamePlayer.Results.Unknown };
 			if (i is 0)
-				SetPrivateField(gp, "_finalScore", 3.0);
+				SetField(gp, "_finalScore", 3.0);
 			gamePlayers.Add(gp);
 		}
 		for (var i = 0; i < 7; i++)
@@ -216,12 +216,12 @@ public sealed class GroupTests
 			var p = i is 0 ? player : new () { Id = 2000 + i, Name = $"Q{i}" };
 			var gp = new GamePlayer { Game = g2, Player = p, Power = powers[i], Result = GamePlayer.Results.Unknown };
 			if (i is 0)
-				SetPrivateField(gp, "_finalScore", 5.0);
+				SetField(gp, "_finalScore", 5.0);
 			gamePlayers.Add(gp);
 		}
 
 		// Attach HostRound directly
-		SetPrivateField(group, "<HostRound>k__BackingField", r);
+		SetField(group, "<HostRound>k__BackingField", r);
 		using (SeedCache(map =>
 						{
 							AddOne(map, typeof (Group), group);
@@ -290,20 +290,4 @@ public sealed class GroupTests
 				  .OrThrow($"PrimaryKey property not found on {record.GetType().Name}")
 				  .GetValue(record) as string)
 			.OrThrow();
-
-	private static void SetNonPublicProperty(object target, string propertyName, object? value)
-	{
-		var prop = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-		if (prop?.SetMethod is null)
-			throw new InvalidOperationException($"Property {propertyName} not found or has no setter");
-		prop.SetValue(target, value);
-	}
-
-	private static void SetPrivateField(object target, string fieldName, object? value)
-	{
-		var field = target.GetType()
-						  .GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
-						  .OrThrow($"Field {fieldName} not found");
-		field.SetValue(target, value);
-	}
 }

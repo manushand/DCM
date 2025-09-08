@@ -9,7 +9,7 @@ namespace Data.Tests;
 using DCM;
 
 [PublicAPI]
-public sealed class DataQueryCacheTests
+public sealed class DataQueryCacheTests : TestBase
 {
 	private static readonly int[] Expected = [2, 3];
 
@@ -19,7 +19,8 @@ public sealed class DataQueryCacheTests
 		// Seed Cache with three Players
 		using var scope = SeedCache(static map =>
 									{
-										AddMany(map, typeof (Player),
+										AddMany(map,
+												typeof (Player),
 												new Player { Id = 1, FirstName = "Ann", LastName = "A" },
 												new Player { Id = 2, FirstName = "Bob", LastName = "B" },
 												new Player { Id = 3, FirstName = "Cat", LastName = "C" }
@@ -55,27 +56,28 @@ public sealed class DataQueryCacheTests
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data field not found");
-		var original = field.GetValue(null).OrThrow();
+		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
+									 .OrThrow("Cache type not found");
+		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+							 .OrThrow("Cache._data field not found");
+		var original = field.GetValue(null)
+							.OrThrow();
 		var typeMapType = original.GetType();
-		var typeMap = Activator.CreateInstance(typeMapType).OrThrow();
+		var typeMap = Activator.CreateInstance(typeMapType)
+							   .OrThrow();
 		fill(typeMap);
 		field.SetValue(null, typeMap);
 		return new (original, field);
-	}
-
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose() => Field.SetValue(null, Original);
 	}
 
 	private static void AddMany(object typeMap, Type type, params object[] records)
 	{
 		var typeMapType = typeMap.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = Activator.CreateInstance(sortedDictType).OrThrow();
-		var sdAdd = sortedDictType.GetMethod("Add").OrThrow();
+		var sd = Activator.CreateInstance(sortedDictType)
+						  .OrThrow();
+		var sdAdd = sortedDictType.GetMethod("Add")
+								  .OrThrow();
 		foreach (var r in records)
 		{
 			var key = (string)r.GetType()

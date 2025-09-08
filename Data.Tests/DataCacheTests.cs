@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using Xunit;
+using static System.Reflection.BindingFlags;
 
 namespace Data.Tests;
 
@@ -15,8 +16,8 @@ public sealed class DataCacheTests
 	public void Cache_Fetch_Flush_Work_Via_Reflection()
 	{
 		// Arrange: get nested Cache type and its backing _data field
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-		var dataField = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data not found");
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
+		var dataField = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data not found");
 		var original = dataField.GetValue(null).OrThrow();
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var typeMap = Activator.CreateInstance(typeMapType).OrThrow();
@@ -36,10 +37,12 @@ public sealed class DataCacheTests
 		try
 		{
 			// Resolve generic methods we will use
-			var fetchAllMethod = cacheType.GetMethod("FetchAll", BindingFlags.NonPublic | BindingFlags.Static);
-			var fetchOneFuncMethod = cacheType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-				.First(static m => m.Name == "FetchOne" && m.GetParameters().Length is 1 && m.GetParameters()[0].ParameterType.IsGenericType);
-			var flushMethod = cacheType.GetMethod("Flush", BindingFlags.NonPublic | BindingFlags.Static);
+			var fetchAllMethod = cacheType.GetMethod("FetchAll", NonPublic | Static);
+			var fetchOneFuncMethod = cacheType.GetMethods(NonPublic | Static)
+											  .First(static m => m.Name == "FetchOne"
+															  && m.GetParameters().Length is 1
+															  && m.GetParameters()[0].ParameterType.IsGenericType);
+			var flushMethod = cacheType.GetMethod("Flush", NonPublic | Static);
 
 			Assert.NotNull(fetchOneFuncMethod);
 			Assert.NotNull(fetchAllMethod);
@@ -62,7 +65,8 @@ public sealed class DataCacheTests
 			dataField.SetValue(null, newMap);
 
 			// Verify FetchAll returns both
-			var all = (System.Collections.IEnumerable)fetchAllMethod.MakeGenericMethod(typeof (Player)).Invoke(null, null)
+			var all = (System.Collections.IEnumerable)fetchAllMethod.MakeGenericMethod(typeof (Player))
+																	.Invoke(null, null)
 																	.OrThrow();
 			var list = all.Cast<Player>().ToList();
 			Assert.Contains(list, static x => x.Id == 1);
@@ -72,14 +76,15 @@ public sealed class DataCacheTests
 			static bool Pred(Player pl)
 				=> pl.Id == 2;
 
-			var result = fetchOneFuncMethod.MakeGenericMethod(typeof (Player)).Invoke(null, [(Func<Player, bool>)Pred]);
+			var result = fetchOneFuncMethod.MakeGenericMethod(typeof (Player))
+										   .Invoke(null, [(Func<Player, bool>)Pred]);
 			Assert.IsType<Player>(result);
 			Assert.Equal(2, ((Player)result).Id);
 
 			// Flush clears all
 			flushMethod.Invoke(null, null);
 			// Inspect the underlying map directly to avoid triggering Load
-			var mapAfterFlush = dataField.GetValue(null) ?? throw new NullReferenceException();
+			var mapAfterFlush = dataField.GetValue(null).OrThrow();
 			var countProp = mapAfterFlush.GetType().GetProperty("Count");
 			var count = (int)(countProp?.GetValue(mapAfterFlush) ?? 0);
 			Assert.Equal(0, count);
@@ -102,18 +107,17 @@ public sealed class DataCacheTests
 	[Fact]
 	public void Cache_Restore_Switches_Stores()
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-		var dataField = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data not found");
-		var storesField = cacheType.GetField("Stores", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache.Stores not found");
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
+		var dataField = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data not found");
+		var storesField = cacheType.GetField("Stores", NonPublic | Static).OrThrow("Cache.Stores not found");
 
 		var originalData = dataField.GetValue(null).OrThrow();
 		var storesObj = storesField.GetValue(null).OrThrow();
 		var storesType = storesObj.GetType();
 		var clearMethod = storesType.GetMethod("Clear").OrThrow();
 		var addMethod = storesType.GetMethod("Add").OrThrow();
-		var snapshot = ((System.Collections.IEnumerable)storesObj)
-			.Cast<object>()
-			.ToList();
+		var snapshot = ((System.Collections.IEnumerable)storesObj).Cast<object>()
+																  .ToList();
 
 		try
 		{
@@ -127,10 +131,10 @@ public sealed class DataCacheTests
 			addMethod.Invoke(storesObj, ["B", storeB]);
 
 			// Switch to A
-			cacheType.GetMethod("Restore", BindingFlags.NonPublic | BindingFlags.Static).OrThrow().Invoke(null, ["A"]);
+			cacheType.GetMethod("Restore", NonPublic | Static).OrThrow().Invoke(null, ["A"]);
 			Assert.Same(storeA, dataField.GetValue(null));
 			// Switch to B
-			cacheType.GetMethod("Restore", BindingFlags.NonPublic | BindingFlags.Static).OrThrow().Invoke(null, ["B"]);
+			cacheType.GetMethod("Restore", NonPublic | Static).OrThrow().Invoke(null, ["B"]);
 			Assert.Same(storeB, dataField.GetValue(null));
 		}
 		finally
@@ -153,8 +157,8 @@ public sealed class DataCacheTests
 	public void Data_Any_Uses_Cache_Exists()
 	{
 		// Setup cache with three players
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-		var dataField = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data not found");
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
+		var dataField = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data not found");
 		var original = dataField.GetValue(null).OrThrow();
 		var mapType = original.GetType();
 		var sdType = mapType.GetGenericArguments()[1];

@@ -9,20 +9,8 @@ namespace Data.Tests;
 using DCM;
 
 [PublicAPI]
-public sealed class RoundWorkableTests
+public sealed class RoundWorkableTests : TestBase
 {
-	private static void SetPrivate(object target, string field, object? value)
-		=> target.GetType()
-				 .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)
-				 .OrThrow()
-				 .SetValue(target, value);
-
-	private static void SetNonPublic(object target, string prop, object? value)
-		=> target.GetType()
-				 .GetProperty(prop, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				 .OrThrow()
-				 .SetValue(target, value);
-
 	[Fact]
 	public void Workable_True_When_No_Games()
 	{
@@ -32,23 +20,18 @@ public sealed class RoundWorkableTests
 			var r1 = new Round { Id = 10, Number = 1 };
 			var r2 = new Round { Id = 11, Number = 2 };
 			var r3 = new Round { Id = 12, Number = 3 };
-			SetNonPublic(r1, "TournamentId", t.Id);
-			SetPrivate(r1, "<Tournament>k__BackingField", t);
-			SetNonPublic(r2, "TournamentId", t.Id);
-			SetPrivate(r2, "<Tournament>k__BackingField", t);
-			SetNonPublic(r3, "TournamentId", t.Id);
-			SetPrivate(r3, "<Tournament>k__BackingField", t);
+			SetProperty(r1, "TournamentId", t.Id);
+			SetField(r1, "<Tournament>k__BackingField", t);
+			SetProperty(r2, "TournamentId", t.Id);
+			SetField(r2, "<Tournament>k__BackingField", t);
+			SetProperty(r3, "TournamentId", t.Id);
+			SetField(r3, "<Tournament>k__BackingField", t);
 			// No games assigned to any round.
 			// Round.Workable clause includes "|| Games.Length is 0"
 			Assert.True(r1.Workable);
 			Assert.True(r2.Workable);
 			Assert.True(r3.Workable);
 		}
-	}
-
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose() => Field.SetValue(null, Original);
 	}
 
 	private static CacheScope SeedEmptyCache()
@@ -107,10 +90,10 @@ public sealed class RoundWorkableTests
 		var t = new Tournament { Id = 2, Name = "T", TotalRounds = 2 };
 		var r1 = new Round { Id = 20, Number = 1 };
 		var r2 = new Round { Id = 21, Number = 2 };
-		SetNonPublic(r1, "TournamentId", t.Id);
-		SetPrivate(r1, "<Tournament>k__BackingField", t);
-		SetNonPublic(r2, "TournamentId", t.Id);
-		SetPrivate(r2, "<Tournament>k__BackingField", t);
+		SetProperty(r1, "TournamentId", t.Id);
+		SetField(r1, "<Tournament>k__BackingField", t);
+		SetProperty(r2, "TournamentId", t.Id);
+		SetField(r2, "<Tournament>k__BackingField", t);
 		using (SeedRoundsCache(t, r1, r2))
 		{
 			// r2 has a seeded (not finished) game -> Workable should be true for r2 as it's the latest round
@@ -136,10 +119,10 @@ public sealed class RoundWorkableTests
 			var t = new Tournament { Id = 3, Name = "T", TotalRounds = 2 };
 			var r1 = new Round { Id = 30, Number = 1 };
 			var r2 = new Round { Id = 31, Number = 2 };
-			SetNonPublic(r1, "TournamentId", t.Id);
-			SetPrivate(r1, "<Tournament>k__BackingField", t);
-			SetNonPublic(r2, "TournamentId", t.Id);
-			SetPrivate(r2, "<Tournament>k__BackingField", t);
+			SetProperty(r1, "TournamentId", t.Id);
+			SetField(r1, "<Tournament>k__BackingField", t);
+			SetProperty(r2, "TournamentId", t.Id);
+			SetField(r2, "<Tournament>k__BackingField", t);
 			// All games in r2 finished and r2.Number == TotalRounds -> Workable false
 			var gFinished = new Game { Status = Game.Statuses.Finished };
 			typeof (Round).GetField("_games", BindingFlags.Instance | BindingFlags.NonPublic)

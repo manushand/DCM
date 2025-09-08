@@ -41,7 +41,9 @@ public sealed class DataSqlGenerationTests
 	{
 		var players = new List<Player>
 		{
-			new () { Id = 1 }, new () { Id = 2 }, new () { Id = 3 }
+			new () { Id = 1 },
+			new () { Id = 2 },
+			new () { Id = 3 }
 		};
 		var ids = players.Ids().ToArray();
 		Assert.Equal(Expected, ids);

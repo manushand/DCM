@@ -3,6 +3,9 @@ using Xunit;
 
 namespace Data.Tests;
 
+using static GamePlayer.Powers;
+using static GamePlayer.Results;
+
 [PublicAPI]
 public sealed class GamePlayerFieldValuesTests
 {
@@ -15,8 +18,8 @@ public sealed class GamePlayerFieldValuesTests
 		{
 			Player = p, // sets PlayerId via LinkRecord
 			Game = g,
-			Power = GamePlayer.Powers.England,
-			Result = GamePlayer.Results.Win,
+			Power = England,
+			Result = Win,
 			Years = null, // ensure Null formatting
 			Centers = 12,
 			Other = 1.5

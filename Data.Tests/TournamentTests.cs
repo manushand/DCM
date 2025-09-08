@@ -11,7 +11,7 @@ using DCM;
 using Helpers;
 
 [PublicAPI]
-public sealed class TournamentTests
+public sealed class TournamentTests : TestBase
 {
 	[Fact]
 	public void Load_Parses_Combined_Fields_And_Defaults()
@@ -80,11 +80,11 @@ public sealed class TournamentTests
 		var r1 = new Round { Id = 10, Number = 1 };
 		var r2 = new Round { Id = 11, Number = 2 };
 		// Tie rounds to tournament and set private _games
-		SetNonPublicProperty(r1, "TournamentId", t.Id);
-		SetNonPublicProperty(r2, "TournamentId", t.Id);
+		SetProperty(r1, "TournamentId", t.Id);
+		SetProperty(r2, (string)"TournamentId", t.Id);
 		// Ensure rounds reference tournament without cache/DB by setting Tournament backing field via reflection
-		SetPrivateField(r1, "<Tournament>k__BackingField", t);
-		SetPrivateField(r2, "<Tournament>k__BackingField", t);
+		SetField(r1, "<Tournament>k__BackingField", t);
+		SetField(r2, "<Tournament>k__BackingField", t);
 		var g1 = new Game { Status = Game.Statuses.Seeded };
 		var g2 = new Game { Status = Game.Statuses.Underway };
 		var g3 = new Game { Status = Game.Statuses.Finished };
@@ -104,7 +104,7 @@ public sealed class TournamentTests
 			Assert.Equal(3, t.Games.Length); // still cached
 
 			// Force cache reset via private field and verify recompute
-			SetPrivateField(t, "_games", null);
+			SetField(t, "_games", null);
 			Assert.Equal(4, t.Games.Length);
 			Assert.Equal(2, t.FinishedGames.Length);
 		}
@@ -117,13 +117,13 @@ public sealed class TournamentTests
 		// initial ScoringSystemId defaults to 0
 		var rDefault = new Round { Id = 20, Number = 1 }; // uses tournament default (no override)
 		var rOverride = new Round { Id = 21, Number = 2 }; // has its own scoring system id
-		SetNonPublicProperty(rDefault, "TournamentId", t.Id);
-		SetNonPublicProperty(rOverride, "TournamentId", t.Id);
+		SetProperty(rDefault, "TournamentId", t.Id);
+		SetProperty(rOverride, "TournamentId", t.Id);
 		// Ensure rounds reference tournament without cache/DB by setting Tournament property via reflection
-		SetNonPublicProperty(rDefault, "Tournament", t);
-		SetNonPublicProperty(rOverride, "Tournament", t);
+		SetProperty(rDefault, "Tournament", t);
+		SetProperty(rOverride, "Tournament", t);
 		// set an override _scoringSystemId = 9 on rOverride
-		SetPrivateField(rOverride, "_scoringSystemId", 9);
+		SetField(rOverride, "_scoringSystemId", 9);
 
 		using (SeedTournamentAndRoundsCache(t, [rDefault, rOverride]))
 		{
@@ -140,13 +140,7 @@ public sealed class TournamentTests
 
 	// Helpers
 	private static void SetRoundGames(Round r, params Game[] games)
-		=> SetPrivateField(r, "_games", games);
-
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose()
-			=> Field.SetValue(null, Original);
-	}
+		=> SetField(r, "_games", games);
 
 	private static CacheScope SeedTournamentAndRoundsCache(IdInfoRecord t, IEnumerable<Round> rounds)
 	{
@@ -191,20 +185,6 @@ public sealed class TournamentTests
 		void AddEmpty(Type tType)
 			=> mapAdd.Invoke(typeMap, [tType, CreateInstance(sortedDictType)]);
 	}
-
-	private static void SetNonPublicProperty(object target, string propertyName, object? value)
-	{
-		var prop = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-		if (prop?.SetMethod == null)
-			throw new InvalidOperationException($"Property {propertyName} not found or has no setter");
-		prop.SetValue(target, value);
-	}
-
-	private static void SetPrivateField(object target, string fieldName, object? value)
-		=> target.GetType()
-				 .GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic)
-				 .OrThrow($"Field {fieldName} not found")
-				 .SetValue(target, value);
 
 	private static TVal GetNonPublicProperty<TVal>(object target, string propertyName)
 	{

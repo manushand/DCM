@@ -10,9 +10,12 @@ namespace Data.Tests;
 [UsedImplicitly]
 public sealed class DataCacheRemoveAndFetchTests
 {
-	private static Type CacheType() => typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-	private static FieldInfo DataField() => CacheType().GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data not found");
-	private static FieldInfo StoresField() => CacheType().GetField("Stores", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache.Stores not found");
+	private static Type CacheType() => typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
+													.OrThrow("Cache type not found");
+	private static FieldInfo DataField() => CacheType().GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+													   .OrThrow("Cache._data not found");
+	private static FieldInfo StoresField() => CacheType().GetField("Stores", BindingFlags.NonPublic | BindingFlags.Static)
+														 .OrThrow("Cache.Stores not found");
 
 	[Fact]
 	public void FetchOne_ByRecordKey_And_Remove_By_Key_And_Params()
@@ -39,7 +42,9 @@ public sealed class DataCacheRemoveAndFetchTests
 		{
 			// Invoke Cache.FetchOne<T>(T record)
 			var fetchOneRecord = cacheType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-				.First(static m => m.Name is "FetchOne" && m.GetParameters().Length == 1 && !m.GetParameters()[0].ParameterType.IsGenericType)
+				.First(static m => m.Name is "FetchOne"
+								&& m.GetParameters().Length is 1
+								&& !m.GetParameters()[0].ParameterType.IsGenericType)
 				.MakeGenericMethod(typeof (Player));
 			var keyOnly = new Player { Id = 2, FirstName = "X", LastName = "Y" }; // same primary key as p2
 			var found = (Player?)fetchOneRecord.Invoke(null, [keyOnly]);
@@ -102,7 +107,10 @@ public sealed class DataCacheRemoveAndFetchTests
 			var current = dataField.GetValue(null);
 			Assert.NotNull(current);
 			// And make sure Stores now contains the new key (factory executed)
-			var containsKey = (bool)storesType.GetMethod("ContainsKey").OrThrow().Invoke(storesObj, [newKey]).OrThrow();
+			var containsKey = (bool)storesType.GetMethod("ContainsKey")
+											  .OrThrow()
+											  .Invoke(storesObj, [newKey])
+											  .OrThrow();
 			Assert.True(containsKey);
 		}
 		finally

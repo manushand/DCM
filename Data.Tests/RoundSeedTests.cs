@@ -9,18 +9,27 @@ namespace Data.Tests;
 using DCM;
 
 [PublicAPI]
-public sealed class RoundSeedTests
+public sealed class RoundSeedTests : TestBase
 {
 	[Fact]
 	public void Seed_Throws_When_PlayerCount_Not_Multiple_Of_7()
 	{
-		var r = new Round { Id = 1, Number = 1 };
+		var r = new Round
+				{
+					Id = 1,
+					Number = 1
+				};
 		// Make Tournament association minimal to avoid DB/cache: TournamentId set via reflection
 		typeof (Round).GetProperty("TournamentId", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
 					  .OrThrow()
 					  .SetValue(r, 1);
 		// Provide a dummy tournament to back Round.Tournament property to avoid accidental loads
-		var t = new Tournament { Id = 1, Name = "T", TotalRounds = 1 };
+		var t = new Tournament
+				{
+					Id = 1,
+					Name = "T",
+					TotalRounds = 1
+				};
 		typeof (Round).GetField("<Tournament>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
 					  .OrThrow()
 					  .SetValue(r, t);
@@ -34,21 +43,20 @@ public sealed class RoundSeedTests
 		}
 	}
 
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose() => Field.SetValue(null, Original);
-	}
-
 	private static CacheScope SeedCache()
 	{
 		var dataType = typeof (Data);
-		var cacheType = dataType.GetNestedType("Cache", BindingFlags.NonPublic).OrThrow();
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow();
-		var original = field.GetValue(null).OrThrow();
+		var cacheType = dataType.GetNestedType("Cache", BindingFlags.NonPublic)
+								.OrThrow();
+		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+							 .OrThrow();
+		var original = field.GetValue(null)
+							.OrThrow();
 		var typeMapType = original.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var typeMap = Activator.CreateInstance(typeMapType).OrThrow();
-		var mapAdd = typeMapType.GetMethod("Add").OrThrow();
+		var typeMap = Activator.CreateInstance(typeMapType);
+		var mapAdd = typeMapType.GetMethod("Add")
+								.OrThrow();
 		AddEmpty(typeof (Tournament));
 		AddEmpty(typeof (Round));
 		AddEmpty(typeof (Game));

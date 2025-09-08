@@ -10,10 +10,18 @@ namespace Data.Tests;
 
 using DCM;
 using Helpers;
+using static GamePlayer.Powers;
+using static GamePlayer.Results;
 
 [PublicAPI]
-public sealed class PlayerTests
+public sealed class PlayerTests : TestBase
 {
+	private static readonly int[] Expected = [800, 801];
+	private static readonly int[] ExpectedArray = [800];
+	private static readonly int[] ExpectedGameIds = [400, 401];
+	private static readonly int[] ExpectedGroupIds = [501, 502];
+	private static readonly string[] ExpectedEmails = ["a@x.com", "b@y.com", "c@z.com"];
+
 	[Fact]
 	public void Load_Sets_Fields_And_Formatting()
 	{
@@ -59,8 +67,8 @@ public sealed class PlayerTests
 		var r2 = new Round { Id = 301, Number = 2 };
 		var gEarlyLaterRound = new Game { Id = 400, Round = r2, Date = new (2024, 1, 1) };
 		var gLaterEarlierRound = new Game { Id = 401, Round = r1, Date = new (2024, 1, 2) };
-		var gp1 = new GamePlayer { Game = gEarlyLaterRound, Player = p, Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown };
-		var gp2 = new GamePlayer { Game = gLaterEarlierRound, Player = p, Power = GamePlayer.Powers.England, Result = GamePlayer.Results.Unknown };
+		var gp1 = new GamePlayer { Game = gEarlyLaterRound, Player = p, Power = Austria, Result = Unknown };
+		var gp2 = new GamePlayer { Game = gLaterEarlierRound, Player = p, Power = England, Result = Unknown };
 		using (SeedCache(map =>
 		{
 			AddOne(map, typeof (Player), p);
@@ -104,12 +112,12 @@ public sealed class PlayerTests
 		var gp1 = new GroupPlayer { Player = p, Group = g1 };
 		var gp2 = new GroupPlayer { Player = p, Group = g2 };
 		using (SeedCache(map =>
-		{
-			AddOne(map, typeof (Player), p);
-			AddMany(map, typeof (GroupPlayer), gp1, gp2);
-			AddMany(map, typeof (Group), g1, g2);
-			AddEmpties(map);
-		}))
+						{
+							AddOne(map, typeof (Player), p);
+							AddMany(map, typeof (GroupPlayer), gp1, gp2);
+							AddMany(map, typeof (Group), g1, g2);
+							AddEmpties(map);
+						}))
 		{
 			var groups = p.Groups.Select(static x => x.Id).OrderBy(static x => x).ToArray();
 			Assert.Equal(ExpectedGroupIds, groups);
@@ -120,23 +128,14 @@ public sealed class PlayerTests
 		}
 		// No groups case
 		using (SeedCache(map =>
-		{
-			AddOne(map, typeof (Player), p);
-			AddEmpty(map, typeof (GroupPlayer));
-			AddEmpty(map, typeof (Group));
-			AddEmpties(map);
-		}))
-		{
-			var text = p.GroupMemberships;
-			Assert.Equal("Ann Lee is not a member of any groups.", text);
-		}
+						{
+							AddOne(map, typeof (Player), p);
+							AddEmpty(map, typeof (GroupPlayer));
+							AddEmpty(map, typeof (Group));
+							AddEmpties(map);
+						}))
+			Assert.Equal("Ann Lee is not a member of any groups.", p.GroupMemberships);
 	}
-
-	private static readonly int[] Expected = [800, 801];
-	private static readonly int[] ExpectedArray = [800];
-	private static readonly int[] ExpectedGameIds = [400, 401];
-	private static readonly int[] ExpectedGroupIds = [501, 502];
-	private static readonly string[] ExpectedEmails = ["a@x.com", "b@y.com", "c@z.com"];
 
 	[Fact]
 	public void Teams_Filters_By_Tournament()
@@ -149,13 +148,13 @@ public sealed class PlayerTests
 		var tp1 = NewTeamPlayerViaLoad(team1.Id, p.Id);
 		var tp2 = NewTeamPlayerViaLoad(team2.Id, p.Id);
 		using (SeedCache(map =>
-		{
-			AddOne(map, typeof (Player), p);
-			AddMany(map, typeof (TeamPlayer), tp1, tp2);
-			AddMany(map, typeof (Team), team1, team2);
-			AddMany(map, typeof (Tournament), t1, t2);
-			AddEmpties(map);
-		}))
+						{
+							AddOne(map, typeof (Player), p);
+							AddMany(map, typeof (TeamPlayer), tp1, tp2);
+							AddMany(map, typeof (Team), team1, team2);
+							AddMany(map, typeof (Tournament), t1, t2);
+							AddEmpties(map);
+						}))
 		{
 			// Tournament.None => all
 			var allTeams = p.Teams(Tournament.None).Select(static x => x.Id).OrderBy(static x => x).ToArray();
@@ -262,6 +261,6 @@ public sealed class PlayerTests
 		var prop = record.GetType()
 						 .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
 						 .OrThrow($"PrimaryKey property not found on {record.GetType().Name}");
-		return prop.GetValue(record) as string ?? throw new NullReferenceException();
+		return (prop.GetValue(record) as string).OrThrow();
 	}
 }

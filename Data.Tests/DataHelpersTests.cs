@@ -46,7 +46,7 @@ public sealed class DataHelpersTests
 		Assert.Equal("Text", rec.String("S"));
 		Assert.Equal(5, rec.Integer("I"));
 		Assert.Null(rec.NullableInteger("INull"));
-			// Double/Decimal should read as provided types
+		// Double/Decimal should read as provided types
 		Assert.Equal(1.25, rec.Double("Dbl"));
 		Assert.Equal(2.50m, rec.Decimal("Dec"));
 		Assert.Equal(Game.Statuses.Underway, rec.IntegerAs<Game.Statuses>("EnumInt"));
@@ -60,33 +60,33 @@ public sealed class DataHelpersTests
 		// Provide Decimal for Double field and Double for Decimal field to exercise switch branches
 		var values = new Dictionary<string, object?>
 		{
-			{ "Dbl", 2.5m },
-			{ "Dec", 3.5 }
+			["Dbl"] = 2.5m,
+			["Dec"] = 3.5
 		};
 		using var reader = new FakeDbDataReader("Game", values);
 		IDataRecord rec = reader;
-  Assert.Equal(2.5, rec.Double("Dbl"));   // Decimal -> Double
-  Assert.Equal(3.5m, rec.Decimal("Dec")); // Double -> Decimal
+		Assert.Equal(2.5, rec.Double("Dbl"));   // Decimal -> Double
+		Assert.Equal(3.5m, rec.Decimal("Dec")); // Double -> Decimal
 	}
 
 	[Fact]
 	public void GroupSharedBy_Matches_According_To_Attribute_Groups()
 	{
 		// Using PowerGroups.Corners mapping: FR-IGA-TE
-  Assert.True(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.France, GamePlayer.Powers.Russia));
-  Assert.True(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.Italy, GamePlayer.Powers.Austria));
-  Assert.False(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.France, GamePlayer.Powers.Italy));
+		Assert.True(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.France, GamePlayer.Powers.Russia));
+		Assert.True(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.Italy, GamePlayer.Powers.Austria));
+		Assert.False(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.France, GamePlayer.Powers.Italy));
 	}
 
 	[Fact]
 	public void CheckDataType_Verifies_BaseTableName_And_Throws_On_Mismatch()
 	{
-		var okValues = new Dictionary<string, object?> { { "Id", 1 } };
+		var okValues = new Dictionary<string, object?> { ["Id"] = 1 };
 		using var okReader = new FakeDbDataReader("Game", okValues);
 		// Does not throw
-  okReader.CheckDataType<Game>();
+		okReader.CheckDataType<Game>();
 
 		using var badReader = new FakeDbDataReader("Player", okValues);
-  Assert.Throws<ArgumentException>(() => badReader.CheckDataType<Game>());
+		Assert.Throws<ArgumentException>(() => badReader.CheckDataType<Game>());
 	}
 }

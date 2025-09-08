@@ -9,7 +9,7 @@ namespace Data.Tests;
 using DCM;
 
 [PublicAPI]
-public sealed class RoundPreRoundTests
+public sealed class RoundPreRoundTests : TestBase
 {
 	[Fact]
 	public void PreRoundScore_Event_Uses_Prior_Rounds_Count_And_Pads_With_UnplayedScore()
@@ -18,10 +18,10 @@ public sealed class RoundPreRoundTests
 		// GroupId defaults to null => Group.None => IsEvent = true
 		var r1 = new Round { Id = 10, Number = 1 };
 		var r2 = new Round { Id = 11, Number = 2 };
-		SetNonPublic(r1, "TournamentId", t.Id);
-		SetPrivate(r1, "<Tournament>k__BackingField", t);
-		SetNonPublic(r2, "TournamentId", t.Id);
-		SetPrivate(r2, "<Tournament>k__BackingField", t);
+		SetProperty(r1, "TournamentId", t.Id);
+		SetField(r1, "<Tournament>k__BackingField", t);
+		SetProperty(r2, "TournamentId", t.Id);
+		SetField(r2, "<Tournament>k__BackingField", t);
 		var p = new Player { Id = 5, FirstName = "Ann", LastName = "L" };
 
 		// Prior finished game in r1 with FinalScore=6
@@ -41,7 +41,7 @@ public sealed class RoundPreRoundTests
 					  Power = GamePlayer.Powers.Austria,
 					  Result = GamePlayer.Results.Unknown
 				  };
-		SetPrivate(gp1, "_finalScore", 6.0);
+		SetField(gp1, "_finalScore", 6.0);
 
 		// Target: r2 PreRoundScore should sum prior rounds (Number-1 = 1) and not need padding (targetCount=1)
 		// Also test PreGameAverage uses same aggregates
@@ -80,16 +80,16 @@ public sealed class RoundPreRoundTests
 		// Group tournament: GroupId set => IsEvent=false, uses player rating before game date
 		var group = new Group { Id = 8, Name = "Club" };
 		var t = new Tournament { Id = 2, Name = "GroupT", UnplayedScore = 5, TotalRounds = 3 };
-		SetNonPublic(t, nameof (Tournament.Group), group); // internal init uses backing, but we'll seed via reflection below using Group property backing
+		SetProperty(t, nameof (Tournament.Group), group); // internal init uses backing, but we'll seed via reflection below using Group property backing
 		// Create round 1 and 2
 		var r1 = new Round { Id = 20, Number = 1 };
 		var r2 = new Round { Id = 21, Number = 2 };
-		SetNonPublic(r1, "TournamentId", t.Id);
-		SetPrivate(r1, "<Tournament>k__BackingField", t);
-		SetNonPublic(r2, "TournamentId", t.Id);
-		SetPrivate(r2, "<Tournament>k__BackingField", t);
+		SetProperty(r1, "TournamentId", t.Id);
+		SetField(r1, "<Tournament>k__BackingField", t);
+		SetProperty(r2, "TournamentId", t.Id);
+		SetField(r2, "<Tournament>k__BackingField", t);
 		// Wire Tournament.Group backing field so Tournament.IsEvent becomes false
-		SetPrivate(t, "<Group>k__BackingField", group);
+		SetField(t, "<Group>k__BackingField", group);
 
 		var p = new Player { Id = 5, FirstName = "Ann", LastName = "L" };
 		// Two finished games in r1 and r2 both before a target game's date; one not containing player should be ignored
@@ -125,8 +125,8 @@ public sealed class RoundPreRoundTests
 					  Power = GamePlayer.Powers.France,
 					  Result = GamePlayer.Results.Unknown
 				  };
-		SetPrivate(gpA, "_finalScore", 3.0);
-		SetPrivate(gpB, "_finalScore", 5.0);
+		SetField(gpA, "_finalScore", 3.0);
+		SetField(gpB, "_finalScore", 5.0);
 
 		using (SeedCache(map =>
 						{
@@ -148,18 +148,6 @@ public sealed class RoundPreRoundTests
 		}
 	}
 
-	private static void SetNonPublic(object target, string prop, object? value)
-		=> target.GetType()
-				 .GetProperty(prop, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				 .OrThrow()
-				 .SetValue(target, value);
-
-	private static void SetPrivate(object target, string field, object? value)
-		=> target.GetType()
-				 .GetField(field, BindingFlags.Instance | BindingFlags.NonPublic)
-				 .OrThrow()
-				 .SetValue(target, value);
-
 	private static CacheScope SeedCache(Action<object> fill)
 	{
 		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
@@ -170,11 +158,6 @@ public sealed class RoundPreRoundTests
 		fill(typeMap);
 		field.SetValue(null, typeMap);
 		return new (original, field);
-	}
-
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose() => Field.SetValue(null, Original);
 	}
 
 	private static void AddMany(object typeMap, Type type, params object[] records)

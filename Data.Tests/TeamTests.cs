@@ -12,7 +12,7 @@ namespace Data.Tests;
 using Helpers;
 
 [PublicAPI]
-public sealed class TeamTests
+public sealed class TeamTests : TestBase
 {
 	[Fact]
 	public void Load_Sets_Fields()
@@ -74,7 +74,10 @@ public sealed class TeamTests
 			AddEmpties(map);
 		}))
 		{
-			var players = team.Players.Select(static x => x.Id).OrderBy(static x => x).ToArray();
+			var players = team.Players
+							  .Select(static x => x.Id)
+							  .OrderBy(static x => x)
+							  .ToArray();
 			Assert.Equal(Expected, players);
 		}
 	}
@@ -102,20 +105,14 @@ public sealed class TeamTests
 		return tp;
 	}
 
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose()
-			=> Field.SetValue(null, Original);
-	}
-
 	private static CacheScope SeedCache(Action<object> fill)
 	{
 		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
-						?? throw new InvalidOperationException("Cache type not found");
+									 .OrThrow("Cache type not found");
 		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
-					?? throw new InvalidOperationException("Cache._data field not found");
+							 .OrThrow("Cache._data field not found");
 		var original = field.GetValue(null)
-					   ?? throw new NullReferenceException();
+							.OrThrow();
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var typeMap = CreateInstance(typeMapType).OrThrow();
 		fill(typeMap);

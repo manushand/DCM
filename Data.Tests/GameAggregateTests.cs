@@ -9,7 +9,7 @@ namespace Data.Tests;
 using DCM;
 
 [PublicAPI]
-public sealed class GameAggregateTests
+public sealed class GameAggregateTests : TestBase
 {
 	[Fact]
 	public void AveragePreGameScore_Defaults_To_UnplayedScore_When_No_GamePlayers()
@@ -121,12 +121,6 @@ public sealed class GameAggregateTests
 							AddEmpty(map, typeof (PlayerConflict));
 						}))
 			Assert.Equal([111, 222], g.PlayerIds);
-	}
-
-
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
-	{
-		public void Dispose() => Field.SetValue(null, Original);
 	}
 
 	private static CacheScope SeedCache(Action<object> fill)
