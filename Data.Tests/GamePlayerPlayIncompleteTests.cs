@@ -1,4 +1,5 @@
-﻿using JetBrains.Annotations;
+﻿using DCM;
+using JetBrains.Annotations;
 using Xunit;
 
 namespace Data.Tests;
@@ -11,7 +12,7 @@ public sealed class GamePlayerPlayIncompleteTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new ScoringSystem { Id = 0, UsesGameResult = true }, Game.Statuses.Underway),
+			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = true }, Game.Statuses.Underway),
 			Power = GamePlayer.Powers.Austria,
 			Result = GamePlayer.Results.Unknown
 		};
@@ -24,7 +25,7 @@ public sealed class GamePlayerPlayIncompleteTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new ScoringSystem { Id = 0, UsesCenterCount = true }, Game.Statuses.Underway),
+			Game = CreateGameWithSystem(new () { Id = 0, UsesCenterCount = true }, Game.Statuses.Underway),
 			Power = GamePlayer.Powers.Austria,
 			Centers = null,
 			Result = GamePlayer.Results.Unknown
@@ -37,7 +38,7 @@ public sealed class GamePlayerPlayIncompleteTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new ScoringSystem { Id = 0, UsesYearsPlayed = true }, Game.Statuses.Underway),
+			Game = CreateGameWithSystem(new () { Id = 0, UsesYearsPlayed = true }, Game.Statuses.Underway),
 			Power = GamePlayer.Powers.Austria,
 			Years = null,
 			Result = GamePlayer.Results.Unknown
@@ -50,7 +51,7 @@ public sealed class GamePlayerPlayIncompleteTests
 	{
 		var gp = new GamePlayer
 		{
-			Game = CreateGameWithSystem(new ScoringSystem { Id = 0, UsesGameResult = false, UsesCenterCount = false, UsesYearsPlayed = false }, Game.Statuses.Underway),
+			Game = CreateGameWithSystem(new () { Id = 0, UsesGameResult = false, UsesCenterCount = false, UsesYearsPlayed = false }, Game.Statuses.Underway),
 			Power = GamePlayer.Powers.England,
 			Result = GamePlayer.Results.Unknown
 		};
@@ -62,12 +63,18 @@ public sealed class GamePlayerPlayIncompleteTests
 		var t = new Tournament { Id = 1, Name = "T" };
 		var r = new Round { Id = 2, Number = 1 };
 		// Attach tournament to round via private fields to avoid cache/DB
-		typeof(Round).GetProperty("TournamentId", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)!
-			.SetValue(r, t.Id);
-		typeof(Round).GetField("<Tournament>k__BackingField", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+		typeof (Round).GetProperty("TournamentId", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)
+					  .OrThrow()
+					  .SetValue(r, t.Id);
+		typeof (Round).GetField("<Tournament>k__BackingField", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).OrThrow()
 			.SetValue(r, t);
-		var g = new Game { Id = 3, Round = r, Status = status };
-		g.ScoringSystem = system;
+		var g = new Game
+				{
+					Id = 3,
+					Round = r,
+					Status = status,
+					ScoringSystem = system
+				};
 		return g;
 	}
 }

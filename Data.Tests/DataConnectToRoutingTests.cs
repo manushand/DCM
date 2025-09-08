@@ -12,7 +12,7 @@ public sealed class DataConnectToRoutingTests
 	{
 		// This exercises the ConnectTo routing path that chooses SQL Server when the string contains '='
 		// It will attempt to open a SqlConnection and should throw quickly on a dev machine without a server.
-		var sqlLike = "Server=.;Database=nonexistent;Trusted_Connection=True;";
-		Assert.ThrowsAny<Exception>(() => Data.ConnectTo(sqlLike));
+		const string sqlLike = "Server=.;Database=nonexistent;Trusted_Connection=True;";
+		Assert.ThrowsAny<Exception>(static () => Data.ConnectTo(sqlLike));
 	}
 }

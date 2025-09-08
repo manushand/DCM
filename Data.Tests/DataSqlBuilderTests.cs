@@ -1,47 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
-using Data.Tests.Helpers;
+using JetBrains.Annotations;
 using Xunit;
 
 namespace Data.Tests;
 
+using DCM;
+
+[UsedImplicitly]
 public sealed class DataSqlBuilderTests
 {
 	[Fact]
 	public void UpdateStatement_And_DeleteStatement_And_WhereClause_Format_Correctly()
 	{
-		var dataType = typeof(Data);
+		var dataType = typeof (Data);
 		// Access private generic methods via reflection
-  var updateStatement2 = dataType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-			.First(m => m.Name == "UpdateStatement" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2)
-			.MakeGenericMethod(typeof(Player));
-		var deleteStatement = dataType.GetMethod("DeleteStatement", BindingFlags.NonPublic | BindingFlags.Static)!
-			.MakeGenericMethod(typeof(Player));
-		var whereClauseForRecord = dataType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-			.First(m => m.Name == "WhereClause" && m.GetParameters().Length == 1 && m.GetParameters()[0].ParameterType == typeof(IRecord));
-		var whereClauseForKey = dataType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-			.First(m => m.Name == "WhereClause" && m.GetParameters().Length == 1 && m.GetParameters()[0].ParameterType == typeof(string));
+		var methods = dataType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
+		var updateStatement2 = methods.First(static m => m is { Name: "UpdateStatement", IsGenericMethodDefinition: true }
+													  && m.GetParameters().Length is 2)
+									  .MakeGenericMethod(typeof (Player));
+		var deleteStatement = methods.Single(static m => m.Name is "DeleteStatement")
+									 .MakeGenericMethod(typeof (Player));
+		var whereClauseForRecord = methods.First(static m => m.Name is "WhereClause"
+														  && m.GetParameters().Length is 1
+														  && m.GetParameters()[0].ParameterType == typeof (IRecord));
+		var whereClauseForKey = methods.First(static m => m.Name == "WhereClause"
+													   && m.GetParameters().Length is 1
+													   && m.GetParameters()[0].ParameterType == typeof (string));
 
 		var p = new Player { Id = 10, FirstName = "Bob", LastName = "Builder", EmailAddress = "b@x.com" };
 		var currentPk = p.PrimaryKey;
 
-		var updateSql = (string)updateStatement2.Invoke(null, new object?[] { currentPk, p })!;
+		var updateSql = (string)updateStatement2.Invoke(null, [currentPk, p]).OrThrow();
 		Assert.StartsWith("UPDATE [Player] SET ", updateSql);
 		Assert.Contains("[FirstName] = 'Bob'", updateSql);
 		Assert.Contains("[LastName] = 'Builder'", updateSql);
 		Assert.Contains(" WHERE [Id] = 10", updateSql);
 
-		var delSql = (string)deleteStatement.Invoke(null, null)!;
+		var delSql = (string)deleteStatement.Invoke(null, null).OrThrow();
 		Assert.Equal("DELETE FROM [Player]", delSql);
 
-		var wcRecord = (string)whereClauseForRecord.Invoke(null, new object?[] { p })!;
+		var wcRecord = (string)whereClauseForRecord.Invoke(null, [p]).OrThrow();
 		Assert.Equal(" WHERE [Id] = 10", wcRecord);
 
-		var wcKey = (string)whereClauseForKey.Invoke(null, new object?[] { "[Id] = 11" })!;
+		var wcKey = (string)whereClauseForKey.Invoke(null, ["[Id] = 11"]).OrThrow();
 		Assert.Equal(" WHERE [Id] = 11", wcKey);
 	}
 }

@@ -1,28 +1,26 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
+using JetBrains.Annotations;
 using Xunit;
 
 namespace Data.Tests;
 
+using DCM;
+
+[UsedImplicitly]
 public sealed class GamePlayerBehaviorTests
 {
-	private static T Set<T>(T obj, string member, object? value)
+	private static void Set<T>(T obj, string member, object value) where T : class
 	{
-		var type = obj!.GetType();
+		var type = obj.GetType();
 		var prop = type.GetProperty(member, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 		if (prop is not null && prop.CanWrite)
 		{
 			prop.SetValue(obj, value);
-			return obj;
+			return;
 		}
-		var field = type.GetField(member, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-		if (field is not null)
-		{
-			field.SetValue(obj, value);
-			return obj;
-		}
-		throw new InvalidOperationException($"Member {member} not found on {type}");
+		type.GetField(member, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+			.OrThrow($"Member {member} not found on {type}")
+			.SetValue(obj, value);
 	}
 
 	[Fact]
@@ -45,31 +43,31 @@ public sealed class GamePlayerBehaviorTests
 		// Create minimal Game instances and assign distinct Game Numbers
 		var g1 = new Game();
 		var g2 = new Game();
-		Set(g1, nameof(Game.Number), 1);
-		Set(g2, nameof(Game.Number), 2);
+		Set(g1, nameof (Game.Number), 1);
+		Set(g2, nameof (Game.Number), 2);
 
-  // Give games real Ids so CompareTo uses game tuple ordering
-  g1.Id = 1;
-  g2.Id = 2;
-  // Attach games by setting Game property; that will set GameId via setter
-  gp1.Game = g1;
-  gp2.Game = g2;
+		// Give games real Ids so CompareTo uses game tuple ordering
+		g1.Id = 1;
+		g2.Id = 2;
+		// Attach games by setting Game property; that will set GameId via setter
+		gp1.Game = g1;
+		gp2.Game = g2;
 
-  // Different game numbers drive ordering
-  Assert.True(gp1.CompareTo(gp2) < 0);
-  Assert.True(gp2.CompareTo(gp1) > 0);
+		// Different game numbers drive ordering
+		Assert.True(gp1.CompareTo(gp2) < 0);
+		Assert.True(gp2.CompareTo(gp1) > 0);
 
-  // If game numbers equal, use (Power, Player.Name)
-  Set(g2, nameof(Game.Number), 1);
-  // Set Player names to break ties
-  var pA = new Player { Id = 1, FirstName = "Ann", LastName = "Z" };
-  var pB = new Player { Id = 2, FirstName = "Bob", LastName = "A" };
-  // Assign players directly to avoid cache/db dependency
-  gp1.Player = pA;
-  gp2.Player = pB;
+		// If game numbers equal, use (Power, Player.Name)
+		Set(g2, nameof (Game.Number), 1);
+		// Set Player names to break ties
+		var pA = new Player { Id = 1, FirstName = "Ann", LastName = "Z" };
+		var pB = new Player { Id = 2, FirstName = "Bob", LastName = "A" };
+		// Assign players directly to avoid cache/db dependency
+		gp1.Player = pA;
+		gp2.Player = pB;
 
-  // Now compare: same game number and power, so compare Player.Name (A..Z vs B..A)
-  Assert.True(gp1.CompareTo(gp2) < 0);
+		// Now compare: same game number and power, so compare Player.Name (A..Z vs B..A)
+		Assert.True(gp1.CompareTo(gp2) < 0);
 	}
 
 	[Fact]
@@ -79,32 +77,35 @@ public sealed class GamePlayerBehaviorTests
 
 		// Seeded => empty string
 		var gSeeded = new Game();
-		Set(gSeeded, nameof(Game.Status), Game.Statuses.Seeded);
+		Set(gSeeded, nameof (Game.Status), Game.Statuses.Seeded);
 		gp.Game = gSeeded;
 		Assert.Equal(string.Empty, gp.Status);
 
 		// Underway and incomplete => open circle; force incomplete by leaving Power TBD
 		var gUnderway = new Game();
-		Set(gUnderway, nameof(Game.Status), Game.Statuses.Underway);
-		gp = new GamePlayer { Power = GamePlayer.Powers.TBD };
-		gp.Game = gUnderway;
+		Set(gUnderway, nameof (Game.Status), Game.Statuses.Underway);
+		gp = new ()
+			 {
+				 Power = GamePlayer.Powers.TBD,
+				 Game = gUnderway
+			 };
 		Assert.Equal("◯", gp.Status);
 
 		// Underway and complete => filled circle; make Power not TBD and ensure no required fields => complete
 		var gUnderway2 = new Game();
-		Set(gUnderway2, nameof(Game.Status), Game.Statuses.Underway);
+		Set(gUnderway2, nameof (Game.Status), Game.Statuses.Underway);
 		var gpComplete = new GamePlayer { Power = GamePlayer.Powers.Austria };
-  // Use a ScoringSystem with all Uses* flags false so PlayIncomplete is false
-  var ssExisting = new ScoringSystem { UsesGameResult = false, UsesCenterCount = false, UsesYearsPlayed = false };
-  // Assign scoring system directly to the game to avoid DB/cache
-  gUnderway2.ScoringSystem = ssExisting;
+		// Use a ScoringSystem with all Uses* flags false so PlayIncomplete is false
+		var ssExisting = new ScoringSystem { UsesGameResult = false, UsesCenterCount = false, UsesYearsPlayed = false };
+		// Assign scoring system directly to the game to avoid DB/cache
+		gUnderway2.ScoringSystem = ssExisting;
 
-  gpComplete.Game = gUnderway2;
-  Assert.Equal("⬤", gpComplete.Status);
+		gpComplete.Game = gUnderway2;
+		Assert.Equal("⬤", gpComplete.Status);
 
 		// Finished => check mark
 		var gFinished = new Game();
-		Set(gFinished, nameof(Game.Status), Game.Statuses.Finished);
+		Set(gFinished, nameof (Game.Status), Game.Statuses.Finished);
 		gpComplete.Game = gFinished;
 		Assert.Equal("✔", gpComplete.Status);
 	}

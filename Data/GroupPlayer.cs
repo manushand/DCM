@@ -11,7 +11,7 @@ public sealed class GroupPlayer : LinkRecord
 	public Group Group
 	{
 		get => ReadById<Group>(GroupId);
-		init => GroupId = value.Id;
+		internal init => GroupId = value.Id;
 	}
 
 	#endregion

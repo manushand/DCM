@@ -1,33 +1,35 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Data.Common;
 using JetBrains.Annotations;
 using Xunit;
 
 namespace Data.Tests;
 
+using DCM;
+
 [PublicAPI]
 public sealed class DataQueryCacheTests
 {
+	private static readonly int[] Expected = [2, 3];
+
 	[Fact]
 	public void ReadAll_And_ReadMany_Work_From_Cache()
 	{
 		// Seed Cache with three Players
-		using var scope = SeedCache(map =>
-		{
-			AddMany(map, typeof(Player),
-				new Player { Id = 1, FirstName = "Ann", LastName = "A" },
-				new Player { Id = 2, FirstName = "Bob", LastName = "B" },
-				new Player { Id = 3, FirstName = "Cat", LastName = "C" }
-			);
-		});
+		using var scope = SeedCache(static map =>
+									{
+										AddMany(map, typeof (Player),
+												new Player { Id = 1, FirstName = "Ann", LastName = "A" },
+												new Player { Id = 2, FirstName = "Bob", LastName = "B" },
+												new Player { Id = 3, FirstName = "Cat", LastName = "C" }
+											   );
+									});
 
 		var all = Data.ReadAll<Player>().ToList();
 		Assert.Equal(3, all.Count);
-		var many = Data.ReadMany<Player>(p => p.Id > 1).ToList();
-		Assert.Equal(new[] { 2, 3 }, many.Select(p => p.Id).ToArray());
+		var many = Data.ReadMany<Player>(static p => p.Id > 1).ToList();
+		Assert.Equal(Expected, many.Select(static p => p.Id).ToArray());
 	}
 
 	[Fact]
@@ -35,11 +37,11 @@ public sealed class DataQueryCacheTests
 	{
 		var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "A" }; // Name = "Ann A"
 		var p2 = new Player { Id = 2, FirstName = "Bob", LastName = "B" }; // Name = "Bob B"
-		using var scope = SeedCache(map => AddMany(map, typeof(Player), p1, p2));
+		using var scope = SeedCache(map => AddMany(map, typeof (Player), p1, p2));
 
 		var found = Data.ReadByName<Player>("ann a");
 		Assert.NotNull(found);
-		Assert.Equal(1, found!.Id);
+		Assert.Equal(1, found.Id);
 
 		// NameExists returns true when some other Player has same name
 		var updating = new Player { Id = 99, FirstName = "Bob", LastName = "B" };
@@ -53,29 +55,38 @@ public sealed class DataQueryCacheTests
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof(Data).GetNestedType("Cache", BindingFlags.NonPublic) ?? throw new InvalidOperationException("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static) ?? throw new InvalidOperationException("Cache._data field not found");
-		var original = field.GetValue(null) ?? throw new NullReferenceException();
+		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
+		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data field not found");
+		var original = field.GetValue(null).OrThrow();
 		var typeMapType = original.GetType();
-		var typeMap = System.Activator.CreateInstance(typeMapType)!;
+		var typeMap = Activator.CreateInstance(typeMapType).OrThrow();
 		fill(typeMap);
 		field.SetValue(null, typeMap);
-		return new(original, field);
+		return new (original, field);
 	}
 
-	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable { public void Dispose() => Field.SetValue(null, Original); }
+	private sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
+	{
+		public void Dispose() => Field.SetValue(null, Original);
+	}
 
 	private static void AddMany(object typeMap, Type type, params object[] records)
 	{
 		var typeMapType = typeMap.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = System.Activator.CreateInstance(sortedDictType)!;
-		var sdAdd = sortedDictType.GetMethod("Add")!;
+		var sd = Activator.CreateInstance(sortedDictType).OrThrow();
+		var sdAdd = sortedDictType.GetMethod("Add").OrThrow();
 		foreach (var r in records)
 		{
-			var key = (string)r.GetType().GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)!.GetValue(r)!;
-			sdAdd.Invoke(sd, new object?[] { key, r });
+			var key = (string)r.GetType()
+							   .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+							   .OrThrow()
+							   .GetValue(r)
+							   .OrThrow();
+			sdAdd.Invoke(sd, [key, r]);
 		}
-		typeMapType.GetMethod("Add")!.Invoke(typeMap, new object?[] { type, sd });
+		typeMapType.GetMethod("Add")
+				   .OrThrow()
+				   .Invoke(typeMap, [type, sd]);
 	}
 }

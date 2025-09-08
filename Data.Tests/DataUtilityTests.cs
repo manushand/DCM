@@ -4,15 +4,18 @@ using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
 using Xunit;
+using static System.Activator;
 
 namespace Data.Tests;
 
 using DCM;
-using static System.Activator;
 
 [PublicAPI]
 public sealed class DataUtilityTests
 {
+	private static readonly string[] Expected = ["Alpha", "Zulu"];
+	private static readonly int[] ExpectedArray = [7, 10];
+
 	[Fact]
 	public void Sorted_Sorts_By_Name_Or_LastName()
 	{
@@ -26,7 +29,7 @@ public sealed class DataUtilityTests
 		Assert.Same(p1, byName[1]);
 
 		// Sort by last name
-		var byLast = list.Sorted(byLastName: true).ToArray();
+		var byLast = list.Sorted(true).ToArray();
 		Assert.Same(p2, byLast[0]);
 		Assert.Same(p1, byLast[1]);
 	}
@@ -37,7 +40,7 @@ public sealed class DataUtilityTests
 		var t1 = new Team { Name = "Zulu" };
 		var t2 = new Team { Name = "Alpha" };
 		var names = new[] { t1, t2 }.SelectSorted(static t => t.Name).ToArray();
-		Assert.Equal(new[] { "Alpha", "Zulu" }, names);
+		Assert.Equal(Expected, names);
 	}
 
 	[Fact]
@@ -46,14 +49,14 @@ public sealed class DataUtilityTests
 		var a = new Team { Id = 10, Name = "A" };
 		var b = new Team { Id = 7, Name = "B" };
 		var ids = new[] { a, b }.Ids().OrderBy(static x => x).ToArray();
-		Assert.Equal(new[] { 7, 10 }, ids);
+		Assert.Equal(ExpectedArray, ids);
 	}
 
 	[Fact]
 	public void HasPlayerId_And_ByPlayerId_Work_For_LinkRecords()
 	{
-		var tp1 = NewTeamPlayerViaLoad(teamId: 1, playerId: 5);
-		var tp2 = NewTeamPlayerViaLoad(teamId: 1, playerId: 6);
+		var tp1 = NewTeamPlayerViaLoad(1, 5);
+		var tp2 = NewTeamPlayerViaLoad(1, 6);
 		var list = new[] { tp1, tp2 };
 		Assert.True(list.HasPlayerId(6));
 		Assert.False(list.HasPlayerId(99));
@@ -64,7 +67,7 @@ public sealed class DataUtilityTests
 	public void ConnectToAccessDatabase_Returns_False_When_No_Providers_Work()
 	{
 		// We pass a bogus file path; providers will throw/open-fail and method should return false.
-		var ok = Data.ConnectToAccessDatabase("X:\\nonexistent\\db.accdb");
+		var ok = Data.ConnectToAccessDatabase(@"X:\nonexistent\db.accdb");
 		Assert.False(ok);
 	}
 
@@ -72,14 +75,11 @@ public sealed class DataUtilityTests
 	public void ReadByName_And_NameExists_Use_Cache_CaseInsensitive()
 	{
 		var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "Lee" };
-		using (SeedCache(map =>
-		{
-			AddOne(map, typeof(Player), p1);
-		}))
+		using (SeedCache(map => AddOne(map, typeof (Player), p1)))
 		{
 			var read = Data.ReadByName<Player>("ann lee");
 			Assert.NotNull(read);
-			Assert.Equal(1, read!.Id);
+			Assert.Equal(1, read.Id);
 
 			// NameExists returns false when comparing with itself
 			Assert.False(Data.NameExists(p1));
@@ -111,7 +111,7 @@ public sealed class DataUtilityTests
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof(Data).GetNestedType("Cache", BindingFlags.NonPublic)
+		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
 					 ?? throw new InvalidOperationException("Cache type not found");
 		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
 				 ?? throw new InvalidOperationException("Cache._data field not found");

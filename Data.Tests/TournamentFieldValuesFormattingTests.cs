@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Xunit;
 
 namespace Data.Tests;
@@ -15,7 +14,7 @@ public sealed class TournamentFieldValuesFormattingTests
 			Id = 1,
 			Name = "WDC",
 			Description = "Desc",
-			Date = new DateTime(2024, 1, 2),
+			Date = new (2024, 1, 2),
 			TeamConflict = 1,
 			PlayerConflict = 2,
 			PowerConflict = 3,

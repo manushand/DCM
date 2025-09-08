@@ -10,7 +10,7 @@ public sealed class GamePlayerFieldValuesTests
 	public void FieldValues_Formats_All_Columns_With_ForSql_On_Nulls_And_Enums()
 	{
 		var p = new Player { Id = 5, FirstName = "Ann", LastName = "L" };
-		var g = new Game { Id = 7, Round = new Round { Id = 3, Number = 1 } };
+		var g = new Game { Id = 7, Round = new () { Id = 3, Number = 1 } };
 		var gp = new GamePlayer
 		{
 			Player = p, // sets PlayerId via LinkRecord
