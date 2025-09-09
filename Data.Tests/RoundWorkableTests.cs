@@ -90,15 +90,11 @@ public sealed class RoundWorkableTests : TestBase
 		{
 			// r2 has a seeded (not finished) game -> Workable should be true for r2 as it's the latest round
 			var gSeeded = new Game { Status = Seeded };
-			typeof (Round).GetField("_games", Instance | NonPublic)
-						  .OrThrow()
-						  .SetValue(r2, new[] { gSeeded });
+			SetField(r2, "_games", new[] { gSeeded });
 			Assert.True(r2.Workable);
 			// r1 has only finished games and is not the latest round -> Workable should be false
 			var gFinished = new Game { Status = Finished };
-			typeof (Round).GetField("_games", Instance | NonPublic)
-						  .OrThrow()
-						  .SetValue(r1, new[] { gFinished });
+			SetField(r1, "_games", new[] { gFinished });
 			Assert.False(r1.Workable);
 		}
 	}
@@ -117,9 +113,7 @@ public sealed class RoundWorkableTests : TestBase
 			SetField(r2, "<Tournament>k__BackingField", t);
 			// All games in r2 finished and r2.Number == TotalRounds -> Workable false
 			var gFinished = new Game { Status = Finished };
-			typeof (Round).GetField("_games", Instance | NonPublic)
-						  .OrThrow()
-						  .SetValue(r2, new[] { gFinished });
+			SetField(r2, "_games", new[] { gFinished });
 			Assert.False(r2.Workable);
 		}
 	}

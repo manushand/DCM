@@ -6,6 +6,9 @@ namespace Data.Tests;
 [PublicAPI]
 public sealed class GroupTests : TestBase
 {
+	private static readonly int[] Expected = [10, 11];
+	private static readonly int[] ExpectedArray = [1002, 1001];
+
 	[Fact]
 	public void Load_Sets_Fields()
 	{
@@ -26,9 +29,6 @@ public sealed class GroupTests : TestBase
 		Assert.Equal("Desc", g.Description);
 		Assert.Equal(7, g.Conflict);
 	}
-
-	private static readonly int[] Expected = [10, 11];
-	private static readonly int[] ExpectedArray = [1002, 1001];
 
 	[Fact]
 	public void Players_Returns_From_GroupPlayers()

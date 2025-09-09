@@ -1,7 +1,7 @@
 ﻿namespace Data.Tests;
 
 [PublicAPI]
-public sealed class GamePlayerPlayIncompleteTests
+public sealed class GamePlayerPlayIncompleteTests : TestBase
 {
 	[Fact]
 	public void PlayIncomplete_When_Requires_Result_And_Result_Unknown()
@@ -81,11 +81,9 @@ public sealed class GamePlayerPlayIncompleteTests
 		var t = new Tournament { Id = 1, Name = "T" };
 		var r = new Round { Id = 2, Number = 1 };
 		// Attach tournament to round via private fields to avoid cache/DB
-		typeof (Round).GetProperty("TournamentId", Instance | NonPublic | Public)
-					  .OrThrow()
-					  .SetValue(r, t.Id);
+		SetProperty(r, "TournamentId", t.Id);
 		typeof (Round).GetField("<Tournament>k__BackingField", Instance | NonPublic).OrThrow()
-			.SetValue(r, t);
+					  .SetValue(r, t);
 		return new ()
 			   {
 				   Id = 3,

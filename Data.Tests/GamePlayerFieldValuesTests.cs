@@ -22,8 +22,8 @@ public sealed class GamePlayerFieldValuesTests
 		var sql = gp.FieldValues;
 		// Expected segments
 		Assert.Contains("[PlayerId] = 5", sql);
-		Assert.Contains("[Power] = 1", sql); // England enum => 1
-		Assert.Contains("[Result] = 1", sql); // Win enum => 1
+		Assert.Contains("[Power] = 1", sql);    // England enum => 1
+		Assert.Contains("[Result] = 1", sql);   // Win enum => 1
 		Assert.Contains("[Years] = Null", sql); // null -> Null
 		Assert.Contains("[Centers] = 12", sql);
 		Assert.Contains("[Other] = 1.5", sql);

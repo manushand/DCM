@@ -11,25 +11,25 @@ public sealed class TournamentTests : TestBase
 		// Arrange: craft a row that exercises combined negative/decimal fields
 		var values = new Dictionary<string, object?>
 					 {
-						 { nameof (Tournament.Id), 42 },
-						 { nameof (Tournament.Name), "WDC" },
-						 { nameof (Tournament.Date), null }, // should default to DateTime.Today
-						 { nameof (Tournament.Description), "Desc" },
-						 { nameof (Tournament.GroupId), null },
-						 { nameof (Tournament.ScoringSystemId), 3 },
-						 { nameof (Tournament.TeamConflict), 1 },
-						 { nameof (Tournament.PlayerConflict), 2 },
-						 { nameof (Tournament.PowerConflict), 3 },
-						 { nameof (Tournament.TotalRounds), 4 },
-						 { nameof (Tournament.MinimumRounds), 2 },
-						 { nameof (Tournament.AssignPowers), 1 },
-						 { nameof (Tournament.GroupPowers), Corners.AsInteger },
-						 { nameof (Tournament.UnplayedScore), 7 },
-						 { nameof (Tournament.RoundsToDrop), -2 },       // negative => DropBeforeFinalRound = true, RoundsToDrop = 2
-						 { nameof (Tournament.ScalePercentage), 2.75m }, // => RoundsToScale = 2; ScalePercentage = 75
-						 { nameof (Tournament.TeamSize), -3 },           // negative => PlayerCanJoinManyTeams = true, TeamSize = 3
-						 { nameof (Tournament.TeamRound), -4 },          // negative => TeamsPlayMultipleRounds = true, TeamRound = 4
-						 { nameof (Tournament.ScoreConflict), -5 }       // negative => ProgressiveScoreConflict = true, ScoreConflict = 5
+						 [nameof (Tournament.Id)] = 42,
+						 [nameof (Tournament.Name)] = "WDC",
+						 [nameof (Tournament.Date)] = null, // should default to DateTime.Today
+						 [nameof (Tournament.Description)] = "Desc",
+						 [nameof (Tournament.GroupId)] = null,
+						 [nameof (Tournament.ScoringSystemId)] = 3,
+						 [nameof (Tournament.TeamConflict)] = 1,
+						 [nameof (Tournament.PlayerConflict)] = 2,
+						 [nameof (Tournament.PowerConflict)] = 3,
+						 [nameof (Tournament.TotalRounds)] = 4,
+						 [nameof (Tournament.MinimumRounds)] = 2,
+						 [nameof (Tournament.AssignPowers)] = 1,
+						 [nameof (Tournament.GroupPowers)] = Corners.AsInteger,
+						 [nameof (Tournament.UnplayedScore)] = 7,
+						 [nameof (Tournament.RoundsToDrop)] = -2,       // negative => DropBeforeFinalRound = true, RoundsToDrop = 2
+						 [nameof (Tournament.ScalePercentage)] = 2.75m, // => RoundsToScale = 2; ScalePercentage = 75
+						 [nameof (Tournament.TeamSize)] = -3,           // negative => PlayerCanJoinManyTeams = true, TeamSize = 3
+						 [nameof (Tournament.TeamRound)] = -4,          // negative => TeamsPlayMultipleRounds = true, TeamRound = 4
+						 [nameof (Tournament.ScoreConflict)] = -5       // negative => ProgressiveScoreConflict = true, ScoreConflict = 5
 					 };
 		using var reader = new FakeDbDataReader("Tournament", values);
 		var t = new Tournament();

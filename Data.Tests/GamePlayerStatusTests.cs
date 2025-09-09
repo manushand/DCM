@@ -75,12 +75,7 @@ public sealed class GamePlayerStatusTests : TestBase
 		var t = new Tournament { Id = 11, Name = "T" };
 		var r = new Round { Id = 12, Number = 1 };
 		SetProperty(r, "TournamentId", t.Id);
-		typeof (Round).GetProperty("TournamentId", Instance | NonPublic)
-					  .OrThrow()
-					  .SetValue(r, t.Id);
-		typeof (Round).GetField("<Tournament>k__BackingField", Instance | NonPublic)
-					  .OrThrow()
-					  .SetValue(r, t);
+		SetField(r, "<Tournament>k__BackingField", t);
 		return new ()
 			   {
 				   Id = 13,

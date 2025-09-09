@@ -7,7 +7,7 @@ public sealed class GamePlayerBehaviorTests
 	{
 		var type = obj.GetType();
 		var prop = type.GetProperty(member, Instance | Public | NonPublic);
-		if (prop is not null && prop.CanWrite)
+		if (prop?.CanWrite is true)
 			prop.SetValue(obj, value);
 		else
 			type.GetField(member, Instance | Public | NonPublic)
@@ -58,7 +58,7 @@ public sealed class GamePlayerBehaviorTests
 		gp1.Player = pA;
 		gp2.Player = pB;
 
-		// Now compare: same game number and power, so compare Player.Name (A..Z vs B..A)
+		// Now compare: same game number and power, so compare Player.Name (A-Z vs B-A)
 		Assert.True(gp1.CompareTo(gp2) < 0);
 	}
 

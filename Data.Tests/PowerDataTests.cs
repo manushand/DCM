@@ -80,7 +80,6 @@ public sealed class PowerDataTests
 									   new (Russia, Loss, 0, 3, 0),
 									   new (Turkey, Loss, 0, 2, 0)
 								   ]);
-
 		var pd = scoring.Austria;
 		Assert.True(pd.Won);
 		Assert.True(pd.WonAlone);

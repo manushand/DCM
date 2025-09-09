@@ -9,12 +9,8 @@ public sealed class GameAggregateTests : TestBase
 		var t = new Tournament { Id = 1, Name = "T", UnplayedScore = 7 };
 		var r = new Round { Id = 2, Number = 1 };
 		// Wire Round -> Tournament without DB/cache
-		typeof (Round).GetProperty("TournamentId", Instance | NonPublic | Public)
-					  .OrThrow()
-					  .SetValue(r, t.Id);
-		typeof (Round).GetField("<Tournament>k__BackingField", Instance | NonPublic)
-					  .OrThrow()
-					  .SetValue(r, t);
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
 		var g = new Game { Id = 3, Round = r };
 
 		// Seed empty GamePlayer cache for this game to ensure enumeration is empty
@@ -42,23 +38,16 @@ public sealed class GameAggregateTests : TestBase
 	{
 		var t = new Tournament { Id = 10, Name = "T" };
 		var r = new Round { Id = 11, Number = 1 };
-		typeof (Round).GetProperty("TournamentId", Instance | NonPublic | Public)
-					  .OrThrow()
-					  .SetValue(r, t.Id);
-		typeof (Round).GetField("<Tournament>k__BackingField", Instance | NonPublic)
-					  .OrThrow()
-					  .SetValue(r, t);
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
 		var g = new Game { Id = 12, Round = r };
 		var p1 = new Player { Id = 101, FirstName = "A", LastName = "A" };
 		var p2 = new Player { Id = 102, FirstName = "B", LastName = "B" };
 		var gp1 = new GamePlayer { Game = g, Player = p1, Power = Austria, Result = Unknown };
 		var gp2 = new GamePlayer { Game = g, Player = p2, Power = England, Result = Unknown };
 		// Set private _conflict fields directly to avoid invoking CalculateConflict
-		typeof (GamePlayer).GetField("_conflict", Instance | NonPublic)
-						   .OrThrow()
-						   .SetValue(gp1, 3);
-		typeof (GamePlayer).GetField("_conflict", Instance | NonPublic)
-						   .OrThrow().SetValue(gp2, 4);
+		SetField(gp1, "_conflict", 3);
+		SetField(gp2, "_conflict", 4);
 
 		using (SeedCache(map =>
 						{
@@ -84,12 +73,8 @@ public sealed class GameAggregateTests : TestBase
 	{
 		var t = new Tournament { Id = 20, Name = "T" };
 		var r = new Round { Id = 21, Number = 1 };
-		typeof (Round).GetProperty("TournamentId", Instance | NonPublic | Public)
-					  .OrThrow()
-					  .SetValue(r, t.Id);
-		typeof (Round).GetField("<Tournament>k__BackingField", Instance | NonPublic)
-					  .OrThrow()
-					  .SetValue(r, t);
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
 		var g = new Game { Id = 22, Round = r };
 		var p1 = new Player { Id = 111, FirstName = "A", LastName = "A" };
 		var p2 = new Player { Id = 222, FirstName = "B", LastName = "B" };

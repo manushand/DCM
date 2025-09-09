@@ -17,10 +17,10 @@ public sealed class PlayerTests : TestBase
 	{
 		var values = new Dictionary<string, object?>
 					 {
-						 { nameof (Player.Id), 5 },
-						 { nameof (Player.FirstName), "Ann" },
-						 { nameof (Player.LastName), "O'Neil" },
-						 { nameof (Player.EmailAddress), "ann@example.com" }
+						 [nameof (Player.Id)] = 5,
+						 [nameof (Player.FirstName)] = "Ann",
+						 [nameof (Player.LastName)] = "O'Neil",
+						 [nameof (Player.EmailAddress)] = "ann@example.com"
 					 };
 		using var reader = new FakeDbDataReader("Player", values);
 		var p = new Player();
@@ -44,7 +44,12 @@ public sealed class PlayerTests : TestBase
 	[Fact]
 	public void EmailAddresses_Splits_By_Comma_And_Semicolon_And_Trims()
 	{
-		var p = new Player { FirstName = "Ann", LastName = "L", EmailAddress = " a@x.com ; b@y.com, c@z.com ;; " };
+		var p = new Player
+				{
+					FirstName = "Ann",
+					LastName = "L",
+					EmailAddress = " a@x.com ; b@y.com, c@z.com ;; "
+				};
 		var emails = p.EmailAddresses.ToArray();
 		Assert.Equal(ExpectedEmails, emails);
 	}
@@ -60,13 +65,13 @@ public sealed class PlayerTests : TestBase
 		var gp1 = new GamePlayer { Game = gEarlyLaterRound, Player = p, Power = Austria, Result = Unknown };
 		var gp2 = new GamePlayer { Game = gLaterEarlierRound, Player = p, Power = England, Result = Unknown };
 		using (SeedCache(map =>
-		{
-			AddOne(map, typeof (Player), p);
-			AddMany(map, typeof (GamePlayer), gp1, gp2);
-			AddMany(map, typeof (Game), gEarlyLaterRound, gLaterEarlierRound);
-			AddMany(map, typeof (Round), r1, r2);
-			AddEmpties(map);
-		}))
+						{
+							AddOne(map, typeof (Player), p);
+							AddMany(map, typeof (GamePlayer), gp1, gp2);
+							AddMany(map, typeof (Game), gEarlyLaterRound, gLaterEarlierRound);
+							AddMany(map, typeof (Round), r1, r2);
+							AddEmpties(map);
+						}))
 		{
 			var games = p.Games.ToArray();
 			Assert.Equal(ExpectedGameIds, games.Select(static g => g.Id).ToArray());
@@ -81,11 +86,11 @@ public sealed class PlayerTests : TestBase
 		// Create a conflict between player 30 and 31 – PlayerConflict constructor sorts ids
 		var pc = new PlayerConflict(30, 31);
 		using (SeedCache(map =>
-		{
-			AddMany(map, typeof (Player), p, other);
-			AddOne(map, typeof (PlayerConflict), pc);
-			AddEmpties(map);
-		}))
+						{
+							AddMany(map, typeof (Player), p, other);
+							AddOne(map, typeof (PlayerConflict), pc);
+							AddEmpties(map);
+						}))
 		{
 			var conflicts = p.PlayerConflicts;
 			Assert.Single(conflicts);
@@ -147,7 +152,10 @@ public sealed class PlayerTests : TestBase
 						}))
 		{
 			// Tournament.None => all
-			var allTeams = p.Teams(Tournament.None).Select(static x => x.Id).OrderBy(static x => x).ToArray();
+			var allTeams = p.Teams(Tournament.None)
+							.Select(static x => x.Id)
+							.OrderBy(static x => x)
+							.ToArray();
 			Assert.Equal(Expected, allTeams);
 			// Filter to t1
 			var filtered = p.Teams(t1).Select(static x => x.Id).ToArray();
@@ -169,10 +177,10 @@ public sealed class PlayerTests : TestBase
 	{
 		var tp = new TeamPlayer();
 		var values = new Dictionary<string, object?>
-				{
-					{ "TeamId", teamId },
-					{ "PlayerId", playerId }
-				};
+					 {
+						 ["TeamId"] = teamId,
+						 ["PlayerId"] = playerId
+					 };
 		using var reader = new FakeDbDataReader("TeamPlayer", values);
 		tp.Load(reader);
 		return tp;
@@ -239,9 +247,8 @@ public sealed class PlayerTests : TestBase
 
 		void AddIfMissing(Type t)
 		{
-			var item = contains.Invoke(typeMap, [t])
-							   .OrThrow();
-			if (!(bool)item)
+			if (!(bool)contains.Invoke(typeMap, [t])
+							   .OrThrow())
 				AddEmpty(typeMap, t);
 		}
 	}

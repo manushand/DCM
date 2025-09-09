@@ -13,10 +13,10 @@ public sealed class RoundTests
 	{
 		var values = new Dictionary<string, object?>
 					 {
-						 { nameof (Round.Id), 11 },
-						 { nameof (Round.Number), 3 },
-						 { "TournamentId", 99 },
-						 { nameof (Round.ScoringSystemId), null }
+						 [nameof (Round.Id)] = 11,
+						 [nameof (Round.Number)] = 3,
+						 ["TournamentId"] = 99,
+						 [nameof (Round.ScoringSystemId)] = null
 					 };
 		using var reader = new FakeDbDataReader("Round", values);
 		var r = new Round();
@@ -34,12 +34,12 @@ public sealed class RoundTests
 		// Default/null scoring system id -> default
 		var r = new Round();
 		var values1 = new Dictionary<string, object?>
-				  {
-					  { nameof (Round.Id), 1 },
-					  { nameof (Round.Number), 1 },
-					  { "TournamentId", 1 },
-					  { nameof (Round.ScoringSystemId), null }
-				  };
+					  {
+						  [nameof (Round.Id)] = 1,
+						  [nameof (Round.Number)] = 1,
+						  ["TournamentId"] = 1,
+						  [nameof (Round.ScoringSystemId)] = null
+					  };
 		using var reader1 = new FakeDbDataReader("Round", values1);
 		r.Load(reader1);
 		Assert.True(r.ScoringSystemIsDefault);
@@ -47,12 +47,12 @@ public sealed class RoundTests
 		// Non-default scoring system id -> override
 		r = new ();
 		var values2 = new Dictionary<string, object?>
-				  {
-					  { nameof (Round.Id), 2 },
-					  { nameof (Round.Number), 1 },
-					  { "TournamentId", 1 },
-					  { nameof (Round.ScoringSystemId), 1 }
-				  };
+					  {
+						  [nameof (Round.Id)] = 2,
+						  [nameof (Round.Number)] = 1,
+						  ["TournamentId"] = 1,
+						  [nameof (Round.ScoringSystemId)] = 1
+					  };
 		using var reader2 = new FakeDbDataReader("Round", values2);
 		r.Load(reader2);
 		Assert.False(r.ScoringSystemIsDefault);
@@ -132,7 +132,7 @@ public sealed class RoundTests
 		var r = new Round();
 		var rp1 = new RoundPlayer();
 		var rp2 = new RoundPlayer();
-		var field = typeof (Round).GetField("_roundPlayers", Instance | NonPublic) ?? throw new NullReferenceException();
+		var field = typeof (Round).GetField("_roundPlayers", Instance | NonPublic).OrThrow();
 		field.SetValue(r, new[] { rp1, rp2 });
 		Assert.Same(rp1, r.RoundPlayers[0]);
 		Assert.Same(rp2, r.RoundPlayers[1]);

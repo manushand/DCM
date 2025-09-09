@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
+using static System.String;
 
 namespace Data.Tests;
+
+using static ScoringSystem.DrawRules;
 
 [PublicAPI]
 public sealed class ScoringSystemTests
@@ -19,9 +22,9 @@ public sealed class ScoringSystemTests
 		Assert.True(s.UsesPlayerAnte);
 		Assert.True(s.UsesOtherScore);
 
-		s.ProvisionalScoreFormula = string.Empty;
-		s.PlayerAnteFormula = string.Empty;
-		s.OtherScoreAlias = string.Empty;
+		s.ProvisionalScoreFormula = Empty;
+		s.PlayerAnteFormula = Empty;
+		s.OtherScoreAlias = Empty;
 
 		Assert.False(s.UsesProvisionalScore);
 		Assert.False(s.UsesPlayerAnte);
@@ -31,15 +34,15 @@ public sealed class ScoringSystemTests
 	[Fact]
 	public void Draw_Rules_Flags()
 	{
-		var s = new ScoringSystem { DrawPermissions = ScoringSystem.DrawRules.None };
+		var s = new ScoringSystem { DrawPermissions = None };
 		Assert.False(s.DrawsAllowed);
 		Assert.False(s.DrawsIncludeAllSurvivors);
 
-		s.DrawPermissions = ScoringSystem.DrawRules.All;
+		s.DrawPermissions = All;
 		Assert.True(s.DrawsAllowed);
 		Assert.False(s.DrawsIncludeAllSurvivors);
 
-		s.DrawPermissions = ScoringSystem.DrawRules.DIAS;
+		s.DrawPermissions = DIAS;
 		Assert.True(s.DrawsAllowed);
 		Assert.True(s.DrawsIncludeAllSurvivors);
 	}
@@ -64,23 +67,29 @@ public sealed class ScoringSystemTests
 	[Fact]
 	public void Load_Sets_TestGamePlayers_From_TestGameData()
 	{
-		const string testData = "Austria,Win,18,10,0|England,Loss,0,4,0|France,Loss,0,3,0|Germany,Loss,0,3,0|Italy,Loss,0,2,0|Russia,Loss,0,3,0|Turkey,Loss,0,2,0";
+		const string testData = "Austria,Win,18,10,0|" +
+								"England,Loss,0,4,0|" +
+								"France,Loss,0,3,0|" +
+								"Germany,Loss,0,3,0|" +
+								"Italy,Loss,0,2,0|" +
+								"Russia,Loss,0,3,0|" +
+								"Turkey,Loss,0,2,0";
 		var values = new Dictionary<string, object?>
 					 {
 						 { nameof (ScoringSystem.Id), 5 },
 						 { nameof (ScoringSystem.Name), "Test System" },
-						 { nameof (ScoringSystem.DrawPermissions), ScoringSystem.DrawRules.All.AsInteger },
+						 { nameof (ScoringSystem.DrawPermissions), All.AsInteger },
 						 { nameof (ScoringSystem.UsesGameResult), 1 },
 						 { nameof (ScoringSystem.UsesCenterCount), 1 },
 						 { nameof (ScoringSystem.UsesYearsPlayed), 1 },
 						 { nameof (ScoringSystem.FinalGameYear), null },
-						 { nameof (ScoringSystem.ProvisionalScoreFormula), string.Empty },
+						 { nameof (ScoringSystem.ProvisionalScoreFormula), Empty },
 						 { nameof (ScoringSystem.FinalScoreFormula), "42" },
 						 { nameof (ScoringSystem.SignificantDigits), 2 },
 						 { "TestGameData", testData },
 						 { nameof (ScoringSystem.PointsPerGame), null },
-						 { nameof (ScoringSystem.OtherScoreAlias), string.Empty },
-						 { nameof (ScoringSystem.PlayerAnteFormula), string.Empty }
+						 { nameof (ScoringSystem.OtherScoreAlias), Empty },
+						 { nameof (ScoringSystem.PlayerAnteFormula), Empty }
 					 };
 		using var reader = new FakeDbDataReader("ScoringSystem", values);
 		var s = new ScoringSystem();
@@ -96,7 +105,7 @@ public sealed class ScoringSystemTests
 	[Fact]
 	public void FinalScoreFormulaMissing_When_Empty()
 	{
-		var s = new ScoringSystem { FinalScoreFormula = string.Empty };
+		var s = new ScoringSystem { FinalScoreFormula = Empty };
 		Assert.True(s.FinalScoreFormulaMissing);
 	}
 
@@ -127,7 +136,7 @@ public sealed class ScoringSystemTests
 
 		Assert.True(ok);
 		Assert.All(players, static p => Assert.Equal(1, p.FinalScore));
-		Assert.Contains(results, static r => r?.StartsWith("Final score for Austria") ?? false);
+		Assert.Contains(results, static r => r?.StartsWith("Final score for Austria") is true);
 	}
 
 	[Fact]
@@ -196,7 +205,7 @@ public sealed class ScoringSystemTests
 			var ok = s.ScoreWithResults(players, out var results);
 
 			Assert.True(ok);
-			Assert.Contains(results, static r => r?.StartsWith("Time to score:") ?? false);
+			Assert.Contains(results, static r => r?.StartsWith("Time to score:") is true);
 		}
 		finally
 		{
@@ -231,7 +240,7 @@ public sealed class ScoringSystemTests
 		// Each player's ante should be 2 and final score 5 - 2 = 3
 		Assert.All(players, static p => Assert.Equal(2, p.PlayerAnte));
 		Assert.All(players, static p => Assert.Equal(3, p.FinalScore));
-		Assert.Contains(results, static r => r?.StartsWith("Player Ante for Austria") ?? false);
+		Assert.Contains(results, static r => r?.StartsWith("Player Ante for Austria") is true);
 	}
 
 	[Fact]
@@ -260,6 +269,6 @@ public sealed class ScoringSystemTests
 		Assert.True(ok);
 		Assert.All(players, static p => Assert.Equal(10, p.ProvisionalScore));
 		Assert.All(players, static p => Assert.Equal(3, p.FinalScore));
-		Assert.Contains(results, static r => r?.StartsWith("Provisional score for Austria") ?? false);
+		Assert.Contains(results, static r => r?.StartsWith("Provisional score for Austria") is true);
 	}
 }

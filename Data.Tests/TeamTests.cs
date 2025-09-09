@@ -11,9 +11,9 @@ public sealed class TeamTests : TestBase
 	{
 		var values = new Dictionary<string, object?>
 					 {
-						 { nameof (Team.Id), 12 },
-						 { nameof (Team.Name), "Team Alpha" },
-						 { nameof (Team.TournamentId), 34 }
+						 [nameof (Team.Id)] = 12,
+						 [nameof (Team.Name)] = "Team Alpha",
+						 [nameof (Team.TournamentId)] = 34
 					 };
 		using var reader = new FakeDbDataReader("Team", values);
 		var t = new Team();
@@ -34,12 +34,12 @@ public sealed class TeamTests : TestBase
 		var tpOtherTeam = NewTeamPlayerViaLoad(2, 999);
 
 		using (SeedCache(map =>
-		{
-			AddOne(map, typeof (Team), team);
-			AddMany(map, typeof (TeamPlayer), tp1, tpOtherTeam);
-			AddOne(map, typeof (Player), p1);
-			AddEmpties(map);
-		}))
+						{
+							AddOne(map, typeof (Team), team);
+							AddMany(map, typeof (TeamPlayer), tp1, tpOtherTeam);
+							AddOne(map, typeof (Player), p1);
+							AddEmpties(map);
+						}))
 		{
 			var teamPlayers = team.TeamPlayers;
 			Assert.Single(teamPlayers);
@@ -59,12 +59,12 @@ public sealed class TeamTests : TestBase
 		var tp2 = NewTeamPlayerViaLoad(team.Id, p2.Id);
 
 		using (SeedCache(map =>
-		{
-			AddOne(map, typeof (Team), team);
-			AddMany(map, typeof (TeamPlayer), tp1, tp2);
-			AddMany(map, typeof (Player), p1, p2);
-			AddEmpties(map);
-		}))
+						{
+							AddOne(map, typeof (Team), team);
+							AddMany(map, typeof (TeamPlayer), tp1, tp2);
+							AddMany(map, typeof (Player), p1, p2);
+							AddEmpties(map);
+						}))
 		{
 			var players = team.Players
 							  .Select(static x => x.Id)

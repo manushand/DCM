@@ -10,13 +10,13 @@ public sealed class GameTests : TestBase
 	{
 		var values = new Dictionary<string, object?>
 					 {
-						 { nameof (Game.Id), 7 },
-						 { nameof (Game.Number), 2 },
-						 { nameof (Game.Status), Seeded.AsInteger },
-						 { nameof (Game.RoundId), 123 },
-						 { nameof (Game.Name), "Board 2" },
-						 { nameof (Game.ScoringSystemId), null },
-						 { nameof (Game.Date), null }
+						 [nameof (Game.Id)] = 7,
+						 [nameof (Game.Number)] = 2,
+						 [nameof (Game.Status)] = Seeded.AsInteger,
+						 [nameof (Game.RoundId)] = 123,
+						 [nameof (Game.Name)] = "Board 2",
+						 [nameof (Game.ScoringSystemId)] = null,
+						 [nameof (Game.Date)] = null
 					 };
 		using var reader = new FakeDbDataReader("Game", values);
 		var g = new Game();

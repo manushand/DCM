@@ -25,15 +25,15 @@ public sealed class DataHelpersTests
 	{
 		var values = new Dictionary<string, object?>
 		{
-			{ "B", true },
-			{ "S", "Text" },
-			{ "I", 5 },
-			{ "INull", null },
-			{ "Dbl", 1.25 },
-			{ "Dec", 2.50m },
-			{ "Date", new DateTime(2024, 3, 4) },
-			{ "DateNull", null },
-			{ "EnumInt", (int)Underway }
+			["B"] = true,
+			["S"] = "Text",
+			["I"] = 5,
+			["INull"] = null,
+			["Dbl"] = 1.25,
+			["Dec"] = 2.50m,
+			["Date"] = new DateTime(2024, 3, 4),
+			["DateNull"] = null,
+			["EnumInt"] = (int)Underway
 		};
 		using var reader = new FakeDbDataReader("Game", values);
 		IDataRecord rec = reader;

@@ -5,10 +5,7 @@ public sealed class GamePlayerCompareToTests
 {
 	[Fact]
 	public void CompareTo_Throws_When_Other_Is_Null()
-	{
-		var gp = new GamePlayer { Power = Austria };
-		Assert.ThrowsAny<Exception>(() => gp.CompareTo(null));
-	}
+		=> Assert.ThrowsAny<Exception>(static () => new GamePlayer { Power = Austria }.CompareTo(null));
 
 	[Fact]
 	public void CompareTo_When_GameId_Zero_Compares_By_Power()

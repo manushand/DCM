@@ -112,21 +112,21 @@ public sealed class GamePreGameScoreTests : TestBase
 		SetProperty(t, nameof (Tournament.GroupId), group.Id);
 
 		using (SeedCache(map =>
-		{
-			AddMany(map, typeof (Group), group);
-			AddMany(map, typeof (Tournament), t);
-			AddMany(map, typeof (Round), hostRound, r1, r2);
-			AddMany(map, typeof (ScoringSystem), scoring);
-			AddMany(map, typeof (Game), gA, gB, gNow);
-			AddMany(map, typeof (GamePlayer), gpA, gpB, gpNow);
-			AddMany(map, typeof (Player), p);
-			AddEmpty(map, typeof (GroupPlayer));
-			AddEmpty(map, typeof (RoundPlayer));
-			AddEmpty(map, typeof (TournamentPlayer));
-			AddEmpty(map, typeof (Team));
-			AddEmpty(map, typeof (TeamPlayer));
-			AddEmpty(map, typeof (PlayerConflict));
-		}))
+						{
+							AddMany(map, typeof (Group), group);
+							AddMany(map, typeof (Tournament), t);
+							AddMany(map, typeof (Round), hostRound, r1, r2);
+							AddMany(map, typeof (ScoringSystem), scoring);
+							AddMany(map, typeof (Game), gA, gB, gNow);
+							AddMany(map, typeof (GamePlayer), gpA, gpB, gpNow);
+							AddMany(map, typeof (Player), p);
+							AddEmpty(map, typeof (GroupPlayer));
+							AddEmpty(map, typeof (RoundPlayer));
+							AddEmpty(map, typeof (TournamentPlayer));
+							AddEmpty(map, typeof (Team));
+							AddEmpty(map, typeof (TeamPlayer));
+							AddEmpty(map, typeof (PlayerConflict));
+						}))
 		{
 			var pre = gNow.PreGameScore(gpNow);
 			// PointsPerGame == 0 => Group.RatePlayer sums (3 + 5) = 8

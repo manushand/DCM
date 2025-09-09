@@ -56,8 +56,7 @@ public sealed class DataQueryCacheTests : TestBase
 		var original = field.GetValue(null)
 							.OrThrow();
 		var typeMapType = original.GetType();
-		var typeMap = CreateInstance(typeMapType)
-							   .OrThrow();
+		var typeMap = CreateInstance(typeMapType).OrThrow();
 		fill(typeMap);
 		field.SetValue(null, typeMap);
 		return new (original, field);
@@ -67,8 +66,7 @@ public sealed class DataQueryCacheTests : TestBase
 	{
 		var typeMapType = typeMap.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType)
-						  .OrThrow();
+		var sd = CreateInstance(sortedDictType).OrThrow();
 		var sdAdd = sortedDictType.GetMethod("Add")
 								  .OrThrow();
 		foreach (var r in records)

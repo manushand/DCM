@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Data.Tests;
 
-public sealed class ScoringAggregatesTests
+public sealed class ScoringAggregatesTests : TestBase
 {
 	private readonly record struct P(GamePlayer.Powers Power,
 									 GamePlayer.Results Result,
@@ -65,7 +65,6 @@ public sealed class ScoringAggregatesTests
 									   new (England, Win, 10, 7, 2.0, 20, 1),
 									   new (France, Loss, 0, 3, 0.0, 0, 0)
 								   ]);
-
 		Assert.Equal(30, scoring.SumOfProvisionalScores);
 		Assert.True(scoring.AverageProvisionalScore > 0);
 		Assert.Equal(3, scoring.SumOfPlayerAntes);
@@ -81,13 +80,9 @@ public sealed class ScoringAggregatesTests
 	[Fact]
 	public void UnplayedYears_Based_On_FinalGameYear()
 	{
-		var scoring = BuildScoring([
-									   new (Austria, Loss, 1, 5, 0, 0, 0)
-								   ]);
+		var scoring = BuildScoring([new (Austria, Loss, 1, 5, 0, 0, 0)]);
 		// Set the scoring Player to Austria so UnplayedYears can evaluate Player.Years
-		var prop = typeof (Scoring).GetProperty("PlayerPower", NonPublic | Instance)
-								   .OrThrow();
-		prop.SetValue(scoring, Austria);
+		SetProperty(scoring, "PlayerPower", Austria);
 		// FinalGameYear set to 1907 in BuildScoring => (1907-1900) - 5 = 2
 		Assert.Equal(2, scoring.UnplayedYears);
 	}

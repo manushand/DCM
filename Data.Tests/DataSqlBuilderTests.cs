@@ -19,7 +19,7 @@ public sealed class DataSqlBuilderTests
 		var whereClauseForRecord = methods.First(static m => m.Name is "WhereClause"
 														  && m.GetParameters().Length is 1
 														  && m.GetParameters()[0].ParameterType == typeof (IRecord));
-		var whereClauseForKey = methods.First(static m => m.Name == "WhereClause"
+		var whereClauseForKey = methods.First(static m => m.Name is "WhereClause"
 													   && m.GetParameters().Length is 1
 													   && m.GetParameters()[0].ParameterType == typeof (string));
 
