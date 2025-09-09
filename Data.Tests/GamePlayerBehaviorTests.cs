@@ -1,12 +1,4 @@
-﻿using JetBrains.Annotations;
-using Xunit;
-using static System.Reflection.BindingFlags;
-
-namespace Data.Tests;
-
-using DCM;
-using static Game.Statuses;
-using static GamePlayer.Powers;
+﻿namespace Data.Tests;
 
 [UsedImplicitly]
 public sealed class GamePlayerBehaviorTests
@@ -16,13 +8,11 @@ public sealed class GamePlayerBehaviorTests
 		var type = obj.GetType();
 		var prop = type.GetProperty(member, Instance | Public | NonPublic);
 		if (prop is not null && prop.CanWrite)
-		{
 			prop.SetValue(obj, value);
-			return;
-		}
-		type.GetField(member, Instance | Public | NonPublic)
-			.OrThrow($"Member {member} not found on {type}")
-			.SetValue(obj, value);
+		else
+			type.GetField(member, Instance | Public | NonPublic)
+				.OrThrow($"Member {member} not found on {type}")
+				.SetValue(obj, value);
 	}
 
 	[Fact]

@@ -1,11 +1,6 @@
 ﻿using System.Linq;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
 
 namespace Data.Tests;
-
-using DCM;
 
 [UsedImplicitly]
 public sealed class DataSqlBuilderTests
@@ -15,7 +10,7 @@ public sealed class DataSqlBuilderTests
 	{
 		var dataType = typeof (Data);
 		// Access private generic methods via reflection
-		var methods = dataType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static);
+		var methods = dataType.GetMethods(NonPublic | Static);
 		var updateStatement2 = methods.First(static m => m is { Name: "UpdateStatement", IsGenericMethodDefinition: true }
 													  && m.GetParameters().Length is 2)
 									  .MakeGenericMethod(typeof (Player));

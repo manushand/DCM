@@ -1,12 +1,8 @@
-﻿using System;
-using System.Linq;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Reflection.BindingFlags;
+﻿using System.Linq;
 
 namespace Data.Tests;
 
-using DCM;
+using static Data;
 
 [PublicAPI]
 public sealed class DataCacheTests
@@ -19,7 +15,7 @@ public sealed class DataCacheTests
 		var dataField = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data not found");
 		var original = dataField.GetValue(null).OrThrow();
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
-		var typeMap = Activator.CreateInstance(typeMapType).OrThrow();
+		var typeMap = CreateInstance(typeMapType).OrThrow();
 
 		// install empty maps for Player and others we'll use
 		AddEmpty(typeMap, typeof (Player));
@@ -49,15 +45,14 @@ public sealed class DataCacheTests
 
 			// Manually seed players into the underlying SortedDictionary to avoid invoking Cache.Add which may trigger Load
 			var sd = typeMapType.GetGenericArguments()[1];
-			var sdInstance = Activator.CreateInstance(sd).OrThrow();
+			var sdInstance = CreateInstance(sd).OrThrow();
 			var sdAdd = sd.GetMethod("Add").OrThrow();
 			var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "A" };
 			var p2 = new Player { Id = 2, FirstName = "Bob", LastName = "B" };
 			sdAdd.Invoke(sdInstance, [p1.PrimaryKey, p1]);
 			sdAdd.Invoke(sdInstance, [p2.PrimaryKey, p2]);
 			// Replace the whole map with one that contains only the Player sd to avoid duplicate Add
-			var newMap = Activator.CreateInstance(typeMapType)
-								  .OrThrow();
+			var newMap = CreateInstance(typeMapType).OrThrow();
 			typeMapType.GetMethod("Add")
 					   .OrThrow()
 					   .Invoke(newMap, [typeof (Player), sdInstance]);
@@ -98,7 +93,7 @@ public sealed class DataCacheTests
 		{
 			var mapType = typeMapObj.GetType();
 			var sdType = mapType.GetGenericArguments()[1];
-			var sd = Activator.CreateInstance(sdType).OrThrow();
+			var sd = CreateInstance(sdType).OrThrow();
 			mapType.GetMethod("Add").OrThrow().Invoke(typeMapObj, [type, sd]);
 		}
 	}
@@ -122,8 +117,8 @@ public sealed class DataCacheTests
 		{
 			// Create two separate store maps
 			var mapType = originalData.GetType();
-			var storeA = Activator.CreateInstance(mapType).OrThrow();
-			var storeB = Activator.CreateInstance(mapType).OrThrow();
+			var storeA = CreateInstance(mapType).OrThrow();
+			var storeB = CreateInstance(mapType).OrThrow();
 			// Place in Stores under two keys via reflection
 			clearMethod.Invoke(storesObj, null);
 			addMethod.Invoke(storesObj, ["A", storeA]);
@@ -161,8 +156,8 @@ public sealed class DataCacheTests
 		var original = dataField.GetValue(null).OrThrow();
 		var mapType = original.GetType();
 		var sdType = mapType.GetGenericArguments()[1];
-		var typeMap = Activator.CreateInstance(mapType).OrThrow();
-		var sd = Activator.CreateInstance(sdType).OrThrow();
+		var typeMap = CreateInstance(mapType).OrThrow();
+		var sd = CreateInstance(sdType).OrThrow();
 		var add = sdType.GetMethod("Add").OrThrow();
 		var p1 = new Player { Id = 1, FirstName = "A", LastName = "A" };
 		var p2 = new Player { Id = 2, FirstName = "B", LastName = "B" };
@@ -170,14 +165,16 @@ public sealed class DataCacheTests
 		add.Invoke(sd, [p1.PrimaryKey, p1]);
 		add.Invoke(sd, [p2.PrimaryKey, p2]);
 		add.Invoke(sd, [p3.PrimaryKey, p3]);
-		mapType.GetMethod("Add").OrThrow().Invoke(typeMap, [typeof (Player), sd]);
+		mapType.GetMethod("Add")
+			   .OrThrow()
+			   .Invoke(typeMap, [typeof (Player), sd]);
 
 		dataField.SetValue(null, typeMap);
 		try
 		{
-			Assert.True(Data.Any<Player>());
-			Assert.True(Data.Any<Player>(static pl => pl.Id == 2));
-			Assert.False(Data.Any<Player>(static pl => pl.Id == 9));
+			Assert.True(Any<Player>());
+			Assert.True(Any<Player>(static pl => pl.Id == 2));
+			Assert.False(Any<Player>(static pl => pl.Id == 9));
 		}
 		finally
 		{

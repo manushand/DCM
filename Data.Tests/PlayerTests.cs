@@ -1,17 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
 
 namespace Data.Tests;
-
-using DCM;
-using Helpers;
-using static GamePlayer.Powers;
-using static GamePlayer.Results;
 
 [PublicAPI]
 public sealed class PlayerTests : TestBase
@@ -190,9 +180,9 @@ public sealed class PlayerTests : TestBase
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic)
 									 .OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+		var field = cacheType.GetField("_data", NonPublic | Static)
 							 .OrThrow("Cache._data field not found");
 		var original = field.GetValue(null)
 							.OrThrow();
@@ -254,13 +244,5 @@ public sealed class PlayerTests : TestBase
 			if (!(bool)item)
 				AddEmpty(typeMap, t);
 		}
-	}
-
-	private static string GetPrimaryKey(object record)
-	{
-		var prop = record.GetType()
-						 .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-						 .OrThrow($"PrimaryKey property not found on {record.GetType().Name}");
-		return (prop.GetValue(record) as string).OrThrow();
 	}
 }

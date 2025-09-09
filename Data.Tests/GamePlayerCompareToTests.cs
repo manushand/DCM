@@ -1,8 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
-using Xunit;
-
-namespace Data.Tests;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class GamePlayerCompareToTests
@@ -10,15 +6,15 @@ public sealed class GamePlayerCompareToTests
 	[Fact]
 	public void CompareTo_Throws_When_Other_Is_Null()
 	{
-		var gp = new GamePlayer { Power = GamePlayer.Powers.Austria };
+		var gp = new GamePlayer { Power = Austria };
 		Assert.ThrowsAny<Exception>(() => gp.CompareTo(null));
 	}
 
 	[Fact]
 	public void CompareTo_When_GameId_Zero_Compares_By_Power()
 	{
-		var gp1 = new GamePlayer { Power = GamePlayer.Powers.Austria };
-		var gp2 = new GamePlayer { Power = GamePlayer.Powers.England };
+		var gp1 = new GamePlayer { Power = Austria };
+		var gp2 = new GamePlayer { Power = England };
 		// Austria (0) < England (1)
 		Assert.True(gp1.CompareTo(gp2) < 0);
 		Assert.True(gp2.CompareTo(gp1) > 0);
@@ -33,20 +29,20 @@ public sealed class GamePlayerCompareToTests
 		var a = new Player { Id = 1, FirstName = "Ann", LastName = "A" };
 		var b = new Player { Id = 2, FirstName = "Bob", LastName = "B" };
 
-		var gpGame1PowerA = new GamePlayer { Game = g1, Player = a, Power = GamePlayer.Powers.Austria };
-		var gpGame2PowerA = new GamePlayer { Game = g2, Player = a, Power = GamePlayer.Powers.Austria };
+		var gpGame1PowerA = new GamePlayer { Game = g1, Player = a, Power = Austria };
+		var gpGame2PowerA = new GamePlayer { Game = g2, Player = a, Power = Austria };
 		// Different game numbers => compare by Game.Number first
 		Assert.True(gpGame1PowerA.CompareTo(gpGame2PowerA) < 0);
 		Assert.True(gpGame2PowerA.CompareTo(gpGame1PowerA) > 0);
 
 		// Same game number: compare by Power
-		var gp1 = new GamePlayer { Game = g1, Player = a, Power = GamePlayer.Powers.Austria };
-		var gp2 = new GamePlayer { Game = g1, Player = a, Power = GamePlayer.Powers.England };
+		var gp1 = new GamePlayer { Game = g1, Player = a, Power = Austria };
+		var gp2 = new GamePlayer { Game = g1, Player = a, Power = England };
 		Assert.True(gp1.CompareTo(gp2) < 0);
 
 		// Same game and power: compare by Player.Name (Ann A < Bob B)
-		var gp1Name = new GamePlayer { Game = g1, Player = a, Power = GamePlayer.Powers.Austria };
-		var gp2Name = new GamePlayer { Game = g1, Player = b, Power = GamePlayer.Powers.Austria };
+		var gp1Name = new GamePlayer { Game = g1, Player = a, Power = Austria };
+		var gp2Name = new GamePlayer { Game = g1, Player = b, Power = Austria };
 		Assert.True(gp1Name.CompareTo(gp2Name) < 0);
 	}
 }

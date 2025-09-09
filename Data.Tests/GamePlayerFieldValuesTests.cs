@@ -1,10 +1,4 @@
-﻿using JetBrains.Annotations;
-using Xunit;
-
-namespace Data.Tests;
-
-using static GamePlayer.Powers;
-using static GamePlayer.Results;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class GamePlayerFieldValuesTests

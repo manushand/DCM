@@ -1,12 +1,4 @@
-﻿using DCM;
-using JetBrains.Annotations;
-using Xunit;
-
-namespace Data.Tests;
-
-using static Game.Statuses;
-using static GamePlayer.Powers;
-using static GamePlayer.Results;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class GamePlayerPlayIncompleteTests
@@ -89,18 +81,17 @@ public sealed class GamePlayerPlayIncompleteTests
 		var t = new Tournament { Id = 1, Name = "T" };
 		var r = new Round { Id = 2, Number = 1 };
 		// Attach tournament to round via private fields to avoid cache/DB
-		typeof (Round).GetProperty("TournamentId", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public)
+		typeof (Round).GetProperty("TournamentId", Instance | NonPublic | Public)
 					  .OrThrow()
 					  .SetValue(r, t.Id);
-		typeof (Round).GetField("<Tournament>k__BackingField", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic).OrThrow()
+		typeof (Round).GetField("<Tournament>k__BackingField", Instance | NonPublic).OrThrow()
 			.SetValue(r, t);
-		var g = new Game
-				{
-					Id = 3,
-					Round = r,
-					Status = status,
-					ScoringSystem = system
-				};
-		return g;
+		return new ()
+			   {
+				   Id = 3,
+				   Round = r,
+				   Status = status,
+				   ScoringSystem = system
+			   };
 	}
 }

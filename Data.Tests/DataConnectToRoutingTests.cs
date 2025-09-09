@@ -1,8 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
-using Xunit;
-
-namespace Data.Tests;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class DataConnectToRoutingTests

@@ -1,12 +1,4 @@
-﻿using System;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
-
-namespace Data.Tests;
-
-using DCM;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class RoundWorkableTests : TestBase
@@ -39,8 +31,8 @@ public sealed class RoundWorkableTests : TestBase
 
 	private static CacheScope SeedRoundsCache(Tournament? tournament = null, params Round[] rounds)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data field not found");
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
+		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
 		var original = field.GetValue(null).OrThrow();
 		var typeMapType = original.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
@@ -97,14 +89,14 @@ public sealed class RoundWorkableTests : TestBase
 		using (SeedRoundsCache(t, r1, r2))
 		{
 			// r2 has a seeded (not finished) game -> Workable should be true for r2 as it's the latest round
-			var gSeeded = new Game { Status = Game.Statuses.Seeded };
-			typeof (Round).GetField("_games", BindingFlags.Instance | BindingFlags.NonPublic)
+			var gSeeded = new Game { Status = Seeded };
+			typeof (Round).GetField("_games", Instance | NonPublic)
 						  .OrThrow()
 						  .SetValue(r2, new[] { gSeeded });
 			Assert.True(r2.Workable);
 			// r1 has only finished games and is not the latest round -> Workable should be false
-			var gFinished = new Game { Status = Game.Statuses.Finished };
-			typeof (Round).GetField("_games", BindingFlags.Instance | BindingFlags.NonPublic)
+			var gFinished = new Game { Status = Finished };
+			typeof (Round).GetField("_games", Instance | NonPublic)
 						  .OrThrow()
 						  .SetValue(r1, new[] { gFinished });
 			Assert.False(r1.Workable);
@@ -124,8 +116,8 @@ public sealed class RoundWorkableTests : TestBase
 			SetProperty(r2, "TournamentId", t.Id);
 			SetField(r2, "<Tournament>k__BackingField", t);
 			// All games in r2 finished and r2.Number == TotalRounds -> Workable false
-			var gFinished = new Game { Status = Game.Statuses.Finished };
-			typeof (Round).GetField("_games", BindingFlags.Instance | BindingFlags.NonPublic)
+			var gFinished = new Game { Status = Finished };
+			typeof (Round).GetField("_games", Instance | NonPublic)
 						  .OrThrow()
 						  .SetValue(r2, new[] { gFinished });
 			Assert.False(r2.Workable);

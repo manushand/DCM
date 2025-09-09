@@ -1,12 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
+﻿using System.Linq;
 
 namespace Data.Tests;
-
-using DCM;
 
 [PublicAPI]
 public sealed class DataQueryCacheTests : TestBase
@@ -23,8 +17,7 @@ public sealed class DataQueryCacheTests : TestBase
 												typeof (Player),
 												new Player { Id = 1, FirstName = "Ann", LastName = "A" },
 												new Player { Id = 2, FirstName = "Bob", LastName = "B" },
-												new Player { Id = 3, FirstName = "Cat", LastName = "C" }
-											   );
+												new Player { Id = 3, FirstName = "Cat", LastName = "C" });
 									});
 
 		var all = Data.ReadAll<Player>().ToList();
@@ -56,14 +49,14 @@ public sealed class DataQueryCacheTests : TestBase
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic)
 									 .OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+		var field = cacheType.GetField("_data", NonPublic | Static)
 							 .OrThrow("Cache._data field not found");
 		var original = field.GetValue(null)
 							.OrThrow();
 		var typeMapType = original.GetType();
-		var typeMap = Activator.CreateInstance(typeMapType)
+		var typeMap = CreateInstance(typeMapType)
 							   .OrThrow();
 		fill(typeMap);
 		field.SetValue(null, typeMap);
@@ -74,14 +67,14 @@ public sealed class DataQueryCacheTests : TestBase
 	{
 		var typeMapType = typeMap.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = Activator.CreateInstance(sortedDictType)
+		var sd = CreateInstance(sortedDictType)
 						  .OrThrow();
 		var sdAdd = sortedDictType.GetMethod("Add")
 								  .OrThrow();
 		foreach (var r in records)
 		{
 			var key = (string)r.GetType()
-							   .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+							   .GetProperty("PrimaryKey", Instance | Public)
 							   .OrThrow()
 							   .GetValue(r)
 							   .OrThrow();

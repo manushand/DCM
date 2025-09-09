@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
+﻿using System.Collections.Generic;
 
 namespace Data.Tests;
-
-using DCM;
-using Helpers;
 
 [PublicAPI]
 public sealed class GamePlayerConflictTests : TestBase
@@ -29,7 +21,7 @@ public sealed class GamePlayerConflictTests : TestBase
 			TotalRounds = 3,
 			MinimumRounds = 1,
 			Date = DateTime.Today,
-			GroupPowers = Tournament.PowerGroups.Corners // FR-IGA-TE
+			GroupPowers = Corners // FR-IGA-TE
 		};
 		var r1 = new Round { Id = 10, Number = 1 };
 		var r2 = new Round { Id = 11, Number = 2 };
@@ -59,25 +51,25 @@ public sealed class GamePlayerConflictTests : TestBase
 		var tpC = NewTeamPlayer(team.Id, c.Id);
 
 		// Prior round finished game to enable score conflict calculation in round 2
-		var gPrev = new Game { Id = 1001, Round = r1, Status = Game.Statuses.Finished, Scored = true, Number = 1 };
-		var prevGa = new GamePlayer { Game = gPrev, Player = a, Power = GamePlayer.Powers.France, Result = GamePlayer.Results.Unknown };
-		var prevGb = new GamePlayer { Game = gPrev, Player = b, Power = GamePlayer.Powers.Russia, Result = GamePlayer.Results.Unknown };
-		var prevGc = new GamePlayer { Game = gPrev, Player = c, Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown };
+		var gPrev = new Game { Id = 1001, Round = r1, Status = Finished, Scored = true, Number = 1 };
+		var prevGa = new GamePlayer { Game = gPrev, Player = a, Power = France, Result = Unknown };
+		var prevGb = new GamePlayer { Game = gPrev, Player = b, Power = Russia, Result = Unknown };
+		var prevGc = new GamePlayer { Game = gPrev, Player = c, Power = Austria, Result = Unknown };
 		// Give A a prior FinalScore to create distance from average in next round
 		SetField(prevGa, "_finalScore", 10.0);
 		SetField(prevGb, "_finalScore", 0.0);
 		SetField(prevGc, "_finalScore", 0.0);
 
 		// Current round game: r2
-		var gNow = new Game { Id = 2001, Round = r2, Status = Game.Statuses.Seeded, Number = 2 };
+		var gNow = new Game { Id = 2001, Round = r2, Status = Seeded, Number = 2 };
 		// Three opponents with specific powers to trigger power-group conflict: A plays France again group-wise and exact power same
-		var nowGa = new GamePlayer { Game = gNow, Player = a, Power = GamePlayer.Powers.France, Result = GamePlayer.Results.Unknown };
-		var nowGb = new GamePlayer { Game = gNow, Player = b, Power = GamePlayer.Powers.Russia, Result = GamePlayer.Results.Unknown };
-		var nowGc = new GamePlayer { Game = gNow, Player = c, Power = GamePlayer.Powers.Italy, Result = GamePlayer.Results.Unknown };
-		var nowGx4 = new GamePlayer { Game = gNow, Player = new () { Id = 4, FirstName = "D", LastName = "D" }, Power = GamePlayer.Powers.England, Result = GamePlayer.Results.Unknown };
-		var nowGx5 = new GamePlayer { Game = gNow, Player = new () { Id = 5, FirstName = "E", LastName = "E" }, Power = GamePlayer.Powers.Germany, Result = GamePlayer.Results.Unknown };
-		var nowGx6 = new GamePlayer { Game = gNow, Player = new () { Id = 6, FirstName = "F", LastName = "F" }, Power = GamePlayer.Powers.Turkey, Result = GamePlayer.Results.Unknown };
-		var nowGx7 = new GamePlayer { Game = gNow, Player = new () { Id = 7, FirstName = "G", LastName = "G" }, Power = GamePlayer.Powers.TBD, Result = GamePlayer.Results.Unknown };
+		var nowGa = new GamePlayer { Game = gNow, Player = a, Power = France, Result = Unknown };
+		var nowGb = new GamePlayer { Game = gNow, Player = b, Power = Russia, Result = Unknown };
+		var nowGc = new GamePlayer { Game = gNow, Player = c, Power = Italy, Result = Unknown };
+		var nowGx4 = new GamePlayer { Game = gNow, Player = new () { Id = 4, FirstName = "D", LastName = "D" }, Power = England, Result = Unknown };
+		var nowGx5 = new GamePlayer { Game = gNow, Player = new () { Id = 5, FirstName = "E", LastName = "E" }, Power = Germany, Result = Unknown };
+		var nowGx6 = new GamePlayer { Game = gNow, Player = new () { Id = 6, FirstName = "F", LastName = "F" }, Power = Turkey, Result = Unknown };
+		var nowGx7 = new GamePlayer { Game = gNow, Player = new () { Id = 7, FirstName = "G", LastName = "G" }, Power = TBD, Result = Unknown };
 
 		// Player conflict: A conflicted with B (value 5); PlayerConflict.Value is used directly
 		var pcAb = new PlayerConflict(a.Id, b.Id) { Value = 5 };
@@ -119,15 +111,15 @@ public sealed class GamePlayerConflictTests : TestBase
 	[Fact]
 	public void CalculateConflict_NoConflicts_Yields_Zero_With_NoDetails()
 	{
-		var t = new Tournament { Id = 300, Name = "T", UnplayedScore = 0, TotalRounds = 1, GroupPowers = Tournament.PowerGroups.None };
+		var t = new Tournament { Id = 300, Name = "T", UnplayedScore = 0, TotalRounds = 1, GroupPowers = None };
 		var r = new Round { Id = 30, Number = 1 };
 		SetProperty(r, "TournamentId", t.Id);
 		SetField(r, "<Tournament>k__BackingField", t);
-		var g = new Game { Id = 4001, Round = r, Status = Game.Statuses.Seeded, Number = 1 };
+		var g = new Game { Id = 4001, Round = r, Status = Seeded, Number = 1 };
 		var p1 = new Player { Id = 1, FirstName = "A", LastName = "A" };
 		var p2 = new Player { Id = 2, FirstName = "B", LastName = "B" };
-		var gp1 = new GamePlayer { Game = g, Player = p1, Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown };
-		var gp2 = new GamePlayer { Game = g, Player = p2, Power = GamePlayer.Powers.England, Result = GamePlayer.Results.Unknown };
+		var gp1 = new GamePlayer { Game = g, Player = p1, Power = Austria, Result = Unknown };
+		var gp2 = new GamePlayer { Game = g, Player = p2, Power = England, Result = Unknown };
 		using (SeedCache(map =>
 						{
 							AddMany(map, typeof (Tournament), t);
@@ -163,8 +155,8 @@ public sealed class GamePlayerConflictTests : TestBase
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data field not found");
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
+		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
 		var original = field.GetValue(null).OrThrow();
 		var typeMapType = original.GetType();
 		var typeMap = CreateInstance(typeMapType).OrThrow();
@@ -182,7 +174,7 @@ public sealed class GamePlayerConflictTests : TestBase
 		foreach (var r in records)
 		{
 			var key = (string)r.GetType()
-							   .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+							   .GetProperty("PrimaryKey", Instance | Public | NonPublic)
 							   .OrThrow()
 							   .GetValue(r)
 							   .OrThrow();

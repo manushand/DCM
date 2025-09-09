@@ -1,12 +1,4 @@
-﻿using System;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
-
-namespace Data.Tests;
-
-using DCM;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class RoundPreRoundTests : TestBase
@@ -29,7 +21,7 @@ public sealed class RoundPreRoundTests : TestBase
 				 {
 					 Id = 100,
 					 Round = r1,
-					 Status = Game.Statuses.Finished,
+					 Status = Finished,
 					 Scored = true,
 					 Date = new (2024, 1, 1),
 					 Number = 1
@@ -38,8 +30,8 @@ public sealed class RoundPreRoundTests : TestBase
 				  {
 					  Game = g1,
 					  Player = p,
-					  Power = GamePlayer.Powers.Austria,
-					  Result = GamePlayer.Results.Unknown
+					  Power = Austria,
+					  Result = Unknown
 				  };
 		SetField(gp1, "_finalScore", 6.0);
 
@@ -97,7 +89,7 @@ public sealed class RoundPreRoundTests : TestBase
 				 {
 					 Id = 201,
 					 Round = r1,
-					 Status = Game.Statuses.Finished,
+					 Status = Finished,
 					 Scored = true,
 					 Date = new (2024, 1, 1),
 					 Number = 1
@@ -106,7 +98,7 @@ public sealed class RoundPreRoundTests : TestBase
 				 {
 					 Id = 202,
 					 Round = r2,
-					 Status = Game.Statuses.Finished,
+					 Status = Finished,
 					 Scored = true,
 					 Date = new (2024, 1, 15),
 					 Number = 1
@@ -115,15 +107,15 @@ public sealed class RoundPreRoundTests : TestBase
 				  {
 					  Game = gA,
 					  Player = p,
-					  Power = GamePlayer.Powers.England,
-					  Result = GamePlayer.Results.Unknown
+					  Power = England,
+					  Result = Unknown
 				  };
 		var gpB = new GamePlayer
 				  {
 					  Game = gB,
 					  Player = p,
-					  Power = GamePlayer.Powers.France,
-					  Result = GamePlayer.Results.Unknown
+					  Power = France,
+					  Result = Unknown
 				  };
 		SetField(gpA, "_finalScore", 3.0);
 		SetField(gpB, "_finalScore", 5.0);
@@ -150,8 +142,8 @@ public sealed class RoundPreRoundTests : TestBase
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data field not found");
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
+		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
 		var original = field.GetValue(null).OrThrow();
 		var typeMapType = original.GetType();
 		var typeMap = CreateInstance(typeMapType).OrThrow();
@@ -169,7 +161,7 @@ public sealed class RoundPreRoundTests : TestBase
 		foreach (var r in records)
 		{
 			var key = (string)r.GetType()
-							   .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+							   .GetProperty("PrimaryKey", Instance | Public | NonPublic)
 							   .OrThrow()
 							   .GetValue(r)
 							   .OrThrow();

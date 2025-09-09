@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
+﻿using System.Collections.Generic;
 
 namespace Data.Tests;
-
-using DCM;
-using Helpers;
 
 [PublicAPI]
 public sealed class TournamentTests : TestBase
@@ -31,7 +23,7 @@ public sealed class TournamentTests : TestBase
 						 { nameof (Tournament.TotalRounds), 4 },
 						 { nameof (Tournament.MinimumRounds), 2 },
 						 { nameof (Tournament.AssignPowers), 1 },
-						 { nameof (Tournament.GroupPowers), Tournament.PowerGroups.Corners.AsInteger },
+						 { nameof (Tournament.GroupPowers), Corners.AsInteger },
 						 { nameof (Tournament.UnplayedScore), 7 },
 						 { nameof (Tournament.RoundsToDrop), -2 },       // negative => DropBeforeFinalRound = true, RoundsToDrop = 2
 						 { nameof (Tournament.ScalePercentage), 2.75m }, // => RoundsToScale = 2; ScalePercentage = 75
@@ -50,7 +42,7 @@ public sealed class TournamentTests : TestBase
 		Assert.Equal("WDC", t.Name);
 		Assert.Equal("Desc", t.Description);
 		Assert.Equal(DateTime.Today, t.Date.Date);
-		Assert.Equal(Tournament.PowerGroups.Corners, t.GroupPowers);
+		Assert.Equal(Corners, t.GroupPowers);
 		Assert.Equal(2, t.RoundsToDrop);
 		Assert.True(t.DropBeforeFinalRound);
 		Assert.Equal(2, t.RoundsToScale);
@@ -85,10 +77,10 @@ public sealed class TournamentTests : TestBase
 		// Ensure rounds reference tournament without cache/DB by setting Tournament backing field via reflection
 		SetField(r1, "<Tournament>k__BackingField", t);
 		SetField(r2, "<Tournament>k__BackingField", t);
-		var g1 = new Game { Status = Game.Statuses.Seeded };
-		var g2 = new Game { Status = Game.Statuses.Underway };
-		var g3 = new Game { Status = Game.Statuses.Finished };
-		var g4 = new Game { Status = Game.Statuses.Finished };
+		var g1 = new Game { Status = Seeded };
+		var g2 = new Game { Status = Underway };
+		var g3 = new Game { Status = Finished };
+		var g4 = new Game { Status = Finished };
 		SetRoundGames(r1, g1, g2);
 		SetRoundGames(r2, g3);
 
@@ -145,16 +137,14 @@ public sealed class TournamentTests : TestBase
 	private static CacheScope SeedTournamentAndRoundsCache(IdInfoRecord t, IEnumerable<Round> rounds)
 	{
 		var dataType = typeof (Data);
-		var cacheType = dataType.GetNestedType("Cache", BindingFlags.NonPublic);
-		if (cacheType is null) throw new InvalidOperationException("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static);
-		if (field is null) throw new InvalidOperationException("Cache._data field not found");
-		var original = field.GetValue(null) ?? throw new NullReferenceException();
+		var cacheType = dataType.GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
+		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
+		var original = field.GetValue(null).OrThrow();
 
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var sortedDictType = typeMapType.GetGenericArguments()[1]; // SortedDictionary<string, IRecord>
 		var typeMap = CreateInstance(typeMapType);
-		var mapAdd = typeMapType.GetMethod("Add") ?? throw new NullReferenceException();
+		var mapAdd = typeMapType.GetMethod("Add").OrThrow();
 
 		// Tournament map
 		var sdTournament = CreateInstance(sortedDictType).OrThrow();
@@ -163,7 +153,7 @@ public sealed class TournamentTests : TestBase
 
 		// Rounds map
 		var sdRound = CreateInstance(sortedDictType);
-		var sdAdd = sortedDictType.GetMethod("Add") ?? throw new NullReferenceException();
+		var sdAdd = sortedDictType.GetMethod("Add").OrThrow();
 		foreach (var r in rounds)
 			sdAdd.Invoke(sdRound, [r.PrimaryKey, r]);
 		mapAdd.Invoke(typeMap, [typeof (Round), sdRound]);
@@ -188,10 +178,9 @@ public sealed class TournamentTests : TestBase
 
 	private static TVal GetNonPublicProperty<TVal>(object target, string propertyName)
 	{
-		var prop = target.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+		var prop = target.GetType().GetProperty(propertyName, Instance | NonPublic | Public);
 		if (prop?.GetMethod is null)
 			throw new InvalidOperationException($"Property {propertyName} not found or has no getter");
-		var value = prop.GetValue(target) ?? throw new NullReferenceException();
-		return (TVal)value;
+		return (TVal)prop.GetValue(target).OrThrow();
 	}
 }

@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
+﻿using System.Collections.Generic;
 
 namespace Data.Tests;
-
-using Helpers;
 
 [PublicAPI]
 public sealed class RoundTests
 {
 	private static void SetGames(Round r, params Game[] games)
-		=> typeof (Round).GetField("_games", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(r, games);
+		=> typeof (Round).GetField("_games", Instance | NonPublic)?.SetValue(r, games);
 
 	[Fact]
 	public void Load_Sets_Fields()
@@ -83,9 +77,9 @@ public sealed class RoundTests
 	public void Games_Filtering_And_Flags_Work()
 	{
 		var r = new Round();
-		var g1 = new Game { Status = Game.Statuses.Seeded };
-		var g2 = new Game { Status = Game.Statuses.Underway };
-		var g3 = new Game { Status = Game.Statuses.Finished };
+		var g1 = new Game { Status = Seeded };
+		var g2 = new Game { Status = Underway };
+		var g3 = new Game { Status = Finished };
 		SetGames(r, g1, g2, g3);
 
 		Assert.Single(r.SeededGames);
@@ -107,14 +101,14 @@ public sealed class RoundTests
 	{
 		var r = new Round();
 
-		SetGames(r, new Game { Status = Game.Statuses.Seeded });
-		Assert.Equal(Game.Statuses.Seeded, r.Status);
+		SetGames(r, new Game { Status = Seeded });
+		Assert.Equal(Seeded, r.Status);
 
-		SetGames(r, new Game { Status = Game.Statuses.Underway });
-		Assert.Equal(Game.Statuses.Underway, r.Status);
+		SetGames(r, new Game { Status = Underway });
+		Assert.Equal(Underway, r.Status);
 
-		SetGames(r, new Game { Status = Game.Statuses.Finished });
-		Assert.Equal(Game.Statuses.Finished, r.Status);
+		SetGames(r, new Game { Status = Finished });
+		Assert.Equal(Finished, r.Status);
 	}
 
 	[Fact]
@@ -138,7 +132,7 @@ public sealed class RoundTests
 		var r = new Round();
 		var rp1 = new RoundPlayer();
 		var rp2 = new RoundPlayer();
-		var field = typeof (Round).GetField("_roundPlayers", BindingFlags.Instance | BindingFlags.NonPublic) ?? throw new NullReferenceException();
+		var field = typeof (Round).GetField("_roundPlayers", Instance | NonPublic) ?? throw new NullReferenceException();
 		field.SetValue(r, new[] { rp1, rp2 });
 		Assert.Same(rp1, r.RoundPlayers[0]);
 		Assert.Same(rp2, r.RoundPlayers[1]);

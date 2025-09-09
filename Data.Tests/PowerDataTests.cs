@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Xunit;
 
 namespace Data.Tests;
 
 using static GamePlayer;
-using static GamePlayer.Powers;
-using static GamePlayer.Results;
 
 public sealed class PowerDataTests
 {

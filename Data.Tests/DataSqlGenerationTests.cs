@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Data.Common;
 using System.Linq;
-using JetBrains.Annotations;
-using Xunit;
 
 namespace Data.Tests;
 

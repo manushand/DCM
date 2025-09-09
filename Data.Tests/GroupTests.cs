@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
 
 namespace Data.Tests;
-
-using DCM;
-using Helpers;
 
 [PublicAPI]
 public sealed class GroupTests : TestBase
@@ -105,8 +97,8 @@ public sealed class GroupTests : TestBase
 		SetField(r, "<Tournament>k__BackingField", t);
 		// Attach HostRound directly to avoid extra cache lookup work
 		SetField(group, "<HostRound>k__BackingField", r);
-		var g1 = new Game { Id = 1001, Round = r, Status = Game.Statuses.Finished, Date = new (2024, 1, 2) };
-		var g2 = new Game { Id = 1002, Round = r, Status = Game.Statuses.Underway, Date = new (2024, 1, 1) };
+		var g1 = new Game { Id = 1001, Round = r, Status = Finished, Date = new (2024, 1, 2) };
+		var g2 = new Game { Id = 1002, Round = r, Status = Underway, Date = new (2024, 1, 1) };
 
 		using (SeedCache(map =>
 						 {
@@ -137,7 +129,7 @@ public sealed class GroupTests : TestBase
 		SetField(r, "<Tournament>k__BackingField", t);
 		SetField(r, "_scoringSystemId", 9);
 		SetField(group, "<HostRound>k__BackingField", r);
-		var g = new Game { Id = 2000, Round = r, Status = Game.Statuses.Finished, ScoringSystem = new () { Id = 9 } };
+		var g = new Game { Id = 2000, Round = r, Status = Finished, ScoringSystem = new () { Id = 9 } };
 
 		using (SeedCache(map =>
 						 {
@@ -152,7 +144,7 @@ public sealed class GroupTests : TestBase
 			Assert.True(group.IsRatable(g, Group.GamesToRate.GamesUsingGroupSystem));
 			Assert.True(group.IsRatable(g, Group.GamesToRate.AllGamesScoreableWithGroupSystem));
 
-			g.Status = Game.Statuses.Underway;
+			g.Status = Underway;
 			Assert.False(group.IsRatable(g, Group.GamesToRate.AllGamesScoreableWithGroupSystem));
 		}
 	}
@@ -197,16 +189,16 @@ public sealed class GroupTests : TestBase
 		SetField(r, "_scoringSystemId", 9);
 		var sc = new ScoringSystem { Id = 9, PointsPerGame = 0, PlayerAnteFormula = string.Empty };
 		var player = new Player { Id = 222, Name = "P" };
-		var g1 = new Game { Id = 3001, Round = r, Status = Game.Statuses.Finished, Scored = true };
-		var g2 = new Game { Id = 3002, Round = r, Status = Game.Statuses.Finished, Scored = true };
+		var g1 = new Game { Id = 3001, Round = r, Status = Finished, Scored = true };
+		var g2 = new Game { Id = 3002, Round = r, Status = Finished, Scored = true };
 
 		// Build 7 players for each game including the target player; assign FinalScore via private field to avoid scoring
-		var powers = new[] { GamePlayer.Powers.Austria, GamePlayer.Powers.England, GamePlayer.Powers.France, GamePlayer.Powers.Germany, GamePlayer.Powers.Italy, GamePlayer.Powers.Russia, GamePlayer.Powers.Turkey };
+		var powers = new[] { Austria, England, France, Germany, Italy, Russia, Turkey };
 		var gamePlayers = new List<GamePlayer>();
 		for (var i = 0; i < 7; i++)
 		{
 			var p = i is 0 ? player : new () { Id = 1000 + i, Name = $"P{i}" };
-			var gp = new GamePlayer { Game = g1, Player = p, Power = powers[i], Result = GamePlayer.Results.Unknown };
+			var gp = new GamePlayer { Game = g1, Player = p, Power = powers[i], Result = Unknown };
 			if (i is 0)
 				SetField(gp, "_finalScore", 3.0);
 			gamePlayers.Add(gp);
@@ -214,7 +206,7 @@ public sealed class GroupTests : TestBase
 		for (var i = 0; i < 7; i++)
 		{
 			var p = i is 0 ? player : new () { Id = 2000 + i, Name = $"Q{i}" };
-			var gp = new GamePlayer { Game = g2, Player = p, Power = powers[i], Result = GamePlayer.Results.Unknown };
+			var gp = new GamePlayer { Game = g2, Player = p, Power = powers[i], Result = Unknown };
 			if (i is 0)
 				SetField(gp, "_finalScore", 5.0);
 			gamePlayers.Add(gp);
@@ -243,9 +235,9 @@ public sealed class GroupTests : TestBase
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic)
 									 .OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+		var field = cacheType.GetField("_data", NonPublic | Static)
 							 .OrThrow("Cache._data field not found");
 		var original = field.GetValue(null)
 							.OrThrow();
@@ -283,11 +275,4 @@ public sealed class GroupTests : TestBase
 		var sd = CreateInstance(sortedDictType).OrThrow();
 		typeMapType.GetMethod("Add")?.Invoke(typeMap, [type, sd]);
 	}
-
-	private static string GetPrimaryKey(object record)
-		=> (record.GetType()
-				  .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-				  .OrThrow($"PrimaryKey property not found on {record.GetType().Name}")
-				  .GetValue(record) as string)
-			.OrThrow();
 }

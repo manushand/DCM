@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
 
 namespace Data.Tests;
-
-using DCM;
 
 [PublicAPI]
 public sealed class DataUtilityTests : TestBase
@@ -99,16 +92,16 @@ public sealed class DataUtilityTests : TestBase
 			["TeamId"] = teamId,
 			["PlayerId"] = playerId
 		};
-		using var reader = new Helpers.FakeDbDataReader("TeamPlayer", values);
+		using var reader = new FakeDbDataReader("TeamPlayer", values);
 		tp.Load(reader);
 		return tp;
 	}
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic)
 									 .OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+		var field = cacheType.GetField("_data", NonPublic | Static)
 							 .OrThrow("Cache._data field not found");
 		var original = field.GetValue(null).OrThrow();
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
@@ -125,13 +118,5 @@ public sealed class DataUtilityTests : TestBase
 		var sd = CreateInstance(sortedDictType).OrThrow();
 		sortedDictType.GetMethod("Add")?.Invoke(sd, [GetPrimaryKey(record), record]);
 		typeMapType.GetMethod("Add")?.Invoke(typeMap, [type, sd]);
-	}
-
-	private static string GetPrimaryKey(object record)
-	{
-		var prop = record.GetType()
-					 .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-					 .OrThrow($"PrimaryKey property not found on {record.GetType().Name}");
-		return prop.GetValue(record) as string ?? throw new NullReferenceException();
 	}
 }

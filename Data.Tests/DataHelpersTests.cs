@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Data;
-using JetBrains.Annotations;
-using Xunit;
 
 namespace Data.Tests;
-
-using Helpers;
 
 [PublicAPI]
 public sealed class DataHelpersTests
@@ -22,7 +17,7 @@ public sealed class DataHelpersTests
 		var dt = new DateTime(2024, 1, 2);
 		Assert.Equal("'1/2/2024'", dt.ForSql());
 		Assert.Equal("Null", ((DateTime?)null).ForSql());
-		Assert.Equal((int)Game.Statuses.Finished, Game.Statuses.Finished.ForSql());
+		Assert.Equal((int)Finished, Finished.ForSql());
 	}
 
 	[Fact]
@@ -38,7 +33,7 @@ public sealed class DataHelpersTests
 			{ "Dec", 2.50m },
 			{ "Date", new DateTime(2024, 3, 4) },
 			{ "DateNull", null },
-			{ "EnumInt", (int)Game.Statuses.Underway }
+			{ "EnumInt", (int)Underway }
 		};
 		using var reader = new FakeDbDataReader("Game", values);
 		IDataRecord rec = reader;
@@ -49,7 +44,7 @@ public sealed class DataHelpersTests
 		// Double/Decimal should read as provided types
 		Assert.Equal(1.25, rec.Double("Dbl"));
 		Assert.Equal(2.50m, rec.Decimal("Dec"));
-		Assert.Equal(Game.Statuses.Underway, rec.IntegerAs<Game.Statuses>("EnumInt"));
+		Assert.Equal(Underway, rec.IntegerAs<Game.Statuses>("EnumInt"));
 		Assert.Equal(new DateTime(2024, 3, 4), rec.NullableDate("Date"));
 		Assert.Null(rec.NullableDate("DateNull"));
 	}
@@ -73,9 +68,9 @@ public sealed class DataHelpersTests
 	public void GroupSharedBy_Matches_According_To_Attribute_Groups()
 	{
 		// Using PowerGroups.Corners mapping: FR-IGA-TE
-		Assert.True(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.France, GamePlayer.Powers.Russia));
-		Assert.True(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.Italy, GamePlayer.Powers.Austria));
-		Assert.False(Tournament.PowerGroups.Corners.GroupSharedBy(GamePlayer.Powers.France, GamePlayer.Powers.Italy));
+		Assert.True(Corners.GroupSharedBy(France, Russia));
+		Assert.True(Corners.GroupSharedBy(Italy, Austria));
+		Assert.False(Corners.GroupSharedBy(France, Italy));
 	}
 
 	[Fact]

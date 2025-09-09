@@ -1,14 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
+﻿using System.Collections.Generic;
 
 namespace Data.Tests;
-
-using DCM;
-using Helpers;
 
 [PublicAPI]
 public sealed class GameTests : TestBase
@@ -20,7 +12,7 @@ public sealed class GameTests : TestBase
 					 {
 						 { nameof (Game.Id), 7 },
 						 { nameof (Game.Number), 2 },
-						 { nameof (Game.Status), Game.Statuses.Seeded.AsInteger },
+						 { nameof (Game.Status), Seeded.AsInteger },
 						 { nameof (Game.RoundId), 123 },
 						 { nameof (Game.Name), "Board 2" },
 						 { nameof (Game.ScoringSystemId), null },
@@ -33,7 +25,7 @@ public sealed class GameTests : TestBase
 
 		Assert.Equal(7, g.Id);
 		Assert.Equal(2, g.Number);
-		Assert.Equal(Game.Statuses.Seeded, g.Status);
+		Assert.Equal(Seeded, g.Status);
 		Assert.Equal('B', g.Letter);
 		Assert.Equal("Board 2", g.Name);
 		Assert.Equal("Board 2", g.FullName);
@@ -142,13 +134,13 @@ public sealed class GameTests : TestBase
 	{
 		var powerValues = new[]
 		{
-			GamePlayer.Powers.Austria,
-			GamePlayer.Powers.England,
-			GamePlayer.Powers.France,
-			GamePlayer.Powers.Germany,
-			GamePlayer.Powers.Italy,
-			GamePlayer.Powers.Russia,
-			GamePlayer.Powers.Turkey
+			Austria,
+			England,
+			France,
+			Germany,
+			Italy,
+			Russia,
+			Turkey
 		};
 		var list = new List<GamePlayer>();
 		for (var i = 0; i < 7; i++)
@@ -156,7 +148,7 @@ public sealed class GameTests : TestBase
 			var gp = new GamePlayer
 			{
 				Power = powerValues[i],
-				Result = GamePlayer.Results.Unknown,
+				Result = Unknown,
 				Game = g,
 				Player = new () { Id = i + 1, Name = $"P{i + 1}" }
 			};
@@ -168,9 +160,9 @@ public sealed class GameTests : TestBase
 	private static CacheScope SeedGamePlayersCache(List<GamePlayer> players)
 	{
 		var dataType = typeof (Data);
-		var cacheType = dataType.GetNestedType("Cache", BindingFlags.NonPublic)
+		var cacheType = dataType.GetNestedType("Cache", NonPublic)
 								.OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+		var field = cacheType.GetField("_data", NonPublic | Static)
 							 .OrThrow("Cache._data field not found");
 		var original = field.GetValue(null)
 							.OrThrow();

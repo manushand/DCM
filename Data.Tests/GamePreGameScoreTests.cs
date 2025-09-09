@@ -1,15 +1,4 @@
-﻿using System;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Activator;
-
-namespace Data.Tests;
-
-using DCM;
-using static Game.Statuses;
-using static GamePlayer.Powers;
-using static GamePlayer.Results;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class GamePreGameScoreTests : TestBase
@@ -147,8 +136,8 @@ public sealed class GamePreGameScoreTests : TestBase
 
 	private static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static).OrThrow("Cache._data field not found");
+		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
+		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
 		var original = field.GetValue(null).OrThrow();
 		var typeMapType = original.GetType();
 		var typeMap = CreateInstance(typeMapType).OrThrow();
@@ -166,7 +155,7 @@ public sealed class GamePreGameScoreTests : TestBase
 		foreach (var r in records)
 		{
 			var key = (string)r.GetType()
-							   .GetProperty("PrimaryKey", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+							   .GetProperty("PrimaryKey", Instance | Public | NonPublic)
 							   .OrThrow()
 							   .GetValue(r)
 							   .OrThrow();

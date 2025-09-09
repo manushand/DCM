@@ -1,7 +1,4 @@
-﻿using JetBrains.Annotations;
-using Xunit;
-
-namespace Data.Tests;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class TournamentFieldValuesFormattingTests
@@ -21,7 +18,7 @@ public sealed class TournamentFieldValuesFormattingTests
 			TotalRounds = 4,
 			MinimumRounds = 2,
 			AssignPowers = true,
-			GroupPowers = Tournament.PowerGroups.EastWest,
+			GroupPowers = EastWest,
 			UnplayedScore = 7,
 			RoundsToDrop = 2,
 			DropBeforeFinalRound = true,

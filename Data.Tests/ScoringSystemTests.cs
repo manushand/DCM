@@ -1,11 +1,6 @@
 ﻿using System.Collections.Generic;
-using DCM;
-using JetBrains.Annotations;
-using Xunit;
 
 namespace Data.Tests;
-
-using Helpers;
 
 [PublicAPI]
 public sealed class ScoringSystemTests
@@ -119,13 +114,13 @@ public sealed class ScoringSystemTests
 				};
 		var players = new List<GamePlayer>
 					{
-						new () { Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.England, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.France, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Germany, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Italy, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Russia, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Turkey, Result = GamePlayer.Results.Unknown }
+						new () { Power = Austria, Result = Unknown },
+						new () { Power = England, Result = Unknown },
+						new () { Power = France, Result = Unknown },
+						new () { Power = Germany, Result = Unknown },
+						new () { Power = Italy, Result = Unknown },
+						new () { Power = Russia, Result = Unknown },
+						new () { Power = Turkey, Result = Unknown }
 					};
 
 		var ok = s.ScoreWithResults(players, out var results);
@@ -145,12 +140,12 @@ public sealed class ScoringSystemTests
 				};
 		var players = new List<GamePlayer>
 					{
-						new () { Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.England, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.France, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Germany, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Italy, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Russia, Result = GamePlayer.Results.Unknown }
+						new () { Power = Austria, Result = Unknown },
+						new () { Power = England, Result = Unknown },
+						new () { Power = France, Result = Unknown },
+						new () { Power = Germany, Result = Unknown },
+						new () { Power = Italy, Result = Unknown },
+						new () { Power = Russia, Result = Unknown }
 					};
 
 		var ok = s.ScoreWithResults(players, out var issues);
@@ -189,13 +184,13 @@ public sealed class ScoringSystemTests
 					};
 			var players = new List<GamePlayer>
 					{
-						new () { Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.England, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.France, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Germany, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Italy, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Russia, Result = GamePlayer.Results.Unknown },
-						new () { Power = GamePlayer.Powers.Turkey, Result = GamePlayer.Results.Unknown }
+						new () { Power = Austria, Result = Unknown },
+						new () { Power = England, Result = Unknown },
+						new () { Power = France, Result = Unknown },
+						new () { Power = Germany, Result = Unknown },
+						new () { Power = Italy, Result = Unknown },
+						new () { Power = Russia, Result = Unknown },
+						new () { Power = Turkey, Result = Unknown }
 					};
 
 			var ok = s.ScoreWithResults(players, out var results);
@@ -221,13 +216,13 @@ public sealed class ScoringSystemTests
 				};
 		var players = new List<GamePlayer>
 				{
-					new () { Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.England, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.France, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.Germany, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.Italy, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.Russia, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.Turkey, Result = GamePlayer.Results.Unknown }
+					new () { Power = Austria, Result = Unknown },
+					new () { Power = England, Result = Unknown },
+					new () { Power = France, Result = Unknown },
+					new () { Power = Germany, Result = Unknown },
+					new () { Power = Italy, Result = Unknown },
+					new () { Power = Russia, Result = Unknown },
+					new () { Power = Turkey, Result = Unknown }
 				};
 
 		var ok = s.ScoreWithResults(players, out var results);
@@ -251,13 +246,13 @@ public sealed class ScoringSystemTests
 				};
 		var players = new List<GamePlayer>
 				{
-					new () { Power = GamePlayer.Powers.Austria, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.England, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.France, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.Germany, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.Italy, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.Russia, Result = GamePlayer.Results.Unknown },
-					new () { Power = GamePlayer.Powers.Turkey, Result = GamePlayer.Results.Unknown }
+					new () { Power = Austria, Result = Unknown },
+					new () { Power = England, Result = Unknown },
+					new () { Power = France, Result = Unknown },
+					new () { Power = Germany, Result = Unknown },
+					new () { Power = Italy, Result = Unknown },
+					new () { Power = Russia, Result = Unknown },
+					new () { Power = Turkey, Result = Unknown }
 				};
 
 		var ok = s.ScoreWithResults(players, out var results);

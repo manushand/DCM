@@ -1,12 +1,7 @@
-﻿using System;
+﻿using System.Collections;
 using System.Linq;
-using JetBrains.Annotations;
-using Xunit;
-using static System.Reflection.BindingFlags;
 
 namespace Data.Tests;
-
-using DCM;
 
 [UsedImplicitly]
 public sealed class DataCacheAddTests
@@ -25,8 +20,8 @@ public sealed class DataCacheAddTests
 		var sdType = mapType.GetGenericArguments()[1];
 
 		// Create a fresh, empty map and pre-register an empty SortedDictionary for Player
-		var newMap = Activator.CreateInstance(mapType).OrThrow();
-		var emptySd = Activator.CreateInstance(sdType).OrThrow();
+		var newMap = CreateInstance(mapType).OrThrow();
+		var emptySd = CreateInstance(sdType).OrThrow();
 		mapType.GetMethod("Add").OrThrow().Invoke(newMap, [typeof (Player), emptySd]);
 		// Point Cache._data to our prepared map so Get<T>() won't try to Load from DB
 		dataField.SetValue(null, newMap);
@@ -47,7 +42,7 @@ public sealed class DataCacheAddTests
 			addRangeMethod.Invoke(null, [new[] { b, c }]);
 
 			// Assert: underlying dictionary now has three entries
-			var all = ((System.Collections.IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>().ToList();
+			var all = ((IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>().ToList();
 			Assert.Equal(3, all.Count);
 			Assert.Contains(all, static p => p.Id is 1);
 			Assert.Contains(all, static p => p.Id is 2);

@@ -1,20 +1,16 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
-using DCM;
-using JetBrains.Annotations;
-using Xunit;
 
 namespace Data.Tests;
 
 [UsedImplicitly]
 public sealed class DataCacheRemoveAndFetchTests
 {
-	private static Type CacheType() => typeof (Data).GetNestedType("Cache", BindingFlags.NonPublic)
+	private static Type CacheType() => typeof (Data).GetNestedType("Cache", NonPublic)
 													.OrThrow("Cache type not found");
-	private static FieldInfo DataField() => CacheType().GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+	private static FieldInfo DataField() => CacheType().GetField("_data", NonPublic | Static)
 													   .OrThrow("Cache._data not found");
-	private static FieldInfo StoresField() => CacheType().GetField("Stores", BindingFlags.NonPublic | BindingFlags.Static)
+	private static FieldInfo StoresField() => CacheType().GetField("Stores", NonPublic | Static)
 														 .OrThrow("Cache.Stores not found");
 
 	[Fact]
@@ -25,8 +21,8 @@ public sealed class DataCacheRemoveAndFetchTests
 		var original = dataField.GetValue(null).OrThrow();
 		var mapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var sdType = mapType.GetGenericArguments()[1];
-		var map = Activator.CreateInstance(mapType).OrThrow();
-		var sd = Activator.CreateInstance(sdType).OrThrow(); // for Player
+		var map = CreateInstance(mapType).OrThrow();
+		var sd = CreateInstance(sdType).OrThrow(); // for Player
 		var addKvp = sdType.GetMethod("Add").OrThrow();
 
 		var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "A" };
@@ -41,7 +37,7 @@ public sealed class DataCacheRemoveAndFetchTests
 		try
 		{
 			// Invoke Cache.FetchOne<T>(T record)
-			var fetchOneRecord = cacheType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
+			var fetchOneRecord = cacheType.GetMethods(NonPublic | Static)
 				.First(static m => m.Name is "FetchOne"
 								&& m.GetParameters().Length is 1
 								&& !m.GetParameters()[0].ParameterType.IsGenericType)
@@ -52,21 +48,22 @@ public sealed class DataCacheRemoveAndFetchTests
 			Assert.Same(p2, found);
 
 			// Invoke Cache.Remove<T>(string key)
-			var removeByKey = cacheType.GetMethod("Remove", BindingFlags.NonPublic | BindingFlags.Static, null, [typeof (string)], null)
+			var removeByKey = cacheType.GetMethod("Remove", NonPublic | Static, null, [typeof (string)], null)
 									   .OrThrow()
 									   .MakeGenericMethod(typeof (Player));
 			removeByKey.Invoke(null, [p1.PrimaryKey]);
-			var fetchAll = cacheType.GetMethod("FetchAll", BindingFlags.NonPublic | BindingFlags.Static)
+			var fetchAll = cacheType.GetMethod("FetchAll", NonPublic | Static)
 									.OrThrow()
 									.MakeGenericMethod(typeof (Player));
 			var all = ((System.Collections.IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>().ToList();
 			Assert.DoesNotContain(all, static r => r.Id is 1);
 
 			// Invoke Cache.Remove<T>(params T[] records) via method discovery on generic array parameter
-			var removeParams = cacheType
-				.GetMethods(BindingFlags.NonPublic | BindingFlags.Static)
-				.First(static m => m is { Name: "Remove", IsGenericMethodDefinition: true } && m.GetParameters().Length is 1 && m.GetParameters()[0].ParameterType.IsArray)
-				.MakeGenericMethod(typeof (Player));
+			var removeParams = cacheType.GetMethods(NonPublic | Static)
+										.First(static m => m is { Name: "Remove", IsGenericMethodDefinition: true }
+														&& m.GetParameters().Length is 1
+														&& m.GetParameters()[0].ParameterType.IsArray)
+										.MakeGenericMethod(typeof (Player));
 			removeParams.Invoke(null, [new[] { p2, p3 }]);
 			all = ((System.Collections.IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>().ToList();
 			Assert.Empty(all);
@@ -99,9 +96,12 @@ public sealed class DataCacheRemoveAndFetchTests
 		try
 		{
 			// Call Restore with a brand-new key so Stores.GetOrSet factory branch executes
-			var restore = cacheType.GetMethod("Restore", BindingFlags.NonPublic | BindingFlags.Static).OrThrow();
+			var restore = cacheType.GetMethod("Restore", NonPublic | Static).OrThrow();
 			const string newKey = "__NEW_STORE__";
-			var containsBefore = (bool)storesType.GetMethod("ContainsKey").OrThrow().Invoke(storesObj, [newKey]).OrThrow();
+			var containsBefore = (bool)storesType.GetMethod("ContainsKey")
+												 .OrThrow()
+												 .Invoke(storesObj, [newKey])
+												 .OrThrow();
 			Assert.False(containsBefore);
 			restore.Invoke(null, [newKey]);
 			var current = dataField.GetValue(null);

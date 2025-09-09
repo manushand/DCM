@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using JetBrains.Annotations;
-using Xunit;
+﻿using System.Collections.Generic;
 
 namespace Data.Tests;
-
-using DCM;
 
 [PublicAPI]
 public sealed class RoundSeedTests : TestBase
@@ -20,9 +14,7 @@ public sealed class RoundSeedTests : TestBase
 					Number = 1
 				};
 		// Make Tournament association minimal to avoid DB/cache: TournamentId set via reflection
-		typeof (Round).GetProperty("TournamentId", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-					  .OrThrow()
-					  .SetValue(r, 1);
+		SetProperty(r, "TournamentId", 1);
 		// Provide a dummy tournament to back Round.Tournament property to avoid accidental loads
 		var t = new Tournament
 				{
@@ -30,7 +22,7 @@ public sealed class RoundSeedTests : TestBase
 					Name = "T",
 					TotalRounds = 1
 				};
-		typeof (Round).GetField("<Tournament>k__BackingField", BindingFlags.Instance | BindingFlags.NonPublic)
+		typeof (Round).GetField("<Tournament>k__BackingField", Instance | NonPublic)
 					  .OrThrow()
 					  .SetValue(r, t);
 
@@ -46,15 +38,15 @@ public sealed class RoundSeedTests : TestBase
 	private static CacheScope SeedCache()
 	{
 		var dataType = typeof (Data);
-		var cacheType = dataType.GetNestedType("Cache", BindingFlags.NonPublic)
+		var cacheType = dataType.GetNestedType("Cache", NonPublic)
 								.OrThrow();
-		var field = cacheType.GetField("_data", BindingFlags.NonPublic | BindingFlags.Static)
+		var field = cacheType.GetField("_data", NonPublic | Static)
 							 .OrThrow();
 		var original = field.GetValue(null)
 							.OrThrow();
 		var typeMapType = original.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var typeMap = Activator.CreateInstance(typeMapType);
+		var typeMap = CreateInstance(typeMapType);
 		var mapAdd = typeMapType.GetMethod("Add")
 								.OrThrow();
 		AddEmpty(typeof (Tournament));
@@ -73,6 +65,7 @@ public sealed class RoundSeedTests : TestBase
 		field.SetValue(null, typeMap);
 		return new (original, field);
 
-		void AddEmpty(Type t) => mapAdd.Invoke(typeMap, [t, Activator.CreateInstance(sortedDictType)]);
+		void AddEmpty(Type t)
+			=> mapAdd.Invoke(typeMap, [t, CreateInstance(sortedDictType)]);
 	}
 }
