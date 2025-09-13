@@ -32,23 +32,19 @@ public sealed class DataSqlBuilderTests
 					EmailAddress = "b@x.com"
 				};
 
-		var updateSql = (string)updateStatement2.Invoke(null, [p, null])
-												.OrThrow();
+		var updateSql = updateStatement2.Invoke(null, [p, null]) as string;
 		Assert.StartsWith("UPDATE [Player] SET ", updateSql);
 		Assert.Contains("[FirstName] = 'Bob'", updateSql);
 		Assert.Contains("[LastName] = 'Builder'", updateSql);
 		Assert.Contains(" WHERE [Id] = 10", updateSql);
 
-		var delSql = (string)deleteStatement.Invoke(null, [])
-											.OrThrow();
+		var delSql = deleteStatement.Invoke(null, []) as string;
 		Assert.Equal("DELETE FROM [Player]", delSql);
 
-		var wcRecord = (string)whereClauseForRecord.Invoke(null, [p])
-												   .OrThrow();
+		var wcRecord = whereClauseForRecord.Invoke(null, [p]) as string;
 		Assert.Equal(" WHERE [Id] = 10", wcRecord);
 
-		var wcKey = (string)whereClauseForKey.Invoke(null, ["[Id] = 11"])
-											 .OrThrow();
+		var wcKey = whereClauseForKey.Invoke(null, ["[Id] = 11"]) as string;
 		Assert.Equal(" WHERE [Id] = 11", wcKey);
 	}
 }

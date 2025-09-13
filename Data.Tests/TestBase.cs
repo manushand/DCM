@@ -36,9 +36,9 @@ public abstract class TestBase
 				 .SetValue(target, value);
 
 	protected static string GetPrimaryKey(object record)
-		=> (record.GetType()
-				  .GetProperty("PrimaryKey", Instance | Public)
-				  .OrThrow($"PrimaryKey property not found on {record.GetType().Name}")
-				  .GetValue(record) as string)
-			.OrThrow();
+		=> (string)record.GetType()
+						 .GetProperty("PrimaryKey", Instance | Public)
+						 .OrThrow($"PrimaryKey property not found on {record.GetType().Name}")
+						 .GetValue(record)
+						 .OrThrow();
 }

@@ -34,7 +34,7 @@ public sealed class DataCacheTests
 			// Resolve generic methods we will use
 			var fetchAllMethod = cacheType.GetMethod("FetchAll", NonPublic | Static);
 			var fetchOneFuncMethod = cacheType.GetMethods(NonPublic | Static)
-											  .First(static m => m.Name == "FetchOne"
+											  .First(static m => m.Name is "FetchOne"
 															  && m.GetParameters().Length is 1
 															  && m.GetParameters()[0].ParameterType.IsGenericType);
 			var flushMethod = cacheType.GetMethod("Flush", NonPublic | Static);
