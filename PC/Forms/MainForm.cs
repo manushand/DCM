@@ -297,7 +297,7 @@ internal sealed partial class MainForm : Form
 					   Access    => $"Access file {Settings.DatabaseFile}",
 					   SqlServer => "connected SQL Server database",
 					   None      => null,
-					   _                       => throw new InvalidOperationException()
+					   _         => throw new InvalidOperationException()
 				   };
 		if (host is null
 		||  MessageBox.Show($"""

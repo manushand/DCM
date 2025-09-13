@@ -47,10 +47,12 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 							{
 								Seeded => Empty,
 								Underway => PlayComplete
-												? "⬤"
-												: "◯",
-								Finished => "✔", // or ✓ or ✅
-								_        => throw new ArgumentOutOfRangeException(nameof (Game.Status), Game.Status, "Invalid Game Status")
+												? CompleteMark
+												: UnderwayMark,
+								Finished => FinishedMark,
+								_        => throw new ArgumentOutOfRangeException(nameof (Game.Status),
+																				  Game.Status,
+																				  "Invalid Game Status")
 							};
 
 	public int GameId { get; private set; }
@@ -92,6 +94,10 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 	}
 
 	public List<string> ConflictDetails { get; } = [];
+
+	internal const string CompleteMark = "⬤";
+	internal const string UnderwayMark = "◯";
+	internal const string FinishedMark = "✔"; // or ✓ or ✅
 
 	#endregion
 

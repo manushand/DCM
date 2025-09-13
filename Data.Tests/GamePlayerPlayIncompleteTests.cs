@@ -18,7 +18,7 @@ public sealed class GamePlayerPlayIncompleteTests : TestBase
 			Result = Unknown
 		};
 		// Underway + requires result but unknown => Status should be open circle (incomplete)
-		Assert.Equal("◯", gp.Status);
+		Assert.Equal(UnderwayMark, gp.Status);
 	}
 
 	[Fact]
@@ -36,7 +36,7 @@ public sealed class GamePlayerPlayIncompleteTests : TestBase
 			Centers = null,
 			Result = Unknown
 		};
-		Assert.Equal("◯", gp.Status);
+		Assert.Equal(UnderwayMark, gp.Status);
 	}
 
 	[Fact]
@@ -54,7 +54,7 @@ public sealed class GamePlayerPlayIncompleteTests : TestBase
 			Years = null,
 			Result = Unknown
 		};
-		Assert.Equal("◯", gp.Status);
+		Assert.Equal(UnderwayMark, gp.Status);
 	}
 
 	[Fact]
@@ -73,7 +73,7 @@ public sealed class GamePlayerPlayIncompleteTests : TestBase
 			Power = England,
 			Result = Unknown
 		};
-		Assert.Equal("⬤", gp.Status);
+		Assert.Equal(CompleteMark, gp.Status);
 	}
 
 	private static Game CreateGameWithSystem(ScoringSystem system, Game.Statuses status)

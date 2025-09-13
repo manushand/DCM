@@ -81,7 +81,7 @@ public sealed class GamePlayerBehaviorTests
 				 Power = TBD,
 				 Game = gUnderway
 			 };
-		Assert.Equal("◯", gp.Status);
+		Assert.Equal(UnderwayMark, gp.Status);
 
 		// Underway and complete => filled circle; make Power not TBD and ensure no required fields => complete
 		var gUnderway2 = new Game();
@@ -93,12 +93,12 @@ public sealed class GamePlayerBehaviorTests
 		gUnderway2.ScoringSystem = ssExisting;
 
 		gpComplete.Game = gUnderway2;
-		Assert.Equal("⬤", gpComplete.Status);
+		Assert.Equal(CompleteMark, gpComplete.Status);
 
 		// Finished => check mark
 		var gFinished = new Game();
 		Set(gFinished, nameof (Game.Status), Finished);
 		gpComplete.Game = gFinished;
-		Assert.Equal("✔", gpComplete.Status);
+		Assert.Equal(FinishedMark, gpComplete.Status);
 	}
 }

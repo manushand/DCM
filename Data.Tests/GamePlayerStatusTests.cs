@@ -36,7 +36,7 @@ public sealed class GamePlayerStatusTests : TestBase
 			Power = Austria,
 			Result = Unknown // Incomplete because UsesGameResult=true and Result=Unknown
 		};
-		Assert.Equal("◯", gp.Status);
+		Assert.Equal(UnderwayMark, gp.Status);
 	}
 
 	[Fact]
@@ -55,7 +55,7 @@ public sealed class GamePlayerStatusTests : TestBase
 			Power = Austria,
 			Result = Unknown // Complete because system doesn't require result/centers/years and power not TBD
 		};
-		Assert.Equal("⬤", gp.Status);
+		Assert.Equal(CompleteMark, gp.Status);
 	}
 
 	[Fact]
@@ -67,7 +67,7 @@ public sealed class GamePlayerStatusTests : TestBase
 			Power = Austria,
 			Result = Unknown
 		};
-		Assert.Equal("✔", gp.Status);
+		Assert.Equal(FinishedMark, gp.Status);
 	}
 
 	private static Game CreateGameWithSystem(ScoringSystem system, Game.Statuses status)

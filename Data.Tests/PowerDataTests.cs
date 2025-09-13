@@ -3,8 +3,6 @@ using System.Linq;
 
 namespace Data.Tests;
 
-using static GamePlayer;
-
 public sealed class PowerDataTests
 {
 	private readonly record struct PlayerData(Powers Power,

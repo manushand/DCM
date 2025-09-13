@@ -102,7 +102,8 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 			   GroupGamesOnly                   => game.Tournament.GroupId == Id,
 			   GamesUsingGroupSystem            => game.ScoringSystemId == ScoringSystemId,
 			   AllGamesScoreableWithGroupSystem => true,
-			   _                                => throw new ArgumentOutOfRangeException(nameof (gamesToRate), "Unrecognized GamesToRate value")
+			   _                                => throw new ArgumentOutOfRangeException(nameof (gamesToRate),
+																						 "Unrecognized GamesToRate value")
 		   };
 
 	public RatingRecord? RatePlayer(Player player,

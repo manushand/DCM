@@ -7,6 +7,7 @@ global using static System.Reflection.BindingFlags;
 global using DCM;
 global using Data.Tests.Helpers;
 global using static Data.Game.Statuses;
+global using static Data.GamePlayer;
 global using static Data.GamePlayer.Powers;
 global using static Data.GamePlayer.Results;
 global using static Data.Tournament.PowerGroups;

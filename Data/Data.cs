@@ -191,8 +191,7 @@ public static partial class Data
 		where T : IInfoRecord
 	{
 		OpenConnection();
-		var primaryKey = formerPrimaryKey ?? record.PrimaryKey;
-		Execute(UpdateStatement(primaryKey, record));
+		Execute(UpdateStatement(record, formerPrimaryKey));
 		CloseConnection();
 		if (formerPrimaryKey is not null)
 			Cache.Remove<T>(formerPrimaryKey);
@@ -203,14 +202,14 @@ public static partial class Data
 	public static void UpdateMany<T>([InstantHandle] params IEnumerable<T> records)
 		where T : IInfoRecord
 	{
-		RunAsTransaction(() => records.Select(UpdateStatement).Execute());
+		RunAsTransaction(() => records.Select(static record => UpdateStatement(record)).Execute());
 		Cache.AddRange(records);
 	}
 
 	public static void Delete<T>([InstantHandle] params T[] records)
 		where T : IRecord
 	{
-		RunAsTransaction(() => records.Select(static record => $"{DeleteStatement<T>()}{record.WhereClause()}").Execute());
+		RunAsTransaction(() => records.Select(DeleteStatement).Execute());
 		Cache.Remove(records);
 	}
 
@@ -506,14 +505,14 @@ public static partial class Data
 		where T : IRecord
 		=> $"[{typeof (T).Name}]";
 
-	private static string UpdateStatement<T>(T record)
+	private static string UpdateStatement<T>(T record,
+											 string? currentPrimaryKey = null)
 		where T : IInfoRecord
-		=> UpdateStatement(record.PrimaryKey, record);
+		=> $"UPDATE {TableName<T>()} SET {record.FieldValues}{WhereClause(currentPrimaryKey ?? record.PrimaryKey)}";
 
-	private static string UpdateStatement<T>(string currentPrimaryKey,
-											 T record)
-		where T : IInfoRecord
-		=> $"UPDATE {TableName<T>()} SET {record.FieldValues}{WhereClause(currentPrimaryKey)}";
+	private static string DeleteStatement<T>(T record)
+		where T : IRecord
+		=> $"{DeleteStatement<T>()}{WhereClause(record)}";
 
 	private static string DeleteStatement<T>()
 		where T : IRecord

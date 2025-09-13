@@ -324,7 +324,7 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		var round = tournament.Rounds.SingleOrDefault(static round => round.Workable);
 		return round is null
 				   ? Conflict("No seedable round")
-				   : throw new NotImplementedException();
+				   : throw new NotImplementedException(); // TODO: Yet, right? Right.
 	}
 
 	private protected override string[] UpdateRecordForDatabase(Event @event)

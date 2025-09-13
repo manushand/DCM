@@ -14,7 +14,8 @@ public sealed class DataSqlBuilderTests
 		var updateStatement2 = methods.First(static m => m is { Name: "UpdateStatement", IsGenericMethodDefinition: true }
 													  && m.GetParameters().Length is 2)
 									  .MakeGenericMethod(typeof (Player));
-		var deleteStatement = methods.Single(static m => m.Name is "DeleteStatement")
+		var deleteStatement = methods.Where(static m => m.Name is "DeleteStatement")
+									 .Single(static m => m.GetParameters().Length is 0)
 									 .MakeGenericMethod(typeof (Player));
 		var whereClauseForRecord = methods.First(static m => m.Name is "WhereClause"
 														  && m.GetParameters().Length is 1
@@ -30,16 +31,15 @@ public sealed class DataSqlBuilderTests
 					LastName = "Builder",
 					EmailAddress = "b@x.com"
 				};
-		var currentPk = p.PrimaryKey;
 
-		var updateSql = (string)updateStatement2.Invoke(null, [currentPk, p])
+		var updateSql = (string)updateStatement2.Invoke(null, [p, null])
 												.OrThrow();
 		Assert.StartsWith("UPDATE [Player] SET ", updateSql);
 		Assert.Contains("[FirstName] = 'Bob'", updateSql);
 		Assert.Contains("[LastName] = 'Builder'", updateSql);
 		Assert.Contains(" WHERE [Id] = 10", updateSql);
 
-		var delSql = (string)deleteStatement.Invoke(null, null)
+		var delSql = (string)deleteStatement.Invoke(null, [])
 											.OrThrow();
 		Assert.Equal("DELETE FROM [Player]", delSql);
 
