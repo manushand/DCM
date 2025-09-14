@@ -99,44 +99,4 @@ public sealed class GameAggregateTests : TestBase
 						}))
 			Assert.Equal([111, 222], g.PlayerIds);
 	}
-
-	private static CacheScope SeedCache(Action<object> fill)
-	{
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
-		var original = field.GetValue(null).OrThrow();
-		var typeMapType = original.GetType();
-		var typeMap = CreateInstance(typeMapType).OrThrow();
-		fill(typeMap);
-		field.SetValue(null, typeMap);
-		return new (original, field);
-	}
-
-	private static void AddOne(object typeMap, Type type, object record)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		sortedDictType.GetMethod("Add")?.Invoke(sd, [GetPrimaryKey(record), record]);
-		typeMapType.GetMethod("Add")?.Invoke(typeMap, [type, sd]);
-	}
-
-	private static void AddMany(object typeMap, Type type, params object[] records)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		var sdAdd = sortedDictType.GetMethod("Add");
-		foreach (var r in records)
-			sdAdd?.Invoke(sd, [GetPrimaryKey(r), r]);
-		typeMapType.GetMethod("Add")?.Invoke(typeMap, [type, sd]);
-	}
-
-	private static void AddEmpty(object typeMap, Type type)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType);
-		typeMapType.GetMethod("Add").OrThrow().Invoke(typeMap, [type, sd]);
-	}
 }

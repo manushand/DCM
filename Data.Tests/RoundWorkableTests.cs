@@ -29,7 +29,8 @@ public sealed class RoundWorkableTests : TestBase
 	private static CacheScope SeedEmptyCache()
 		=> SeedRoundsCache();
 
-	private static CacheScope SeedRoundsCache(Tournament? tournament = null, params Round[] rounds)
+	private static CacheScope SeedRoundsCache(Tournament? tournament = null,
+											  params Round[] rounds)
 	{
 		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
 		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");

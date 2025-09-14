@@ -7,6 +7,23 @@ namespace Data.Tests;
 [UsedImplicitly]
 public sealed class DataSqlGenerationTests
 {
+	private sealed class TestLink : LinkRecord
+	{
+		private int OtherId { get; set; }
+		protected override string LinkKey => $"[OtherId] = {OtherId}";
+
+		public override IRecord Load(DbDataReader record)
+			=> this;
+
+		public void Set(int playerId, int other)
+		{
+			PlayerId = playerId;
+			OtherId = other;
+		}
+	}
+
+	private static readonly int[] Expected = [1, 2, 3];
+
 	[Fact]
 	public void Sorted_And_SelectSorted_Work()
 	{
@@ -18,21 +35,6 @@ public sealed class DataSqlGenerationTests
 		var projected = new[] { a, b }.SelectSorted(static p => p.LastFirst).ToList();
 		Assert.Equal("Able Ann", projected[0]);
 	}
-
-	private sealed class TestLink : LinkRecord
-	{
-		private int OtherId { get; set; }
-		protected override string LinkKey => $"[OtherId] = {OtherId}";
-		public override IRecord Load(DbDataReader record) => this;
-
-		public void Set(int playerId, int other)
-		{
-			PlayerId = playerId;
-			OtherId = other;
-		}
-	}
-
-	private static readonly int[] Expected = [1, 2, 3];
 
 	[Fact]
 	public void Ids_HasPlayerId_ByPlayerId_Work()

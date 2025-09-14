@@ -21,8 +21,8 @@ public sealed class DataCacheRemoveAndFetchTests
 		var original = dataField.GetValue(null).OrThrow();
 		var mapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var sdType = mapType.GetGenericArguments()[1];
-		var map = CreateInstance(mapType).OrThrow();
-		var sd = CreateInstance(sdType).OrThrow(); // for Player
+		var map = CreateInstance(mapType);
+		var sd = CreateInstance(sdType); // for Player
 		var addKvp = sdType.GetMethod("Add").OrThrow();
 
 		var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "A" };
@@ -38,10 +38,10 @@ public sealed class DataCacheRemoveAndFetchTests
 		{
 			// Invoke Cache.FetchOne<T>(T record)
 			var fetchOneRecord = cacheType.GetMethods(NonPublic | Static)
-				.First(static m => m.Name is "FetchOne"
-								&& m.GetParameters().Length is 1
-								&& !m.GetParameters()[0].ParameterType.IsGenericType)
-				.MakeGenericMethod(typeof (Player));
+										  .First(static m => m.Name is "FetchOne"
+														&& m.GetParameters().Length is 1
+														&& !m.GetParameters()[0].ParameterType.IsGenericType)
+										  .MakeGenericMethod(typeof (Player));
 			var keyOnly = new Player { Id = 2, FirstName = "X", LastName = "Y" }; // same primary key as p2
 			var found = (Player?)fetchOneRecord.Invoke(null, [keyOnly]);
 			Assert.NotNull(found);
@@ -55,7 +55,7 @@ public sealed class DataCacheRemoveAndFetchTests
 			var fetchAll = cacheType.GetMethod("FetchAll", NonPublic | Static)
 									.OrThrow()
 									.MakeGenericMethod(typeof (Player));
-			var all = ((System.Collections.IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>().ToList();
+			var all = ((System.Collections.IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>();
 			Assert.DoesNotContain(all, static r => r.Id is 1);
 
 			// Invoke Cache.Remove<T>(params T[] records) via method discovery on generic array parameter
@@ -65,7 +65,7 @@ public sealed class DataCacheRemoveAndFetchTests
 														&& m.GetParameters()[0].ParameterType.IsArray)
 										.MakeGenericMethod(typeof (Player));
 			removeParams.Invoke(null, [new[] { p2, p3 }]);
-			all = ((System.Collections.IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>().ToList();
+			all = ((System.Collections.IEnumerable)fetchAll.Invoke(null, null).OrThrow()).Cast<Player>();
 			Assert.Empty(all);
 		}
 		finally

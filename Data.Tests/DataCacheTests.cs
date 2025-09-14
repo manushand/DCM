@@ -45,14 +45,14 @@ public sealed class DataCacheTests
 
 			// Manually seed players into the underlying SortedDictionary to avoid invoking Cache.Add which may trigger Load
 			var sd = typeMapType.GetGenericArguments()[1];
-			var sdInstance = CreateInstance(sd).OrThrow();
+			var sdInstance = CreateInstance(sd);
 			var sdAdd = sd.GetMethod("Add").OrThrow();
 			var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "A" };
 			var p2 = new Player { Id = 2, FirstName = "Bob", LastName = "B" };
 			sdAdd.Invoke(sdInstance, [p1.PrimaryKey, p1]);
 			sdAdd.Invoke(sdInstance, [p2.PrimaryKey, p2]);
 			// Replace the whole map with one that contains only the Player sd to avoid duplicate Add
-			var newMap = CreateInstance(typeMapType).OrThrow();
+			var newMap = CreateInstance(typeMapType);
 			typeMapType.GetMethod("Add")
 					   .OrThrow()
 					   .Invoke(newMap, [typeof (Player), sdInstance]);
@@ -93,7 +93,7 @@ public sealed class DataCacheTests
 		{
 			var mapType = typeMapObj.GetType();
 			var sdType = mapType.GetGenericArguments()[1];
-			var sd = CreateInstance(sdType).OrThrow();
+			var sd = CreateInstance(sdType);
 			mapType.GetMethod("Add").OrThrow().Invoke(typeMapObj, [type, sd]);
 		}
 	}
@@ -117,8 +117,8 @@ public sealed class DataCacheTests
 		{
 			// Create two separate store maps
 			var mapType = originalData.GetType();
-			var storeA = CreateInstance(mapType).OrThrow();
-			var storeB = CreateInstance(mapType).OrThrow();
+			var storeA = CreateInstance(mapType);
+			var storeB = CreateInstance(mapType);
 			// Place in Stores under two keys via reflection
 			clearMethod.Invoke(storesObj, null);
 			addMethod.Invoke(storesObj, ["A", storeA]);
@@ -156,8 +156,8 @@ public sealed class DataCacheTests
 		var original = dataField.GetValue(null).OrThrow();
 		var mapType = original.GetType();
 		var sdType = mapType.GetGenericArguments()[1];
-		var typeMap = CreateInstance(mapType).OrThrow();
-		var sd = CreateInstance(sdType).OrThrow();
+		var typeMap = CreateInstance(mapType);
+		var sd = CreateInstance(sdType);
 		var add = sdType.GetMethod("Add").OrThrow();
 		var p1 = new Player { Id = 1, FirstName = "A", LastName = "A" };
 		var p2 = new Player { Id = 2, FirstName = "B", LastName = "B" };

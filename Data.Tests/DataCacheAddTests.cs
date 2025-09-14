@@ -20,8 +20,8 @@ public sealed class DataCacheAddTests
 		var sdType = mapType.GetGenericArguments()[1];
 
 		// Create a fresh, empty map and pre-register an empty SortedDictionary for Player
-		var newMap = CreateInstance(mapType).OrThrow();
-		var emptySd = CreateInstance(sdType).OrThrow();
+		var newMap = CreateInstance(mapType);
+		var emptySd = CreateInstance(sdType);
 		mapType.GetMethod("Add").OrThrow().Invoke(newMap, [typeof (Player), emptySd]);
 		// Point Cache._data to our prepared map so Get<T>() won't try to Load from DB
 		dataField.SetValue(null, newMap);

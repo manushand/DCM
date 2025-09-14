@@ -38,22 +38,22 @@ public sealed class RoundPreRoundTests : TestBase
 		// Target: r2 PreRoundScore should sum prior rounds (Number-1 = 1) and not need padding (targetCount=1)
 		// Also test PreGameAverage uses same aggregates
 		using (SeedCache(map =>
-		{
-			AddMany(map, typeof (Tournament), t);
-			AddMany(map, typeof (Round), r1, r2);
-			AddMany(map, typeof (Game), g1);
-			AddMany(map, typeof (GamePlayer), gp1);
-			AddMany(map, typeof (Player), p);
-			// Avoid accidental DB loads
-			AddEmpty(map, typeof (RoundPlayer));
-			AddEmpty(map, typeof (TournamentPlayer));
-			AddEmpty(map, typeof (Group));
-			AddEmpty(map, typeof (GroupPlayer));
-			AddEmpty(map, typeof (Team));
-			AddEmpty(map, typeof (TeamPlayer));
-			AddEmpty(map, typeof (PlayerConflict));
-			AddEmpty(map, typeof (ScoringSystem));
-		}))
+						{
+							AddMany(map, typeof (Tournament), t);
+							AddMany(map, typeof (Round), r1, r2);
+							AddMany(map, typeof (Game), g1);
+							AddMany(map, typeof (GamePlayer), gp1);
+							AddMany(map, typeof (Player), p);
+							// Avoid accidental DB loads
+							AddEmpty(map, typeof (RoundPlayer));
+							AddEmpty(map, typeof (TournamentPlayer));
+							AddEmpty(map, typeof (Group));
+							AddEmpty(map, typeof (GroupPlayer));
+							AddEmpty(map, typeof (Team));
+							AddEmpty(map, typeof (TeamPlayer));
+							AddEmpty(map, typeof (PlayerConflict));
+							AddEmpty(map, typeof (ScoringSystem));
+						}))
 		{
 			var roundAvg = r2.PreGameAverage(new ()
 											 {
@@ -138,47 +138,5 @@ public sealed class RoundPreRoundTests : TestBase
 			Assert.Equal(3.0, sum);
 			Assert.Equal(3.0, avg);
 		}
-	}
-
-	private static CacheScope SeedCache(Action<object> fill)
-	{
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
-		var original = field.GetValue(null).OrThrow();
-		var typeMapType = original.GetType();
-		var typeMap = CreateInstance(typeMapType).OrThrow();
-		fill(typeMap);
-		field.SetValue(null, typeMap);
-		return new (original, field);
-	}
-
-	private static void AddMany(object typeMap, Type type, params object[] records)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		var sdAdd = sortedDictType.GetMethod("Add").OrThrow();
-		foreach (var r in records)
-		{
-			var key = (string)r.GetType()
-							   .GetProperty("PrimaryKey", Instance | Public | NonPublic)
-							   .OrThrow()
-							   .GetValue(r)
-							   .OrThrow();
-			sdAdd.Invoke(sd, [key, r]);
-		}
-		typeMapType.GetMethod("Add")
-				   .OrThrow()
-				   .Invoke(typeMap, [type, sd]);
-	}
-
-	private static void AddEmpty(object typeMap, Type type)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		typeMapType.GetMethod("Add")
-				   .OrThrow()
-				   .Invoke(typeMap, [type, sd]);
 	}
 }

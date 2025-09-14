@@ -58,65 +58,38 @@ public sealed class DataUtilityTests : TestBase
 
 	[Fact]
 	public void ConnectToAccessDatabase_Returns_False_When_No_Providers_Work()
-	{
 		// We pass a bogus file path; providers will throw/open-fail and method should return false.
-		var ok = Data.ConnectToAccessDatabase(@"X:\nonexistent\db.accdb");
-		Assert.False(ok);
-	}
+		=> Assert.False(Data.ConnectToAccessDatabase(@"X:\nonexistent\db.accdb"));
 
 	[Fact]
 	public void ReadByName_And_NameExists_Use_Cache_CaseInsensitive()
 	{
 		var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "Lee" };
-		using (SeedCache(map => AddOne(map, typeof (Player), p1)))
-		{
-			var read = Data.ReadByName<Player>("ann lee");
-			Assert.NotNull(read);
-			Assert.Equal(1, read.Id);
+		using var cache = SeedCache(map => AddOne(map, typeof (Player), p1));
+		var read = Data.ReadByName<Player>("ann lee");
+		Assert.NotNull(read);
+		Assert.Equal(1, read.Id);
 
-			// NameExists returns false when comparing with itself
-			Assert.False(Data.NameExists(p1));
+		// NameExists returns false when comparing with itself
+		Assert.False(Data.NameExists(p1));
 
-			// But true for a different instance having same name
-			var p2 = new Player { Id = 2, FirstName = "Ann", LastName = "Lee" };
-			Assert.True(Data.NameExists(p2));
-		}
+		// But true for a different instance having same name
+		var p2 = new Player { Id = 2, FirstName = "Ann", LastName = "Lee" };
+		Assert.True(Data.NameExists(p2));
 	}
 
 	// Helpers (mirrors of similar helpers in existing tests)
-	private static TeamPlayer NewTeamPlayerViaLoad(int teamId, int playerId)
+	private static TeamPlayer NewTeamPlayerViaLoad(int teamId,
+												   int playerId)
 	{
 		var tp = new TeamPlayer();
 		var values = new Dictionary<string, object?>
-		{
-			["TeamId"] = teamId,
-			["PlayerId"] = playerId
-		};
+					 {
+						 ["TeamId"] = teamId,
+						 ["PlayerId"] = playerId
+					 };
 		using var reader = new FakeDbDataReader("TeamPlayer", values);
 		tp.Load(reader);
 		return tp;
-	}
-
-	private static CacheScope SeedCache(Action<object> fill)
-	{
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic)
-									 .OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", NonPublic | Static)
-							 .OrThrow("Cache._data field not found");
-		var original = field.GetValue(null).OrThrow();
-		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
-		var typeMap = CreateInstance(typeMapType).OrThrow();
-		fill(typeMap);
-		field.SetValue(null, typeMap);
-		return new (original, field);
-	}
-
-	private static void AddOne(object typeMap, Type type, object record)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		sortedDictType.GetMethod("Add")?.Invoke(sd, [GetPrimaryKey(record), record]);
-		typeMapType.GetMethod("Add")?.Invoke(typeMap, [type, sd]);
 	}
 }

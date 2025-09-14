@@ -9,15 +9,15 @@ public sealed class GamePlayerFieldValuesTests
 		var p = new Player { Id = 5, FirstName = "Ann", LastName = "L" };
 		var g = new Game { Id = 7, Round = new () { Id = 3, Number = 1 } };
 		var gp = new GamePlayer
-		{
-			Player = p, // sets PlayerId via LinkRecord
-			Game = g,
-			Power = England,
-			Result = Win,
-			Years = null, // ensure Null formatting
-			Centers = 12,
-			Other = 1.5
-		};
+				 {
+					 Player = p, // sets PlayerId via LinkRecord
+					 Game = g,
+					 Power = England,
+					 Result = Win,
+					 Years = null, // ensure Null formatting
+					 Centers = 12,
+					 Other = 1.5
+				 };
 
 		var sql = gp.FieldValues;
 		// Expected segments

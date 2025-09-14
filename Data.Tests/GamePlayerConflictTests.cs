@@ -76,21 +76,21 @@ public sealed class GamePlayerConflictTests : TestBase
 
 		// Seed cache to include necessary maps
 		using (SeedCache(map =>
-		{
-			AddMany(map, typeof (Tournament), t);
-			AddMany(map, typeof (Round), r1, r2);
-			AddMany(map, typeof (Game), gPrev, gNow);
-			AddMany(map, typeof (GamePlayer), prevGa, prevGb, prevGc, nowGa, nowGb, nowGc, nowGx4, nowGx5, nowGx6, nowGx7);
-			AddMany(map, typeof (Group), g);
-			AddMany(map, typeof (GroupPlayer), gpA, gpB);
-			AddMany(map, typeof (PlayerConflict), pcAb);
-			AddMany(map, typeof (Player), a, b, c, nowGx4.Player, nowGx5.Player, nowGx6.Player, nowGx7.Player);
-			AddMany(map, typeof (Team), team);
-			AddMany(map, typeof (TeamPlayer), tpA, tpC);
-			// Empty maps to avoid DB-backed loads
-			AddEmpty(map, typeof (RoundPlayer));
-			AddEmpty(map, typeof (TournamentPlayer));
-		}))
+						{
+							AddMany(map, typeof (Tournament), t);
+							AddMany(map, typeof (Round), r1, r2);
+							AddMany(map, typeof (Game), gPrev, gNow);
+							AddMany(map, typeof (GamePlayer), prevGa, prevGb, prevGc, nowGa, nowGb, nowGc, nowGx4, nowGx5, nowGx6, nowGx7);
+							AddMany(map, typeof (Group), g);
+							AddMany(map, typeof (GroupPlayer), gpA, gpB);
+							AddMany(map, typeof (PlayerConflict), pcAb);
+							AddMany(map, typeof (Player), a, b, c, nowGx4.Player, nowGx5.Player, nowGx6.Player, nowGx7.Player);
+							AddMany(map, typeof (Team), team);
+							AddMany(map, typeof (TeamPlayer), tpA, tpC);
+							// Empty maps to avoid DB-backed loads
+							AddEmpty(map, typeof (RoundPlayer));
+							AddEmpty(map, typeof (TournamentPlayer));
+						}))
 		{
 			// Trigger calculation with details
 			var total = nowGa.CalculateConflict(true);
@@ -151,47 +151,5 @@ public sealed class GamePlayerConflictTests : TestBase
 		using var reader = new FakeDbDataReader("TeamPlayer", values);
 		tp.Load(reader);
 		return tp;
-	}
-
-	private static CacheScope SeedCache(Action<object> fill)
-	{
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
-		var original = field.GetValue(null).OrThrow();
-		var typeMapType = original.GetType();
-		var typeMap = CreateInstance(typeMapType).OrThrow();
-		fill(typeMap);
-		field.SetValue(null, typeMap);
-		return new (original, field);
-	}
-
-	private static void AddMany(object typeMap, Type type, params object[] records)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		var sdAdd = sortedDictType.GetMethod("Add").OrThrow();
-		foreach (var r in records)
-		{
-			var key = (string)r.GetType()
-							   .GetProperty("PrimaryKey", Instance | Public | NonPublic)
-							   .OrThrow()
-							   .GetValue(r)
-							   .OrThrow();
-			sdAdd.Invoke(sd, [key, r]);
-		}
-		typeMapType.GetMethod("Add")
-				   .OrThrow()
-				   .Invoke(typeMap, [type, sd]);
-	}
-
-	private static void AddEmpty(object typeMap, Type type)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		typeMapType.GetMethod("Add")
-				   .OrThrow()
-				   .Invoke(typeMap, [type, sd]);
 	}
 }

@@ -131,10 +131,12 @@ public sealed class TournamentTests : TestBase
 	}
 
 	// Helpers
-	private static void SetRoundGames(Round r, params Game[] games)
+	private static void SetRoundGames(Round r,
+									  params Game[] games)
 		=> SetField(r, "_games", games);
 
-	private static CacheScope SeedTournamentAndRoundsCache(IdInfoRecord t, IEnumerable<Round> rounds)
+	private static CacheScope SeedTournamentAndRoundsCache(IdInfoRecord t,
+														   IEnumerable<Round> rounds)
 	{
 		var dataType = typeof (Data);
 		var cacheType = dataType.GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
@@ -158,25 +160,26 @@ public sealed class TournamentTests : TestBase
 			sdAdd.Invoke(sdRound, [r.PrimaryKey, r]);
 		mapAdd.Invoke(typeMap, [typeof (Round), sdRound]);
 
-		AddEmpty(typeof (Game));
-		AddEmpty(typeof (ScoringSystem));
-		AddEmpty(typeof (RoundPlayer));
-		AddEmpty(typeof (TournamentPlayer));
-		AddEmpty(typeof (Group));
-		AddEmpty(typeof (GroupPlayer));
-		AddEmpty(typeof (Team));
-		AddEmpty(typeof (TeamPlayer));
-		AddEmpty(typeof (PlayerConflict));
+		AddAnEmpty(typeof (Game));
+		AddAnEmpty(typeof (ScoringSystem));
+		AddAnEmpty(typeof (RoundPlayer));
+		AddAnEmpty(typeof (TournamentPlayer));
+		AddAnEmpty(typeof (Group));
+		AddAnEmpty(typeof (GroupPlayer));
+		AddAnEmpty(typeof (Team));
+		AddAnEmpty(typeof (TeamPlayer));
+		AddAnEmpty(typeof (PlayerConflict));
 
 		field.SetValue(null, typeMap);
 		return new (original, field);
 
 		// Optional empty maps to prevent any accidental loads
-		void AddEmpty(Type tType)
+		void AddAnEmpty(Type tType)
 			=> mapAdd.Invoke(typeMap, [tType, CreateInstance(sortedDictType)]);
 	}
 
-	private static TVal GetNonPublicProperty<TVal>(object target, string propertyName)
+	private static TVal GetNonPublicProperty<TVal>(object target,
+												   string propertyName)
 	{
 		var prop = target.GetType().GetProperty(propertyName, Instance | NonPublic | Public);
 		if (prop?.GetMethod is null)

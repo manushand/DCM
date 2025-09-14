@@ -5,15 +5,16 @@ namespace Data.Tests;
 
 public sealed class ScoringAggregatesTests : TestBase
 {
-	private readonly record struct P(GamePlayer.Powers Power,
-									 GamePlayer.Results Result,
+	private readonly record struct P(Powers Power,
+									 Results Result,
 									 int Centers,
 									 int Years,
 									 double Other,
 									 double Prov,
 									 double Ante);
 
-	private static Scoring BuildScoring(IEnumerable<P> players, Action<ScoringSystem>? configure = null)
+	private static Scoring BuildScoring(IEnumerable<P> players,
+										Action<ScoringSystem>? configure = null)
 	{
 		var system = new ScoringSystem
 		{

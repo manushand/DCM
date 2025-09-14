@@ -124,8 +124,7 @@ public sealed class GameTests : TestBase
 		{
 			g.ScoringSystem = new () { FinalScoreFormula = "2", SignificantDigits = 0, Id = 5 };
 			var overrideSystem = new ScoringSystem { FinalScoreFormula = "3", SignificantDigits = 0 };
-			var ok = g.CalculateScores(out _, overrideSystem);
-			Assert.True(ok);
+			Assert.True(g.CalculateScores(out _, overrideSystem));
 			Assert.All(players, static p => Assert.Equal(3, p.FinalScore));
 		}
 	}
@@ -143,17 +142,14 @@ public sealed class GameTests : TestBase
 			Turkey
 		};
 		var list = new List<GamePlayer>();
-		for (var i = 0; i < 7; i++)
-		{
-			var gp = new GamePlayer
-			{
-				Power = powerValues[i],
-				Result = Unknown,
-				Game = g,
-				Player = new () { Id = i + 1, Name = $"P{i + 1}" }
-			};
-			list.Add(gp);
-		}
+		for (var i = 0; i < 7; ++i)
+			list.Add(new ()
+					 {
+						 Power = powerValues[i],
+						 Result = Unknown,
+						 Game = g,
+						 Player = new () { Id = i + 1, Name = $"P{i + 1}" }
+					 });
 		return list;
 	}
 
