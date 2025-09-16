@@ -45,27 +45,9 @@ public sealed class RoundSeedTests : TestBase
 		var original = field.GetValue(null)
 							.OrThrow();
 		var typeMapType = original.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var typeMap = CreateInstance(typeMapType);
-		var mapAdd = typeMapType.GetMethod("Add")
-								.OrThrow();
-		AddEmpty(typeof (Tournament));
-		AddEmpty(typeof (Round));
-		AddEmpty(typeof (Game));
-		AddEmpty(typeof (GamePlayer));
-		AddEmpty(typeof (RoundPlayer));
-		AddEmpty(typeof (TournamentPlayer));
-		AddEmpty(typeof (Group));
-		AddEmpty(typeof (GroupPlayer));
-		AddEmpty(typeof (Team));
-		AddEmpty(typeof (TeamPlayer));
-		AddEmpty(typeof (PlayerConflict));
-		AddEmpty(typeof (Player));
-		AddEmpty(typeof (ScoringSystem));
+		var typeMap = CreateInstance(typeMapType).OrThrow();
+		AddEmpties(typeMap);
 		field.SetValue(null, typeMap);
 		return new (original, field);
-
-		void AddEmpty(Type t)
-			=> mapAdd.Invoke(typeMap, [t, CreateInstance(sortedDictType)]);
 	}
 }

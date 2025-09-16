@@ -69,20 +69,4 @@ public sealed class GamePlayerStatusTests : TestBase
 				 };
 		Assert.Equal(FinishedMark, gp.Status);
 	}
-
-	private static Game CreateGameWithSystem(ScoringSystem system,
-											 Game.Statuses status)
-	{
-		var t = new Tournament { Id = 11, Name = "T" };
-		var r = new Round { Id = 12, Number = 1 };
-		SetProperty(r, "TournamentId", t.Id);
-		SetField(r, "<Tournament>k__BackingField", t);
-		return new ()
-			   {
-				   Id = 13,
-				   Round = r,
-				   Status = status,
-				   ScoringSystem = system
-			   };
-	}
 }

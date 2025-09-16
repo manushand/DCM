@@ -106,6 +106,16 @@ public sealed class GamePlayerConflictTests : TestBase
 			Assert.Contains(nowGa.ConflictDetails, static s => s.Contains("player conflict"));
 			Assert.Contains(nowGa.ConflictDetails, static s => s.Contains("playing on a team"));
 		}
+
+		static TeamPlayer NewTeamPlayer(int teamId,
+										int playerId)
+		{
+			var tp = new TeamPlayer();
+			var values = new Dictionary<string, object?> { { "TeamId", teamId }, { "PlayerId", playerId } };
+			using var reader = new FakeDbDataReader("TeamPlayer", values);
+			tp.Load(reader);
+			return tp;
+		}
 	}
 
 	[Fact]
@@ -142,14 +152,5 @@ public sealed class GamePlayerConflictTests : TestBase
 			Assert.Equal(0, total);
 			Assert.Contains("No conflicts.", gp1.ConflictDetails);
 		}
-	}
-
-	private static TeamPlayer NewTeamPlayer(int teamId, int playerId)
-	{
-		var tp = new TeamPlayer();
-		var values = new Dictionary<string, object?> { { "TeamId", teamId }, { "PlayerId", playerId } };
-		using var reader = new FakeDbDataReader("TeamPlayer", values);
-		tp.Load(reader);
-		return tp;
 	}
 }

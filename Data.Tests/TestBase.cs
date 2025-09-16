@@ -11,6 +11,7 @@ global using static Data.GamePlayer;
 global using static Data.GamePlayer.Powers;
 global using static Data.GamePlayer.Results;
 global using static Data.Tournament.PowerGroups;
+using System.Collections.Generic;
 //
 using System.Reflection;
 
@@ -90,5 +91,62 @@ public abstract class TestBase
 		typeMapType.GetMethod("Add")
 				   .OrThrow()
 				   .Invoke(typeMap, [type, sd]);
+	}
+
+	protected static void AddEmpties(object typeMap)
+	{
+		var typeMapType = typeMap.GetType();
+		var contains = typeMapType.GetMethod("ContainsKey")
+								  .OrThrow();
+		var sortedDictType = typeMapType.GetGenericArguments()[1];
+		var mapAdd = typeMapType.GetMethod("Add")
+								.OrThrow();
+		AddAnEmpty(typeof (Round));
+		AddAnEmpty(typeof (Tournament));
+		AddAnEmpty(typeof (ScoringSystem));
+		AddAnEmpty(typeof (Game));
+		AddAnEmpty(typeof (RoundPlayer));
+		AddAnEmpty(typeof (TournamentPlayer));
+		AddAnEmpty(typeof (Group));
+		AddAnEmpty(typeof (GroupPlayer));
+		// Do not add empty maps for Team, TeamPlayer, Player here because tests already add them
+		AddAnEmpty(typeof (PlayerConflict));
+
+		void AddAnEmpty(Type t)
+		{
+			if (!(bool)contains.Invoke(typeMap, [t])
+							   .OrThrow())
+				mapAdd.Invoke(typeMap, [t, CreateInstance(sortedDictType)]);
+		}
+	}
+
+	protected static Game CreateGameWithSystem(ScoringSystem system,
+											   Game.Statuses status)
+	{
+		var t = new Tournament { Id = 1, Name = "T" };
+		var r = new Round { Id = 2, Number = 1 };
+		SetProperty(r, "TournamentId", t.Id);
+		SetField(r, "<Tournament>k__BackingField", t);
+		return new ()
+			   {
+				   Id = 3,
+				   Round = r,
+				   Status = status,
+				   ScoringSystem = system
+			   };
+	}
+
+	protected static TeamPlayer NewTeamPlayerViaLoad(int teamId,
+													 int playerId)
+	{
+		var tp = new TeamPlayer();
+		var values = new Dictionary<string, object?>
+					 {
+						 ["TeamId"] = teamId,
+						 ["PlayerId"] = playerId
+					 };
+		using var reader = new FakeDbDataReader("TeamPlayer", values);
+		tp.Load(reader);
+		return tp;
 	}
 }

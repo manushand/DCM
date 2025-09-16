@@ -197,7 +197,9 @@ public sealed class GroupTests : TestBase
 		var gamePlayers = new List<GamePlayer>();
 		for (var i = 0; i < 7; i++)
 		{
-			var p = i is 0 ? player : new () { Id = 1000 + i, Name = $"P{i}" };
+			var p = i is 0
+						? player
+						: new () { Id = 1000 + i, Name = $"P{i}" };
 			var gp = new GamePlayer { Game = g1, Player = p, Power = powers[i], Result = Unknown };
 			if (i is 0)
 				SetField(gp, "_finalScore", 3.0);

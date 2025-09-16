@@ -77,19 +77,4 @@ public sealed class DataUtilityTests : TestBase
 		var p2 = new Player { Id = 2, FirstName = "Ann", LastName = "Lee" };
 		Assert.True(Data.NameExists(p2));
 	}
-
-	// Helpers (mirrors of similar helpers in existing tests)
-	private static TeamPlayer NewTeamPlayerViaLoad(int teamId,
-												   int playerId)
-	{
-		var tp = new TeamPlayer();
-		var values = new Dictionary<string, object?>
-					 {
-						 ["TeamId"] = teamId,
-						 ["PlayerId"] = playerId
-					 };
-		using var reader = new FakeDbDataReader("TeamPlayer", values);
-		tp.Load(reader);
-		return tp;
-	}
 }

@@ -82,40 +82,4 @@ public sealed class TeamTests : TestBase
 		Assert.Contains("[Name] = 'Red''s Team'", sql);
 		Assert.Contains("[TournamentId] = 42", sql);
 	}
-
-	// Helpers
-	private static TeamPlayer NewTeamPlayerViaLoad(int teamId,
-												   int playerId)
-	{
-		var tp = new TeamPlayer();
-		var values = new Dictionary<string, object?>
-					{
-						{ "TeamId", teamId },
-						{ "PlayerId", playerId }
-					};
-		using var reader = new FakeDbDataReader("TeamPlayer", values);
-		tp.Load(reader);
-		return tp;
-	}
-
-	private static void AddEmpties(object typeMap)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var mapAdd = typeMapType.GetMethod("Add")
-								.OrThrow();
-		AddEmpty(typeof (Round));
-		AddEmpty(typeof (Tournament));
-		AddEmpty(typeof (ScoringSystem));
-		AddEmpty(typeof (Game));
-		AddEmpty(typeof (RoundPlayer));
-		AddEmpty(typeof (TournamentPlayer));
-		AddEmpty(typeof (Group));
-		AddEmpty(typeof (GroupPlayer));
-		// Do not add empty maps for Team, TeamPlayer, Player here because tests already add them
-		AddEmpty(typeof (PlayerConflict));
-
-		void AddEmpty(Type t)
-			=> mapAdd.Invoke(typeMap, [t, CreateInstance(sortedDictType)]);
-	}
 }

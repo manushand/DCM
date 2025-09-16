@@ -176,26 +176,23 @@ public sealed class GameTests : TestBase
 								.OrThrow();
 		mapAdd.Invoke(typeMap, [typeof (GamePlayer), sd]);
 
-		AddEmpty(typeof (Round));
-		AddEmpty(typeof (Tournament));
-		AddEmpty(typeof (ScoringSystem));
-		AddEmpty(typeof (Game));
-		AddEmpty(typeof (RoundPlayer));
-		AddEmpty(typeof (TournamentPlayer));
-		AddEmpty(typeof (Group));
-		AddEmpty(typeof (GroupPlayer));
-		AddEmpty(typeof (Team));
-		AddEmpty(typeof (TeamPlayer));
-		AddEmpty(typeof (PlayerConflict));
-		AddEmpty(typeof (Player));
+		AddAnEmpty(typeof (Round));
+		AddAnEmpty(typeof (Tournament));
+		AddAnEmpty(typeof (ScoringSystem));
+		AddAnEmpty(typeof (Game));
+		AddAnEmpty(typeof (RoundPlayer));
+		AddAnEmpty(typeof (TournamentPlayer));
+		AddAnEmpty(typeof (Group));
+		AddAnEmpty(typeof (GroupPlayer));
+		AddAnEmpty(typeof (Team));
+		AddAnEmpty(typeof (TeamPlayer));
+		AddAnEmpty(typeof (PlayerConflict));
+		AddAnEmpty(typeof (Player));
 		field.SetValue(null, typeMap);
 
 		return new (original, field);
 
-		void AddEmpty(Type t)
-		{
-			var e = CreateInstance(sortedDictType);
-			mapAdd.Invoke(typeMap, [t, e]);
-		}
+		void AddAnEmpty(Type t)
+			=> mapAdd.Invoke(typeMap, [t, CreateInstance(sortedDictType)]);
 	}
 }

@@ -49,7 +49,7 @@ public sealed class RoundWorkableTests : TestBase
 			mapAdd.Invoke(typeMap, [typeof (Tournament), sdTournament]);
 		}
 		else
-			AddEmpty(typeof (Tournament));
+			AddEmpty(typeMap, typeof (Tournament));
 		// Rounds
 		if (rounds is { Length: > 0 })
 		{
@@ -60,21 +60,10 @@ public sealed class RoundWorkableTests : TestBase
 			mapAdd.Invoke(typeMap, [typeof (Round), sdRound]);
 		}
 		else
-			AddEmpty(typeof (Round));
-		AddEmpty(typeof (Game));
-		AddEmpty(typeof (ScoringSystem));
-		AddEmpty(typeof (RoundPlayer));
-		AddEmpty(typeof (TournamentPlayer));
-		AddEmpty(typeof (Group));
-		AddEmpty(typeof (GroupPlayer));
-		AddEmpty(typeof (Team));
-		AddEmpty(typeof (TeamPlayer));
-		AddEmpty(typeof (PlayerConflict));
-		AddEmpty(typeof (Player));
+			AddEmpty(typeMap, typeof (Round));
+		AddEmpties(typeMap);
 		field.SetValue(null, typeMap);
 		return new (original, field);
-
-		void AddEmpty(Type t) => mapAdd.Invoke(typeMap, [t, CreateInstance(sortedDictType)]);
 	}
 
 	[Fact]

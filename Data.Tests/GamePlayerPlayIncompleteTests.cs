@@ -75,23 +75,4 @@ public sealed class GamePlayerPlayIncompleteTests : TestBase
 		};
 		Assert.Equal(CompleteMark, gp.Status);
 	}
-
-	private static Game CreateGameWithSystem(ScoringSystem system,
-											 Game.Statuses status)
-	{
-		var t = new Tournament { Id = 1, Name = "T" };
-		var r = new Round { Id = 2, Number = 1 };
-		// Attach tournament to round via private fields to avoid cache/DB
-		SetProperty(r, "TournamentId", t.Id);
-		typeof (Round).GetField("<Tournament>k__BackingField", Instance | NonPublic)
-					  .OrThrow()
-					  .SetValue(r, t);
-		return new ()
-			   {
-				   Id = 3,
-				   Round = r,
-				   Status = status,
-				   ScoringSystem = system
-			   };
-	}
 }

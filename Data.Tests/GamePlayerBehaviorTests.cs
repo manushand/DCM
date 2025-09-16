@@ -3,18 +3,6 @@
 [UsedImplicitly]
 public sealed class GamePlayerBehaviorTests
 {
-	private static void Set<T>(T obj, string member, object value) where T : class
-	{
-		var type = obj.GetType();
-		var prop = type.GetProperty(member, Instance | Public | NonPublic);
-		if (prop?.CanWrite is true)
-			prop.SetValue(obj, value);
-		else
-			type.GetField(member, Instance | Public | NonPublic)
-				.OrThrow($"Member {member} not found on {type}")
-				.SetValue(obj, value);
-	}
-
 	[Fact]
 	public void CompareTo_Orders_By_Power_When_No_Game()
 	{
@@ -52,11 +40,9 @@ public sealed class GamePlayerBehaviorTests
 		// If game numbers equal, use (Power, Player.Name)
 		Set(g2, nameof (Game.Number), 1);
 		// Set Player names to break ties
-		var pA = new Player { Id = 1, FirstName = "Ann", LastName = "Z" };
-		var pB = new Player { Id = 2, FirstName = "Bob", LastName = "A" };
 		// Assign players directly to avoid cache/db dependency
-		gp1.Player = pA;
-		gp2.Player = pB;
+		gp1.Player = new () { Id = 1, FirstName = "Ann", LastName = "Z" };
+		gp2.Player = new () { Id = 2, FirstName = "Bob", LastName = "A" };
 
 		// Now compare: same game number and power, so compare Player.Name (A-Z vs B-A)
 		Assert.True(gp1.CompareTo(gp2) < 0);
@@ -100,5 +86,20 @@ public sealed class GamePlayerBehaviorTests
 		Set(gFinished, nameof (Game.Status), Finished);
 		gpComplete.Game = gFinished;
 		Assert.Equal(FinishedMark, gpComplete.Status);
+	}
+
+	private static void Set<T>(T obj,
+							   string member,
+							   object value)
+		where T : class
+	{
+		var type = obj.GetType();
+		var prop = type.GetProperty(member, Instance | Public | NonPublic);
+		if (prop?.CanWrite is true)
+			prop.SetValue(obj, value);
+		else
+			type.GetField(member, Instance | Public | NonPublic)
+				.OrThrow($"Member {member} not found on {type}")
+				.SetValue(obj, value);
 	}
 }

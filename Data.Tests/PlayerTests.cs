@@ -169,41 +169,4 @@ public sealed class PlayerTests : TestBase
 		Assert.Contains("[LastName] = 'O''Neil'", sql);
 		Assert.Contains("[EmailAddress] = 'a@x.com'", sql);
 	}
-
-	private static TeamPlayer NewTeamPlayerViaLoad(int teamId, int playerId)
-	{
-		var tp = new TeamPlayer();
-		var values = new Dictionary<string, object?>
-					 {
-						 ["TeamId"] = teamId,
-						 ["PlayerId"] = playerId
-					 };
-		using var reader = new FakeDbDataReader("TeamPlayer", values);
-		tp.Load(reader);
-		return tp;
-	}
-
-	private static void AddEmpties(object typeMap)
-	{
-		var typeMapType = typeMap.GetType();
-		var contains = typeMapType.GetMethod("ContainsKey")
-								  .OrThrow();
-		AddIfMissing(typeof (Round));
-		AddIfMissing(typeof (Tournament));
-		AddIfMissing(typeof (ScoringSystem));
-		AddIfMissing(typeof (Game));
-		AddIfMissing(typeof (GamePlayer));
-		AddIfMissing(typeof (TournamentPlayer));
-		AddIfMissing(typeof (GroupPlayer));
-		AddIfMissing(typeof (Team));
-		AddIfMissing(typeof (TeamPlayer));
-		AddIfMissing(typeof (PlayerConflict));
-
-		void AddIfMissing(Type t)
-		{
-			if (!(bool)contains.Invoke(typeMap, [t])
-							   .OrThrow())
-				AddEmpty(typeMap, t);
-		}
-	}
 }
