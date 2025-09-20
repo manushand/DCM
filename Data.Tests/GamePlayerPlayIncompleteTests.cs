@@ -17,7 +17,7 @@ public sealed class GamePlayerPlayIncompleteTests : TestBase
 			Power = Austria,
 			Result = Unknown
 		};
-		// Underway + requires result but unknown => Status should be open circle (incomplete)
+		// Underway + requires a result, but unknown => Status should be open circle (incomplete)
 		Assert.Equal(UnderwayMark, gp.Status);
 	}
 

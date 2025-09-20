@@ -144,14 +144,13 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 
 	#region IRecord implementation
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<Group>();
 		Id = record.Integer(nameof (Id));
 		Name = record.String(nameof (Name));
 		Description = record.String(nameof (Description));
 		Conflict = record.Integer(nameof (Conflict));
-		return this;
 	}
 
 	#endregion

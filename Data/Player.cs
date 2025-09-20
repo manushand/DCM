@@ -49,12 +49,12 @@ public sealed class Player : IdentityRecord<Player>
 		=> LinksOfType<TeamPlayer>().Select(static teamPlayer => teamPlayer.Team)
 									.Where(team => tournament.IsNone || team.TournamentId == tournament.Id);
 
+	public void AddPlayerConflict(Player player)
+		=> CreateOne(new PlayerConflict(Id, player.Id));
+
 	internal IEnumerable<Player> TournamentTeamPlayers(Tournament tournament)
 		=> Teams(tournament).SelectMany(static team => team.Players)
 							.Where(IsNot);
-
-	public void AddPlayerConflict(Player player)
-		=> CreateOne(new PlayerConflict(Id, player.Id));
 
 	#endregion
 
@@ -62,14 +62,13 @@ public sealed class Player : IdentityRecord<Player>
 
 	#region IRecord implementation
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<Player>();
 		Id = record.Integer(nameof (Id));
 		FirstName = record.String(nameof (FirstName));
 		LastName = record.String(nameof (LastName));
 		EmailAddress = record.String(nameof (EmailAddress));
-		return this;
 	}
 
 	#endregion

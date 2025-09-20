@@ -314,7 +314,7 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 
 	#region IRecord implementation
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<ScoringSystem>();
 		Id = record.Integer(nameof (Id));
@@ -331,7 +331,6 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 		PointsPerGame = record.NullableInteger(nameof (PointsPerGame));
 		OtherScoreAlias = record.String(nameof (OtherScoreAlias));
 		PlayerAnteFormula = record.String(nameof (PlayerAnteFormula));
-		return this;
 	}
 
 	#endregion

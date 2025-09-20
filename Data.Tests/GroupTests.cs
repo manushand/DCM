@@ -62,7 +62,7 @@ public sealed class GroupTests : TestBase
 		SetProperty(t, "GroupId", group.Id);
 		var r = new Round { Id = 500, Number = 1 };
 		SetProperty(r, "TournamentId", t.Id);
-		// Ensure Round.Tournament points to our tournament without DB/cache fallback
+		// Ensure Round.Tournament points to our tournament without a DB/cache fallback
 		SetField(r, "<Tournament>k__BackingField", t);
 		// Give the round its own scoring system id
 		SetField(r, "_scoringSystemId", 9);

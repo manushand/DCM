@@ -77,7 +77,7 @@ public sealed class GamePreGameScoreTests : TestBase
 		// Wire backing field so t.IsEvent becomes false
 		SetField(t, "<Group>k__BackingField", group);
 
-		// Host round for group with a scoring system id
+		// Host round for the group with a scoring system id
 		var hostRound = new Round { Id = 60, Number = 1 };
 		SetProperty(hostRound, "TournamentId", t.Id);
 		SetField(hostRound, "<Tournament>k__BackingField", t);

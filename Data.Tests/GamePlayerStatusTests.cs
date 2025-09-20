@@ -53,7 +53,7 @@ public sealed class GamePlayerStatusTests : TestBase
 												 },
 												 Underway),
 					 Power = Austria,
-					 Result = Unknown // Complete because system doesn't require result/centers/years and power not TBD
+					 Result = Unknown // Complete because the system doesn't require result/centers/years and power not TBD
 				 };
 		Assert.Equal(CompleteMark, gp.Status);
 	}

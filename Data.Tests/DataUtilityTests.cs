@@ -58,7 +58,7 @@ public sealed class DataUtilityTests : TestBase
 
 	[Fact]
 	public void ConnectToAccessDatabase_Returns_False_When_No_Providers_Work()
-		// We pass a bogus file path; providers will throw/open-fail and method should return false.
+		// We pass a bogus file path; providers will throw/open-fail and the method should return false.
 		=> Assert.False(Data.ConnectToAccessDatabase(@"X:\nonexistent\db.accdb"));
 
 	[Fact]
@@ -73,7 +73,7 @@ public sealed class DataUtilityTests : TestBase
 		// NameExists returns false when comparing with itself
 		Assert.False(Data.NameExists(p1));
 
-		// But true for a different instance having same name
+		// But true for a different instance having the same name
 		var p2 = new Player { Id = 2, FirstName = "Ann", LastName = "Lee" };
 		Assert.True(Data.NameExists(p2));
 	}

@@ -37,7 +37,7 @@ public abstract class IdInfoRecord : IInfoRecord, IComparable<IdInfoRecord>
 
 	public string PrimaryKey => Format(PrimaryKeyFormat, Id);
 
-	public abstract IRecord Load(DbDataReader record);
+	public abstract void Load(DbDataReader record);
 
 	#endregion
 

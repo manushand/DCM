@@ -130,7 +130,7 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 
 	#region IRecord implementation
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<Tournament>();
 		Id = record.Integer(nameof (Id));
@@ -163,7 +163,6 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 		var scoreConflict = record.Integer(nameof (ScoreConflict));
 		ScoreConflict = Abs(scoreConflict);
 		ProgressiveScoreConflict = scoreConflict < 0;
-		return this;
 	}
 
 	#endregion

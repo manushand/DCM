@@ -1,19 +1,18 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Linq;
 
 namespace Data.Tests;
 
 using static Data;
 
 [PublicAPI]
-public sealed class DataCacheTests
+public sealed class DataCacheTests : TestBase
 {
 	[Fact]
 	public void Cache_Fetch_Flush_Work_Via_Reflection()
 	{
-		// Arrange: get nested Cache type and its backing _data field
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
-		var dataField = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data not found");
-		var original = dataField.GetValue(null).OrThrow();
+		// Arrange: get the nested Cache type and its backing _data field
+		var original = DataField.GetValue(null).OrThrow();
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var typeMap = CreateInstance(typeMapType).OrThrow();
 
@@ -21,8 +20,8 @@ public sealed class DataCacheTests
 		AddEmpty(typeMap, typeof (Player));
 
 		// Point the cache to our empty map instance
-		dataField.SetValue(null, typeMap);
-		// Sanity: ensure the map contains Player key to avoid triggering DB-backed Load
+		DataField.SetValue(null, typeMap);
+		// Sanity: ensure the map contains the Player key to avoid triggering DB-backed Load
 		var containsKey = (bool)typeMapType.GetMethod("ContainsKey")
 										   .OrThrow()
 										   .Invoke(typeMap, [typeof (Player)])
@@ -32,23 +31,23 @@ public sealed class DataCacheTests
 		try
 		{
 			// Resolve generic methods we will use
-			var fetchAllMethod = cacheType.GetMethod("FetchAll", NonPublic | Static);
-			var fetchOneFuncMethod = cacheType.GetMethods(NonPublic | Static)
+			var fetchAllMethod = CacheType.GetMethod("FetchAll", NonPublic | Static);
+			var fetchOneFuncMethod = CacheType.GetMethods(NonPublic | Static)
 											  .First(static m => m.Name is "FetchOne"
 															  && m.GetParameters().Length is 1
 															  && m.GetParameters()[0].ParameterType.IsGenericType);
-			var flushMethod = cacheType.GetMethod("Flush", NonPublic | Static);
+			var flushMethod = CacheType.GetMethod("Flush", NonPublic | Static);
 
 			Assert.NotNull(fetchOneFuncMethod);
 			Assert.NotNull(fetchAllMethod);
 			Assert.NotNull(flushMethod);
 
-			// Manually seed players into the underlying SortedDictionary to avoid invoking Cache.Add which may trigger Load
+			// Manually seed players into the underlying SortedDictionary to avoid invoking Cache.Add() which may trigger Load
 			var sd = typeMapType.GetGenericArguments()[1];
 			var sdInstance = CreateInstance(sd);
 			var sdAdd = sd.GetMethod("Add").OrThrow();
-			var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "A" };
-			var p2 = new Player { Id = 2, FirstName = "Bob", LastName = "B" };
+			Player p1 = new () { Id = 1, FirstName = "Ann", LastName = "A" },
+				   p2 = new () { Id = 2, FirstName = "Bob", LastName = "B" };
 			sdAdd.Invoke(sdInstance, [p1.PrimaryKey, p1]);
 			sdAdd.Invoke(sdInstance, [p2.PrimaryKey, p2]);
 			// Replace the whole map with one that contains only the Player sd to avoid duplicate Add
@@ -56,15 +55,15 @@ public sealed class DataCacheTests
 			typeMapType.GetMethod("Add")
 					   .OrThrow()
 					   .Invoke(newMap, [typeof (Player), sdInstance]);
-			dataField.SetValue(null, newMap);
+			DataField.SetValue(null, newMap);
 
 			// Verify FetchAll returns both
-			var all = (System.Collections.IEnumerable)fetchAllMethod.MakeGenericMethod(typeof (Player))
-																	.Invoke(null, null)
-																	.OrThrow();
+			var all = (IEnumerable)fetchAllMethod.MakeGenericMethod(typeof (Player))
+												 .Invoke(null, null)
+												 .OrThrow();
 			var list = all.Cast<Player>().ToList();
-			Assert.Contains(list, static x => x.Id == 1);
-			Assert.Contains(list, static x => x.Id == 2);
+			Assert.Contains(list, static x => x.Id is 1);
+			Assert.Contains(list, static x => x.Id is 2);
 
 			// FetchOne with predicate
 			static bool Pred(Player pl)
@@ -78,40 +77,28 @@ public sealed class DataCacheTests
 			// Flush clears all
 			flushMethod.Invoke(null, null);
 			// Inspect the underlying map directly to avoid triggering Load
-			var mapAfterFlush = dataField.GetValue(null).OrThrow();
+			var mapAfterFlush = DataField.GetValue(null).OrThrow();
 			var countProp = mapAfterFlush.GetType().GetProperty("Count");
 			var count = (int)(countProp?.GetValue(mapAfterFlush) ?? 0);
 			Assert.Equal(0, count);
 		}
 		finally
 		{
-			// Restore original cache to not affect other tests
-			dataField.SetValue(null, original);
-		}
-
-		static void AddEmpty(object typeMapObj, Type type)
-		{
-			var mapType = typeMapObj.GetType();
-			var sdType = mapType.GetGenericArguments()[1];
-			var sd = CreateInstance(sdType);
-			mapType.GetMethod("Add").OrThrow().Invoke(typeMapObj, [type, sd]);
+			// Restore the original cache to not affect other tests
+			DataField.SetValue(null, original);
 		}
 	}
 
 	[Fact]
 	public void Cache_Restore_Switches_Stores()
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
-		var dataField = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data not found");
-		var storesField = cacheType.GetField("Stores", NonPublic | Static).OrThrow("Cache.Stores not found");
-
-		var originalData = dataField.GetValue(null).OrThrow();
-		var storesObj = storesField.GetValue(null).OrThrow();
+		var originalData = DataField.GetValue(null).OrThrow();
+		var storesObj = StoresField.GetValue(null).OrThrow();
 		var storesType = storesObj.GetType();
 		var clearMethod = storesType.GetMethod("Clear").OrThrow();
 		var addMethod = storesType.GetMethod("Add").OrThrow();
-		var snapshot = ((System.Collections.IEnumerable)storesObj).Cast<object>()
-																  .ToList();
+		var snapshot = ((IEnumerable)storesObj).Cast<object>()
+											   .ToList();
 
 		try
 		{
@@ -125,11 +112,11 @@ public sealed class DataCacheTests
 			addMethod.Invoke(storesObj, ["B", storeB]);
 
 			// Switch to A
-			cacheType.GetMethod("Restore", NonPublic | Static).OrThrow().Invoke(null, ["A"]);
-			Assert.Same(storeA, dataField.GetValue(null));
+			CacheType.GetMethod("Restore", NonPublic | Static).OrThrow().Invoke(null, ["A"]);
+			Assert.Same(storeA, DataField.GetValue(null));
 			// Switch to B
-			cacheType.GetMethod("Restore", NonPublic | Static).OrThrow().Invoke(null, ["B"]);
-			Assert.Same(storeB, dataField.GetValue(null));
+			CacheType.GetMethod("Restore", NonPublic | Static).OrThrow().Invoke(null, ["B"]);
+			Assert.Same(storeB, DataField.GetValue(null));
 		}
 		finally
 		{
@@ -143,7 +130,7 @@ public sealed class DataCacheTests
 				foreach (var item in snapshot)
 					addMethod.Invoke(storesObj, [keyProp.GetValue(item), valueProp.GetValue(item)]);
 			}
-			dataField.SetValue(null, originalData);
+			DataField.SetValue(null, originalData);
 		}
 	}
 
@@ -151,9 +138,7 @@ public sealed class DataCacheTests
 	public void Data_Any_Uses_Cache_Exists()
 	{
 		// Setup cache with three players
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
-		var dataField = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data not found");
-		var original = dataField.GetValue(null).OrThrow();
+		var original = DataField.GetValue(null).OrThrow();
 		var mapType = original.GetType();
 		var sdType = mapType.GetGenericArguments()[1];
 		var typeMap = CreateInstance(mapType);
@@ -169,7 +154,7 @@ public sealed class DataCacheTests
 			   .OrThrow()
 			   .Invoke(typeMap, [typeof (Player), sd]);
 
-		dataField.SetValue(null, typeMap);
+		DataField.SetValue(null, typeMap);
 		try
 		{
 			Assert.True(Any<Player>());
@@ -178,7 +163,7 @@ public sealed class DataCacheTests
 		}
 		finally
 		{
-			dataField.SetValue(null, original);
+			DataField.SetValue(null, original);
 		}
 	}
 }

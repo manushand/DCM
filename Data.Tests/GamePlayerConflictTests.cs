@@ -42,7 +42,7 @@ public sealed class GamePlayerConflictTests : TestBase
 		var gpA = new GroupPlayer { Group = g, Player = a };
 		var gpB = new GroupPlayer { Group = g, Player = b };
 
-		// Team for tournament including A and C (so A vs C will incur team conflict)
+		// Team for the tournament including A and C (so A vs. C will incur team conflict)
 		var team = new Team { Id = 200, Name = "TeamX", TournamentId = t.Id };
 		// Ensure tournament treats as team round to apply team conflict
 		t.TeamSize = 2;
@@ -74,7 +74,7 @@ public sealed class GamePlayerConflictTests : TestBase
 		// Player conflict: A conflicted with B (value 5); PlayerConflict.Value is used directly
 		var pcAb = new PlayerConflict(a.Id, b.Id) { Value = 5 };
 
-		// Seed cache to include necessary maps
+		// Seed cache to include the necessary maps
 		using (SeedCache(map =>
 						{
 							AddMany(map, typeof (Tournament), t);

@@ -74,7 +74,7 @@ public sealed class TournamentTests : TestBase
 		// Tie rounds to tournament and set private _games
 		SetProperty(r1, "TournamentId", t.Id);
 		SetProperty(r2, (string)"TournamentId", t.Id);
-		// Ensure rounds reference tournament without cache/DB by setting Tournament backing field via reflection
+		// Ensure the rounds reference the tournament without cache/DB by setting the Tournament backing field via reflection
 		SetField(r1, "<Tournament>k__BackingField", t);
 		SetField(r2, "<Tournament>k__BackingField", t);
 		var g1 = new Game { Status = Seeded };
@@ -91,11 +91,11 @@ public sealed class TournamentTests : TestBase
 			Assert.Equal(3, games.Length);
 			Assert.Single(t.FinishedGames);
 
-			// Modify a round's games after first read; Games should remain cached
+			// Modify a round's games after the first read; Games should remain cached
 			SetRoundGames(r2, g3, g4);
 			Assert.Equal(3, t.Games.Length); // still cached
 
-			// Force cache reset via private field and verify recompute
+			// Force cache reset via the private field and verify recomputation
 			SetField(t, "_games", null);
 			Assert.Equal(4, t.Games.Length);
 			Assert.Equal(2, t.FinishedGames.Length);
@@ -123,7 +123,7 @@ public sealed class TournamentTests : TestBase
 			t.ScoringSystem = newSystem;
 			// Tournament should adopt new id
 			Assert.Equal(5, GetNonPublicProperty<int>(t, "ScoringSystemId"));
-			// rDefault should now report new id
+			// rDefault should now report the new id
 			Assert.Equal(5, rDefault.ScoringSystemId);
 			// rOverride should remain unchanged
 			Assert.Equal(9, rOverride.ScoringSystemId);
@@ -138,10 +138,7 @@ public sealed class TournamentTests : TestBase
 	private static CacheScope SeedTournamentAndRoundsCache(IdInfoRecord t,
 														   IEnumerable<Round> rounds)
 	{
-		var dataType = typeof (Data);
-		var cacheType = dataType.GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
-		var original = field.GetValue(null).OrThrow();
+		var original = DataField.GetValue(null).OrThrow();
 
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var sortedDictType = typeMapType.GetGenericArguments()[1]; // SortedDictionary<string, IRecord>
@@ -170,8 +167,8 @@ public sealed class TournamentTests : TestBase
 		AddAnEmpty(typeof (TeamPlayer));
 		AddAnEmpty(typeof (PlayerConflict));
 
-		field.SetValue(null, typeMap);
-		return new (original, field);
+		DataField.SetValue(null, typeMap);
+		return new (original, DataField);
 
 		// Optional empty maps to prevent any accidental loads
 		void AddAnEmpty(Type tType)

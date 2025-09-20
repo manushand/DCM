@@ -284,14 +284,13 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 	#region IRecord implementation
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<Round>();
 		Id = record.Integer(nameof (Id));
 		Number = record.Integer(nameof (Number));
 		TournamentId = record.Integer(nameof (TournamentId));
 		_scoringSystemId = record.NullableInteger(nameof (ScoringSystemId));
-		return this;
 	}
 
 	#endregion

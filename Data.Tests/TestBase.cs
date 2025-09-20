@@ -19,6 +19,13 @@ namespace Data.Tests;
 
 public abstract class TestBase
 {
+	protected static readonly Type CacheType = typeof (Data).GetNestedType("Cache", NonPublic)
+															.OrThrow("Cache type not found");
+	protected static readonly FieldInfo DataField = CacheType.GetField("_data", NonPublic | Static)
+															 .OrThrow("Cache._data field not found");
+	protected static readonly FieldInfo StoresField = CacheType.GetField("Stores", NonPublic | Static)
+															   .OrThrow("Cache.Stores not found");
+
 	protected sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
 	{
 		public void Dispose() => Field.SetValue(null, Original);
@@ -26,17 +33,13 @@ public abstract class TestBase
 
 	protected static CacheScope SeedCache(Action<object> fill)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic)
-									 .OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", NonPublic | Static)
-							 .OrThrow("Cache._data field not found");
-		var original = field.GetValue(null)
-							.OrThrow();
+		var original = DataField.GetValue(null)
+								.OrThrow();
 		var typeMapType = original.GetType(); // Dictionary<Type, SortedDictionary<string, IRecord>>
 		var typeMap = CreateInstance(typeMapType).OrThrow();
 		fill(typeMap);
-		field.SetValue(null, typeMap);
-		return new (original, field);
+		DataField.SetValue(null, typeMap);
+		return new (original, DataField);
 	}
 
 	protected static void SetField(object target, string field, object? value)

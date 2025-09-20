@@ -34,13 +34,12 @@ public sealed class Team : IdentityRecord<Team>
 
 	#region IRecord implementation
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<Team>();
 		Id = record.Integer(nameof (Id));
 		Name = record.String(nameof (Name));
 		TournamentId = record.Integer(nameof (TournamentId));
-		return this;
 	}
 
 	#endregion

@@ -16,7 +16,7 @@ public sealed class RoundPreRoundTests : TestBase
 		SetField(r2, "<Tournament>k__BackingField", t);
 		var p = new Player { Id = 5, FirstName = "Ann", LastName = "L" };
 
-		// Prior finished game in r1 with FinalScore=6
+		// A prior finished game in r1 with FinalScore=6
 		var g1 = new Game
 				 {
 					 Id = 100,
@@ -36,7 +36,7 @@ public sealed class RoundPreRoundTests : TestBase
 		SetField(gp1, "_finalScore", 6.0);
 
 		// Target: r2 PreRoundScore should sum prior rounds (Number-1 = 1) and not need padding (targetCount=1)
-		// Also test PreGameAverage uses same aggregates
+		// Also test PreGameAverage uses the same aggregates
 		using (SeedCache(map =>
 						{
 							AddMany(map, typeof (Tournament), t);
@@ -72,7 +72,7 @@ public sealed class RoundPreRoundTests : TestBase
 		// Group tournament: GroupId set => IsEvent=false, uses player rating before game date
 		var group = new Group { Id = 8, Name = "Club" };
 		var t = new Tournament { Id = 2, Name = "GroupT", UnplayedScore = 5, TotalRounds = 3 };
-		SetProperty(t, nameof (Tournament.Group), group); // internal init uses backing, but we'll seed via reflection below using Group property backing
+		SetProperty(t, nameof (Tournament.Group), group); // internal init uses backing, but we'll seed via Reflection below, using Group property backing
 		// Create round 1 and 2
 		var r1 = new Round { Id = 20, Number = 1 };
 		var r2 = new Round { Id = 21, Number = 2 };
@@ -84,7 +84,7 @@ public sealed class RoundPreRoundTests : TestBase
 		SetField(t, "<Group>k__BackingField", group);
 
 		var p = new Player { Id = 5, FirstName = "Ann", LastName = "L" };
-		// Two finished games in r1 and r2 both before a target game's date; one not containing player should be ignored
+		// Two finished games in r1 and r2 both before a target game's date; the one not containing the player should be ignored
 		var gA = new Game
 				 {
 					 Id = 201,
@@ -134,7 +134,7 @@ public sealed class RoundPreRoundTests : TestBase
 			var gpTarget = new GamePlayer { Game = targetGame, Player = p };
 			var avg = r2.PreGameAverage(gpTarget);
 			var sum = r2.PreRoundScore(p);
-			// For group tournaments, roundsPrior = 1, so only prior round (r1) is included in PreRound aggregates
+			// For group tournaments, roundsPrior = 1, so only one prior round (r1) is included in PreRound aggregates
 			Assert.Equal(3.0, sum);
 			Assert.Equal(3.0, avg);
 		}

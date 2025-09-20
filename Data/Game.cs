@@ -130,7 +130,7 @@ public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 
 	#region IRecord implementation
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<Game>();
 		Id = record.Integer(nameof (Id));
@@ -140,7 +140,6 @@ public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 		Name = record.String(nameof (Name));
 		_scoringSystemId = record.NullableInteger(nameof (ScoringSystemId));
 		_date = record.NullableDate(nameof (Date));
-		return this;
 	}
 
 	#endregion

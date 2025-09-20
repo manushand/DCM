@@ -16,7 +16,7 @@ public sealed class GamePlayerBehaviorTests
 	[Fact]
 	public void CompareTo_Orders_By_GameNumber_Then_Power_Then_PlayerName()
 	{
-		// Create two players in different games with same power to force tie-breakers
+		// Create two players in different games with the same power to force tie-breakers
 		var gp1 = new GamePlayer { Power = France };
 		var gp2 = new GamePlayer { Power = France };
 
@@ -44,7 +44,7 @@ public sealed class GamePlayerBehaviorTests
 		gp1.Player = new () { Id = 1, FirstName = "Ann", LastName = "Z" };
 		gp2.Player = new () { Id = 2, FirstName = "Bob", LastName = "A" };
 
-		// Now compare: same game number and power, so compare Player.Name (A-Z vs B-A)
+		// Now compare: same game number and power, so compare Player.Name (A-Z vs. B-A)
 		Assert.True(gp1.CompareTo(gp2) < 0);
 	}
 
@@ -75,7 +75,7 @@ public sealed class GamePlayerBehaviorTests
 		var gpComplete = new GamePlayer { Power = Austria };
 		// Use a ScoringSystem with all Uses* flags false so PlayIncomplete is false
 		var ssExisting = new ScoringSystem { UsesGameResult = false, UsesCenterCount = false, UsesYearsPlayed = false };
-		// Assign scoring system directly to the game to avoid DB/cache
+		// Assign the scoring system directly to the game to avoid DB/cache
 		gUnderway2.ScoringSystem = ssExisting;
 
 		gpComplete.Game = gUnderway2;

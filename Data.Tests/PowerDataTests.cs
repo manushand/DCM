@@ -93,7 +93,7 @@ public sealed class PowerDataTests
 	[Fact]
 	public void Concession_Win_Flags_Work()
 	{
-		// Winner has < 18 centers and is sole winner => concession
+		// Winner has < 18 centers but is the sole winner => concession
 		var scoring = BuildScoring([
 									   new (England, Win, 17, 10, 0),
 									   new (Austria, Loss, 0, 5, 0),
@@ -163,7 +163,7 @@ public sealed class PowerDataTests
 								   ]);
 		var pdA = scoring.Austria;
 		// Centers 8 (winner), 6, 6, 3, 3, 0, 0
-		Assert.Equal(2, pdA.BestCenterRank); // one power strictly higher (8), so best rank is 2
+		Assert.Equal(2, pdA.BestCenterRank); // one power strictly higher (8), so the best rank is 2
 		Assert.Equal(3, pdA.WorstCenterRank); // include equal (other 6) gives rank 3
 		Assert.Equal(2, pdA.CenterRankSharers); // two with 6
 	}

@@ -237,7 +237,7 @@ public sealed class ScoringSystemTests
 		var ok = s.ScoreWithResults(players, out var results);
 
 		Assert.True(ok);
-		// Each player's ante should be 2 and final score 5 - 2 = 3
+		// Each player's ante should be 2, and the final score should be 5 - 2 = 3
 		Assert.All(players, static p => Assert.Equal(2, p.PlayerAnte));
 		Assert.All(players, static p => Assert.Equal(3, p.FinalScore));
 		Assert.Contains(results, static r => r?.StartsWith("Player Ante for Austria") is true);

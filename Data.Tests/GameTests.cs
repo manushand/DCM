@@ -89,7 +89,7 @@ public sealed class GameTests : TestBase
 	public void CalculateScores_Returns_False_When_Not_Enough_Players()
 	{
 		var g = new Game { Id = 100, Round = new () { Id = 200 } };
-		// Ensure cache has an entry for GamePlayer but with zero entries for this Game
+		// Ensure the cache has an entry for GamePlayer but with zero entries for this Game
 		using (SeedGamePlayersCache([]))
 		{
 			var ok = g.CalculateScores(out var issues);
@@ -155,13 +155,8 @@ public sealed class GameTests : TestBase
 
 	private static CacheScope SeedGamePlayersCache(List<GamePlayer> players)
 	{
-		var dataType = typeof (Data);
-		var cacheType = dataType.GetNestedType("Cache", NonPublic)
-								.OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", NonPublic | Static)
-							 .OrThrow("Cache._data field not found");
-		var original = field.GetValue(null)
-							.OrThrow();
+		var original = DataField.GetValue(null)
+								.OrThrow();
 
 		// Use the existing generic types from the original cache instance
 		var typeMapType = original.GetType();                      // Dictionary<Type, SortedDictionary<string, IRecord>>
@@ -188,9 +183,9 @@ public sealed class GameTests : TestBase
 		AddAnEmpty(typeof (TeamPlayer));
 		AddAnEmpty(typeof (PlayerConflict));
 		AddAnEmpty(typeof (Player));
-		field.SetValue(null, typeMap);
+		DataField.SetValue(null, typeMap);
 
-		return new (original, field);
+		return new (original, DataField);
 
 		void AddAnEmpty(Type t)
 			=> mapAdd.Invoke(typeMap, [t, CreateInstance(sortedDictType)]);

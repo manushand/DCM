@@ -19,7 +19,7 @@ public sealed class RoundWorkableTests : TestBase
 			SetProperty(r3, "TournamentId", t.Id);
 			SetField(r3, "<Tournament>k__BackingField", t);
 			// No games assigned to any round.
-			// Round.Workable clause includes "|| Games.Length is 0"
+			// Round.Workable clause includes the check for "Games.Length is 0"
 			Assert.True(r1.Workable);
 			Assert.True(r2.Workable);
 			Assert.True(r3.Workable);
@@ -32,9 +32,7 @@ public sealed class RoundWorkableTests : TestBase
 	private static CacheScope SeedRoundsCache(Tournament? tournament = null,
 											  params Round[] rounds)
 	{
-		var cacheType = typeof (Data).GetNestedType("Cache", NonPublic).OrThrow("Cache type not found");
-		var field = cacheType.GetField("_data", NonPublic | Static).OrThrow("Cache._data field not found");
-		var original = field.GetValue(null).OrThrow();
+		var original = DataField.GetValue(null).OrThrow();
 		var typeMapType = original.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
 		var typeMap = CreateInstance(typeMapType).OrThrow();
@@ -62,8 +60,8 @@ public sealed class RoundWorkableTests : TestBase
 		else
 			AddEmpty(typeMap, typeof (Round));
 		AddEmpties(typeMap);
-		field.SetValue(null, typeMap);
-		return new (original, field);
+		DataField.SetValue(null, typeMap);
+		return new (original, DataField);
 	}
 
 	[Fact]

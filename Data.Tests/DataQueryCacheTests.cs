@@ -34,7 +34,7 @@ public sealed class DataQueryCacheTests : TestBase
 		Assert.NotNull(found);
 		Assert.Equal(1, found.Id);
 
-		// NameExists returns true when some other Player has same name
+		// NameExists returns true when some other Player has the same name
 		var updating = new Player { Id = 99, FirstName = "Bob", LastName = "B" };
 		Assert.True(Data.NameExists(updating));
 
