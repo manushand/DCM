@@ -48,19 +48,19 @@ public sealed class GamePreGameScoreTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddMany(map, typeof (Tournament), t);
-							AddMany(map, typeof (Round), r1, r2);
-							AddMany(map, typeof (Game), g1, gNow);
-							AddMany(map, typeof (GamePlayer), gp1, gpNow);
-							AddMany(map, typeof (Player), p);
-							AddEmpty(map, typeof (Group));
-							AddEmpty(map, typeof (GroupPlayer));
-							AddEmpty(map, typeof (RoundPlayer));
-							AddEmpty(map, typeof (TournamentPlayer));
-							AddEmpty(map, typeof (Team));
-							AddEmpty(map, typeof (TeamPlayer));
-							AddEmpty(map, typeof (PlayerConflict));
-							AddEmpty(map, typeof (ScoringSystem));
+							Add(map, t);
+							Add(map,  r1, r2);
+							Add(map, g1, gNow);
+							Add(map, gp1, gpNow);
+							Add(map, p);
+							Add<Group>(map);
+							Add<GroupPlayer>(map);
+							Add<RoundPlayer>(map);
+							Add<TournamentPlayer>(map);
+							Add<Team>(map);
+							Add<TeamPlayer>(map);
+							Add<PlayerConflict>(map);
+							Add<ScoringSystem>(map);
 						}))
 		{
 			var pre = gNow.PreGameScore(gpNow);
@@ -113,19 +113,19 @@ public sealed class GamePreGameScoreTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddMany(map, typeof (Group), group);
-							AddMany(map, typeof (Tournament), t);
-							AddMany(map, typeof (Round), hostRound, r1, r2);
-							AddMany(map, typeof (ScoringSystem), scoring);
-							AddMany(map, typeof (Game), gA, gB, gNow);
-							AddMany(map, typeof (GamePlayer), gpA, gpB, gpNow);
-							AddMany(map, typeof (Player), p);
-							AddEmpty(map, typeof (GroupPlayer));
-							AddEmpty(map, typeof (RoundPlayer));
-							AddEmpty(map, typeof (TournamentPlayer));
-							AddEmpty(map, typeof (Team));
-							AddEmpty(map, typeof (TeamPlayer));
-							AddEmpty(map, typeof (PlayerConflict));
+							Add(map, group);
+							Add(map, t);
+							Add(map, hostRound, r1, r2);
+							Add(map, scoring);
+							Add(map, gA, gB, gNow);
+							Add(map, gpA, gpB, gpNow);
+							Add(map,  p);
+							Add<GroupPlayer>(map);
+							Add<RoundPlayer>(map);
+							Add<TournamentPlayer>(map);
+							Add<Team>(map);
+							Add<TeamPlayer>(map);
+							Add<PlayerConflict>(map);
 						}))
 		{
 			var pre = gNow.PreGameScore(gpNow);

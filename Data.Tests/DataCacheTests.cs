@@ -17,7 +17,7 @@ public sealed class DataCacheTests : TestBase
 		var typeMap = CreateInstance(typeMapType).OrThrow();
 
 		// install empty maps for Player and others we'll use
-		AddEmpty(typeMap, typeof (Player));
+		Add<Player>(typeMap);
 
 		// Point the cache to our empty map instance
 		DataField.SetValue(null, typeMap);

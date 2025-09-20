@@ -54,6 +54,7 @@ public abstract class TestBase
 				 .OrThrow()
 				 .SetValue(target, value);
 
+	//	TODO: These next three methods could be extensions on Data.CacheType
 	private static string GetPrimaryKey(object record)
 		=> (string)record.GetType()
 						 .GetProperty("PrimaryKey", Instance | Public)
@@ -61,39 +62,20 @@ public abstract class TestBase
 						 .GetValue(record)
 						 .OrThrow();
 
-	protected static void AddOne(object typeMap,
-								 Type type,
-								 object record)
+	protected static void Add<T>(object typeMap,
+								 params T[] records)
+		where T : class, IRecord
 	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		sortedDictType.GetMethod("Add")?.Invoke(sd, [GetPrimaryKey(record), record]);
-		typeMapType.GetMethod("Add")?.Invoke(typeMap, [type, sd]);
-	}
-
-	protected static void AddMany(object typeMap,
-								  Type type,
-								  params object[] records)
-	{
+		var type = typeof (T);
 		var typeMapType = typeMap.GetType();
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
 		var sd = CreateInstance(sortedDictType).OrThrow();
 		var sdAdd = sortedDictType.GetMethod("Add");
+		if (records.Length is 0)
+			records = [(T)CreateInstance(type).OrThrow()];
 		foreach (var r in records)
-			sdAdd?.Invoke(sd, [GetPrimaryKey(r), r]);
+			sdAdd?.Invoke(sd, [GetPrimaryKey(r.OrThrow()), r]);
 		typeMapType.GetMethod("Add")?.Invoke(typeMap, [type, sd]);
-	}
-
-	protected static void AddEmpty(object typeMap,
-								   Type type)
-	{
-		var typeMapType = typeMap.GetType();
-		var sortedDictType = typeMapType.GetGenericArguments()[1];
-		var sd = CreateInstance(sortedDictType).OrThrow();
-		typeMapType.GetMethod("Add")
-				   .OrThrow()
-				   .Invoke(typeMap, [type, sd]);
 	}
 
 	protected static void AddEmpties(object typeMap)
@@ -104,19 +86,21 @@ public abstract class TestBase
 		var sortedDictType = typeMapType.GetGenericArguments()[1];
 		var mapAdd = typeMapType.GetMethod("Add")
 								.OrThrow();
-		AddAnEmpty(typeof (Round));
-		AddAnEmpty(typeof (Tournament));
-		AddAnEmpty(typeof (ScoringSystem));
-		AddAnEmpty(typeof (Game));
-		AddAnEmpty(typeof (RoundPlayer));
-		AddAnEmpty(typeof (TournamentPlayer));
-		AddAnEmpty(typeof (Group));
-		AddAnEmpty(typeof (GroupPlayer));
+		AddAnEmpty<Round>();
+		AddAnEmpty<Tournament>();
+		AddAnEmpty<Tournament>();
+		AddAnEmpty<Game>();
+		AddAnEmpty<RoundPlayer>();
+		AddAnEmpty<TournamentPlayer>();
+		AddAnEmpty<Group>();
+		AddAnEmpty<GroupPlayer>();
 		// Do not add empty maps for Team, TeamPlayer, Player here because tests already add them
-		AddAnEmpty(typeof (PlayerConflict));
+		AddAnEmpty<PlayerConflict>();
 
-		void AddAnEmpty(Type t)
+		void AddAnEmpty<T>()
+				where T : class, IRecord
 		{
+			var t = typeof (T);
 			if (!(bool)contains.Invoke(typeMap, [t])
 							   .OrThrow())
 				mapAdd.Invoke(typeMap, [t, CreateInstance(sortedDictType)]);

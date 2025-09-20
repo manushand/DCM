@@ -11,8 +11,7 @@ public sealed class DataQueryCacheTests : TestBase
 	public void ReadAll_And_ReadMany_Work_From_Cache()
 	{
 		// Seed Cache with three Players
-		using var scope = SeedCache(static map => AddMany(map,
-														  typeof (Player),
+		using var scope = SeedCache(static map => Add(map,
 														  new Player { Id = 1, FirstName = "Ann", LastName = "A" },
 														  new Player { Id = 2, FirstName = "Bob", LastName = "B" },
 														  new Player { Id = 3, FirstName = "Cat", LastName = "C" }));
@@ -28,7 +27,7 @@ public sealed class DataQueryCacheTests : TestBase
 	{
 		var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "A" }; // Name = "Ann A"
 		var p2 = new Player { Id = 2, FirstName = "Bob", LastName = "B" }; // Name = "Bob B"
-		using var scope = SeedCache(map => AddMany(map, typeof (Player), p1, p2));
+		using var scope = SeedCache(map => Add(map, p1, p2));
 
 		var found = Data.ReadByName<Player>("ann a");
 		Assert.NotNull(found);

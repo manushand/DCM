@@ -77,19 +77,19 @@ public sealed class GamePlayerConflictTests : TestBase
 		// Seed cache to include the necessary maps
 		using (SeedCache(map =>
 						{
-							AddMany(map, typeof (Tournament), t);
-							AddMany(map, typeof (Round), r1, r2);
-							AddMany(map, typeof (Game), gPrev, gNow);
-							AddMany(map, typeof (GamePlayer), prevGa, prevGb, prevGc, nowGa, nowGb, nowGc, nowGx4, nowGx5, nowGx6, nowGx7);
-							AddMany(map, typeof (Group), g);
-							AddMany(map, typeof (GroupPlayer), gpA, gpB);
-							AddMany(map, typeof (PlayerConflict), pcAb);
-							AddMany(map, typeof (Player), a, b, c, nowGx4.Player, nowGx5.Player, nowGx6.Player, nowGx7.Player);
-							AddMany(map, typeof (Team), team);
-							AddMany(map, typeof (TeamPlayer), tpA, tpC);
+							Add(map, t);
+							Add(map, r1, r2);
+							Add(map, gPrev, gNow);
+							Add(map, prevGa, prevGb, prevGc, nowGa, nowGb, nowGc, nowGx4, nowGx5, nowGx6, nowGx7);
+							Add(map, g);
+							Add(map, gpA, gpB);
+							Add(map, pcAb);
+							Add(map, a, b, c, nowGx4.Player, nowGx5.Player, nowGx6.Player, nowGx7.Player);
+							Add(map, team);
+							Add(map, tpA, tpC);
 							// Empty maps to avoid DB-backed loads
-							AddEmpty(map, typeof (RoundPlayer));
-							AddEmpty(map, typeof (TournamentPlayer));
+							Add<RoundPlayer>(map);
+							Add<TournamentPlayer>(map);
 						}))
 		{
 			// Trigger calculation with details
@@ -132,20 +132,20 @@ public sealed class GamePlayerConflictTests : TestBase
 		var gp2 = new GamePlayer { Game = g, Player = p2, Power = England, Result = Unknown };
 		using (SeedCache(map =>
 						{
-							AddMany(map, typeof (Tournament), t);
-							AddMany(map, typeof (Round), r);
-							AddMany(map, typeof (Game), g);
-							AddMany(map, typeof (GamePlayer), gp1, gp2);
-							AddMany(map, typeof (Player), p1, p2);
+							Add(map, t);
+							Add(map, r);
+							Add(map, g);
+							Add(map, gp1, gp2);
+							Add(map, p1, p2);
 							// Empty maps to avoid DB-backed loads
-							AddEmpty(map, typeof (RoundPlayer));
-							AddEmpty(map, typeof (TournamentPlayer));
-							AddEmpty(map, typeof (Group));
-							AddEmpty(map, typeof (GroupPlayer));
-							AddEmpty(map, typeof (Team));
-							AddEmpty(map, typeof (TeamPlayer));
-							AddEmpty(map, typeof (PlayerConflict));
-							AddEmpty(map, typeof (ScoringSystem));
+							Add<RoundPlayer>(map);
+							Add<TournamentPlayer>(map);
+							Add<Group>(map);
+							Add<GroupPlayer>(map);
+							Add<Team>(map);
+							Add<TeamPlayer>(map);
+							Add<PlayerConflict>(map);
+							Add<ScoringSystem>(map);
 						}))
 		{
 			var total = gp1.CalculateConflict(true);

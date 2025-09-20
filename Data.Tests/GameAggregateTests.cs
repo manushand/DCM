@@ -16,19 +16,19 @@ public sealed class GameAggregateTests : TestBase
 		// Seed empty GamePlayer cache for this game to ensure enumeration is empty
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Tournament), t);
-							AddOne(map, typeof (Round), r);
-							AddOne(map, typeof (Game), g);
-							AddEmpty(map, typeof (GamePlayer));
-							AddEmpty(map, typeof (ScoringSystem));
-							AddEmpty(map, typeof (RoundPlayer));
-							AddEmpty(map, typeof (TournamentPlayer));
-							AddEmpty(map, typeof (Group));
-							AddEmpty(map, typeof (GroupPlayer));
-							AddEmpty(map, typeof (Team));
-							AddEmpty(map, typeof (TeamPlayer));
-							AddEmpty(map, typeof (PlayerConflict));
-							AddEmpty(map, typeof (Player));
+							Add(map, t);
+							Add(map, r);
+							Add(map, g);
+							Add<GamePlayer>(map);
+							Add<ScoringSystem>(map);
+							Add<RoundPlayer>(map);
+							Add<TournamentPlayer>(map);
+							Add<Group>(map);
+							Add<GroupPlayer>(map);
+							Add<Team>(map);
+							Add<TeamPlayer>(map);
+							Add<PlayerConflict>(map);
+							Add<Player>(map);
 						}))
 			Assert.Equal(7, g.AveragePreGameScore);
 	}
@@ -51,19 +51,19 @@ public sealed class GameAggregateTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Tournament), t);
-							AddOne(map, typeof (Round), r);
-							AddOne(map, typeof (Game), g);
-							AddMany(map, typeof (GamePlayer), gp1, gp2);
-							AddMany(map, typeof (Player), p1, p2);
-							AddEmpty(map, typeof (ScoringSystem));
-							AddEmpty(map, typeof (RoundPlayer));
-							AddEmpty(map, typeof (TournamentPlayer));
-							AddEmpty(map, typeof (Group));
-							AddEmpty(map, typeof (GroupPlayer));
-							AddEmpty(map, typeof (Team));
-							AddEmpty(map, typeof (TeamPlayer));
-							AddEmpty(map, typeof (PlayerConflict));
+							Add(map, t);
+							Add(map, r);
+							Add(map, g);
+							Add(map, gp1, gp2);
+							Add(map, p1, p2);
+							Add<ScoringSystem>(map);
+							Add<RoundPlayer>(map);
+							Add<TournamentPlayer>(map);
+							Add<Group>(map);
+							Add<GroupPlayer>(map);
+							Add<Team>(map);
+							Add<TeamPlayer>(map);
+							Add<PlayerConflict>(map);
 						}))
 			Assert.Equal(7, g.Conflict);
 	}
@@ -83,19 +83,19 @@ public sealed class GameAggregateTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Tournament), t);
-							AddOne(map, typeof (Round), r);
-							AddOne(map, typeof (Game), g);
-							AddMany(map, typeof (GamePlayer), gp1, gp2);
-							AddMany(map, typeof (Player), p1, p2);
-							AddEmpty(map, typeof (ScoringSystem));
-							AddEmpty(map, typeof (RoundPlayer));
-							AddEmpty(map, typeof (TournamentPlayer));
-							AddEmpty(map, typeof (Group));
-							AddEmpty(map, typeof (GroupPlayer));
-							AddEmpty(map, typeof (Team));
-							AddEmpty(map, typeof (TeamPlayer));
-							AddEmpty(map, typeof (PlayerConflict));
+							Add(map, t);
+							Add(map, r);
+							Add(map, g);
+							Add(map, gp1, gp2);
+							Add(map, p1, p2);
+							Add<ScoringSystem>(map);
+							Add<RoundPlayer>(map);
+							Add<TournamentPlayer>(map);
+							Add<Group>(map);
+							Add<GroupPlayer>(map);
+							Add<Team>(map);
+							Add<TeamPlayer>(map);
+							Add<PlayerConflict>(map);
 						}))
 			Assert.Equal([111, 222], g.PlayerIds);
 	}

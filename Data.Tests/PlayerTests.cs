@@ -66,10 +66,10 @@ public sealed class PlayerTests : TestBase
 				   gp2 = new () { Game = gLaterEarlierRound, Player = p, Power = England, Result = Unknown };
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Player), p);
-							AddMany(map, typeof (GamePlayer), gp1, gp2);
-							AddMany(map, typeof (Game), gEarlyLaterRound, gLaterEarlierRound);
-							AddMany(map, typeof (Round), r1, r2);
+							Add(map, p);
+							Add(map, gp1, gp2);
+							Add(map, gEarlyLaterRound, gLaterEarlierRound);
+							Add(map, r1, r2);
 							AddEmpties(map);
 						}))
 			Assert.Equal(ExpectedGameIds, p.Games.Select(static g => g.Id).ToArray());
@@ -84,8 +84,8 @@ public sealed class PlayerTests : TestBase
 		var pc = new PlayerConflict(30, 31);
 		using (SeedCache(map =>
 						{
-							AddMany(map, typeof (Player), p1, p2);
-							AddOne(map, typeof (PlayerConflict), pc);
+							Add(map, p1, p2);
+							Add(map, pc);
 							AddEmpties(map);
 						}))
 		{
@@ -105,9 +105,9 @@ public sealed class PlayerTests : TestBase
 					gp2 = new () { Player = p, Group = g2 };
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Player), p);
-							AddMany(map, typeof (GroupPlayer), gp1, gp2);
-							AddMany(map, typeof (Group), g1, g2);
+							Add(map, p);
+							Add(map, gp1, gp2);
+							Add(map, g1, g2);
 							AddEmpties(map);
 						}))
 		{
@@ -120,9 +120,9 @@ public sealed class PlayerTests : TestBase
 		// No groups case
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Player), p);
-							AddEmpty(map, typeof (GroupPlayer));
-							AddEmpty(map, typeof (Group));
+							Add(map, p);
+							Add<GroupPlayer>(map);
+							Add<Group>(map);
 							AddEmpties(map);
 						}))
 			Assert.Equal("Ann Lee is not a member of any groups.", p.GroupMemberships);
@@ -140,10 +140,10 @@ public sealed class PlayerTests : TestBase
 				   tp2 = NewTeamPlayerViaLoad(team2.Id, p.Id);
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Player), p);
-							AddMany(map, typeof (TeamPlayer), tp1, tp2);
-							AddMany(map, typeof (Team), team1, team2);
-							AddMany(map, typeof (Tournament), t1, t2);
+							Add(map, p);
+							Add(map, tp1, tp2);
+							Add(map, team1, team2);
+							Add(map, t1, t2);
 							AddEmpties(map);
 						}))
 		{

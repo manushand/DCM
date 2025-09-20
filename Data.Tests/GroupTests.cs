@@ -43,13 +43,13 @@ public sealed class GroupTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Group), group);
-							AddMany(map, typeof (GroupPlayer), gp1, gp2);
-							AddMany(map, typeof (Player), p1, p2);
+							Add(map, group);
+							Add(map, gp1, gp2);
+							Add(map, p1, p2);
 							// Empty maps to prevent accidental reads
-							AddEmpty(map, typeof (Round));
-							AddEmpty(map, typeof (Tournament));
-							AddEmpty(map, typeof (Game));
+							Add<Round>(map);
+							Add<Tournament>(map);
+							Add<Game>(map);
 						}))
 			Assert.Equal(Expected, group.Players.Select(static p => p.Id).OrderBy(static x => x).ToArray());
 	}
@@ -71,13 +71,13 @@ public sealed class GroupTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Group), group);
-							AddOne(map, typeof (Tournament), t);
-							AddOne(map, typeof (Round), r);
-							AddEmpty(map, typeof (Game));
-							AddEmpty(map, typeof (ScoringSystem));
-							AddEmpty(map, typeof (Player));
-							AddEmpty(map, typeof (GroupPlayer));
+							Add(map, group);
+							Add(map, t);
+							Add(map, r);
+							Add<Game>(map);
+							Add<ScoringSystem>(map);
+							Add<Player>(map);
+							Add<GroupPlayer>(map);
 						}))
 		{
 			// HostRound should resolve to r via Round.Tournament.GroupId == group.Id
@@ -102,13 +102,13 @@ public sealed class GroupTests : TestBase
 
 		using (SeedCache(map =>
 						 {
-							 AddOne(map, typeof (Group), group);
-							 AddOne(map, typeof (Tournament), t);
-							 AddOne(map, typeof (Round), r);
-							 AddMany(map, typeof (Game), g1, g2);
-							 AddEmpty(map, typeof (GroupPlayer));
-							 AddEmpty(map, typeof (Player));
-							 AddEmpty(map, typeof (ScoringSystem));
+							 Add(map, group);
+							 Add(map, t);
+							 Add(map, r);
+							 Add(map, g1, g2);
+							 Add<GroupPlayer>(map);
+							 Add<Player>(map);
+							 Add<ScoringSystem>(map);
 						 }))
 		{
 			var games = group.Games;
@@ -133,11 +133,11 @@ public sealed class GroupTests : TestBase
 
 		using (SeedCache(map =>
 						 {
-							 AddOne(map, typeof (Group), group);
-							 AddOne(map, typeof (Tournament), t);
-							 AddOne(map, typeof (Round), r);
-							 AddOne(map, typeof (Game), g);
-							 AddEmpty(map, typeof (ScoringSystem));
+							 Add(map, group);
+							 Add(map, t);
+							 Add(map, r);
+							 Add(map, g);
+							 Add<ScoringSystem>(map);
 						 }))
 		{
 			Assert.True(group.IsRatable(g, Group.GamesToRate.GroupGamesOnly));
@@ -166,13 +166,13 @@ public sealed class GroupTests : TestBase
 		SetField(group, "<HostRound>k__BackingField", r);
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Group), group);
-							AddOne(map, typeof (Tournament), t);
-							AddOne(map, typeof (Round), r);
-							AddOne(map, typeof (ScoringSystem), sc);
-							AddEmpty(map, typeof (Game));
-							AddEmpty(map, typeof (GamePlayer));
-							AddOne(map, typeof (Player), player);
+							Add(map, group);
+							Add(map, t);
+							Add(map, r);
+							Add(map, sc);
+							Add<Game>(map);
+							Add<GamePlayer>(map);
+							Add(map, player);
 						}))
 			Assert.Null(group.RatePlayer(player));
 	}
@@ -218,13 +218,13 @@ public sealed class GroupTests : TestBase
 		SetField(group, "<HostRound>k__BackingField", r);
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Group), group);
-							AddOne(map, typeof (Tournament), t);
-							AddOne(map, typeof (Round), r);
-							AddOne(map, typeof (ScoringSystem), sc);
-							AddMany(map, typeof (Game), g1, g2);
-							AddMany(map, typeof (GamePlayer), gamePlayers.ToArray<object>());
-							AddOne(map, typeof (Player), player);
+							Add(map, group);
+							Add(map, t);
+							Add(map, r);
+							Add(map, sc);
+							Add(map, g1, g2);
+							Add(map, [..gamePlayers]);
+							Add(map, player);
 						}))
 		{
 			var rating = group.RatePlayer(player);

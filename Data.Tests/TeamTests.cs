@@ -35,9 +35,9 @@ public sealed class TeamTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Team), team);
-							AddMany(map, typeof (TeamPlayer), tp1, tpOtherTeam);
-							AddOne(map, typeof (Player), p1);
+							Add(map, team);
+							Add(map, tp1, tpOtherTeam);
+							Add(map, p1);
 							AddEmpties(map);
 						}))
 		{
@@ -60,9 +60,9 @@ public sealed class TeamTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddOne(map, typeof (Team), team);
-							AddMany(map, typeof (TeamPlayer), tp1, tp2);
-							AddMany(map, typeof (Player), p1, p2);
+							Add(map, team);
+							Add(map, tp1, tp2);
+							Add(map, p1, p2);
 							AddEmpties(map);
 						}))
 		{

@@ -47,7 +47,7 @@ public sealed class RoundWorkableTests : TestBase
 			mapAdd.Invoke(typeMap, [typeof (Tournament), sdTournament]);
 		}
 		else
-			AddEmpty(typeMap, typeof (Tournament));
+			Add<Tournament>(typeMap);
 		// Rounds
 		if (rounds is { Length: > 0 })
 		{
@@ -58,7 +58,7 @@ public sealed class RoundWorkableTests : TestBase
 			mapAdd.Invoke(typeMap, [typeof (Round), sdRound]);
 		}
 		else
-			AddEmpty(typeMap, typeof (Round));
+			Add<Round>(typeMap);
 		AddEmpties(typeMap);
 		DataField.SetValue(null, typeMap);
 		return new (original, DataField);

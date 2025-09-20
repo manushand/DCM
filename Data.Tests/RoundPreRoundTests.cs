@@ -39,20 +39,20 @@ public sealed class RoundPreRoundTests : TestBase
 		// Also test PreGameAverage uses the same aggregates
 		using (SeedCache(map =>
 						{
-							AddMany(map, typeof (Tournament), t);
-							AddMany(map, typeof (Round), r1, r2);
-							AddMany(map, typeof (Game), g1);
-							AddMany(map, typeof (GamePlayer), gp1);
-							AddMany(map, typeof (Player), p);
+							Add(map, t);
+							Add(map, r1, r2);
+							Add(map, g1);
+							Add(map, gp1);
+							Add(map, p);
 							// Avoid accidental DB loads
-							AddEmpty(map, typeof (RoundPlayer));
-							AddEmpty(map, typeof (TournamentPlayer));
-							AddEmpty(map, typeof (Group));
-							AddEmpty(map, typeof (GroupPlayer));
-							AddEmpty(map, typeof (Team));
-							AddEmpty(map, typeof (TeamPlayer));
-							AddEmpty(map, typeof (PlayerConflict));
-							AddEmpty(map, typeof (ScoringSystem));
+							Add<RoundPlayer>(map);
+							Add<TournamentPlayer>(map);
+							Add<Group>(map);
+							Add<GroupPlayer>(map);
+							Add<Team>(map);
+							Add<TeamPlayer>(map);
+							Add<PlayerConflict>(map);
+							Add<ScoringSystem>(map);
 						}))
 		{
 			var roundAvg = r2.PreGameAverage(new ()
@@ -122,12 +122,12 @@ public sealed class RoundPreRoundTests : TestBase
 
 		using (SeedCache(map =>
 						{
-							AddMany(map, typeof (Tournament), t);
-							AddMany(map, typeof (Round), r1, r2);
-							AddMany(map, typeof (Game), gA, gB);
-							AddMany(map, typeof (GamePlayer), gpA, gpB);
-							AddMany(map, typeof (Player), p);
-							AddMany(map, typeof (Group), group);
+							Add(map, t);
+							Add(map, r1, r2);
+							Add(map, gA, gB);
+							Add(map, gpA, gpB);
+							Add(map, p);
+							Add(map,  group);
 						}))
 		{
 			var targetGame = new Game { Round = r2, Date = new (2024, 2, 1) };

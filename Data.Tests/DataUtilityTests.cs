@@ -65,7 +65,7 @@ public sealed class DataUtilityTests : TestBase
 	public void ReadByName_And_NameExists_Use_Cache_CaseInsensitive()
 	{
 		var p1 = new Player { Id = 1, FirstName = "Ann", LastName = "Lee" };
-		using var cache = SeedCache(map => AddOne(map, typeof (Player), p1));
+		using var cache = SeedCache(map => Add(map, p1));
 		var read = Data.ReadByName<Player>("ann lee");
 		Assert.NotNull(read);
 		Assert.Equal(1, read.Id);
