@@ -155,14 +155,11 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 
 	#endregion
 
-	public override string FieldValues => Format($$"""
-												   [{{nameof (Name)}}] = {0},
-												   [{{nameof (Description)}}] = {1},
-												   [{{nameof (Conflict)}}] = {2}
-												   """,
-												 Name.ForSql(),
-												 Description.ForSql(),
-												 Conflict);
+	public override string FieldValues => $"""
+										   [{nameof (Name)}] = {Name.ForSql()},
+										   [{nameof (Description)}] = {Description.ForSql()},
+										   [{nameof (Conflict)}] = {Conflict}
+										   """;
 
 	#endregion
 

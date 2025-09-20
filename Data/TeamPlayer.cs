@@ -20,14 +20,13 @@ public sealed class TeamPlayer : LinkRecord
 
 	#region IRecord implementation
 
-	protected override string LinkKey => Format($"[{nameof (TeamId)}] = {{0}}", TeamId);
+	private protected override string LinkKey => $"[{nameof (TeamId)}] = {TeamId}";
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<TeamPlayer>();
 		TeamId = record.Integer(nameof (TeamId));
 		PlayerId = record.Integer(nameof (PlayerId));
-		return this;
 	}
 
 	#endregion

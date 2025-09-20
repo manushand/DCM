@@ -335,34 +335,21 @@ public sealed partial class ScoringSystem : IdentityRecord<ScoringSystem>
 
 	#endregion
 
-	public override string FieldValues => Format($$"""
-												   [{{nameof (Name)}}] = {0},
-												   [{{nameof (DrawPermissions)}}] = {1},
-												   [{{nameof (UsesGameResult)}}] = {2},
-												   [{{nameof (UsesCenterCount)}}] = {3},
-												   [{{nameof (UsesYearsPlayed)}}] = {4},
-												   [{{nameof (FinalGameYear)}}] = {5},
-												   [{{nameof (PointsPerGame)}}] = {6},
-												   [{{nameof (ProvisionalScoreFormula)}}] = {7},
-												   [{{nameof (FinalScoreFormula)}}] = {8},
-												   [{{nameof (TestGameData)}}] = {9},
-												   [{{nameof (SignificantDigits)}}] = {10},
-												   [{{nameof (OtherScoreAlias)}}] = {11},
-												   [{{nameof (PlayerAnteFormula)}}] = {12}
-												   """,
-												 Name.ForSql(),
-												 DrawPermissions.ForSql(),
-												 UsesGameResult.ForSql(),
-												 UsesCenterCount.ForSql(),
-												 UsesYearsPlayed.ForSql(),
-												 FinalGameYear.ForSql(),
-												 PointsPerGame.ForSql(),
-												 ProvisionalScoreFormula.ForSql(),
-												 _finalScoreFormula.ForSql(),
-												 TestGameData.ForSql(),
-												 SignificantDigits,
-												 OtherScoreAlias.ForSql(),
-												 PlayerAnteFormula.ForSql());
+	public override string FieldValues => $"""
+										   [{nameof (Name)}] = {Name.ForSql()},
+										   [{nameof (DrawPermissions)}] = {DrawPermissions.ForSql()},
+										   [{nameof (UsesGameResult)}] = {UsesGameResult.ForSql()},
+										   [{nameof (UsesCenterCount)}] = {UsesCenterCount.ForSql()},
+										   [{nameof (UsesYearsPlayed)}] = {UsesYearsPlayed.ForSql()},
+										   [{nameof (FinalGameYear)}] = {FinalGameYear.ForSql()},
+										   [{nameof (PointsPerGame)}] = {PointsPerGame.ForSql()},
+										   [{nameof (ProvisionalScoreFormula)}] = {ProvisionalScoreFormula.ForSql()},
+										   [{nameof (FinalScoreFormula)}] = {_finalScoreFormula.ForSql()},
+										   [{nameof (TestGameData)}] = {TestGameData.ForSql()},
+										   [{nameof (SignificantDigits)}] = {SignificantDigits},
+										   [{nameof (OtherScoreAlias)}] = {OtherScoreAlias.ForSql()},
+										   [{nameof (PlayerAnteFormula)}] = {PlayerAnteFormula.ForSql()}
+										   """;
 
 	#endregion
 

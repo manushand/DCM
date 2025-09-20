@@ -495,7 +495,11 @@ public static partial class Data
 		{
 			using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
 			while (reader.Read())
-				records.Add((T)new T().Load(reader));
+			{
+				var t = new T();
+				t.Load(reader);
+				records.Add(t);
+			}
 		}
 		CloseConnection();
 		return records;

@@ -44,8 +44,7 @@ public sealed class RoundSeedTests : TestBase
 							 .OrThrow();
 		var original = field.GetValue(null)
 							.OrThrow();
-		var typeMapType = original.GetType();
-		var typeMap = CreateInstance(typeMapType).OrThrow();
+		var typeMap = CreateInstance(original.GetType()).OrThrow();
 		AddEmpties(typeMap);
 		field.SetValue(null, typeMap);
 		return new (original, field);

@@ -53,8 +53,8 @@ public sealed class TeamTests : TestBase
 	public void Players_Return_From_TeamPlayers()
 	{
 		var team = new Team { Id = 2, Name = "T2" };
-		var p1 = new Player { Id = 21, Name = "Bob" };
-		var p2 = new Player { Id = 22, Name = "Cid" };
+		Player p1 = new () { Id = 21, Name = "Bob" },
+			   p2 = new () { Id = 22, Name = "Cid" };
 		var tp1 = NewTeamPlayerViaLoad(team.Id, p1.Id);
 		var tp2 = NewTeamPlayerViaLoad(team.Id, p2.Id);
 
@@ -77,8 +77,7 @@ public sealed class TeamTests : TestBase
 	[Fact]
 	public void FieldValues_Formats_Name_And_TournamentId()
 	{
-		var t = new Team { Name = "Red's Team", TournamentId = 42 };
-		var sql = t.FieldValues;
+		var sql = new Team { Name = "Red's Team", TournamentId = 42 }.FieldValues;
 		Assert.Contains("[Name] = 'Red''s Team'", sql);
 		Assert.Contains("[TournamentId] = 42", sql);
 	}

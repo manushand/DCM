@@ -18,15 +18,13 @@ public sealed class GroupPlayer : LinkRecord
 
 	#region IRecord implementation
 
-	protected override string LinkKey => Format($"[{nameof (GroupId)}] = {{0}}",
-												GroupId);
+	private protected override string LinkKey => $"[{nameof (GroupId)}] = {GroupId}";
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<GroupPlayer>();
 		GroupId = record.Integer(nameof (GroupId));
 		PlayerId = record.Integer(nameof (PlayerId));
-		return this;
 	}
 
 	#endregion

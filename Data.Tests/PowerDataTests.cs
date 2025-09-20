@@ -3,6 +3,8 @@ using System.Linq;
 
 namespace Data.Tests;
 
+using static Scoring;
+
 public sealed class PowerDataTests
 {
 	private readonly record struct PlayerData(Powers Power,
@@ -94,16 +96,15 @@ public sealed class PowerDataTests
 	public void Concession_Win_Flags_Work()
 	{
 		// Winner has < 18 centers but is the sole winner => concession
-		var scoring = BuildScoring([
-									   new (England, Win, 17, 10, 0),
-									   new (Austria, Loss, 0, 5, 0),
-									   new (France, Loss, 0, 4, 0),
-									   new (Germany, Loss, 0, 3, 0),
-									   new (Italy, Loss, 0, 2, 0),
-									   new (Russia, Loss, 0, 3, 0),
-									   new (Turkey, Loss, 0, 2, 0)
-								   ]);
-		var pd = scoring.England;
+		var pd = BuildScoring([
+								  new (England, Win, 17, 10, 0),
+								  new (Austria, Loss, 0, 5, 0),
+								  new (France, Loss, 0, 4, 0),
+								  new (Germany, Loss, 0, 3, 0),
+								  new (Italy, Loss, 0, 2, 0),
+								  new (Russia, Loss, 0, 3, 0),
+								  new (Turkey, Loss, 0, 2, 0)
+							  ]).England;
 		Assert.True(pd.Won);
 		Assert.True(pd.WonAlone);
 		Assert.False(pd.WonSolo);
@@ -152,16 +153,15 @@ public sealed class PowerDataTests
 	[Fact]
 	public void Ranks_And_Sharers_Work_With_Ties()
 	{
-		var scoring = BuildScoring([
-									   new (Austria, Loss, 6, 8, 0),
-									   new (England, Loss, 6, 8, 0),
-									   new (France, Loss, 3, 7, 0),
-									   new (Germany, Loss, 3, 6, 0),
-									   new (Italy, Win, 8, 10, 0),
-									   new (Russia, Loss, 0, 4, 0),
-									   new (Turkey, Loss, 0, 3, 0)
-								   ]);
-		var pdA = scoring.Austria;
+		var pdA = BuildScoring([
+								   new (Austria, Loss, 6, 8, 0),
+								   new (England, Loss, 6, 8, 0),
+								   new (France, Loss, 3, 7, 0),
+								   new (Germany, Loss, 3, 6, 0),
+								   new (Italy, Win, 8, 10, 0),
+								   new (Russia, Loss, 0, 4, 0),
+								   new (Turkey, Loss, 0, 3, 0)
+							   ]).Austria;
 		// Centers 8 (winner), 6, 6, 3, 3, 0, 0
 		Assert.Equal(2, pdA.BestCenterRank); // one power strictly higher (8), so the best rank is 2
 		Assert.Equal(3, pdA.WorstCenterRank); // include equal (other 6) gives rank 3
@@ -181,10 +181,10 @@ public sealed class PowerDataTests
 									   new (Russia, Loss, 0, 3, 0),   // eliminated year 3
 									   new (Turkey, Loss, 2, 8, 0)    // survivor
 								   ]);
-		var pdWinner = scoring.Austria;
-		var pdSurvivor = scoring.England; // survived
-		var pdElim5 = scoring.France;     // eliminated at 5
-		var pdElim7 = scoring.Germany;    // eliminated at 7
+		PowerData pdWinner = scoring.Austria,
+				  pdSurvivor = scoring.England, // survived
+				  pdElim5 = scoring.France,     // eliminated at 5
+				  pdElim7 = scoring.Germany;    // eliminated at 7
 
 		// Winner => all flavors 0
 		Assert.Equal(0, pdWinner.BestEliminationOrder);

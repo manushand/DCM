@@ -44,12 +44,10 @@ public sealed class Team : IdentityRecord<Team>
 
 	#endregion
 
-	public override string FieldValues => Format($$"""
-												   [{{nameof (Name)}}] = {0},
-												   [{{nameof (TournamentId)}}] = {1}
-												   """,
-												 Name.ForSql(),
-												 TournamentId);
+	public override string FieldValues => $"""
+										   [{nameof (Name)}] = {Name.ForSql()},
+										   [{nameof (TournamentId)}] = {TournamentId}
+										   """;
 
 	#endregion
 

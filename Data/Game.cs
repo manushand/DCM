@@ -144,20 +144,14 @@ public sealed class Game : IdentityRecord<Game>, IComparable<Game>
 
 	#endregion
 
-	public override string FieldValues => Format($$"""
-												   [{{nameof (Number)}}] = {0},
-												   [{{nameof (Status)}}] = {1},
-												   [{{nameof (RoundId)}}] = {2},
-												   [{{nameof (Name)}}] = {3},
-												   [{{nameof (ScoringSystemId)}}] = {4},
-												   [{{nameof (Date)}}] = {5}
-												   """,
-												 Number,
-												 Status.ForSql(),
-												 RoundId,
-												 Name.ForSql(),
-												 _scoringSystemId.ForSql(),
-												 _date.ForSql());
+	public override string FieldValues => $"""
+										   [{nameof (Number)}] = {Number},
+										   [{nameof (Status)}] = {Status.ForSql()},
+										   [{nameof (RoundId)}] = {RoundId},
+										   [{nameof (Name)}] = {Name.ForSql()},
+										   [{nameof (ScoringSystemId)}] = {_scoringSystemId.ForSql()},
+										   [{nameof (Date)}] = {_date.ForSql()}
+										   """;
 
 	#endregion
 

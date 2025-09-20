@@ -17,14 +17,13 @@ public sealed class RoundPlayer : LinkRecord
 
 	#region IRecord implementation
 
-	protected override string LinkKey => Format($"[{nameof (RoundId)}] = {{0}}", RoundId);
+	private protected override string LinkKey => $"[{nameof (RoundId)}] = {RoundId}";
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<RoundPlayer>();
 		RoundId = record.Integer(nameof (RoundId));
 		PlayerId = record.Integer(nameof (PlayerId));
-		return this;
 	}
 
 	#endregion

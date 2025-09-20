@@ -52,23 +52,19 @@ public sealed class TournamentPlayer : LinkRecord, IInfoRecord
 
 	#region IRecord implementation
 
-	protected override string LinkKey => Format($"[{nameof (TournamentId)}] = {{0}}", TournamentId);
+	private protected override string LinkKey => $"[{nameof (TournamentId)}] = {TournamentId}";
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<TournamentPlayer>();
 		TournamentId = record.Integer(nameof (TournamentId));
 		PlayerId = record.Integer(nameof (PlayerId));
 		RoundNumbers = record.Integer(nameof (RoundNumbers));
-		return this;
 	}
 
 	#endregion
 
-	public string FieldValues => Format($$"""
-										  [{{nameof (RoundNumbers)}}] = {0}
-										  """,
-										RoundNumbers);
+	public string FieldValues => $"[{nameof (RoundNumbers)}] = {RoundNumbers}";
 
 	#endregion
 

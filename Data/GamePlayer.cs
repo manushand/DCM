@@ -268,10 +268,9 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 
 	#region IRecord implementation
 
-	protected override string LinkKey => Format($"[{nameof (GameId)}] = {{0}}",
-												GameId);
+	private protected override string LinkKey => $"[{nameof (GameId)}] = {GameId}";
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<GamePlayer>();
 		GameId = record.Integer(nameof (GameId));
@@ -281,26 +280,19 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		Years = record.NullableInteger(nameof (Years));
 		Centers = record.NullableInteger(nameof (Centers));
 		Other = record.Double(nameof (Other));
-		return this;
 	}
 
 	#endregion
 
 	//	The PlayerId usually won't change, but in the case of the ReplaceButton it will, so it must be listed.
-	public string FieldValues => Format($$"""
-										  [{{nameof (PlayerId)}}] = {0},
-										  [{{nameof (Power)}}] = {1},
-										  [{{nameof (Result)}}] = {2},
-										  [{{nameof (Years)}}] = {3},
-										  [{{nameof (Centers)}}] = {4},
-										  [{{nameof (Other)}}] = {5}
-										  """,
-										PlayerId,
-										Power.ForSql(),
-										Result.ForSql(),
-										Years.ForSql(),
-										Centers.ForSql(),
-										Other);
+	public string FieldValues => $"""
+								  [{nameof (PlayerId)}] = {PlayerId},
+								  [{nameof (Power)}] = {Power.ForSql()},
+								  [{nameof (Result)}] = {Result.ForSql()},
+								  [{nameof (Years)}] = {Years.ForSql()},
+								  [{nameof (Centers)}] = {Centers.ForSql()},
+								  [{nameof (Other)}] = {Other}
+								  """;
 
 	#endregion
 

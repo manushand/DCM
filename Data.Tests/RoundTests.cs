@@ -66,8 +66,8 @@ public sealed class RoundTests
 	[Fact]
 	public void CompareTo_Compares_By_Number()
 	{
-		var r1 = new Round { Number = 1 };
-		var r2 = new Round { Number = 2 };
+		Round r1 = new () { Number = 1 },
+			  r2 = new () { Number = 2 };
 		Assert.True(r1.CompareTo(r2) < 0);
 		Assert.True(r2.CompareTo(r1) > 0);
 		Assert.Equal(0, r1.CompareTo(new () { Number = 1 }));
@@ -77,9 +77,9 @@ public sealed class RoundTests
 	public void Games_Filtering_And_Flags_Work()
 	{
 		var r = new Round();
-		var g1 = new Game { Status = Seeded };
-		var g2 = new Game { Status = Underway };
-		var g3 = new Game { Status = Finished };
+		Game g1 = new () { Status = Seeded },
+			 g2 = new () { Status = Underway },
+			 g3 = new () { Status = Finished };
 		SetGames(r, g1, g2, g3);
 
 		Assert.Single(r.SeededGames);
@@ -130,8 +130,8 @@ public sealed class RoundTests
 	public void RoundPlayers_Returns_Reflected_Field()
 	{
 		var r = new Round();
-		var rp1 = new RoundPlayer();
-		var rp2 = new RoundPlayer();
+		RoundPlayer rp1 = new (),
+					rp2 = new ();
 		var field = typeof (Round).GetField("_roundPlayers", Instance | NonPublic).OrThrow();
 		field.SetValue(r, new[] { rp1, rp2 });
 		Assert.Same(rp1, r.RoundPlayers[0]);
@@ -143,8 +143,8 @@ public sealed class RoundTests
 	{
 		var r = new Round();
 		// Two games in this round: one using id 5 (will be aligned to round), one using id 6 (should remain override)
-		var g1 = new Game { Round = r, ScoringSystem = new () { Id = 5 } };
-		var g2 = new Game { Round = r, ScoringSystem = new () { Id = 6 } };
+		Game g1 = new () { Round = r, ScoringSystem = new () { Id = 5 } },
+			 g2 = new () { Round = r, ScoringSystem = new () { Id = 6 } };
 		SetGames(r, g1, g2);
 
 		// Now set the round scoring system to 5; this should propagate to g1 (making it default), not affect g2

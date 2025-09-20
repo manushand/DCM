@@ -6,10 +6,10 @@ namespace Data.Tests;
 [PublicAPI]
 public sealed class PlayerTests : TestBase
 {
-	private static readonly int[] Expected = [800, 801];
-	private static readonly int[] ExpectedArray = [800];
-	private static readonly int[] ExpectedGameIds = [400, 401];
-	private static readonly int[] ExpectedGroupIds = [501, 502];
+	private static readonly int[] Expected = [800, 801],
+								  ExpectedArray = [800],
+								  ExpectedGameIds = [400, 401],
+								  ExpectedGroupIds = [501, 502];
 	private static readonly string[] ExpectedEmails = ["a@x.com", "b@y.com", "c@z.com"];
 
 	[Fact]
@@ -22,7 +22,7 @@ public sealed class PlayerTests : TestBase
 						 [nameof (Player.LastName)] = "O'Neil",
 						 [nameof (Player.EmailAddress)] = "ann@example.com"
 					 };
-		using var reader = new FakeDbDataReader("Player", values);
+		using var reader = new FakeDbDataReader(nameof (Player), values);
 		var p = new Player();
 
 		p.Load(reader);
@@ -58,12 +58,12 @@ public sealed class PlayerTests : TestBase
 	public void Games_Returns_Player_Games_Ordered_By_Date_Then_RoundNumber()
 	{
 		var p = new Player { Id = 20, FirstName = "P", LastName = "Q" };
-		var r1 = new Round { Id = 300, Number = 1 };
-		var r2 = new Round { Id = 301, Number = 2 };
-		var gEarlyLaterRound = new Game { Id = 400, Round = r2, Date = new (2024, 1, 1) };
-		var gLaterEarlierRound = new Game { Id = 401, Round = r1, Date = new (2024, 1, 2) };
-		var gp1 = new GamePlayer { Game = gEarlyLaterRound, Player = p, Power = Austria, Result = Unknown };
-		var gp2 = new GamePlayer { Game = gLaterEarlierRound, Player = p, Power = England, Result = Unknown };
+		Round r1 = new () { Id = 300, Number = 1 },
+			  r2 = new () { Id = 301, Number = 2 };
+		Game gEarlyLaterRound = new () { Id = 400, Round = r2, Date = new (2024, 1, 1) },
+			 gLaterEarlierRound = new () { Id = 401, Round = r1, Date = new (2024, 1, 2) };
+		GamePlayer gp1 = new () { Game = gEarlyLaterRound, Player = p, Power = Austria, Result = Unknown },
+				   gp2 = new () { Game = gLaterEarlierRound, Player = p, Power = England, Result = Unknown };
 		using (SeedCache(map =>
 						{
 							AddOne(map, typeof (Player), p);
@@ -78,20 +78,20 @@ public sealed class PlayerTests : TestBase
 	[Fact]
 	public void PlayerConflicts_Returns_Conflicts_Involving_Player()
 	{
-		var p = new Player { Id = 30, FirstName = "A", LastName = "B" };
-		var other = new Player { Id = 31, FirstName = "C", LastName = "D" };
+		Player p1 = new () { Id = 30, FirstName = "A", LastName = "B" },
+			   p2 = new () { Id = 31, FirstName = "C", LastName = "D" };
 		// Create a conflict between player 30 and 31 – PlayerConflict constructor sorts ids
 		var pc = new PlayerConflict(30, 31);
 		using (SeedCache(map =>
 						{
-							AddMany(map, typeof (Player), p, other);
+							AddMany(map, typeof (Player), p1, p2);
 							AddOne(map, typeof (PlayerConflict), pc);
 							AddEmpties(map);
 						}))
 		{
-			var conflicts = p.PlayerConflicts;
+			var conflicts = p1.PlayerConflicts;
 			Assert.Single(conflicts);
-			Assert.True(conflicts[0].Involves(p.Id));
+			Assert.True(conflicts[0].Involves(p1.Id));
 		}
 	}
 
@@ -99,10 +99,10 @@ public sealed class PlayerTests : TestBase
 	public void Groups_Returns_From_GroupPlayers_And_GroupMemberships_Formats_Text()
 	{
 		var p = new Player { Id = 40, FirstName = "Ann", LastName = "Lee" };
-		var g1 = new Group { Id = 501, Name = "Group One" };
-		var g2 = new Group { Id = 502, Name = "Group Two" };
-		var gp1 = new GroupPlayer { Player = p, Group = g1 };
-		var gp2 = new GroupPlayer { Player = p, Group = g2 };
+		Group g1 = new () { Id = 501, Name = "Group One" },
+			  g2 = new () { Id = 502, Name = "Group Two" };
+		GroupPlayer gp1 = new () { Player = p, Group = g1 },
+					gp2 = new () { Player = p, Group = g2 };
 		using (SeedCache(map =>
 						{
 							AddOne(map, typeof (Player), p);
@@ -111,8 +111,7 @@ public sealed class PlayerTests : TestBase
 							AddEmpties(map);
 						}))
 		{
-			var groups = p.Groups.Select(static x => x.Id).OrderBy(static x => x).ToArray();
-			Assert.Equal(ExpectedGroupIds, groups);
+			Assert.Equal(ExpectedGroupIds, p.Groups.Select(static x => x.Id).OrderBy(static x => x).ToArray());
 			var text = p.GroupMemberships;
 			Assert.Contains("Ann Lee is a member of the following groups", text);
 			Assert.Contains("• Group One", text);
@@ -132,13 +131,13 @@ public sealed class PlayerTests : TestBase
 	[Fact]
 	public void Teams_Filters_By_Tournament()
 	{
+		Tournament t1 = new () { Id = 700, Name = "T1" },
+				   t2 = new () { Id = 701, Name = "T2" };
+		Team team1 = new () { Id = 800, Name = "A", TournamentId = t1.Id },
+			 team2 = new () { Id = 801, Name = "B", TournamentId = t2.Id };
 		var p = new Player { Id = 60, FirstName = "P", LastName = "Q" };
-		var t1 = new Tournament { Id = 700, Name = "T1" };
-		var t2 = new Tournament { Id = 701, Name = "T2" };
-		var team1 = new Team { Id = 800, Name = "A", TournamentId = t1.Id };
-		var team2 = new Team { Id = 801, Name = "B", TournamentId = t2.Id };
-		var tp1 = NewTeamPlayerViaLoad(team1.Id, p.Id);
-		var tp2 = NewTeamPlayerViaLoad(team2.Id, p.Id);
+		TeamPlayer tp1 = NewTeamPlayerViaLoad(team1.Id, p.Id),
+				   tp2 = NewTeamPlayerViaLoad(team2.Id, p.Id);
 		using (SeedCache(map =>
 						{
 							AddOne(map, typeof (Player), p);
@@ -154,17 +153,14 @@ public sealed class PlayerTests : TestBase
 							.OrderBy(static x => x)
 							.ToArray();
 			Assert.Equal(Expected, allTeams);
-			// Filter to t1
-			var filtered = p.Teams(t1).Select(static x => x.Id).ToArray();
-			Assert.Equal(ExpectedArray, filtered);
+			Assert.Equal(ExpectedArray, p.Teams(t1).Select(static x => x.Id).ToArray());
 		}
 	}
 
 	[Fact]
 	public void FieldValues_Formats_Strings_ForSql()
 	{
-		var p = new Player { FirstName = "Ann", LastName = "O'Neil", EmailAddress = "a@x.com" };
-		var sql = p.FieldValues;
+		var sql = new Player { FirstName = "Ann", LastName = "O'Neil", EmailAddress = "a@x.com" }.FieldValues;
 		Assert.Contains("[FirstName] = 'Ann'", sql);
 		Assert.Contains("[LastName] = 'O''Neil'", sql);
 		Assert.Contains("[EmailAddress] = 'a@x.com'", sql);

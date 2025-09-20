@@ -295,14 +295,11 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 	#endregion
 
-	public override string FieldValues => Format($$"""
-												   [{{nameof (Number)}}] = {0},
-												   [{{nameof (TournamentId)}}] = {1},
-												   [{{nameof (ScoringSystemId)}}] = {2}
-												   """,
-												 Number,
-												 TournamentId,
-												 _scoringSystemId.ForSql());
+	public override string FieldValues => $"""
+										   [{nameof (Number)}] = {Number},
+										   [{nameof (TournamentId)}] = {TournamentId},
+										   [{nameof (ScoringSystemId)}] = {_scoringSystemId.ForSql()}
+										   """;
 
 	#endregion
 

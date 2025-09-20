@@ -167,44 +167,26 @@ public sealed partial class Tournament : IdentityRecord<Tournament>, IdInfoRecor
 
 	#endregion
 
-	public override string FieldValues => Format($$"""
-												   [{{nameof (Name)}}] = {0},
-												   [{{nameof (Description)}}] = {1},
-												   [{{nameof (Date)}}] = {2},
-												   [{{nameof (ScoringSystemId)}}] = {3},
-												   [{{nameof (TeamConflict)}}] = {4},
-												   [{{nameof (PlayerConflict)}}] = {5},
-												   [{{nameof (PowerConflict)}}] = {6},
-												   [{{nameof (TotalRounds)}}] = {7},
-												   [{{nameof (MinimumRounds)}}] = {8},
-												   [{{nameof (AssignPowers)}}] = {9},
-												   [{{nameof (GroupPowers)}}] = {10},
-												   [{{nameof (UnplayedScore)}}] = {11},
-												   [{{nameof (RoundsToDrop)}}] = {12},
-												   [{{nameof (ScalePercentage)}}] = {13}.{14},
-												   [{{nameof (TeamSize)}}] = {15},
-												   [{{nameof (TeamRound)}}] = {16},
-												   [{{nameof (ScoreConflict)}}] = {17},
-												   [{{nameof (GroupId)}}] = {18}
-												   """,
-												 Name.ForSql(),
-												 Description.ForSql(),
-												 Date.ForSql(),
-												 ScoringSystemId,
-												 TeamConflict,
-												 PlayerConflict,
-												 PowerConflict,
-												 TotalRounds,
-												 MinimumRounds,
-												 AssignPowers.ForSql(),
-												 GroupPowers.ForSql(),
-												 UnplayedScore,
-												 RoundsToDrop.NegatedIf(DropBeforeFinalRound),
-												 RoundsToScale, ScalePercentage,
-												 TeamSize.NegatedIf(PlayerCanJoinManyTeams),
-												 TeamRound.NegatedIf(TeamsPlayMultipleRounds),
-												 ScoreConflict.NegatedIf(ProgressiveScoreConflict),
-												 GroupId.ForSql());
+	public override string FieldValues => $"""
+										   [{nameof (Name)}] = {Name.ForSql()},
+										   [{nameof (Description)}] = {Description.ForSql()},
+										   [{nameof (Date)}] = {Date.ForSql()},
+										   [{nameof (ScoringSystemId)}] = {ScoringSystemId},
+										   [{nameof (TeamConflict)}] = {TeamConflict},
+										   [{nameof (PlayerConflict)}] = {PlayerConflict},
+										   [{nameof (PowerConflict)}] = {PowerConflict},
+										   [{nameof (TotalRounds)}] = {TotalRounds},
+										   [{nameof (MinimumRounds)}] = {MinimumRounds},
+										   [{nameof (AssignPowers)}] = {AssignPowers.ForSql()},
+										   [{nameof (GroupPowers)}] = {GroupPowers.ForSql()},
+										   [{nameof (UnplayedScore)}] = {UnplayedScore},
+										   [{nameof (RoundsToDrop)}] = {RoundsToDrop.NegatedIf(DropBeforeFinalRound)},
+										   [{nameof (ScalePercentage)}] = {RoundsToScale}.{ScalePercentage},
+										   [{nameof (TeamSize)}] = {TeamSize.NegatedIf(PlayerCanJoinManyTeams)},
+										   [{nameof (TeamRound)}] = {TeamRound.NegatedIf(TeamsPlayMultipleRounds)},
+										   [{nameof (ScoreConflict)}] = {ScoreConflict.NegatedIf(ProgressiveScoreConflict)},
+										   [{nameof (GroupId)}] = {GroupId.ForSql()}
+										   """;
 
 	#endregion
 

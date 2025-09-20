@@ -73,14 +73,11 @@ public sealed class Player : IdentityRecord<Player>
 
 	#endregion
 
-	public override string FieldValues => Format($$"""
-												   [{{nameof (FirstName)}}] = {0},
-												   [{{nameof (LastName)}}] = {1},
-												   [{{nameof (EmailAddress)}}] = {2}
-												   """,
-												 FirstName.ForSql(),
-												 LastName.ForSql(),
-												 EmailAddress.ForSql());
+	public override string FieldValues => $"""
+										   [{nameof (FirstName)}] = {FirstName.ForSql()},
+										   [{nameof (LastName)}] = {LastName.ForSql()},
+										   [{nameof (EmailAddress)}] = {EmailAddress.ForSql()}
+										   """;
 
 	#endregion
 

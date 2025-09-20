@@ -9,8 +9,6 @@ public abstract class LinkRecord : IRecord
 {
 	public virtual int PlayerId { get; private protected set; }
 
-	public abstract IRecord Load(DbDataReader record);
-
 	public Player Player
 	{
 		get => field.Id == PlayerId
@@ -21,11 +19,13 @@ public abstract class LinkRecord : IRecord
 
 	public string PrimaryKey => Join(" AND ", KeyFieldAssignments);
 
+	public abstract void Load(DbDataReader record);
+
 	internal IEnumerable<string> KeyFieldAssignments => [PlayerLinkKey, LinkKey];
 
 	protected virtual string PlayerIdColumnName => nameof (PlayerId);
 
-	protected abstract string LinkKey { get; }
+	private protected abstract string LinkKey { get; }
 
 	private string PlayerLinkKey => $"[{PlayerIdColumnName}] = {PlayerId}";
 }

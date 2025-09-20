@@ -46,21 +46,18 @@ public sealed class PlayerConflict : LinkRecord, IInfoRecord
 	#region IRecord implementation
 
 	protected override string PlayerIdColumnName => "player1";
-	protected override string LinkKey => $"[{OtherPlayerColumnName}] = {OtherPlayerId}";
+	private protected override string LinkKey => $"[{OtherPlayerColumnName}] = {OtherPlayerId}";
 
-	public override IRecord Load(DbDataReader record)
+	public override void Load(DbDataReader record)
 	{
 		record.CheckDataType<PlayerConflict>();
 		PlayerIds = (record.Integer(PlayerIdColumnName), record.Integer(OtherPlayerColumnName));
 		Value = record.Integer(nameof (Value));
-		return this;
 	}
 
 	#endregion
 
-	public string FieldValues => Format($$"""
-										  [{{nameof (Value)}}] = {0}
-										  """, Value);
+	public string FieldValues => $"[{nameof (Value)}] = {Value}";
 
 	#endregion
 
