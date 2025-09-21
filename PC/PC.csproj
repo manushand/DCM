@@ -60,7 +60,7 @@
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
-        <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.8" />
+        <PackageReference Include="Microsoft.Windows.Compatibility" Version="9.0.9" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Data\Data.csproj" />

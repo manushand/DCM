@@ -81,8 +81,8 @@
       </PackageReference>
       <PackageReference Include="Microsoft.CodeAnalysis.Scripting" Version="4.14.0" />
       <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.1" />
-      <PackageReference Include="System.Data.Odbc" Version="9.0.8" />
-      <PackageReference Include="System.Data.OleDb" Version="9.0.8" />
+      <PackageReference Include="System.Data.Odbc" Version="9.0.9" />
+      <PackageReference Include="System.Data.OleDb" Version="9.0.9" />
       <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     </ItemGroup>
     <ItemGroup>

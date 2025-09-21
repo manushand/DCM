@@ -329,7 +329,7 @@ internal static class PC
 		}
 	}
 
-	//	BUG: (in C# 14 extension blocks) -- if this is added to the block, it becomes "params int[]? columns" (!)
+	//	BUG: if this method is added to the block, the params argument becomes "params int?[] columns" (!)
 	internal static void AlignColumn(this DataGridView dataGridView,
 									 DataGridViewContentAlignment alignment,
 									 params int[] columns)
