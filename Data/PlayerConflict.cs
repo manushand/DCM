@@ -45,7 +45,7 @@ public sealed class PlayerConflict : LinkRecord, IInfoRecord
 
 	#region IRecord implementation
 
-	protected override string PlayerIdColumnName => "player1";
+	private protected override string PlayerIdColumnName => "player1";
 	private protected override string LinkKey => $"[{OtherPlayerColumnName}] = {OtherPlayerId}";
 
 	public override void Load(DbDataReader record)

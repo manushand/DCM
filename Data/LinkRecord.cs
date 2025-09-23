@@ -23,7 +23,7 @@ public abstract class LinkRecord : IRecord
 
 	internal IEnumerable<string> KeyFieldAssignments => [PlayerLinkKey, LinkKey];
 
-	protected virtual string PlayerIdColumnName => nameof (PlayerId);
+	private protected virtual string PlayerIdColumnName => nameof (PlayerId);
 
 	private protected abstract string LinkKey { get; }
 

@@ -19,19 +19,19 @@ namespace Data.Tests;
 
 public abstract class TestBase
 {
-	protected static readonly Type CacheType = typeof (Data).GetNestedType("Cache", NonPublic)
-															.OrThrow("Cache type not found");
-	protected static readonly FieldInfo DataField = CacheType.GetField("_data", NonPublic | Static)
-															 .OrThrow("Cache._data field not found");
-	protected static readonly FieldInfo StoresField = CacheType.GetField("Stores", NonPublic | Static)
-															   .OrThrow("Cache.Stores not found");
+	private protected static readonly Type CacheType = typeof (Data).GetNestedType("Cache", NonPublic)
+																	.OrThrow("Cache type not found");
+	private protected static readonly FieldInfo DataField = CacheType.GetField("_data", NonPublic | Static)
+																	 .OrThrow("Cache._data field not found");
+	private protected static readonly FieldInfo StoresField = CacheType.GetField("Stores", NonPublic | Static)
+																	   .OrThrow("Cache.Stores not found");
 
-	protected sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
+	private protected sealed record CacheScope(object Original, FieldInfo Field) : IDisposable
 	{
 		public void Dispose() => Field.SetValue(null, Original);
 	}
 
-	protected static CacheScope SeedCache(Action<object> fill)
+	private protected static CacheScope SeedCache(Action<object> fill)
 	{
 		var original = DataField.GetValue(null)
 								.OrThrow();
@@ -42,13 +42,17 @@ public abstract class TestBase
 		return new (original, DataField);
 	}
 
-	protected static void SetField(object target, string field, object? value)
+	private protected static void SetField(object target,
+										   string field,
+										   object? value)
 		=> target.GetType()
 				 .GetField(field, Instance | NonPublic)
 				 .OrThrow()
 				 .SetValue(target, value);
 
-	protected static void SetProperty(object target, string prop, object? value)
+	private protected static void SetProperty(object target,
+											  string prop,
+											  object? value)
 		=> target.GetType()
 				 .GetProperty(prop, Instance | Public | NonPublic)
 				 .OrThrow()
@@ -62,8 +66,8 @@ public abstract class TestBase
 						 .GetValue(record)
 						 .OrThrow();
 
-	protected static void Add<T>(object typeMap,
-								 params T[] records)
+	private protected static void Add<T>(object typeMap,
+										 params T[] records)
 		where T : class, IRecord
 	{
 		var type = typeof (T);
@@ -78,7 +82,7 @@ public abstract class TestBase
 		typeMapType.GetMethod("Add")?.Invoke(typeMap, [type, sd]);
 	}
 
-	protected static void AddEmpties(object typeMap)
+	private protected static void AddEmpties(object typeMap)
 	{
 		var typeMapType = typeMap.GetType();
 		var contains = typeMapType.GetMethod("ContainsKey")
@@ -107,8 +111,8 @@ public abstract class TestBase
 		}
 	}
 
-	protected static Game CreateGameWithSystem(ScoringSystem system,
-											   Game.Statuses status)
+	private protected static Game CreateGameWithSystem(ScoringSystem system,
+													   Game.Statuses status)
 	{
 		var t = new Tournament { Id = 1, Name = "T" };
 		var r = new Round { Id = 2, Number = 1 };
@@ -123,8 +127,8 @@ public abstract class TestBase
 			   };
 	}
 
-	protected static TeamPlayer NewTeamPlayerViaLoad(int teamId,
-													 int playerId)
+	private protected static TeamPlayer NewTeamPlayerViaLoad(int teamId,
+															 int playerId)
 	{
 		var tp = new TeamPlayer();
 		var values = new Dictionary<string, object?>
