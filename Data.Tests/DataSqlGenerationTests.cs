@@ -41,7 +41,7 @@ public sealed class DataSqlGenerationTests
 			new () { Id = 2 },
 			new () { Id = 3 }
 		};
-		var ids = players.Ids().ToArray();
+		var ids = players.Ids.ToArray();
 		Assert.Equal(Expected, ids);
 
 		TestLink l1 = new (10, 100),

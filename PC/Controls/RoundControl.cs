@@ -711,7 +711,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 					//	Everyone at all
 					tournamentPlayerIds = null;
 
-				SeedablePlayer[] unregisteredPlayers = [..ReadMany<Player>(player => (tournamentPlayerIds?.Contains(player.Id) ?? true)
+				SeedablePlayer[] unregisteredPlayers = [..ReadMany<Player>(player => tournamentPlayerIds?.Contains(player.Id) is not false
 																				  && !gamePlayerIds.Contains(player.Id)
 																				  && !roundPlayerIds.Contains(player.Id))
 														  .Select(player => new SeedablePlayer(Tournament,

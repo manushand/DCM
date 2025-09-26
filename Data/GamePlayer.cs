@@ -123,10 +123,10 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		PlayerIdsPlayedInTournament.FillWith(gamePlayersInTournamentGames.Select(static gamePlayer => gamePlayer.PlayerId)
 																		 .Where(id => id != PlayerId)); //  Not strictly needed
 		TournamentTeamPlayerIds.FillWith(Player.TournamentTeamPlayers(Tournament)
-											   .Ids());
+											   .Ids);
 		PlayerGroups.Clear();
 		Player.Groups
-			  .ForEach(group => PlayerGroups.Add(group, [..group.Players.Ids()]));
+			  .ForEach(group => PlayerGroups.Add(group, [..group.Players.Ids]));
 		return this;
 	}
 
@@ -143,7 +143,7 @@ public sealed class GamePlayer : LinkRecord, IInfoRecord, IComparable<GamePlayer
 		Player[] opponents = [..seeding.Where(gamePlayer => gamePlayer.GameId == GameId
 														 && gamePlayer.PlayerId != PlayerId)
 									   .Select(static gamePlayer => gamePlayer.Player)];
-		int[] opponentIds = [..opponents.Ids()];
+		int[] opponentIds = [..opponents.Ids];
 
 		//	Player-Personal conflicts
 		Conflict = PlayerConflicts.Where(playerConflict => playerConflict.ConflictedPlayerIds.Any(opponentIds.Contains))

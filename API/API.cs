@@ -42,6 +42,16 @@ internal static class API
 																						  static pair => Configuration.GetConnectionString(pair.Value)
 																													  .OrThrow($"Bad Connection for User {pair.Key}"));
 
+	extension<T>(T record)
+		where T : class, IRecord
+	{
+		internal void Create()
+			=> CreateOne(record);
+
+		internal void Delete()
+			=> Data.Delete(record);
+	}
+
 	internal static void Startup()
 	{
 		var version = $"v{Version}";
@@ -112,14 +122,6 @@ internal static class API
 		=> i.Count is 0
 			   ? null
 			   : i;
-
-	internal static void Create<T>(this T record)
-		where T : class, IRecord
-		=> CreateOne(record);
-
-	internal static void Delete<T>(this T record)
-		where T : class, IRecord
-		=> Data.Delete(record);
 
 	private static string _currentConnection = string.Empty;
 	private static int _activeUsers;

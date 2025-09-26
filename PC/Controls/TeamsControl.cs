@@ -203,7 +203,7 @@ internal sealed partial class TeamsControl : UserControl
 
 		//	TODO: Hmm, looks like we only include tournament-registered players in the non-member list?
 		var memberIds = MemberListBox.GetAll<Player>()
-									 .Ids();
+									 .Ids;
 		var selectedNonMember = NonMemberListBox.GetSelected<Player>();
 		var candidatePlayers = WhichPlayersTabControl.SelectedIndex is 0
 								   ? ReadMany<TournamentPlayer>(tp => tp.TournamentId == Tournament.Id).Select(static tp => tp.Player)

@@ -67,8 +67,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 
 	private void MembershipsButton_Click(object sender,
 										 EventArgs e)
-		=> MessageBox.Show((MemberListBox.GetSelected<Player>()
-						 ?? NonMemberListBox.GetSelected<Player>().OrThrow()).GroupMemberships,
+		=> MessageBox.Show((MemberListBox.GetSelected<Player>() ?? NonMemberListBox.GetSelected<Player>().OrThrow()).GroupMemberships,
 						   "Group Memberships",
 						   OK,
 						   None);
@@ -110,7 +109,7 @@ internal sealed partial class GroupMembershipControl : UserControl
 		Player[] members = [..Group.Players
 								   .Sorted(LastNameRadioButton.Checked)];
 		var memberCount = members.Length;
-		var memberPlayerIds = members.Ids();
+		var memberPlayerIds = members.Ids;
 		var selectedMember = MemberListBox.GetSelected<Player>();
 		MemberListBox.FillWithRecords(members);
 		if (selectedMember is not null)

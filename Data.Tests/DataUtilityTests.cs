@@ -41,7 +41,7 @@ public sealed class DataUtilityTests : TestBase
 	{
 		var a = new Team { Id = 10, Name = "A" };
 		var b = new Team { Id = 7, Name = "B" };
-		var ids = new[] { a, b }.Ids().OrderBy(static x => x).ToArray();
+		var ids = new[] { a, b }.Ids.OrderBy(static x => x).ToArray();
 		Assert.Equal(ExpectedArray, ids);
 	}
 

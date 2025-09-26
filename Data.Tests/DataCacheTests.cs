@@ -66,11 +66,11 @@ public sealed class DataCacheTests : TestBase
 			Assert.Contains(list, static x => x.Id is 2);
 
 			// FetchOne with predicate
-			static bool Pred(Player pl)
+			static bool Predicate(Player pl)
 				=> pl.Id == 2;
 
 			var result = fetchOneFuncMethod.MakeGenericMethod(typeof (Player))
-										   .Invoke(null, [(Func<Player, bool>)Pred]);
+										   .Invoke(null, [(Func<Player, bool>)Predicate]);
 			Assert.IsType<Player>(result);
 			Assert.Equal(2, ((Player)result).Id);
 

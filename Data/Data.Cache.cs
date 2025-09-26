@@ -40,7 +40,7 @@ public static partial class Data
 
 		internal static bool Exists<T>(Func<T, bool>? func = null)
 			where T : IRecord
-			=> FetchAll<T>().Any(record => func?.Invoke(record) ?? true);
+			=> FetchAll<T>().Any(record => func?.Invoke(record) is not false);
 
 		internal static IEnumerable<T> FetchAll<T>()
 			where T : IRecord

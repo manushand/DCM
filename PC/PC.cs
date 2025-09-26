@@ -122,6 +122,9 @@ internal static class PC
 
 	extension(TabControl tabControl)
 	{
+		//	BUG: Rider (but not VS's ReSharper?) wrongly claims that this method
+		//		 (and all other extension block members) can be made static.
+		//		 https://youtrack.jetbrains.com/issue/RIDER-128618
 		internal void AddOrRemove(TabPage tabPage,
 								  bool add,
 								  int? position = null)
@@ -132,8 +135,6 @@ internal static class PC
 				tabControl.TabPages.Remove(tabPage);
 		}
 
-		//	BUG: Rider (and VS's ReSharper) wrongly claims that this method (and others) can be static.
-		//		 https://youtrack.jetbrains.com/issue/RIDER-128618
 		internal void ActivateTab(int tabNumber)
 		{
 			if (tabControl.SelectedIndex == tabNumber)
@@ -332,7 +333,7 @@ internal static class PC
 	//	BUG: if this method is added to the block, the params argument becomes "params int?[] columns" (!)
 	internal static void AlignColumn(this DataGridView dataGridView,
 									 DataGridViewContentAlignment alignment,
-									 params int[] columns)
+									 params IEnumerable<int> columns)
 		=> columns.ForEach(column => dataGridView.Columns[column].DefaultCellStyle.Alignment = alignment);
 
 	extension(DataGridViewCellStyle style)
@@ -358,7 +359,7 @@ internal static class PC
 			ShadowLabels.TryGetValue(name, out var label);
 			comboBox.Visible = comboBox.Enabled;
 			//	Checking for .IsDisposed is important.  Re-create the Label if it's been Disposed.
-			if (comboBox.Enabled && (label?.IsDisposed ?? true))
+			if (comboBox.Enabled && label?.IsDisposed is not false)
 			{
 				label?.Hide();
 				return;

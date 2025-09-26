@@ -182,8 +182,6 @@ public static partial class DCM
 					")+" +
 					@"@(([\dA-Z][-\w]*[\dA-Z]*\.)+[\dA-Z]{2,17})$",
 					RegexOptions.IgnoreCase)]
-	//	BUG: This compiles, but Rider (but not VisualStudio!) claims that it does not have an implementation part.
-	//		 https://youtrack.jetbrains.com/issue/RIDER-129206
 	private static partial Regex EmailAddressRegex();
 
 	#endregion

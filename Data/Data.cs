@@ -41,6 +41,139 @@ public static partial class Data
 
 	#endregion
 
+	#region Extensions
+
+	extension<T>(IEnumerable<T> linkRecords)
+		where T : LinkRecord
+	{
+		public bool HasPlayerId(int playerId)
+			=> linkRecords.Any(linkRecord => linkRecord.PlayerId == playerId);
+
+		internal IEnumerable<T> WithPlayerId(int playerId)
+			=> linkRecords.Where(linkRecord => linkRecord.PlayerId == playerId);
+	}
+
+	extension<T>(IEnumerable<IdentityRecord<T>> records)
+		where T : IdInfoRecord, new()
+	{
+		public IEnumerable<int> Ids => records.Select(static record => record.Id);
+	}
+
+	extension(IDataRecord record)
+	{
+		internal bool Boolean(string columnName)
+			=> record.GetBoolean(record.GetOrdinal(columnName));
+
+		internal string String(string columnName)
+		{
+			var ordinal = record.GetOrdinal(columnName);
+			return record.IsDBNull(ordinal)
+					   ? Empty
+					   : record.GetString(ordinal);
+		}
+
+		internal double Double(string columnName)
+			=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (double)
+				   ? record.GetDouble(record.GetOrdinal(columnName))
+				   : Convert.ToDouble(Decimal(record, columnName));
+
+		internal decimal Decimal(string columnName)
+			=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (decimal)
+				   ? record.GetDecimal(record.GetOrdinal(columnName))
+				   : Convert.ToDecimal(Double(record, columnName));
+
+		internal int Integer(string columnName)
+			=> record.GetInt32(record.GetOrdinal(columnName));
+
+		internal int? NullableInteger(string columnName)
+		{
+			var column = record.GetOrdinal(columnName);
+			return record.IsDBNull(column)
+					   ? null
+					   : record.GetInt32(column);
+		}
+
+		internal T IntegerAs<T>(string columnName)
+			where T : Enum
+			=> record.Integer(columnName)
+				.As<T>();
+
+		internal DateTime? NullableDate(string columnName)
+		{
+			var ordinal = record.GetOrdinal(columnName);
+			return record.IsDBNull(ordinal)
+					   ? null
+					   : record.GetDateTime(ordinal);
+		}
+	}
+
+	public static IEnumerable<Player> Sorted(this IEnumerable<Player> players,
+											 bool byLastName = false)
+		=> players.OrderBy(player => byLastName
+										 ? player.LastFirst
+										 : player.Name);
+
+	[LinqTunnel]
+	public static IEnumerable<T2> SelectSorted<T1, T2>(this IEnumerable<T1> items,
+													   Func<T1, T2> func)
+		where T1 : IRecord
+		where T2 : IComparable<T2>
+		=> items.Select(func)
+				.Order();
+
+	public static T ByPlayerId<T>([InstantHandle] this IEnumerable<T> linkRecords,
+								  int playerId)
+		where T : LinkRecord
+		=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
+
+	internal static int ForSql<T>(this T value)
+		where T : Enum
+		=> value.AsInteger;
+
+	internal static string ForSql(this string? text)
+		=> text?.Length > 0
+			   ? $"'{text.Replace("'", "''")}'"
+			   : Null;
+
+	internal static string ForSql(this int? value)
+		=> value?.ToString() ?? Null;
+
+	internal static string ForSql(this DateTime value)
+		=> $"'{value:d}'";
+
+	internal static string ForSql(this DateTime? value)
+		=> value?.ForSql() ?? Null;
+
+	internal static int ForSql(this bool value)
+		=> value.AsInteger;
+
+	//	Some fields that are DECIMAL type in SqlServer are DOUBLE in Access.
+	//	We should fix this, but it's not that easy without paying Bill Gates.
+	//	So we have the Double() and Decimal() methods do a field type check.
+
+	internal static bool GroupSharedBy(this PowerGroups groups,
+									   Powers power1,
+									   Powers power2)
+	{
+		var groupings = (typeof (PowerGroups).GetField(groups.ToString())
+											 ?.GetCustomAttribute(typeof (PowerGroupingsAttribute)) as PowerGroupingsAttribute)
+						?.Groups
+						?? throw new InvalidOperationException("Missing PowerGroupings attribute");
+		return groupings.Single(group => group.Contains(power1.Abbreviation)) == groupings.Single(group => group.Contains(power2.Abbreviation));
+	}
+
+	internal static void CheckDataType<T>(this DbDataReader reader)
+		where T : IRecord
+	{
+		if (reader.GetSchemaTable()?
+				  .Rows
+				  .Cast<DataRow>()
+				  .Any(static row => $"{row[nameof (SchemaTableColumn.BaseTableName)]}" != typeof (T).Name) is not false)
+			throw new ArgumentException($"{nameof (DbDataReader)} has no SchemaTable or is not reading Type {typeof (T).Name}", nameof (reader)); //	TODO
+	}
+
+	#endregion
+
 	#region Methods
 
 	public static void ConnectTo(string connectionString)
@@ -138,7 +271,8 @@ public static partial class Data
 			(record as LinkRecord)?.KeyFieldAssignments
 								  .ForEach(item => assignments.Add(item));
 			var list = assignments.Select(static assignment => assignment.Split('=', 2))
-								  .ToDictionary(static item => item[0], static item => item[1]);
+								  .ToDictionary(static item => item[0],
+												static item => item[1]);
 			return $"""
 			        INSERT INTO {TableName<T>()} ({Join(Comma, list.Keys)})
 			        VALUES ({Join(Comma, list.Values)});
@@ -160,7 +294,7 @@ public static partial class Data
 
 	public static bool NameExists<T>(T updating)
 		where T : IdInfoRecord
-		=> ReadByName<T>(updating.Name)?.IsNot(updating) ?? false;
+		=> ReadByName<T>(updating.Name)?.IsNot(updating) is not true;
 
 	//	Important (for some reason): note that in all cases where we open and close the
 	//	database connection, we wait until the connection is closed to update the cache.
@@ -244,32 +378,6 @@ public static partial class Data
 	public static void FlushCache()
 		=> Cache.Flush();
 
-	public static IEnumerable<Player> Sorted(this IEnumerable<Player> players,
-											 bool byLastName = false)
-		=> players.OrderBy(player => byLastName ? player.LastFirst : player.Name);
-
-	[LinqTunnel]
-	public static IEnumerable<T2> SelectSorted<T1, T2>(this IEnumerable<T1> items,
-													   Func<T1, T2> func)
-		where T1 : IRecord
-		where T2 : IComparable<T2>
-		=> items.Select(func)
-				.Order();
-
-	public static IEnumerable<int> Ids<T>(this IEnumerable<IdentityRecord<T>> records)
-		where T : IdInfoRecord, new()
-		=> records.Select(static record => record.Id);
-
-	public static bool HasPlayerId<T>(this IEnumerable<T> linkRecords,
-									  int playerId)
-		where T : LinkRecord
-		=> linkRecords.Any(linkRecord => linkRecord.PlayerId == playerId);
-
-	public static T ByPlayerId<T>([InstantHandle] this IEnumerable<T> linkRecords,
-								  int playerId)
-		where T : LinkRecord
-		=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
-
 	internal static void StartTransaction()
 	{
 		if (_transaction is not null)
@@ -289,111 +397,6 @@ public static partial class Data
 	internal static IEnumerable<T> CreateMany<T>([InstantHandle] IEnumerable<T> records)
 		where T : IRecord
 		=> CreateMany([..records]);
-
-	internal static IEnumerable<T> WithPlayerId<T>(this IEnumerable<T> linkRecords,
-												   int playerId)
-		where T : LinkRecord
-		=> linkRecords.Where(linkRecord => linkRecord.PlayerId == playerId);
-
-	internal static void CheckDataType<T>(this DbDataReader reader)
-		where T : IRecord
-	{
-		if (reader.GetSchemaTable()?
-				  .Rows
-				  .Cast<DataRow>()
-				  .Any(static row => $"{row[nameof (SchemaTableColumn.BaseTableName)]}" != typeof (T).Name) ?? true)
-			throw new ArgumentException($"reader has no SchemaTable or is not reading Type {typeof (T).Name}", nameof (reader)); //	TODO
-	}
-
-	internal static string ForSql(this string? text)
-		=> text?.Length > 0
-			   ? $"'{text.Replace("'", "''")}'"
-			   : Null;
-
-	internal static string ForSql(this int? value)
-		=> value?.ToString() ?? Null;
-
-	internal static int ForSql<T>(this T value)
-		where T : Enum
-		=> value.AsInteger;
-
-	internal static string ForSql(this DateTime value)
-		=> $"'{value:d}'";
-
-	internal static string ForSql(this DateTime? value)
-		=> value?.ForSql()
-		?? Null;
-
-	internal static int ForSql(this bool value)
-		=> value.AsInteger;
-
-	internal static bool Boolean(this IDataRecord record,
-								 string columnName)
-		=> record.GetBoolean(record.GetOrdinal(columnName));
-
-	internal static string String(this IDataRecord record,
-								  string columnName)
-	{
-		var ordinal = record.GetOrdinal(columnName);
-		return record.IsDBNull(ordinal)
-				   ? Empty
-				   : record.GetString(ordinal);
-	}
-
-	//	Some fields that are DECIMAL type in SqlServer are DOUBLE in Access.
-	//	We should fix this, but it's not that easy without paying Bill Gates.
-	//	So we have the Double() and Decimal() methods do a field type check.
-
-	internal static double Double(this IDataRecord record,
-								  string columnName)
-		=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (double)
-			   ? record.GetDouble(record.GetOrdinal(columnName))
-			   : Convert.ToDouble(Decimal(record, columnName));
-
-	internal static decimal Decimal(this IDataRecord record,
-									string columnName)
-		=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (decimal)
-			   ? record.GetDecimal(record.GetOrdinal(columnName))
-			   : Convert.ToDecimal(Double(record, columnName));
-
-	internal static int Integer(this IDataRecord record,
-								string columnName)
-		=> record.GetInt32(record.GetOrdinal(columnName));
-
-	internal static int? NullableInteger(this IDataRecord record,
-										 string columnName)
-	{
-		var column = record.GetOrdinal(columnName);
-		return record.IsDBNull(column)
-				   ? null
-				   : record.GetInt32(column);
-	}
-
-	internal static T IntegerAs<T>(this IDataRecord record,
-								   string columnName)
-		where T : Enum
-		=> record.Integer(columnName)
-				 .As<T>();
-
-	internal static DateTime? NullableDate(this IDataRecord record,
-										   string columnName)
-	{
-		var ordinal = record.GetOrdinal(columnName);
-		return record.IsDBNull(ordinal)
-				   ? null
-				   : record.GetDateTime(ordinal);
-	}
-
-	internal static bool GroupSharedBy(this PowerGroups groups,
-									   Powers power1,
-									   Powers power2)
-	{
-		var groupings = (typeof (PowerGroups).GetField(groups.ToString())
-											 ?.GetCustomAttribute(typeof (PowerGroupingsAttribute)) as PowerGroupingsAttribute)
-											 ?.Groups
-						?? throw new InvalidOperationException("Missing PowerGroupings attribute");
-		return groupings.Single(group => group.Contains(power1.Abbreviation)) == groupings.Single(group => group.Contains(power2.Abbreviation));
-	}
 
 	#endregion
 

@@ -97,6 +97,8 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 
 		public string? Year => GamePlayer.Years?.ToString();
 
+		public string Other => $"{GamePlayer.Other}";
+
 		[DisplayName("Round─Game")]
 		public string Round => $"{Game.Round}─{Game.Letter}";
 
@@ -117,6 +119,8 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 	private Tournament Tournament { get; set; } = Tournament.None;
 
 	private List<BestGame> BestGames { get; } = [];
+
+	private static readonly DataGridViewCellStyle CenteredStyle = new () { Alignment = MiddleCenter };
 
 	#endregion
 
@@ -155,24 +159,28 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 	private void BestPowersDataGridView_DataBindingComplete(object sender,
 															DataGridViewBindingCompleteEventArgs e)
 	{
-		BestPowersDataGridView.FillColumn(2);
-		ForRange(0, BestPowersDataGridView.ColumnCount, index => BestPowersDataGridView.AlignColumn(index > 3
-																										? MiddleCenter
-																										: index is 2
-																											? MiddleLeft
-																											: MiddleRight,
-																									index));
+		BestPowersDataGridView.DefaultCellStyle = CenteredStyle; // center all columns except for...
+		BestPowersDataGridView.AlignColumn(MiddleRight, 0, 1, 3); // ...overall rank, power rank, score,...
+		BestPowersDataGridView.AlignColumn(MiddleLeft, 2); // ...and player name,...
+		BestPowersDataGridView.FillColumn(2); // ...which is the column that gets the fill-space.
 		var overall = BestGamesTabControl.SelectedIndex is 0;
 		BestPowersDataGridView.Columns[0].Visible =
 			BestPowersDataGridView.Columns[4].Visible =
 				overall;
 		BestPowersDataGridView.Columns[1].Visible = !overall;
+		if (overall)
+			BestPowersDataGridView.PowerCells(4);
 		BestPowersDataGridView.Columns[5].Visible = Tournament.ScoringSystem
 															  .UsesCenterCount;
 		BestPowersDataGridView.Columns[6].Visible = Tournament.ScoringSystem
 															  .UsesYearsPlayed;
-		if (overall)
-			BestPowersDataGridView.PowerCells(4);
+		var usesOtherScore =
+			BestPowersDataGridView.Columns[7].Visible =
+				Tournament.ScoringSystem
+						  .UsesOtherScore;
+		if (usesOtherScore)
+			BestPowersDataGridView.Columns[7].HeaderText = Tournament.ScoringSystem
+																	 .OtherScoreAlias;
 	}
 
 	private void PrintButton_Click(object sender,

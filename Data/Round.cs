@@ -168,7 +168,7 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 									 .Any(playerConflict => playerConflict.Value < 0 && playerConflict.ConflictedPlayerIds.All(SeedingIds))
 						   || seeding.SelectMany(static gamePlayer => gamePlayer.Player.Groups)
 									 .Distinct()
-									 .Any(game => game.Conflict < 0 && game.Players.Ids().Count(SeedingIds) > 1);
+									 .Any(game => game.Conflict < 0 && game.Players.Ids.Count(SeedingIds) > 1);
 
 			//	Get the total to beat.
 			var totalConflict = CalculateConflict();
