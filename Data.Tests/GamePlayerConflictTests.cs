@@ -148,8 +148,7 @@ public sealed class GamePlayerConflictTests : TestBase
 							Add<ScoringSystem>(map);
 						}))
 		{
-			var total = gp1.CalculateConflict(true);
-			Assert.Equal(0, total);
+			Assert.Equal(0, gp1.CalculateConflict(true));
 			Assert.Contains("No conflicts.", gp1.ConflictDetails);
 		}
 	}

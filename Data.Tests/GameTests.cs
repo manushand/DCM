@@ -92,8 +92,7 @@ public sealed class GameTests : TestBase
 		// Ensure the cache has an entry for GamePlayer but with zero entries for this Game
 		using (SeedGamePlayersCache([]))
 		{
-			var ok = g.CalculateScores(out var issues);
-			Assert.False(ok);
+			Assert.False(g.CalculateScores(out var issues));
 			Assert.False(g.Scored);
 			Assert.Contains("All powers must be assigned.", issues);
 		}
@@ -106,9 +105,7 @@ public sealed class GameTests : TestBase
 		var players = SevenPlayersFor(g);
 		using (SeedGamePlayersCache(players))
 		{
-			var system = new ScoringSystem { FinalScoreFormula = "1", SignificantDigits = 0 };
-			var ok = g.CalculateScores(out var errors, system);
-			Assert.True(ok);
+			Assert.True(g.CalculateScores(out var errors, new () { FinalScoreFormula = "1", SignificantDigits = 0 }));
 			Assert.True(g.Scored);
 			Assert.DoesNotContain(errors, static e => e is not null && (e.StartsWith("No solo") || e.StartsWith("All powers")));
 			Assert.All(players, static p => Assert.Equal(1, p.FinalScore));
@@ -123,8 +120,7 @@ public sealed class GameTests : TestBase
 		using (SeedGamePlayersCache(players))
 		{
 			g.ScoringSystem = new () { FinalScoreFormula = "2", SignificantDigits = 0, Id = 5 };
-			var overrideSystem = new ScoringSystem { FinalScoreFormula = "3", SignificantDigits = 0 };
-			Assert.True(g.CalculateScores(out _, overrideSystem));
+			Assert.True(g.CalculateScores(out _, new () { FinalScoreFormula = "3", SignificantDigits = 0 }));
 			Assert.All(players, static p => Assert.Equal(3, p.FinalScore));
 		}
 	}

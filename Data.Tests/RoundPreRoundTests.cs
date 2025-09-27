@@ -55,14 +55,12 @@ public sealed class RoundPreRoundTests : TestBase
 							Add<ScoringSystem>(map);
 						}))
 		{
-			var roundAvg = r2.PreGameAverage(new ()
-											 {
-												 Game = new () { Round = r2, Date = new (2024, 2, 1) },
-												 Player = p
-											 });
-			var roundSum = r2.PreRoundScore(p);
-			Assert.Equal(6.0, roundSum);
-			Assert.Equal(6.0, roundAvg);
+			Assert.Equal(6.0, r2.PreRoundScore(p));
+			Assert.Equal(6.0, r2.PreGameAverage(new ()
+												{
+													Game = new () { Round = r2, Date = new (2024, 2, 1) },
+													Player = p
+												}));
 		}
 	}
 
@@ -130,9 +128,7 @@ public sealed class RoundPreRoundTests : TestBase
 							Add(map,  group);
 						}))
 		{
-			var targetGame = new Game { Round = r2, Date = new (2024, 2, 1) };
-			var gpTarget = new GamePlayer { Game = targetGame, Player = p };
-			var avg = r2.PreGameAverage(gpTarget);
+			var avg = r2.PreGameAverage(new () { Game = new () { Round = r2, Date = new (2024, 2, 1) }, Player = p });
 			var sum = r2.PreRoundScore(p);
 			// For group tournaments, roundsPrior = 1, so only one prior round (r1) is included in PreRound aggregates
 			Assert.Equal(3.0, sum);

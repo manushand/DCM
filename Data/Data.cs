@@ -494,15 +494,13 @@ public static partial class Data
 	{
 		OpenConnection();
 		List<T> records = [];
-		using (var command = Command($"SELECT * FROM {TableName<T>()}{record?.WhereClause()}"))
+		using var command = Command($"SELECT * FROM {TableName<T>()}{record?.WhereClause()}");
+		using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
+		while (reader.Read())
 		{
-			using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
-			while (reader.Read())
-			{
-				var t = new T();
-				t.Load(reader);
-				records.Add(t);
-			}
+			var t = new T();
+			t.Load(reader);
+			records.Add(t);
 		}
 		CloseConnection();
 		return records;

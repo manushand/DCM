@@ -29,8 +29,7 @@ public sealed class RoundSeedTests : TestBase
 		// Seed empty cache maps to prevent any DB-backed loads during the precondition check
 		using (SeedCache())
 		{
-			var list = new List<RoundPlayer> { new (), new (), new () }; // 3 is not multiple of 7
-			var ex = Assert.Throws<ArgumentOutOfRangeException>(() => r.Seed(list, false));
+			var ex = Assert.Throws<ArgumentOutOfRangeException>(() => r.Seed([new ()], false)); // 1 is not multiple of 7
 			Assert.Contains("Invalid number of roundPlayers", ex.Message);
 		}
 	}

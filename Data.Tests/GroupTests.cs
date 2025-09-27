@@ -51,7 +51,7 @@ public sealed class GroupTests : TestBase
 							Add<Tournament>(map);
 							Add<Game>(map);
 						}))
-			Assert.Equal(Expected, group.Players.Select(static p => p.Id).OrderBy(static x => x).ToArray());
+			Assert.Equal(Expected, group.Players.Select(static p => p.Id).OrderBy(static x => x));
 	}
 
 	[Fact]
@@ -111,8 +111,8 @@ public sealed class GroupTests : TestBase
 							 Add<ScoringSystem>(map);
 						 }))
 		{
-			var games = group.Games;
-			Assert.Equal(ExpectedArray, games.Select(static g => g.Id).ToArray()); // ordered by Date ascending
+			Assert.Equal(ExpectedArray, group.Games
+											 .Select(static g => g.Id)); // ordered by Date ascending
 			Assert.Single(group.FinishedGames);
 			Assert.Equal(1001, group.FinishedGames[0].Id);
 		}

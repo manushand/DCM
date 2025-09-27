@@ -72,7 +72,7 @@ public sealed class PlayerTests : TestBase
 							Add(map, r1, r2);
 							AddEmpties(map);
 						}))
-			Assert.Equal(ExpectedGameIds, p.Games.Select(static g => g.Id).ToArray());
+			Assert.Equal(ExpectedGameIds, p.Games.Select(static g => g.Id));
 	}
 
 	[Fact]
@@ -148,12 +148,10 @@ public sealed class PlayerTests : TestBase
 						}))
 		{
 			// Tournament.None => all
-			var allTeams = p.Teams(Tournament.None)
-							.Select(static x => x.Id)
-							.OrderBy(static x => x)
-							.ToArray();
-			Assert.Equal(Expected, allTeams);
-			Assert.Equal(ExpectedArray, p.Teams(t1).Select(static x => x.Id).ToArray());
+			Assert.Equal(Expected, p.Teams(Tournament.None)
+									.Select(static x => x.Id)
+									.OrderBy(static x => x));
+			Assert.Equal(ExpectedArray, p.Teams(t1).Select(static x => x.Id));
 		}
 	}
 
