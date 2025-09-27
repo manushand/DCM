@@ -167,9 +167,9 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			SkipHandlers(() => ScoringSystemComboBox.SetSelectedItem(Round.ScoringSystem));
 			return;
 		}
-		//	Before changing the Round's system, if completed games that would go to the new
-		//	default are instead to stay with their current system, create a Dictionary that
-		//	retains their current systems, so that we can restore them.
+		//	Before changing the Round's system, if any completed games that would go to the
+		//	new default are instead to stay with their current system, create a Dictionary
+		//	that retains their current systems, so that we can restore them.
 		var retainedSystems = answer is DialogResult.Yes
 								  ? null
 								  : finishedGames.ToDictionary(static game => game.Id, static game => game.ScoringSystem);

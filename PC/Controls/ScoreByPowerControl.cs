@@ -9,16 +9,15 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 	internal ScoreByPowerControl()
 	{
 		InitializeComponent();
-		BestGamesTabControl.TabPages
-						   .Clear();
+		var tabPages = BestGamesTabControl.TabPages;
+		tabPages.Clear();
 		// foreach (PowerNames power in Enum.GetValues<PowerNames>()) puts TBD at the end!
 		for (var power = TBD; power <= Turkey; ++power)
-			BestGamesTabControl.TabPages
-							   .Add(new TabPage
-									{
-										Text = $" {(power is TBD ? "OVERALL" : power.InCaps)} ",
-										BackColor = power.CellStyle.BackColor
-									});
+			tabPages.Add(new TabPage
+						 {
+							 Text = $" {(power is TBD ? "OVERALL" : power.InCaps)} ",
+							 BackColor = power.CellStyle.BackColor
+						 });
 	}
 
 	#endregion
@@ -164,23 +163,21 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		BestPowersDataGridView.AlignColumn(MiddleLeft, 2); // ...and player name,...
 		BestPowersDataGridView.FillColumn(2); // ...which is the column that gets the fill-space.
 		var overall = BestGamesTabControl.SelectedIndex is 0;
-		BestPowersDataGridView.Columns[0].Visible =
-			BestPowersDataGridView.Columns[4].Visible =
+		var columns = BestPowersDataGridView.Columns;
+		columns[0].Visible =
+			columns[4].Visible =
 				overall;
-		BestPowersDataGridView.Columns[1].Visible = !overall;
+		columns[1].Visible = !overall;
 		if (overall)
 			BestPowersDataGridView.PowerCells(4);
-		BestPowersDataGridView.Columns[5].Visible = Tournament.ScoringSystem
-															  .UsesCenterCount;
-		BestPowersDataGridView.Columns[6].Visible = Tournament.ScoringSystem
-															  .UsesYearsPlayed;
+		var scoringSystem = Tournament.ScoringSystem;
+		columns[5].Visible = scoringSystem.UsesCenterCount;
+		columns[6].Visible = scoringSystem.UsesYearsPlayed;
 		var usesOtherScore =
-			BestPowersDataGridView.Columns[7].Visible =
-				Tournament.ScoringSystem
-						  .UsesOtherScore;
+			columns[7].Visible =
+				scoringSystem.UsesOtherScore;
 		if (usesOtherScore)
-			BestPowersDataGridView.Columns[7].HeaderText = Tournament.ScoringSystem
-																	 .OtherScoreAlias;
+			columns[7].HeaderText = scoringSystem.OtherScoreAlias;
 	}
 
 	private void PrintButton_Click(object sender,

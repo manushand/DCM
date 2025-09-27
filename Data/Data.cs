@@ -294,7 +294,7 @@ public static partial class Data
 
 	public static bool NameExists<T>(T updating)
 		where T : IdInfoRecord
-		=> ReadByName<T>(updating.Name)?.IsNot(updating) is not true;
+		=> ReadByName<T>(updating.Name)?.Is(updating) is false;
 
 	//	Important (for some reason): note that in all cases where we open and close the
 	//	database connection, we wait until the connection is closed to update the cache.
