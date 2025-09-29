@@ -92,9 +92,9 @@ internal sealed partial class ScoreByPowerControl : UserControl, IScoreControl
 		[DisplayName(nameof (Power))]
 		public string PowerName => GamePlayer.PowerName;
 
-		public string? Centers => GamePlayer.Centers?.ToString();
+		public string Centers => $"{GamePlayer.Centers}";
 
-		public string? Year => GamePlayer.Years?.ToString();
+		public string Year => $"{GamePlayer.Years}";
 
 		public string Other => $"{GamePlayer.Other}";
 

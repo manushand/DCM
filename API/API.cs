@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Text.Json.JsonSerializer;
 using static System.Text.Json.Serialization.JsonIgnoreCondition;
 using static System.Threading.Monitor;
@@ -106,10 +107,11 @@ internal static class API
 					   {
 						   var response = context.Response;
 						   response.StatusCode = HttpStatusCode.InternalServerError.AsInteger;
-						   response.ContentType = "application/json";
-						   var handler = context.Features.Get<IExceptionHandlerPathFeature>();
-						   Error error = new (handler.OrThrow("Unknown error").Error);
-						   return response.WriteAsync(Serialize(error));
+						   response.ContentType = Application.Json;
+						   return response.WriteAsync(Serialize(new Error(context.Features
+																				 .Get<IExceptionHandlerPathFeature>()
+																				 .OrThrow("Unknown error")
+																				 .Error)));
 					   });
 	}
 
@@ -129,7 +131,7 @@ internal static class API
 
 	private static async Task Handle(HttpContext context, RequestDelegate next)
 	{
-		var user = context.Request.Headers.Authorization.ToString();
+		var user = $"{context.Request.Headers.Authorization}";
 		if (!Users.TryGetValue(user, out var connectionString))
 			throw new UnauthorizedAccessException($"Bad {nameof (context.Request.Headers.Authorization)}");
 		lock (Locker)

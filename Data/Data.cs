@@ -73,24 +73,30 @@ public static partial class Data
 		}
 
 		internal double Double(string columnName)
-			=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (double)
-				   ? record.GetDouble(record.GetOrdinal(columnName))
-				   : Convert.ToDouble(Decimal(record, columnName));
+		{
+			var ordinal = record.GetOrdinal(columnName);
+			return record.GetFieldType(ordinal) == typeof (double)
+					   ? record.GetDouble(ordinal)
+					   : Convert.ToDouble(Decimal(record, columnName));
+		}
 
 		internal decimal Decimal(string columnName)
-			=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (decimal)
-				   ? record.GetDecimal(record.GetOrdinal(columnName))
-				   : Convert.ToDecimal(Double(record, columnName));
+		{
+			var ordinal = record.GetOrdinal(columnName);
+			return record.GetFieldType(ordinal) == typeof (decimal)
+					   ? record.GetDecimal(ordinal)
+					   : Convert.ToDecimal(Double(record, columnName));
+		}
 
 		internal int Integer(string columnName)
 			=> record.GetInt32(record.GetOrdinal(columnName));
 
 		internal int? NullableInteger(string columnName)
 		{
-			var column = record.GetOrdinal(columnName);
-			return record.IsDBNull(column)
+			var ordinal = record.GetOrdinal(columnName);
+			return record.IsDBNull(ordinal)
 					   ? null
-					   : record.GetInt32(column);
+					   : record.GetInt32(ordinal);
 		}
 
 		internal T IntegerAs<T>(string columnName)
@@ -426,7 +432,7 @@ public static partial class Data
 	];
 
 	private static readonly string[] OfficeVersionFolders = ["14.0", "16.0"];
-	private static readonly string FieldValuesLineSplitter = $"{Comma}{NewLine}";
+	private static readonly string FieldValuesLineSplitter = Comma + NewLine;
 	private static readonly Dictionary<string, DbConnection> Connections = new ();
 
 	private static DbConnection? _connection;

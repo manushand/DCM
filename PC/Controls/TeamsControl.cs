@@ -209,7 +209,7 @@ internal sealed partial class TeamsControl : UserControl
 								   ? ReadMany<TournamentPlayer>(tp => tp.TournamentId == Tournament.Id).Select(static tp => tp.Player)
 								   : ReadAll<Player>();
 		var nonMembers = candidatePlayers.Where(player => (Tournament.PlayerCanJoinManyTeams || !player.Teams(Tournament).Any())
-														  && !memberIds.Contains(player.Id))
+													   && !memberIds.Contains(player.Id))
 										 .Sorted(LastNameRadioButton.Checked);
 		NonMemberListBox.FillWith(nonMembers);
 		if (selectedNonMember is not null)

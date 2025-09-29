@@ -77,7 +77,7 @@ internal sealed partial class ScoringSystemInfoForm : Form
 			PlayerAnteFormulaTextBox.Text = ScoringSystem.PlayerAnteFormula;
 			SignificantDigitsComboBox.SelectedIndex = ScoringSystem.SignificantDigits;
 			TotalPointsFixedCheckBox.Checked = ScoringSystem.PointsPerGame is not null;
-			PointsPerGameTextBox.Text = ScoringSystem.PointsPerGame?.ToString();
+			PointsPerGameTextBox.Text = $"{ScoringSystem.PointsPerGame}";
 			OtherScoringCheckBox.Checked = ScoringSystem.OtherScoreAlias.Length is not 0;
 			OtherAliasTextBox.Text = ScoringSystem.OtherScoreAlias;
 			UsesProvisionalScoreCheckBox.Checked = ScoringSystem.UsesProvisionalScore;

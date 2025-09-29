@@ -324,7 +324,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		{
 			gamePlayer.PrepareForSeeding();
 			gamePlayer.Game
-					  .GamePlayers.ForEach(static participant => participant.CalculateConflict());
+					  .GamePlayers
+					  .ForEach(static participant => participant.CalculateConflict());
 			if (sameGame)
 				break;
 		}
@@ -486,7 +487,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		view.FillColumn(0);
 		view.AlignColumn(MiddleRight, 1);
 		view.Columns[1].Visible = SortByScoreCheckBox.Visible
-								  && SortByScoreCheckBox.Checked;
+							   && SortByScoreCheckBox.Checked;
 		view.AlternatingRowsDefaultCellStyle.BackColor = view.Columns[1].Visible
 															 ? SystemColors.ControlLight
 															 : view.DefaultCellStyle
@@ -815,10 +816,10 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		if (games.Length is 0 || games.Any(static game => game.Status is not Seeded))
 			throw new InvalidOperationException(); //	TODO
 		if (!SkippingHandlers
-			&& MessageBox.Show($"Are you sure you want to unseed the {"seeded game".Pluralize(games, true)}?",
-							   "Confirm Game Unseeding",
-							   YesNo,
-							   Question) is DialogResult.No)
+		&& MessageBox.Show($"Are you sure you want to unseed the {"seeded game".Pluralize(games, true)}?",
+						   "Confirm Game Unseeding",
+						   YesNo,
+						   Question) is DialogResult.No)
 			return;
 		Delete(games.SelectMany(static game => game.GamePlayers));
 		Delete(games);
@@ -894,17 +895,14 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	}
 
 	[PublicAPI]
-	private sealed class SeededPlayer : IRecord
+	private sealed class SeededPlayer(GamePlayer gamePlayer) : IRecord
 	{
 		public char Game => GamePlayer.Game.Letter;
 		public Player Player => GamePlayer.Player;
 		public string Power => GamePlayer.Power.InCaps;
 		public string Status => GamePlayer.Status;
 
-		internal GamePlayer GamePlayer { get; }
-
-		internal SeededPlayer(GamePlayer gamePlayer)
-			=> GamePlayer = gamePlayer;
+		internal readonly GamePlayer GamePlayer = gamePlayer;
 	}
 
 	#endregion

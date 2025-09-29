@@ -146,7 +146,7 @@ internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 			{
 				var playerFromId = Player.GetById(player.Player?.Id ?? default);
 				if (playerFromId.IsNone)
-					return ["Invalid Player Id {player.Player?.Id}"];
+					return [$"Invalid Player Id {player.Player?.Id}"];
 				updatedPlayers.Add(new ()
 								   {
 									   Game = Record,

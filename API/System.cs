@@ -12,7 +12,6 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 	public enum Languages : byte
 	{
 		DCM,
-
 		[EnumMember(Value = "C#")]
 		CSharp
 	}

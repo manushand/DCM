@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Data.Tests;
+﻿namespace Data.Tests;
 
 [PublicAPI]
 public sealed class RoundSeedTests : TestBase
