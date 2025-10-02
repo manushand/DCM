@@ -98,9 +98,8 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 			return NotFound();
 		if (members)
 			return Ok(record.Players);
-		var memberIds = record.Players
-							  .Select(static player => player.Id)
-							  .ToList();
+		int[] memberIds = [..record.Players
+								   .Select(static player => player.Id)];
 		return Ok(Player.RestFrom(ReadMany<Data.Player>(player => !memberIds.Contains(player.Id))));
 	}
 
@@ -130,13 +129,14 @@ internal sealed class Group : Rest<Group, Data.Group, Group.Detail>
 
 	private protected override string[] UpdateRecordForDatabase(Group group)
 	{
-		if (group.Details is null)
+		var details = group.Details;
+		if (details is null)
 			return ["Details are required"];
 		// TODO
 		Record.Name = group.Name;
-		Record.Description = group.Details.Description?.Trim() ?? string.Empty;
-		Record.ScoringSystem = System.GetById(group.Details.SystemId);
-		Record.Conflict = group.Details.Conflict;
+		Record.Description = details.Description?.Trim() ?? string.Empty;
+		Record.ScoringSystem = System.GetById(details.SystemId);
+		Record.Conflict = details.Conflict;
 		return [];
 	}
 

@@ -13,17 +13,19 @@ internal sealed class Game : Rest<Game, Data.Game, Game.Detail>
 	{
 		Number = record.Number;
 		Status = record.Status;
+		var tournament = record.Tournament;
+		var round = record.Round;
 		Info = new ()
 			   {
-				   Description = Record.Tournament.IsEvent
-									 ? $"{Record.Tournament} - Round {Record.Round.Number} - Game {Record.Letter}"
-									 : $"{Record.Tournament.Group} - Game {Record.Number}",
-				   GroupId = Record.Tournament.GroupId,
-				   TournamentId = Record.Tournament.IsEvent
-									  ? Record.Tournament.Id
+				   Description = tournament.IsEvent
+									 ? $"{tournament} - Round {round.Number} - Game {Record.Letter}"
+									 : $"{tournament.Group} - Game {Number}",
+				   GroupId = tournament.GroupId,
+				   TournamentId = tournament.IsEvent
+									  ? tournament.Id
 									  : null,
-				   RoundNumber = Record.Tournament.IsEvent
-									 ? Record.Round.Number
+				   RoundNumber = tournament.IsEvent
+									 ? round.Number
 									 : null,
 				   Players = Record.GamePlayers.Select(static gamePlayer => new GamePlayer(gamePlayer))
 			   };

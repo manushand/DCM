@@ -341,29 +341,32 @@ internal sealed class Event : Rest<Event, Data.Tournament, Event.Detail>
 		Record.Description = details.Description ?? string.Empty;
 		Record.TotalRounds = details.TotalRounds;
 
-		if (details.TeamTournament?.TeamSize is null or 0)
+		var teamTournament = details.TeamTournament;
+		if (teamTournament?.TeamSize is null or 0)
 			Record.TeamSize = 0;
 		else
 		{
-			Record.TeamSize = details.TeamTournament.TeamSize;
-			Record.TeamsPlayMultipleRounds = details.TeamTournament.TeamsPlayMultipleRounds;
-			Record.PlayerCanJoinManyTeams = details.TeamTournament.PlayerCanJoinManyTeams;
-			Record.TeamRound = details.TeamTournament.TeamRound ?? default;
+			Record.TeamSize = teamTournament.TeamSize;
+			Record.TeamsPlayMultipleRounds = teamTournament.TeamsPlayMultipleRounds;
+			Record.PlayerCanJoinManyTeams = teamTournament.PlayerCanJoinManyTeams;
+			Record.TeamRound = teamTournament.TeamRound ?? default;
 		}
 
-		Record.AssignPowers = details.Seeding.AssignPowers;
-		Record.GroupPowers = details.Seeding.GroupPowers;
-		Record.PlayerConflict = details.Seeding.PlayerConflict;
-		Record.PowerConflict = details.Seeding.PowerConflict;
-		Record.ProgressiveScoreConflict = details.Seeding.ProgressiveScoreConflict;
+		var seeding = details.Seeding;
+		Record.AssignPowers = seeding.AssignPowers;
+		Record.GroupPowers = seeding.GroupPowers;
+		Record.PlayerConflict = seeding.PlayerConflict;
+		Record.PowerConflict = seeding.PowerConflict;
+		Record.ProgressiveScoreConflict = seeding.ProgressiveScoreConflict;
 
-		Record.ScoringSystem = System.GetById(details.Scoring.SystemId);
-		Record.UnplayedScore = details.Scoring.UnplayedScore;
-		Record.MinimumRounds = details.Scoring.MinimumRounds;
-		Record.RoundsToDrop = details.Scoring.RoundsToDrop;
-		Record.DropBeforeFinalRound = details.Scoring.DropBeforeFinalRound;
-		Record.RoundsToScale = details.Scoring.RoundsToScale;
-		Record.ScalePercentage = details.Scoring.RoundsToScale;
+		var scoring = details.Scoring;
+		Record.ScoringSystem = System.GetById(scoring.SystemId);
+		Record.UnplayedScore = scoring.UnplayedScore;
+		Record.MinimumRounds = scoring.MinimumRounds;
+		Record.RoundsToDrop = scoring.RoundsToDrop;
+		Record.DropBeforeFinalRound = scoring.DropBeforeFinalRound;
+		Record.RoundsToScale = scoring.RoundsToScale;
+		Record.ScalePercentage = scoring.RoundsToScale;
 		return [];
 	}
 }

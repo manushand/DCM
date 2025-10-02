@@ -24,10 +24,7 @@ internal class Player : Rest<Player, Data.Player, Player.Detail>
 	{
 		FirstName = record.FirstName;
 		LastName = record.LastName;
-		Info = new ()
-			   {
-				   EmailAddresses = Record.EmailAddresses.NullIfEmpty()
-			   };
+		Info = new () { EmailAddresses = Record.EmailAddresses.NullIfEmpty() };
 	}
 
 	internal static void CreateEndpoints(WebApplication app)

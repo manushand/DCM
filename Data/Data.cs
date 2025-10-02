@@ -43,11 +43,14 @@ public static partial class Data
 
 	#region Extensions
 
-	extension<T>(IEnumerable<T> linkRecords)
+	extension<T>([InstantHandle] IEnumerable<T> linkRecords)
 		where T : LinkRecord
 	{
 		public bool HasPlayerId(int playerId)
 			=> linkRecords.Any(linkRecord => linkRecord.PlayerId == playerId);
+
+		public T ByPlayerId(int playerId)
+			=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
 
 		internal IEnumerable<T> WithPlayerId(int playerId)
 			=> linkRecords.Where(linkRecord => linkRecord.PlayerId == playerId);
@@ -102,7 +105,7 @@ public static partial class Data
 		internal T IntegerAs<T>(string columnName)
 			where T : Enum
 			=> record.Integer(columnName)
-				.As<T>();
+					 .As<T>();
 
 		internal DateTime? NullableDate(string columnName)
 		{
@@ -126,11 +129,6 @@ public static partial class Data
 		where T2 : IComparable<T2>
 		=> items.Select(func)
 				.Order();
-
-	public static T ByPlayerId<T>([InstantHandle] this IEnumerable<T> linkRecords,
-								  int playerId)
-		where T : LinkRecord
-		=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
 
 	internal static int ForSql<T>(this T value)
 		where T : Enum
@@ -161,7 +159,7 @@ public static partial class Data
 									   Powers power1,
 									   Powers power2)
 	{
-		var groupings = (typeof (PowerGroups).GetField(groups.ToString())
+		var groupings = (typeof (PowerGroups).GetField($"{groups}")
 											 ?.GetCustomAttribute(typeof (PowerGroupingsAttribute)) as PowerGroupingsAttribute)
 						?.Groups
 						?? throw new InvalidOperationException("Missing PowerGroupings attribute");

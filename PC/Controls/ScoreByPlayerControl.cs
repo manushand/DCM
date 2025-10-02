@@ -289,9 +289,8 @@ internal sealed partial class ScoreByPlayerControl : UserControl, IScoreControl
 		FinalScoresDataGridView.FillColumn(1);
 		FinalScoresDataGridView.AlignColumn(MiddleLeft, 1);
 		FinalScoresDataGridView.AlignColumn(MiddleRight, 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
-		int[] scoredRounds = [..Tournament.FinishedGames
-										  .Select(static game => game.Round.Number)
-										  .Distinct()];
+		HashSet<int> scoredRounds = [..Tournament.FinishedGames
+												 .Select(static game => game.Round.Number)];
 		ForRange(1, 9, roundNumber => FinalScoresDataGridView.Columns[2 + roundNumber].Visible = scoredRounds.Contains(roundNumber));
 		FinalScoresDataGridView.Columns[12].Visible = Tournament.ScoringSystem.UsesCenterCount;
 		FinalScoresDataGridView.Columns[13].Visible = Tournament.ScoringSystem.UsesYearsPlayed;

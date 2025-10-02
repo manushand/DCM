@@ -98,28 +98,29 @@ internal sealed class System : Rest<System, ScoringSystem, System.Detail>
 
 	private protected override string[] UpdateRecordForDatabase(System system)
 	{
-		if (system.Details is null)
+		var details = system.Details;
+		if (details is null)
 			return ["No details provided."];
 		//	TODO - add more validation
 
 		Record.Name = system.Name;
 
-		Record.PointsPerGame = system.Details.PointsPerGame;
-		Record.SignificantDigits = system.Details.SignificantDigits;
-		Record.DrawPermissions = system.Details.DrawPermissions;
-		Record.FinalGameYear = system.Details.FinalGameYear;
-		Record.UsesGameResult = system.Details.UsesGameResult;
-		Record.UsesCenterCount = system.Details.UsesCenterCount;
-		Record.UsesYearsPlayed = system.Details.UsesYearsPlayed;
-		Record.OtherScoreAlias = system.Details.OtherScoreAlias ?? string.Empty;
-		Record.PlayerAnteFormula = system.Details.PlayerAnteFormula ?? string.Empty;
-		Record.ProvisionalScoreFormula = system.Details.ProvisionalScoreFormula ?? string.Empty;
-		Record.FinalScoreFormula = system.Details.FinalScoreFormula;
-		Record.SetCompiledFormulae(system.Details.Language is CSharp);
+		Record.PointsPerGame = details.PointsPerGame;
+		Record.SignificantDigits = details.SignificantDigits;
+		Record.DrawPermissions = details.DrawPermissions;
+		Record.FinalGameYear = details.FinalGameYear;
+		Record.UsesGameResult = details.UsesGameResult;
+		Record.UsesCenterCount = details.UsesCenterCount;
+		Record.UsesYearsPlayed = details.UsesYearsPlayed;
+		Record.OtherScoreAlias = details.OtherScoreAlias ?? string.Empty;
+		Record.PlayerAnteFormula = details.PlayerAnteFormula ?? string.Empty;
+		Record.ProvisionalScoreFormula = details.ProvisionalScoreFormula ?? string.Empty;
+		Record.FinalScoreFormula = details.FinalScoreFormula;
+		Record.SetCompiledFormulae(details.Language is CSharp);
 		try
 		{
 			Tester.SetTestGameSystem(this);
-			var testData = system.Details.TestGame.Select(static player => player.Record).ToList();
+			var testData = details.TestGame.Select(static player => player.Record).ToList();
 			if (testData.Count is not 7
 			|| testData.Any(power => power.Power is Powers.TBD
 								  || Record.UsesYearsPlayed && (power.Years < 1 || power.Years > Record.FinalGameYear - 1900)

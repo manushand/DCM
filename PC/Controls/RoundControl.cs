@@ -697,7 +697,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
         {
 			if (listsToFill.HasFlag(ListsToFill.Unregistered))
 			{
-				List<int>? tournamentPlayerIds;
+				HashSet<int>? tournamentPlayerIds;
 				if (WhichPlayersTabControl.SelectedIndex is 0)
 					tournamentPlayerIds =
 					[

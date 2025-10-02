@@ -155,8 +155,10 @@ public sealed partial class Scoring
 					 IReadOnlyCollection<GamePlayer> gamePlayers)
 	{
 		ScoringSystem = scoringSystem;
-		GamePlayers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, static gamePlayer => gamePlayer);
-		Powers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power, gamePlayer => new PowerData(this, gamePlayer));
+		GamePlayers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power,
+											   static gamePlayer => gamePlayer);
+		Powers = gamePlayers.ToDictionary(static gamePlayer => gamePlayer.Power,
+										  gamePlayer => new PowerData(this, gamePlayer));
 	}
 
 	#endregion
