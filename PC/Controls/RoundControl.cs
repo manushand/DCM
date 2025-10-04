@@ -681,51 +681,35 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		if (SkippingHandlers)
 			return;
 		var games = Round.Games;
-		GamePlayer[] gamePlayers = [..games.SelectMany(static game => game.GamePlayers)];
-		int[] gamePlayerIds = [..gamePlayers.Select(static gamePlayer => gamePlayer.PlayerId)];
+		HashSet<GamePlayer> gamePlayers = [..games.SelectMany(static game => game.GamePlayers)];
+		HashSet<int> gamePlayerIds = [..gamePlayers.Select(static gamePlayer => gamePlayer.PlayerId)];
 		var roundPlayerIds = Round.RoundPlayers
 								  .Select(static roundPlayer => roundPlayer.PlayerId)
-								  .Where(id => !gamePlayerIds.Contains(id))
-								  .ToList();
-		roundPlayerIds.AddRange(Tournament.TournamentPlayers
-										  .Where(tp => tp.RegisteredForRound(Round.Number))
-										  .Select(static tp => tp.PlayerId));
-		//	This next assignment SHOULD be unnecessary overkill but can't hurt.
-		roundPlayerIds = [..roundPlayerIds.Where(id => !gamePlayerIds.Contains(id))
-										  .Distinct()]; //	Just in case!
+								  .Concat(Tournament.TournamentPlayers
+													.Where(tp => tp.RegisteredForRound(Round.Number))
+													.Select(static tp => tp.PlayerId))
+								  .Where(id => !gamePlayerIds.Contains(id)) // SHOULD be overkill but can't hurt
+								  .ToHashSet();
 		SkipHandlers(() =>
         {
 			if (listsToFill.HasFlag(ListsToFill.Unregistered))
 			{
-				HashSet<int>? tournamentPlayerIds;
-				if (WhichPlayersTabControl.SelectedIndex is 0)
-					tournamentPlayerIds =
-					[
-						//	Everyone pre-registered for any round in the tournament
-						..Tournament.TournamentPlayers.Select(static tp => tp.PlayerId),
-						//	And everyone who has been a RoundPlayer in any round of the tournament
-						..Tournament.Rounds
-									.SelectMany(static round => round.RoundPlayers)
-									.Select(static rp => rp.PlayerId)
-					];
-				else
-					//	Everyone at all
-					tournamentPlayerIds = null;
-
-				SeedablePlayer[] unregisteredPlayers = [..ReadMany<Player>(player => tournamentPlayerIds?.Contains(player.Id) is not false
-																				  && !gamePlayerIds.Contains(player.Id)
-																				  && !roundPlayerIds.Contains(player.Id))
-														  .Select(player => new SeedablePlayer(Tournament,
-																							   player,
-																							   tournamentPlayerIds is null
-																								   ? 0
-																								   : null))
-														  .OrderByDescending(player => SortByScoreCheckBox.Checked
-																						   ? player.ScoreBeforeRound
-																						   : 0)
-														  .ThenBy(player => FirstNameRadioButton.Checked
-																				? player.Player.Name
-																				: player.Player.LastFirst)];
+				HashSet<int>? tournamentPlayerIds = WhichPlayersTabControl.SelectedIndex is 0
+														? [
+															//	Everyone pre-registered for any round in the tournament
+															..Tournament.TournamentPlayers.Select(static tp => tp.PlayerId),
+															//	And everyone who has been a RoundPlayer in any round of the tournament
+															..Tournament.Rounds
+																		.SelectMany(static round => round.RoundPlayers)
+																		.Select(static rp => rp.PlayerId)
+														  ]
+														: null; //	Everyone at all
+				var unregisteredPlayers = OrderedPlayers(player => tournamentPlayerIds?.Contains(player.Id) is not false
+																&& !gamePlayerIds.Contains(player.Id)
+																&& !roundPlayerIds.Contains(player.Id),
+														 tournamentPlayerIds is null
+															 ? 0
+															 : null);
 				UnregisteredDataGridView.DataSource = unregisteredPlayers;
 				UnregisteredCountLabel.Text = $"{"Player".Pluralize(unregisteredPlayers, true)} Listed";
 				UnregisteredDataGridView.Deselect();
@@ -733,18 +717,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 			if (listsToFill.HasFlag(ListsToFill.Registered))
 			{
-				var playerIds = roundPlayerIds;
-				var registeredPlayers = ReadMany<Player>(player => playerIds.Contains(player.Id))
-										.Select(player => new SeedablePlayer(Tournament,
-																			 player,
-																			 Round.Number))
-										.OrderByDescending(player => SortByScoreCheckBox.Checked
-																		 ? player.ScoreBeforeRound
-																		 : default)
-										.ThenBy(player => FirstNameRadioButton.Checked
-															  ? player.Player.Name
-															  : player.Player.LastFirst)
-										.ToList();
+				var registeredPlayers = OrderedPlayers(player => roundPlayerIds.Contains(player.Id),
+													   Round.Number);
 				RegisteredDataGridView.FillWith(registeredPlayers);
 				RegisteredCountLabel.Text = $"{"Player".Pluralize(registeredPlayers, true)} Listed";
 				RegisteredDataGridView.Deselect();
@@ -758,6 +732,18 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			SeededDataGridView.FillWith(seededPlayers);
 			SeededPlayerCountLabel.Text = $"{seededPlayers.Count} Players in {games.Length} Games; Total Conflict {Round.Conflict.Points}";
 			SeededDataGridView.Deselect();
+
+			SeedablePlayer[] OrderedPlayers(Func<Player, bool> func,
+											int? roundNumber)
+				=> [..ReadMany(func).Select(player => new SeedablePlayer(Tournament,
+																		 player,
+																		 roundNumber))
+									.OrderByDescending(player => SortByScoreCheckBox.Checked
+																	 ? player.ScoreBeforeRound
+																	 : 0)
+									.ThenBy(player => FirstNameRadioButton.Checked
+														  ? player.Player.Name
+														  : player.Player.LastFirst)];
         });
 	}
 
