@@ -6,10 +6,10 @@ using System.Runtime.Versioning;
 // associated with an assembly.
 [assembly: AssemblyTitle("DCM")]
 
-[assembly: AssemblyDescription("Contact the ARMADA at http://www.armada-dip.com where the " +
+[assembly: AssemblyDescription("Contact the author at manus@manushand.com for information on where the " +
 							   "latest version of the DCM can be found and downloaded.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("ARMADA (The Association of Rocky Mountain Area Diplomacy Adversaries) and Manus Hand")]
+[assembly: AssemblyCompany("MHDC (The McManus-Hand Diplomacy Club) and Manus Hand")]
 [assembly: AssemblyProduct("The Diplomacy Competition Manager")]
 [assembly: AssemblyCopyright("Copyright © 2018")] //	$"-{DateTime.Now.Year}" is added in the Help/About... MessageBox
 [assembly: AssemblyTrademark("")]

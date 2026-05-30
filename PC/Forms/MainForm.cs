@@ -343,8 +343,8 @@ internal sealed partial class MainForm : Form
 												  EventArgs e)
 	{
 		const string copyright = "Copyright © 2018";
-		const string holderName = "ARMADA (The Association of Rocky Mountain Area Diplomacy Adversaries) and Manus Hand";
-		const string comments = $"Contact the ARMADA at https://www.armada-dip.com where the latest version of the {nameof (DCM)} can be downloaded.";
+		const string holderName = "MHDC (The McManus-Hand Diplomacy Club) and Manus Hand";
+		const string comments = $"Contact the author at manus@manushand.com for information on where the latest version of the {nameof (DCM)} can be downloaded.";
 
 		MessageBox.Show($"The Diplomacy Competition Manager ({nameof (DCM)}) is {copyright}-{DateTime.Now.Year} " +
 						$"{holderName}.{NewLine}{NewLine}{comments}{NewLine}{NewLine}This version: {PC.Version}",

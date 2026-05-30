@@ -35,6 +35,8 @@ internal sealed partial class SqlServerSettingsForm : Form
 	{
 		try
 		{
+			if (DatabaseTextBox.Text.Length is 0)
+				throw new ("Database name cannot be empty.");
 			if (!OpenSqlServerDatabase($"{new SqlConnectionStringBuilder
 										  {
 											  DataSource = ServerNameTextBox.Text,

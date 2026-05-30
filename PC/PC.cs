@@ -317,7 +317,7 @@ internal static class PC
 									 PageNumberInHeader = false,
 									 TableAlignment = Alignment.Center,
 									 ColumnWidth = ColumnWidthSetting.DataWidth,
-									 Footer = $"{nameof (DCM)} © {DateTime.Now.Year} ARMADA",
+									 Footer = $"{nameof (DCM)} © {DateTime.Now.Year} MHDC",
 									 FooterSpacing = 15
 								 };
 			foreach (var cellStyle in printer.ColumnStyles.Values)

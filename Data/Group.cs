@@ -60,15 +60,18 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 				Delete(HostRound.Tournament);
 			}
 			else if (HostRound.IsNone)
+			{
 				HostRound = CreateOne(new Round
 									  {
 										  ScoringSystem = value,
 										  Tournament = CreateOne(new Tournament
 																 {
 																	 Name = $"{this} Group Games",
-																	 Group = this
+																	 Group = this,
+																	 ScoringSystem = value
 																 })
 									  });
+			}
 			else
 			{
 				HostRound.ScoringSystem = value;
