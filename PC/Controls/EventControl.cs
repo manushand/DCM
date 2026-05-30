@@ -317,12 +317,12 @@ internal sealed partial class EventControl : UserControl
 	private void OkButton_Click(object sender,
 								EventArgs e)
 	{
-		var unplayedScore = 0;
-		var playerConflict = 0;
-		var powerConflict = 0;
-		var teamConflict = 0;
-		var scoreConflict = 0;
-		var scaleFactor = 0;
+		int unplayedScore = 0,
+			playerConflict = 0,
+			powerConflict = 0,
+			teamConflict = 0,
+			scoreConflict = 0,
+			scaleFactor = 0;
 		string? error = null;
 		Tournament.Name = NameTextBox.Text
 									 .Trim();
@@ -335,7 +335,7 @@ internal sealed partial class EventControl : UserControl
 		else if (!TryGetInteger(UnplayedScoreTextBox, ref unplayedScore))
 			error = "Unplayed round score must be a number.";
 		else if (!TryGetInteger(ScaleFactorTextBox, ref scaleFactor)
-			  || ScaleCheckBox.Checked && scaleFactor is 0)
+			 || ScaleCheckBox.Checked && scaleFactor is 0)
 			error = "Scaling percentage cannot be zero.";
 		else if (!TryGetInteger(PlayerConflictTextBox, ref playerConflict))
 			error = "Player conflict value must be a number.";

@@ -43,11 +43,14 @@ public static partial class Data
 
 	#region Extensions
 
-	extension<T>(IEnumerable<T> linkRecords)
+	extension<T>([InstantHandle] IEnumerable<T> linkRecords)
 		where T : LinkRecord
 	{
 		public bool HasPlayerId(int playerId)
 			=> linkRecords.Any(linkRecord => linkRecord.PlayerId == playerId);
+
+		public T ByPlayerId(int playerId)
+			=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
 
 		internal IEnumerable<T> WithPlayerId(int playerId)
 			=> linkRecords.Where(linkRecord => linkRecord.PlayerId == playerId);
@@ -73,30 +76,36 @@ public static partial class Data
 		}
 
 		internal double Double(string columnName)
-			=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (double)
-				   ? record.GetDouble(record.GetOrdinal(columnName))
-				   : Convert.ToDouble(Decimal(record, columnName));
+		{
+			var ordinal = record.GetOrdinal(columnName);
+			return record.GetFieldType(ordinal) == typeof (double)
+					   ? record.GetDouble(ordinal)
+					   : Convert.ToDouble(Decimal(record, columnName));
+		}
 
 		internal decimal Decimal(string columnName)
-			=> record.GetFieldType(record.GetOrdinal(columnName)) == typeof (decimal)
-				   ? record.GetDecimal(record.GetOrdinal(columnName))
-				   : Convert.ToDecimal(Double(record, columnName));
+		{
+			var ordinal = record.GetOrdinal(columnName);
+			return record.GetFieldType(ordinal) == typeof (decimal)
+					   ? record.GetDecimal(ordinal)
+					   : Convert.ToDecimal(Double(record, columnName));
+		}
 
 		internal int Integer(string columnName)
 			=> record.GetInt32(record.GetOrdinal(columnName));
 
 		internal int? NullableInteger(string columnName)
 		{
-			var column = record.GetOrdinal(columnName);
-			return record.IsDBNull(column)
+			var ordinal = record.GetOrdinal(columnName);
+			return record.IsDBNull(ordinal)
 					   ? null
-					   : record.GetInt32(column);
+					   : record.GetInt32(ordinal);
 		}
 
 		internal T IntegerAs<T>(string columnName)
 			where T : Enum
 			=> record.Integer(columnName)
-				.As<T>();
+					 .As<T>();
 
 		internal DateTime? NullableDate(string columnName)
 		{
@@ -120,11 +129,6 @@ public static partial class Data
 		where T2 : IComparable<T2>
 		=> items.Select(func)
 				.Order();
-
-	public static T ByPlayerId<T>([InstantHandle] this IEnumerable<T> linkRecords,
-								  int playerId)
-		where T : LinkRecord
-		=> linkRecords.Single(linkRecord => linkRecord.PlayerId == playerId);
 
 	internal static int ForSql<T>(this T value)
 		where T : Enum
@@ -155,7 +159,7 @@ public static partial class Data
 									   Powers power1,
 									   Powers power2)
 	{
-		var groupings = (typeof (PowerGroups).GetField(groups.ToString())
+		var groupings = (typeof (PowerGroups).GetField($"{groups}")
 											 ?.GetCustomAttribute(typeof (PowerGroupingsAttribute)) as PowerGroupingsAttribute)
 						?.Groups
 						?? throw new InvalidOperationException("Missing PowerGroupings attribute");
@@ -294,7 +298,7 @@ public static partial class Data
 
 	public static bool NameExists<T>(T updating)
 		where T : IdInfoRecord
-		=> ReadByName<T>(updating.Name)?.IsNot(updating) is not true;
+		=> ReadByName<T>(updating.Name)?.Is(updating) is false;
 
 	//	Important (for some reason): note that in all cases where we open and close the
 	//	database connection, we wait until the connection is closed to update the cache.
@@ -426,7 +430,7 @@ public static partial class Data
 	];
 
 	private static readonly string[] OfficeVersionFolders = ["14.0", "16.0"];
-	private static readonly string FieldValuesLineSplitter = $"{Comma}{NewLine}";
+	private static readonly string FieldValuesLineSplitter = Comma + NewLine;
 	private static readonly Dictionary<string, DbConnection> Connections = new ();
 
 	private static DbConnection? _connection;
@@ -494,15 +498,13 @@ public static partial class Data
 	{
 		OpenConnection();
 		List<T> records = [];
-		using (var command = Command($"SELECT * FROM {TableName<T>()}{record?.WhereClause()}"))
+		using var command = Command($"SELECT * FROM {TableName<T>()}{record?.WhereClause()}");
+		using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
+		while (reader.Read())
 		{
-			using var reader = command.ExecuteReader(CommandBehavior.KeyInfo);
-			while (reader.Read())
-			{
-				var t = new T();
-				t.Load(reader);
-				records.Add(t);
-			}
+			var t = new T();
+			t.Load(reader);
+			records.Add(t);
 		}
 		CloseConnection();
 		return records;

@@ -87,8 +87,7 @@ public sealed class TournamentTests : TestBase
 		using (SeedTournamentAndRoundsCache(t, [r1, r2]))
 		{
 			// First aggregation
-			var games = t.Games;
-			Assert.Equal(3, games.Length);
+			Assert.Equal(3, t.Games.Length);
 			Assert.Single(t.FinishedGames);
 
 			// Modify a round's games after the first read; Games should remain cached
@@ -119,8 +118,7 @@ public sealed class TournamentTests : TestBase
 
 		using (SeedTournamentAndRoundsCache(t, [rDefault, rOverride]))
 		{
-			var newSystem = new ScoringSystem { Id = 5 };
-			t.ScoringSystem = newSystem;
+			t.ScoringSystem = new () { Id = 5 };
 			// Tournament should adopt new id
 			Assert.Equal(5, GetNonPublicProperty<int>(t, "ScoringSystemId"));
 			// rDefault should now report the new id

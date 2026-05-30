@@ -19,7 +19,7 @@ public sealed class DataQueryCacheTests : TestBase
 		var all = Data.ReadAll<Player>();
 		Assert.Equal(3, all.Count());
 		var many = Data.ReadMany<Player>(static p => p.Id > 1);
-		Assert.Equal(Expected, many.Select(static p => p.Id).ToArray());
+		Assert.Equal(Expected, many.Select(static p => p.Id));
 	}
 
 	[Fact]

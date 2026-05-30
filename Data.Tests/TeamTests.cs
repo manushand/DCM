@@ -65,13 +65,9 @@ public sealed class TeamTests : TestBase
 							Add(map, p1, p2);
 							AddEmpties(map);
 						}))
-		{
-			var players = team.Players
-							  .Select(static x => x.Id)
-							  .OrderBy(static x => x)
-							  .ToArray();
-			Assert.Equal(Expected, players);
-		}
+			Assert.Equal(Expected, team.Players
+									   .Select(static x => x.Id)
+									   .OrderBy(static x => x));
 	}
 
 	[Fact]

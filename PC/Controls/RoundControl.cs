@@ -167,9 +167,9 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			SkipHandlers(() => ScoringSystemComboBox.SetSelectedItem(Round.ScoringSystem));
 			return;
 		}
-		//	Before changing the Round's system, if completed games that would go to the new
-		//	default are instead to stay with their current system, create a Dictionary that
-		//	retains their current systems, so that we can restore them.
+		//	Before changing the Round's system, if any completed games that would go to the
+		//	new default are instead to stay with their current system, create a Dictionary
+		//	that retains their current systems, so that we can restore them.
 		var retainedSystems = answer is DialogResult.Yes
 								  ? null
 								  : finishedGames.ToDictionary(static game => game.Id, static game => game.ScoringSystem);
@@ -324,7 +324,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		{
 			gamePlayer.PrepareForSeeding();
 			gamePlayer.Game
-					  .GamePlayers.ForEach(static participant => participant.CalculateConflict());
+					  .GamePlayers
+					  .ForEach(static participant => participant.CalculateConflict());
 			if (sameGame)
 				break;
 		}
@@ -486,7 +487,7 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		view.FillColumn(0);
 		view.AlignColumn(MiddleRight, 1);
 		view.Columns[1].Visible = SortByScoreCheckBox.Visible
-								  && SortByScoreCheckBox.Checked;
+							   && SortByScoreCheckBox.Checked;
 		view.AlternatingRowsDefaultCellStyle.BackColor = view.Columns[1].Visible
 															 ? SystemColors.ControlLight
 															 : view.DefaultCellStyle
@@ -680,51 +681,35 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		if (SkippingHandlers)
 			return;
 		var games = Round.Games;
-		GamePlayer[] gamePlayers = [..games.SelectMany(static game => game.GamePlayers)];
-		int[] gamePlayerIds = [..gamePlayers.Select(static gamePlayer => gamePlayer.PlayerId)];
+		HashSet<GamePlayer> gamePlayers = [..games.SelectMany(static game => game.GamePlayers)];
+		HashSet<int> gamePlayerIds = [..gamePlayers.Select(static gamePlayer => gamePlayer.PlayerId)];
 		var roundPlayerIds = Round.RoundPlayers
 								  .Select(static roundPlayer => roundPlayer.PlayerId)
-								  .Where(id => !gamePlayerIds.Contains(id))
-								  .ToList();
-		roundPlayerIds.AddRange(Tournament.TournamentPlayers
-										  .Where(tp => tp.RegisteredForRound(Round.Number))
-										  .Select(static tp => tp.PlayerId));
-		//	This next assignment SHOULD be unnecessary overkill but can't hurt.
-		roundPlayerIds = [..roundPlayerIds.Where(id => !gamePlayerIds.Contains(id))
-										  .Distinct()]; //	Just in case!
+								  .Concat(Tournament.TournamentPlayers
+													.Where(tp => tp.RegisteredForRound(Round.Number))
+													.Select(static tp => tp.PlayerId))
+								  .Where(id => !gamePlayerIds.Contains(id)) // SHOULD be overkill but can't hurt
+								  .ToHashSet();
 		SkipHandlers(() =>
         {
 			if (listsToFill.HasFlag(ListsToFill.Unregistered))
 			{
-				List<int>? tournamentPlayerIds;
-				if (WhichPlayersTabControl.SelectedIndex is 0)
-					tournamentPlayerIds =
-					[
-						//	Everyone pre-registered for any round in the tournament
-						..Tournament.TournamentPlayers.Select(static tp => tp.PlayerId),
-						//	And everyone who has been a RoundPlayer in any round of the tournament
-						..Tournament.Rounds
-									.SelectMany(static round => round.RoundPlayers)
-									.Select(static rp => rp.PlayerId)
-					];
-				else
-					//	Everyone at all
-					tournamentPlayerIds = null;
-
-				SeedablePlayer[] unregisteredPlayers = [..ReadMany<Player>(player => tournamentPlayerIds?.Contains(player.Id) is not false
-																				  && !gamePlayerIds.Contains(player.Id)
-																				  && !roundPlayerIds.Contains(player.Id))
-														  .Select(player => new SeedablePlayer(Tournament,
-																							   player,
-																							   tournamentPlayerIds is null
-																								   ? 0
-																								   : null))
-														  .OrderByDescending(player => SortByScoreCheckBox.Checked
-																						   ? player.ScoreBeforeRound
-																						   : 0)
-														  .ThenBy(player => FirstNameRadioButton.Checked
-																				? player.Player.Name
-																				: player.Player.LastFirst)];
+				HashSet<int>? tournamentPlayerIds = WhichPlayersTabControl.SelectedIndex is 0
+														? [
+															//	Everyone pre-registered for any round in the tournament
+															..Tournament.TournamentPlayers.Select(static tp => tp.PlayerId),
+															//	And everyone who has been a RoundPlayer in any round of the tournament
+															..Tournament.Rounds
+																		.SelectMany(static round => round.RoundPlayers)
+																		.Select(static rp => rp.PlayerId)
+														  ]
+														: null; //	Everyone at all
+				var unregisteredPlayers = OrderedPlayers(player => tournamentPlayerIds?.Contains(player.Id) is not false
+																&& !gamePlayerIds.Contains(player.Id)
+																&& !roundPlayerIds.Contains(player.Id),
+														 tournamentPlayerIds is null
+															 ? 0
+															 : null);
 				UnregisteredDataGridView.DataSource = unregisteredPlayers;
 				UnregisteredCountLabel.Text = $"{"Player".Pluralize(unregisteredPlayers, true)} Listed";
 				UnregisteredDataGridView.Deselect();
@@ -732,18 +717,8 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 
 			if (listsToFill.HasFlag(ListsToFill.Registered))
 			{
-				var playerIds = roundPlayerIds;
-				var registeredPlayers = ReadMany<Player>(player => playerIds.Contains(player.Id))
-										.Select(player => new SeedablePlayer(Tournament,
-																			 player,
-																			 Round.Number))
-										.OrderByDescending(player => SortByScoreCheckBox.Checked
-																		 ? player.ScoreBeforeRound
-																		 : default)
-										.ThenBy(player => FirstNameRadioButton.Checked
-															  ? player.Player.Name
-															  : player.Player.LastFirst)
-										.ToList();
+				var registeredPlayers = OrderedPlayers(player => roundPlayerIds.Contains(player.Id),
+													   Round.Number);
 				RegisteredDataGridView.FillWith(registeredPlayers);
 				RegisteredCountLabel.Text = $"{"Player".Pluralize(registeredPlayers, true)} Listed";
 				RegisteredDataGridView.Deselect();
@@ -757,6 +732,18 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 			SeededDataGridView.FillWith(seededPlayers);
 			SeededPlayerCountLabel.Text = $"{seededPlayers.Count} Players in {games.Length} Games; Total Conflict {Round.Conflict.Points}";
 			SeededDataGridView.Deselect();
+
+			SeedablePlayer[] OrderedPlayers(Func<Player, bool> func,
+											int? roundNumber)
+				=> [..ReadMany(func).Select(player => new SeedablePlayer(Tournament,
+																		 player,
+																		 roundNumber))
+									.OrderByDescending(player => SortByScoreCheckBox.Checked
+																	 ? player.ScoreBeforeRound
+																	 : 0)
+									.ThenBy(player => FirstNameRadioButton.Checked
+														  ? player.Player.Name
+														  : player.Player.LastFirst)];
         });
 	}
 
@@ -815,10 +802,10 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 		if (games.Length is 0 || games.Any(static game => game.Status is not Seeded))
 			throw new InvalidOperationException(); //	TODO
 		if (!SkippingHandlers
-			&& MessageBox.Show($"Are you sure you want to unseed the {"seeded game".Pluralize(games, true)}?",
-							   "Confirm Game Unseeding",
-							   YesNo,
-							   Question) is DialogResult.No)
+		&& MessageBox.Show($"Are you sure you want to unseed the {"seeded game".Pluralize(games, true)}?",
+						   "Confirm Game Unseeding",
+						   YesNo,
+						   Question) is DialogResult.No)
 			return;
 		Delete(games.SelectMany(static game => game.GamePlayers));
 		Delete(games);
@@ -894,17 +881,14 @@ internal sealed partial class RoundControl /* to Major Tom */ : UserControl
 	}
 
 	[PublicAPI]
-	private sealed class SeededPlayer : IRecord
+	private sealed class SeededPlayer(GamePlayer gamePlayer) : IRecord
 	{
 		public char Game => GamePlayer.Game.Letter;
 		public Player Player => GamePlayer.Player;
 		public string Power => GamePlayer.Power.InCaps;
 		public string Status => GamePlayer.Status;
 
-		internal GamePlayer GamePlayer { get; }
-
-		internal SeededPlayer(GamePlayer gamePlayer)
-			=> GamePlayer = gamePlayer;
+		internal readonly GamePlayer GamePlayer = gamePlayer;
 	}
 
 	#endregion

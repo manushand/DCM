@@ -62,10 +62,7 @@ public sealed class GamePreGameScoreTests : TestBase
 							Add<PlayerConflict>(map);
 							Add<ScoringSystem>(map);
 						}))
-		{
-			var pre = gNow.PreGameScore(gpNow);
-			Assert.Equal(6.0, pre);
-		}
+			Assert.Equal(6.0, gNow.PreGameScore(gpNow));
 	}
 
 	[Fact]
@@ -127,10 +124,7 @@ public sealed class GamePreGameScoreTests : TestBase
 							Add<TeamPlayer>(map);
 							Add<PlayerConflict>(map);
 						}))
-		{
-			var pre = gNow.PreGameScore(gpNow);
 			// PointsPerGame == 0 => Group.RatePlayer sums (3 + 5) = 8
-			Assert.Equal(8.0, pre);
-		}
+			Assert.Equal(8.0, gNow.PreGameScore(gpNow));
 	}
 }
