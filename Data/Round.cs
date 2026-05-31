@@ -57,7 +57,7 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 	public Tournament Tournament
 	{
-		get => field.Id == TournamentId
+		get => field?.Id == TournamentId
 				   ? field
 				   : field = ReadById<Tournament>(TournamentId);
 		internal init => (field, TournamentId) = (value, value.Id);
