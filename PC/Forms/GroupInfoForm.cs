@@ -146,7 +146,7 @@ internal sealed partial class GroupInfoForm : Form
 		SetVisible(hasSystem, RatingMethodLabel, RatingMethodDescriptionLabel);
 		if (hasSystem)
 			RatingMethodDescriptionLabel.Text = system.UsesPlayerAnte || system.PointsPerGame is 0
-													? "Sum of Game Scores"
+													? $"Sum of {(system.PlayerAnteFormula is "0" ? "Best 7" : "Game")} Scores"
 													: "Average of Game Scores";
 	}
 

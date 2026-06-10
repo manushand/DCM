@@ -132,6 +132,13 @@ public sealed class Group : IdentityRecord<Group>, IdInfoRecord.IEvent
 							 .Select(game => game.GamePlayers
 												 .ByPlayerId(playerId)
 												 .FinalScore)];
+
+		//	TODO: THIS QUIRK IS AN UNDOCUMENTED FEATURE THAT SHOULD BE EXPLAINED IN THE UI
+		//	A system that says it uses a player ante, but provides an ante formula of "0"
+		//	indicates that each player's score is the sum of his or her top seven game scores.
+		if (scoringSystem is { UsesPlayerAnte: true, PlayerAnteFormula: "0" })
+			scores = [.. scores.OrderByDescending(static score => score).Take(7)];
+
 		return scores.Length is 0
 				   ? null
 				   : new RatingRecord(player,
