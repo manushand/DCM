@@ -9,7 +9,7 @@ using System.Runtime.Versioning;
 [assembly: AssemblyDescription("Contact the author at manus@manushand.com for information on where the " +
 							   "latest version of the DCM can be found and downloaded.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("MHDC (The McManus-Hand Diplomacy Club) and Manus Hand")]
+[assembly: AssemblyCompany("HATTS (The High Altitude Trust & Treachery Society) and Manus Hand")]
 [assembly: AssemblyProduct("The Diplomacy Competition Manager")]
 [assembly: AssemblyCopyright("Copyright © 2018")] //	$"-{DateTime.Now.Year}" is added in the Help/About... MessageBox
 [assembly: AssemblyTrademark("")]

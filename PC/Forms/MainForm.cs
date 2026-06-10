@@ -343,7 +343,7 @@ internal sealed partial class MainForm : Form
 												  EventArgs e)
 	{
 		const string copyright = "Copyright © 2018";
-		const string holderName = "MHDC (The McManus-Hand Diplomacy Club) and Manus Hand";
+		const string holderName = "HATTS (The High Altitude Trust & Treachery Society) and Manus Hand";
 		const string comments = $"Contact the author at manus@manushand.com for information on where the latest version of the {nameof (DCM)} can be downloaded.";
 
 		MessageBox.Show($"The Diplomacy Competition Manager ({nameof (DCM)}) is {copyright}-{DateTime.Now.Year} " +

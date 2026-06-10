@@ -307,10 +307,12 @@ internal sealed partial class GroupGamesForm : Form
 			return;
 		}
 		DeleteGameButton.Text = "Delete Game";
+		/* BUG
 		GroupGamesDataGridView.Rows
 							  .Cast<DataGridViewRow>()
 							  .Single(each => each.GetFromRow<GroupGame>().Id == Game.Id)
 							  .Selected = true;
+		*/
 	}
 
 	private void ShowControls(bool visible)

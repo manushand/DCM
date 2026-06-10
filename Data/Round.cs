@@ -10,9 +10,9 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 	public override string Name => $"{Number}";
 
-	public Game[] SeededGames => [..Games.Where(static game => game.Status is Seeded)];
-	public Game[] StartedGames => [..Games.Where(static game => game.Status is not Seeded)];
-	public Game[] FinishedGames => [..Games.Where(static game => game.Status is Finished)];
+	public Game[] SeededGames => [.. Games.Where(static game => game.Status is Seeded)];
+	public Game[] StartedGames => [.. Games.Where(static game => game.Status is not Seeded)];
+	public Game[] FinishedGames => [.. Games.Where(static game => game.Status is Finished)];
 
 	public bool GamesSeeded => SeededGames.Length is not 0;
 	public bool GamesStarted => StartedGames.Length is not 0;
@@ -35,9 +35,9 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 	public bool ScoringSystemIsDefault => _scoringSystemId is null;
 
-	public Game[] Games => _games ??= [..ReadMany<Game>(game => game.RoundId == Id).Order()];
+	public Game[] Games => _games ??= [.. ReadMany<Game>(game => game.RoundId == Id).Order()];
 
-	public RoundPlayer[] RoundPlayers => _roundPlayers ??= [..ReadMany<RoundPlayer>(roundPlayer => roundPlayer.RoundId == Id)];
+	public RoundPlayer[] RoundPlayers => _roundPlayers ??= [.. ReadMany<RoundPlayer>(roundPlayer => roundPlayer.RoundId == Id)];
 
 	public ScoringSystem ScoringSystem
 	{
@@ -57,7 +57,7 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 	public Tournament Tournament
 	{
-		get => field?.Id == TournamentId
+		get => field.Id == TournamentId
 				   ? field
 				   : field = ReadById<Tournament>(TournamentId);
 		internal init => (field, TournamentId) = (value, value.Id);
@@ -130,12 +130,12 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 
 		//	Now add in for optimization all the existing players in seeded but not started games
 
-		GamePlayer[] preSeeded = [..SeededGames.SelectMany(static game => game.GamePlayers)];
+		GamePlayer[] preSeeded = [.. SeededGames.SelectMany(static game => game.GamePlayers)];
 		gamePlayers.AddRange(preSeeded);
 		Delete(preSeeded);
 
 		//	Create the list of seeding GamePlayers and prepare them all for seeding
-		GamePlayer[] seeding = [..gamePlayers.Select(static gamePlayer => gamePlayer.PrepareForSeeding())];
+		GamePlayer[] seeding = [.. gamePlayers.Select(static gamePlayer => gamePlayer.PrepareForSeeding())];
 
 		//	TODO: here is where we could maybe CalculateConflict(seeding) in order to
 		//	TODO: let the user decline optimization or know how much it improves things
@@ -183,7 +183,7 @@ public sealed class Round : IdentityRecord<Round>, IComparable<Round>
 				//	When beginning (or re-beginning) at the top of the list,
 				//	ensure that it is ordered from most conflict to least.
 				if (lastSeeded is 0)
-					seeding = [..seeding.OrderByDescending(static gamePlayer => gamePlayer.Conflict)];
+					seeding = [.. seeding.OrderByDescending(static gamePlayer => gamePlayer.Conflict)];
 				for (var swapWith = lastSeeded + 1; swapWith < playerCount; ++swapWith)
 				{
 					//	Swap the game/power assignments of the [lastSeeded] and [swapWith]
